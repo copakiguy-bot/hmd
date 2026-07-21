@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>데일리 페이지</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --dark:#12312b; --dark-2:#1b4038; --cream:#f4f2ec; --card:#ffffff;
+    --yellow:#f4b740; --yellow-soft:#fbe6b8; --red:#e8615a; --red-soft:#f7d3d1;
+    --green:#2f6f5e; --green-soft:#dbeee6; --text:#12312b; --muted:#8a9490; --line:#e9e6df;
+    --shadow:0 8px 24px rgba(18,49,43,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Pretendard','Gowun Dodum','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+    background:var(--cream);color:var(--text);display:flex;min-height:100vh;-webkit-font-smoothing:antialiased;
+    letter-spacing:-.1px;font-weight:400}
+  h1,h2,h3,b,strong{letter-spacing:-.3px}
+
+  /* Sidebar */
+  .sidebar{width:230px;background:var(--dark);color:#dfe8e4;padding:26px 18px;
+    display:flex;flex-direction:column;gap:5px;flex-shrink:0;position:sticky;top:0;height:100vh}
+  .logo{display:flex;align-items:center;gap:10px;font-size:21px;font-weight:800;color:#fff;padding:6px 8px 20px}
+  .logo .mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--yellow),var(--red));
+    display:flex;align-items:center;justify-content:center;font-size:18px}
+  .nav{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;cursor:pointer;
+    color:#b9c6c1;font-weight:600;font-size:14.5px;transition:.15s}
+  .nav:hover{background:rgba(255,255,255,.06);color:#fff}
+  .nav.active{background:#fff;color:var(--dark)}
+  .nav .ic{width:20px;text-align:center}
+  .nav .badge{margin-left:auto;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:1px 8px;border-radius:20px}
+  .side-cta{margin-top:auto;background:var(--dark-2);border-radius:16px;padding:16px;text-align:center}
+  .side-cta b{color:#fff;display:block;font-size:14px;margin-bottom:3px}
+  .side-cta span{color:#9fb0aa;font-size:11.5px;display:block;margin-bottom:11px}
+  .side-cta button{width:100%;border:none;background:var(--yellow);color:var(--dark);font-weight:700;padding:9px;border-radius:10px;cursor:pointer}
+
+  /* Main */
+  .main{flex:1;padding:26px 30px;overflow:auto;max-width:1180px;width:100%;margin:0 auto}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+  .topbar .right{display:flex;align-items:center;gap:14px}
+  .bell{width:44px;height:44px;border-radius:50%;background:#fff;box-shadow:var(--shadow);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px}
+  .avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#f4b740,#e8615a);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700}
+  .hello{font-size:14px;color:var(--muted)}
+  .hello b{display:block;font-size:22px;color:var(--text)}
+  .date{text-align:right}.date b{font-size:18px}.date span{color:var(--muted);font-size:13px}
+
+  .view{display:none}.view.on{display:block}
+  .page-head{margin-bottom:18px}
+  .page-head h1{font-size:24px}
+  .page-head p{color:var(--muted);font-size:13.5px;margin-top:4px}
+
+  .grid{display:grid;grid-template-columns:1.75fr 1fr;gap:20px;align-items:stretch}
+  .grid>.card{display:flex;flex-direction:column;margin:0}
+  .fill{flex:1;min-height:60px;overflow:auto}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:14px}
+  .card{background:var(--card);border-radius:18px;padding:20px;box-shadow:var(--shadow)}
+  .card+.card{margin-top:20px}
+  /* 그리드 내부 카드는 gap이 간격을 담당하므로 마진 제거 (순서상 위 규칙보다 뒤에 와야 함) */
+  .grid>.card+.card,.g2>.card+.card,.g3>.card+.card{margin-top:0}
+  .card h3{font-size:16px;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .card h3 .dot{width:8px;height:8px;border-radius:50%;background:var(--yellow)}
+  .card h3 .more{margin-left:auto;color:var(--muted);font-size:13px;font-weight:600}
+
+  /* Calendar */
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .cal-head b{font-size:15px}
+  .cal-nav button{border:none;background:var(--cream);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:15px;color:var(--dark)}
+  .cal{width:100%;border-collapse:collapse;table-layout:fixed}
+  .cal th{font-size:11.5px;color:var(--muted);font-weight:600;padding:8px 0;text-align:center}
+  .cal td{padding:2px;vertical-align:top}
+  .cal td .d{min-height:84px;border-radius:10px;padding:6px;font-size:13px;cursor:pointer;transition:.12s;
+    border:1.5px solid transparent;display:flex;flex-direction:column;gap:3px;overflow:hidden}
+  .cal td .d:hover{background:var(--cream)}
+  .cal td .d.sel{border-color:var(--yellow);background:#fffdf5}
+  .cal td .d.muted .dnum{color:#cfd6d2}
+  .dnum{font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:4px}
+  .d.today .dnum span.n{background:var(--dark);color:#fff;border-radius:50%;width:22px;height:22px;
+    display:inline-flex;align-items:center;justify-content:center;font-size:11.5px}
+  .rec{width:5px;height:5px;border-radius:50%;background:var(--yellow);display:inline-block}
+  .schip{font-size:10.5px;background:var(--yellow-soft);color:#8a6412;border-radius:5px;padding:2px 5px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
+  .smore{font-size:10px;color:var(--muted);padding-left:4px}
+  .sched-item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+  .sched-item .top{display:flex;align-items:center;gap:8px}
+  .sched-time{font-size:11.5px;font-weight:700;color:#8a6412;background:var(--yellow-soft);border-radius:5px;padding:2px 7px;white-space:nowrap}
+
+  /* To-do */
+  .todo li{list-style:none;display:flex;align-items:center;gap:11px;padding:10px 4px;border-bottom:1px solid var(--line)}
+  .todo li:last-child{border-bottom:none}
+  .chk{width:20px;height:20px;border:2px solid var(--line);border-radius:6px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff}
+  .chk.done{background:var(--green);border-color:var(--green)}
+  .todo .txt{font-size:14px;flex:1}
+  .todo .done .txt{text-decoration:line-through;color:var(--muted)}
+  .del{color:#cfd6d2;cursor:pointer;font-size:16px;padding:0 4px;line-height:1}
+  .del:hover{color:var(--red)}
+
+  .addrow{display:flex;gap:8px;margin-top:12px}
+  input,select,textarea{font-family:inherit}
+  .addrow input{flex:1;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:13px;outline:none}
+  .addrow input:focus{border-color:var(--yellow)}
+  .btn{border:none;background:var(--dark);color:#fff;padding:9px 16px;border-radius:10px;cursor:pointer;font-weight:700;font-size:13px}
+  .btn.y{background:var(--yellow);color:var(--dark)}
+  .btn.ghost{background:var(--cream);color:var(--dark)}
+
+  .memo textarea{width:100%;min-height:110px;border:none;resize:vertical;font-size:14px;line-height:1.75;font-family:inherit;outline:none;color:var(--text)}
+
+  /* forms */
+  .form{display:grid;gap:12px;margin-bottom:8px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:12px;font-weight:700;color:var(--muted)}
+  .field input,.field textarea,.field select{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;width:100%}
+  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--yellow)}
+  .field textarea{resize:vertical;min-height:70px;line-height:1.6}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .segwrap{display:flex;gap:8px}
+  .seg{flex:1;text-align:center;padding:9px;border:1.5px solid var(--line);border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--muted);user-select:none}
+  .seg.sel{border-color:var(--dark);background:var(--dark);color:#fff}
+
+  /* lists */
+  .entry{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
+  .entry .meta{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .cat-badge{font-size:11px;font-weight:800;padding:2px 10px;border-radius:20px}
+  .b-work{background:var(--yellow-soft);color:#a9721a}
+  .b-read{background:var(--green-soft);color:var(--green)}
+  .b-study{background:var(--red-soft);color:#b23c37}
+  .b-지출{background:var(--red-soft);color:#b23c37}
+  .b-수입{background:var(--green-soft);color:var(--green)}
+  .b-투자{background:var(--yellow-soft);color:#a9721a}
+  .entry .day{font-size:12px;color:var(--muted)}
+  .entry .body{font-size:14px;line-height:1.6;white-space:pre-wrap}
+  .entry .sub{font-size:12.5px;color:var(--muted);margin-top:6px;white-space:pre-wrap;line-height:1.55}
+  .empty{color:var(--muted);font-size:13.5px;text-align:center;padding:26px 0}
+  .datehdr{font-size:12px;font-weight:800;color:var(--muted);margin:16px 0 8px;letter-spacing:.3px}
+  .datehdr:first-child{margin-top:0}
+
+  /* assets */
+  .asset-top{display:flex;gap:12px;margin-bottom:16px}
+  .asset-box{flex:1;background:var(--cream);border-radius:14px;padding:12px 14px}
+  .asset-box span{font-size:12px;color:var(--muted)}
+  .asset-box b{display:block;font-size:16px;margin-top:4px}
+  .asset-box.exp b{color:var(--red)}.asset-box.inc b{color:var(--green)}.asset-box.inv b{color:#b8860b}
+  .donut-wrap{display:flex;align-items:center;gap:20px}
+  .legend div{display:flex;align-items:center;gap:8px;font-size:13px;margin:6px 0}
+  .legend .sw{width:11px;height:11px;border-radius:3px}
+  .ledger{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  .ledger th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;padding:7px 8px;border-bottom:1px solid var(--line)}
+  .ledger td{padding:9px 8px;border-bottom:1px solid var(--line)}
+  .ledger tr:last-child td{border-bottom:none}
+  .ledger .amt{text-align:right;font-weight:700;white-space:nowrap}
+  .amt.exp{color:var(--red)}.amt.inc{color:var(--green)}.amt.inv{color:#b8860b}
+
+  /* grouped column grids */
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+  .g2 .card,.g3 .card{margin:0}
+  .g2+.g2,.g3+.g2,.card+.g2,.card+.g3{margin-top:20px}
+
+  /* one-line inline input row */
+  .inrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .in{border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:13px;outline:none;font-family:inherit;min-width:0;background:#fff;color:var(--text)}
+  .in:focus{border-color:var(--yellow)}
+  .rowsel{border:1px solid var(--line);border-radius:8px;padding:5px 6px;font-size:12px;font-family:inherit;background:#fff;max-width:120px;color:var(--text)}
+  .ledger td[contenteditable]:focus{background:var(--cream);outline:none}
+
+  /* asset tabs */
+  .tabs{display:flex;gap:10px}
+  .tab{flex:1;padding:11px 8px;border:2px solid var(--line);border-radius:12px;background:var(--cream);font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;color:var(--muted);transition:.12s}
+  .tab:hover{border-color:var(--muted)}
+  .tab.active.exp{background:var(--red);border-color:var(--red);color:#fff}
+  .tab.active.inv{background:#e0a83a;border-color:#e0a83a;color:#fff}
+  .tab.active.inc{background:var(--green);border-color:var(--green);color:#fff}
+  .tab.active.wk{background:var(--yellow);border-color:var(--yellow);color:var(--dark)}
+  .tab.active.st{background:var(--red);border-color:var(--red);color:#fff}
+
+  /* 암기용 가리기 */
+  .mask{cursor:pointer;border-radius:8px;padding:6px 10px;font-size:14px;transition:.12s;user-select:none;min-height:30px;display:block;
+    white-space:pre-wrap;word-break:break-word;line-height:1.6}
+  .mask:hover{outline:1px dashed var(--line)}
+  .mask.on{background:var(--line);color:transparent}
+  .memrow{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)}
+  .memrow .del{margin-top:6px}
+  .edit-ic{color:#c3cbc7;cursor:pointer;font-size:14px;padding:0 3px;margin-top:6px}
+  .edit-ic:hover{color:var(--dark)}
+  .memrow:last-of-type{border-bottom:none}
+
+  .section-title{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.4px;margin:24px 0 4px}
+  @media(max-width:1000px){.grid,.row2,.two,.g2,.g3{grid-template-columns:1fr}.sidebar{display:none}}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo"><span class="mark"></span> Daily</div>
+  <div class="nav active" data-v="dashboard">Dashboard</div>
+  <div class="nav" data-v="work">Work</div>
+  <div class="nav" data-v="reading">Reading</div>
+  <div class="nav" data-v="study">Study</div>
+  <div class="nav" data-v="assets">Assets</div>
+  <div class="nav" data-v="inbox">Inbox</div>
+  <div class="nav" data-v="settings">Settings</div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div></div>
+    <div class="right">
+      <div class="date"><b id="dtFull"></b></div>
+      <div class="avatar">K</div>
+    </div>
+  </div>
+
+  <!-- ===== DASHBOARD (오늘) ===== -->
+  <section class="view on" id="view-dashboard">
+    <div class="page-head"><h1>Hello, My day!</h1></div>
+    <div class="grid">
+      <div class="card">
+        <h3><span class="dot"></span> SCHEDULE</h3>
+        <div class="cal-head"><b id="calTitle"></b>
+          <div class="cal-nav"><button onclick="shiftMonth(-1)">‹</button> <button onclick="goToday()" style="width:auto;padding:0 10px;font-size:12px">오늘</button> <button onclick="shiftMonth(1)">›</button></div>
+        </div>
+        <table class="cal"><thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead>
+        <tbody id="calBody"></tbody></table>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span> TO DO LIST <span class="more" id="todoCount"></span></h3>
+        <ul class="todo fill" id="todoList"></ul>
+        <div class="addrow">
+          <input id="todoInput" placeholder="할 일 입력 후 Enter" onkeydown="if(event.key==='Enter')addTodo()">
+          <button class="btn" onclick="addTodo()">추가</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span> <span id="schedLabel"></span> <span class="more" id="schedCount"></span></h3>
+        <div id="schedList" class="fill"></div>
+        <div class="inrow" style="margin-top:12px">
+          <input id="schTime" class="in" style="flex:none;width:96px" placeholder="시간">
+          <input id="schTitle" class="in" style="flex:1" placeholder="일정 제목" onkeydown="if(event.key==='Enter')addSchedule()">
+        </div>
+        <textarea id="schDetail" class="in" style="width:100%;min-height:70px;margin-top:8px;resize:vertical" placeholder="세부 내용"></textarea>
+        <div style="margin-top:10px"><button class="btn y" onclick="addSchedule()">＋ 일정 추가</button></div>
+      </div>
+      <div class="card">
+        <h3><span class="dot"></span> INBOX <span class="more" id="inboxCount"></span></h3>
+        <ul class="todo fill" id="inboxList"></ul>
+        <div class="addrow">
+          <input id="inboxInput" placeholder="떠오르는 것을 담아두세요" onkeydown="if(event.key==='Enter')addInbox()">
+          <button class="btn" onclick="addInbox()">추가</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">오늘의 요약</div>
+    <div class="card">
+      <h3><span class="dot" style="background:var(--yellow)"></span> 업무 <span class="more" onclick="go('work')">전체 →</span></h3>
+      <div class="tabs" id="dashWorkTabs">
+        <button class="tab wk" data-t="의회운영" onclick="setDashWorkTab('의회운영')">의회운영</button>
+        <button class="tab wk" data-t="법규정" onclick="setDashWorkTab('법규정')">법규정</button>
+        <button class="tab wk" data-t="매뉴얼" onclick="setDashWorkTab('매뉴얼')">매뉴얼</button>
+      </div>
+      <div style="margin-top:14px">
+        <input id="wTitle" class="in" style="width:100%" placeholder="제목">
+        <textarea id="wContent" class="in" style="width:100%;min-height:90px;margin-top:8px;resize:vertical" placeholder="내용"></textarea>
+        <div style="margin-top:10px"><button class="btn y" onclick="addWorkDash()">＋ 추가</button></div>
+      </div>
+      <div id="dashWorkFeed" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <h3><span class="dot" style="background:var(--red)"></span> 우리는 매일매일 <span class="more" onclick="go('study')">전체 →</span></h3>
+      <div class="tabs" id="dashStudyTabs">
+        <button class="tab st" data-t="단어" onclick="setDashStudyTab('단어')">단어</button>
+        <button class="tab st" data-t="영어" onclick="setDashStudyTab('영어')">영어</button>
+        <button class="tab st" data-t="지식" onclick="setDashStudyTab('지식')">지식</button>
+        <button class="tab st" data-t="문화" onclick="setDashStudyTab('문화')">문화</button>
+      </div>
+      <div id="dashStudyForm" style="margin-top:14px"></div>
+      <div id="dashStudyFeed" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <h3><span class="dot" style="background:var(--green)"></span> 독서 <span class="more" onclick="go('reading')">독서목록 →</span></h3>
+      <div class="inrow">
+        <select id="exBook" class="in" onchange="fillChapters()" style="flex:1.2"></select>
+        <select id="exChapter" class="in" style="flex:1.2"></select>
+        <input id="exText" class="in" style="flex:2.2" placeholder="발췌">
+        <input id="exPage" class="in" style="flex:none;width:110px" placeholder="페이지 1~3">
+        <button class="btn y" style="flex:none" onclick="addExcerpt()">추가</button>
+      </div>
+      <div style="margin-top:10px"><button class="btn ghost" onclick="toggleBookForm()">＋ 책 추가</button></div>
+      <div id="bookForm" style="display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:14px">
+        <div class="form">
+          <div class="two">
+            <div class="field"><label>책제목</label><input id="bTitle" placeholder="예: 사피엔스"></div>
+            <div class="field"><label>저자 / 역자</label><input id="bAuthor" placeholder="예: 유발 하라리 / 조현욱"></div>
+          </div>
+          <div class="two">
+            <div class="field"><label>출판사</label><input id="bPub" placeholder="예: 김영사"></div>
+            <div class="field"><label>총페이지</label><input type="number" id="bPages" placeholder="예: 636"></div>
+          </div>
+          <div class="two">
+            <div class="field"><label>시작일</label><input type="date" id="bStart"></div>
+            <div class="field"><label>종료일 (읽는 중이면 비움)</label><input type="date" id="bEnd"></div>
+          </div>
+          <div class="two">
+            <div class="field"><label>카테고리</label><input id="bCat" placeholder="예: 인문, 자기계발" list="catList"><datalist id="catList"></datalist></div>
+            <div class="field"><label>연결 (링크·선택)</label><input id="bLink" placeholder="구매/메모 URL"></div>
+          </div>
+          <div class="field"><label>목차 (한 줄에 한 챕터씩)</label><textarea id="bChapters" placeholder="1부 인지혁명&#10;2부 농업혁명&#10;3부 인류의 통합"></textarea></div>
+          <div><button class="btn y" onclick="addBook()">책 등록</button></div>
+        </div>
+      </div>
+      <div id="dashReadFeed" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <h3><span class="dot"></span> 자산 <span class="more" onclick="go('assets')">가계부 →</span></h3>
+      <div class="tabs" id="dashAssetTabs">
+        <button class="tab exp" data-t="지출" onclick="setDashAssetTab('지출')">지출</button>
+        <button class="tab inv" data-t="투자" onclick="setDashAssetTab('투자')">투자</button>
+        <button class="tab inc" data-t="수입" onclick="setDashAssetTab('수입')">수입</button>
+      </div>
+      <div class="inrow" style="margin-top:14px">
+        <select id="dCat" class="in" style="flex:1.1"></select>
+        <input id="dItem" class="in" style="flex:1.6" placeholder="내역">
+        <input id="dAmount" class="in" inputmode="numeric" style="flex:1" placeholder="금액" oninput="fmtNum(this)">
+        <input id="dNote" class="in" style="flex:1" placeholder="비고">
+        <button class="btn y" style="flex:none" onclick="addAssetDash()">추가</button>
+      </div>
+      <div id="dashAssetFeed" style="margin-top:12px"></div>
+    </div>
+
+  </section>
+
+  <!-- ===== 업무 ===== -->
+  <section class="view" id="view-work">
+    <div class="page-head"><h1>업무</h1></div>
+    <div class="tabs" id="workTabs">
+      <button class="tab wk" data-t="의회운영" onclick="setDetailWorkTab('의회운영')">의회운영</button>
+      <button class="tab wk" data-t="법규정" onclick="setDetailWorkTab('법규정')">법규정</button>
+      <button class="tab wk" data-t="매뉴얼" onclick="setDetailWorkTab('매뉴얼')">매뉴얼</button>
+    </div>
+    <div id="workPane" style="margin-top:16px"></div>
+  </section>
+
+  <!-- ===== 독서 ===== -->
+  <section class="view" id="view-reading">
+    <!-- 목록 모드 -->
+    <div id="readingList">
+      <div class="page-head"><h1>독서목록</h1></div>
+      <div class="card">
+        <h3><span class="dot" style="background:var(--green)"></span> 독서목록 <span class="more" id="readCnt"></span>
+          <button class="btn ghost" style="margin-left:auto;padding:7px 12px" onclick="toggleNewBook()">＋ 책 추가</button></h3>
+        <div id="newBookForm" style="display:none;margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:16px">
+          <div class="form">
+            <div class="two">
+              <div class="field"><label>도서명</label><input id="nTitle" placeholder="예: 사피엔스"></div>
+              <div class="field"><label>저자 / 역자</label><input id="nAuthor" placeholder="예: 유발 하라리 / 조현욱"></div>
+            </div>
+            <div class="two">
+              <div class="field"><label>출판사</label><input id="nPub" placeholder="예: 김영사"></div>
+              <div class="field"><label>총페이지</label><input type="number" id="nPages" placeholder="예: 636"></div>
+            </div>
+            <div class="two">
+              <div class="field"><label>시작일</label><input type="date" id="nStart"></div>
+              <div class="field"><label>종료일 (읽는 중이면 비움)</label><input type="date" id="nEnd"></div>
+            </div>
+            <div class="two">
+              <div class="field"><label>카테고리</label><input id="nCat" placeholder="예: 인문, 자기계발"></div>
+              <div class="field"><label>연결 (링크·선택)</label><input id="nLink" placeholder="구매/메모 URL"></div>
+            </div>
+            <div class="field"><label>목차 (한 줄에 한 챕터씩)</label><textarea id="nChapters" placeholder="1부 인지혁명&#10;2부 농업혁명&#10;3부 인류의 통합"></textarea></div>
+            <div><button class="btn y" onclick="addBookFromList()">책 등록</button></div>
+          </div>
+        </div>
+        <table class="ledger">
+          <thead><tr><th>도서명</th><th>저자/역자</th><th>출판사</th><th class="amt">총p</th><th>기간</th><th>카테고리</th><th></th></tr></thead>
+          <tbody id="bookBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 상세 모드 -->
+    <div id="bookDetail" style="display:none"></div>
+  </section>
+
+  <!-- ===== 학습 ===== -->
+  <section class="view" id="view-study">
+    <div class="page-head"><h1>우리는 매일매일</h1></div>
+    <div class="tabs" id="studyTabs">
+      <button class="tab st" data-t="단어" onclick="setDetailStudyTab('단어')">단어</button>
+      <button class="tab st" data-t="영어" onclick="setDetailStudyTab('영어')">영어</button>
+      <button class="tab st" data-t="지식" onclick="setDetailStudyTab('지식')">지식</button>
+      <button class="tab st" data-t="문화" onclick="setDetailStudyTab('문화')">문화</button>
+    </div>
+    <div id="studyPane" style="margin-top:16px"></div>
+  </section>
+
+  <!-- ===== 자산 (가계부) ===== -->
+  <section class="view" id="view-assets">
+    <div class="page-head"><h1>자산 · 가계부</h1></div>
+    <div class="tabs" id="assetTabs">
+      <button class="tab exp" data-t="지출" onclick="setDetailAssetTab('지출')">지출</button>
+      <button class="tab inv" data-t="투자" onclick="setDetailAssetTab('투자')">투자</button>
+      <button class="tab inc" data-t="수입" onclick="setDetailAssetTab('수입')">수입</button>
+    </div>
+    <div id="assetPane" style="margin-top:16px"></div>
+  </section>
+
+  <!-- ===== Inbox ===== -->
+  <section class="view" id="view-inbox">
+    <div class="page-head"><h1>Inbox</h1></div>
+    <div class="card">
+      <h3><span class="dot"></span> 새 항목</h3>
+      <div class="addrow">
+        <input id="inboxInput2" placeholder="담아둘 내용 입력 후 Enter" onkeydown="if(event.key==='Enter')addInbox('inboxInput2')">
+        <button class="btn" onclick="addInbox('inboxInput2')">추가</button>
+      </div>
+    </div>
+    <div class="card"><h3><span class="dot"></span> 누적 <span class="more" id="inboxPageCount"></span></h3><div id="inboxPage"></div></div>
+  </section>
+
+  <!-- ===== 설정 ===== -->
+  <section class="view" id="view-settings">
+    <div class="page-head"><h1>설정</h1></div>
+    <div class="card">
+      <h3><span class="dot"></span> 데이터 관리</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn ghost" onclick="clearToday()">오늘 항목 비우기</button>
+        <button class="btn" style="background:var(--red)" onclick="resetAll()">전체 초기화</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ---------- storage ---------- */
+const KEY='dailypage_v7';
+const dstr=(off=0)=>{const t=new Date();t.setDate(t.getDate()-off);
+  return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');};
+const today=()=>dstr(0);
+let db=load();
+if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];
+if(!db.studyCats)db.studyCats={지식:[],문화:[]};
+if(!db.schedules)db.schedules=[];if(!db.inbox)db.inbox=[];
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.work)return s;}catch(e){}return seed();}
+function save(){localStorage.setItem(KEY,JSON.stringify(db));}
+function uid(){return Date.now()+Math.floor(Math.random()*1000);}
+function seed(){
+  return {
+    todos:{[dstr(1)]:[{id:1,t:'주간 업무보고 제출',done:true},{id:2,t:'개정 조례 검토',done:false}]},
+    work:[
+      {id:11,date:dstr(1),cat:'의회운영',category:'',title:'정기회 안건 정리',content:'제312회 정기회 안건 5건 정리, 예산결산특위 발언 요지 작성.'},
+      {id:12,date:dstr(2),cat:'법규정',category:'',title:'조례 검토',content:'개정 조례 3건 비교 검토. 상위법 저촉 여부 확인 후 법제팀 의견 요청.'},
+      {id:13,date:dstr(4),cat:'매뉴얼',category:'',title:'인수인계 매뉴얼',content:'업무 인수인계 매뉴얼 2장(민원 처리 절차) 작성 완료.'}
+    ],
+    workCats:[],
+    reading:[
+      {id:21,title:'사피엔스',author:'유발 하라리 / 조현욱',publisher:'김영사',totalPages:636,start:dstr(20),end:dstr(3),category:'인문',link:'',
+        chapters:['1부 인지혁명','2부 농업혁명','3부 인류의 통합','4부 과학혁명'],
+        excerpts:[
+          {id:211,chapter:'1부 인지혁명',date:dstr(18),page:27,text:'우리는 이야기를 믿는다. 허구를 공유하는 능력이 대규모 협력을 가능하게 했다.'},
+          {id:212,chapter:'4부 과학혁명',date:dstr(6),page:415,text:'무지를 인정하는 것이 근대 과학의 출발점이었다.'}
+        ]},
+      {id:22,title:'아주 작은 습관의 힘',author:'제임스 클리어 / 이한이',publisher:'비즈니스북스',totalPages:320,start:dstr(8),end:'',category:'자기계발',link:'',
+        chapters:['1장 습관의 놀라운 힘','2장 정체성 바꾸기','3장 습관의 4가지 법칙'],
+        excerpts:[
+          {id:221,chapter:'1장 습관의 놀라운 힘',date:dstr(7),page:34,text:'1퍼센트의 개선이 복리처럼 쌓인다. 목표가 아니라 시스템에 집중하라.'}
+        ]}
+    ],
+    study:[
+      {id:31,date:dstr(1),tab:'단어',term:'낙관(樂觀)',meaning:'인생이나 사물을 밝고 희망적으로 봄'},
+      {id:32,date:dstr(2),tab:'단어',term:'반추(反芻)',meaning:'지난 일을 되풀이하여 음미하고 생각함'},
+      {id:33,date:dstr(1),tab:'영어',term:'resilient',meaning:'회복력 있는, 탄력 있는'},
+      {id:34,date:dstr(3),tab:'영어',term:'meticulous',meaning:'꼼꼼한, 세심한'},
+      {id:35,date:dstr(2),tab:'지식',category:'',title:'복리의 힘',content:'원금이 아니라 이자에 이자가 붙는 구조. 시간이 가장 큰 변수.'},
+      {id:36,date:dstr(4),tab:'문화',category:'',title:'전시 관람',content:'국립현대미술관 상설전. 단색화 계열 작품 인상적.'}
+    ],
+    studyCats:{지식:[],문화:[]},
+    assets:[
+      {id:41,date:dstr(1),type:'수입',category:'월급',item:'7월 급여',amount:2500000,note:''},
+      {id:42,date:dstr(1),type:'지출',category:'식비',item:'점심',amount:12000,note:'회사 근처'},
+      {id:43,date:dstr(2),type:'지출',category:'유류&교통',item:'주유',amount:50000,note:''},
+      {id:44,date:dstr(3),type:'지출',category:'문화생활',item:'영화',amount:16000,note:''},
+      {id:45,date:dstr(2),type:'투자',category:'주식',item:'삼성전자',amount:300000,note:''},
+      {id:46,date:dstr(4),type:'투자',category:'주식',item:'애플',amount:200000,note:''},
+      {id:47,date:dstr(3),type:'투자',category:'코인',item:'비트코인',amount:150000,note:''},
+      {id:48,date:dstr(5),type:'투자',category:'적금',item:'정기적금',amount:300000,note:''}
+    ],
+    budget:{'데이트':350000,'식비':80000,'모임':30000,'세탁':30000,'문화생활':20000,'유류&교통':200000,'이발':20000,'기타':30000,'경조사':50000},
+    fixed:[
+      {id:61,name:'엄마',amount:200000,note:''},{id:62,name:'실손보험',amount:55000,note:''},
+      {id:63,name:'서하가든',amount:50000,note:''},{id:64,name:'대광회',amount:30000,note:''},
+      {id:65,name:'슬렁슬렁',amount:20000,note:''},{id:66,name:'출판7기',amount:10000,note:''},
+      {id:67,name:'의회동기',amount:30000,note:''},{id:68,name:'인터넷',amount:62000,note:''},
+      {id:69,name:'핸드폰',amount:20000,note:''},{id:70,name:'운전자보험',amount:16830,note:''},
+      {id:71,name:'의류',amount:50000,note:''},{id:72,name:'AI',amount:50000,note:''},
+      {id:73,name:'옵시디언',amount:8000,note:''},{id:74,name:'아이클라우드',amount:1100,note:''},
+      {id:75,name:'경조사',amount:30000,note:''}
+    ],
+    schedules:[
+      {id:81,date:dstr(0),time:'10:00',title:'주간 업무회의',detail:'회의실 3층 · 주간 실적 공유'},
+      {id:82,date:dstr(0),time:'15:30',title:'조례 검토 미팅',detail:'법제팀과 개정안 검토'},
+      {id:83,date:dstr(-2),time:'19:00',title:'독서 모임',detail:'사피엔스 4장 토론'}
+    ],
+    inbox:[
+      {id:91,date:dstr(1),t:'인수인계 매뉴얼 목차 다시 잡기',done:false},
+      {id:92,date:dstr(2),t:'연말정산 서류 확인',done:false}
+    ]
+  };
+}
+
+/* ---------- helpers ---------- */
+const won=v=>'₩'+Number(v||0).toLocaleString('ko-KR');
+const shortWon=v=>{v=Number(v||0);const a=Math.abs(v);const s=v<0?'-':'';
+  if(a>=100000000)return s+(a/100000000).toFixed(1)+'억';
+  if(a>=10000)return s+Math.round(a/10000)+'만';return s+a.toLocaleString('ko-KR');};
+const catClass={의회:'b-work',법규정:'b-work',매뉴얼:'b-work'};
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escA(s){return esc(s).replace(/"/g,'&quot;');}
+function parseNum(v){return Number(String(v).replace(/[^0-9]/g,''))||0;}
+function fmtNum(el){const d=String(el.value).replace(/[^0-9]/g,'');el.value=d?Number(d).toLocaleString('ko-KR'):'';}
+function fmtK(d){if(!d)return'';const[y,m,dd]=d.split('-');return `${m}/${dd}`;}
+
+/* ---------- routing ---------- */
+function go(v){
+  document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('active',n.dataset.v===v));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='view-'+v));
+  renderAll();window.scrollTo(0,0);
+}
+document.querySelectorAll('.nav').forEach(n=>n.onclick=()=>go(n.dataset.v));
+
+/* ---------- date header ---------- */
+let curKey=today();
+function renderTop(){
+  const days=['일','월','화','수','목','금','토'];
+  const t=new Date();
+  document.getElementById('dtFull').textContent=`${t.getFullYear()}년 ${t.getMonth()+1}월 ${t.getDate()}일 (${days[t.getDay()]})`;
+}
+
+/* ---------- calendar ---------- */
+let viewY,viewM;{const t=new Date();viewY=t.getFullYear();viewM=t.getMonth();}
+let selDate=today();
+function daysWithData(){
+  const s=new Set();
+  Object.keys(db.todos).forEach(k=>{if(db.todos[k]&&db.todos[k].length)s.add(k);});
+  db.work.forEach(x=>s.add(x.date));db.study.forEach(x=>s.add(x.date));
+  db.assets.forEach(x=>s.add(x.date));
+  db.reading.forEach(x=>{if(x.start)s.add(x.start);if(x.end)s.add(x.end);
+    (x.excerpts||[]).forEach(e=>{if(e.date)s.add(e.date);});});
+  return s;
+}
+function schedOf(d){return db.schedules.filter(s=>s.date===d)
+  .sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));}
+function renderCal(){
+  const set=daysWithData();
+  document.getElementById('calTitle').textContent=`${viewY}년 ${viewM+1}월`;
+  const first=new Date(viewY,viewM,1).getDay();
+  const dim=new Date(viewY,viewM+1,0).getDate();
+  const prev=new Date(viewY,viewM,0).getDate();
+  const tk=today();let html='',day=1,nx=1;
+  for(let r=0;r<6;r++){html+='<tr>';
+    for(let c=0;c<7;c++){const i=r*7+c;
+      if(i<first)html+=`<td><div class="d muted"><div class="dnum"><span class="n">${prev-first+i+1}</span></div></div></td>`;
+      else if(day>dim)html+=`<td><div class="d muted"><div class="dnum"><span class="n">${nx++}</span></div></div></td>`;
+      else{const key=`${viewY}-${String(viewM+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const sc=schedOf(key);
+        const chips=sc.slice(0,2).map(s=>`<span class="schip">${s.time?esc(s.time)+' ':''}${esc(s.title)}</span>`).join('')
+          +(sc.length>2?`<span class="smore">+${sc.length-2}</span>`:'');
+        html+=`<td><div class="d ${key===tk?'today':''} ${key===selDate?'sel':''}" onclick="selectDate('${key}')">
+          <div class="dnum"><span class="n">${day}</span>${set.has(key)?'<span class="rec"></span>':''}</div>${chips}</div></td>`;day++;}
+    }html+='</tr>';if(day>dim&&r>=4)break;}
+  document.getElementById('calBody').innerHTML=html;
+}
+function shiftMonth(d){viewM+=d;if(viewM<0){viewM=11;viewY--}if(viewM>11){viewM=0;viewY++}renderCal();}
+function goToday(){const t=new Date();viewY=t.getFullYear();viewM=t.getMonth();selDate=today();renderCal();renderSchedule();}
+function selectDate(k){selDate=k;renderCal();renderSchedule();}
+
+/* ---------- schedules ---------- */
+function addSchedule(){
+  const title=document.getElementById('schTitle').value.trim();
+  if(!title){alert('일정 제목을 입력하세요.');return;}
+  db.schedules.push({id:uid(),date:selDate,time:document.getElementById('schTime').value.trim(),
+    title,detail:document.getElementById('schDetail').value.trim()});
+  save();['schTitle','schTime','schDetail'].forEach(i=>document.getElementById(i).value='');
+  renderCal();renderSchedule();
+}
+function editSchedule(id,field,val){const s=db.schedules.find(x=>x.id===id);if(!s)return;
+  s[field]=String(val).trim();save();renderCal();renderSchedule();}
+function delSchedule(id){db.schedules=db.schedules.filter(s=>s.id!==id);save();renderCal();renderSchedule();}
+function renderSchedule(){
+  const el=document.getElementById('schedList');if(!el)return;
+  const [y,m,d]=selDate.split('-');
+  const dow=['일','월','화','수','목','금','토'][new Date(+y,+m-1,+d).getDay()];
+  document.getElementById('schedLabel').textContent=`${+m}월 ${+d}일 (${dow})${selDate===today()?' · 오늘':''}`;
+  const list=schedOf(selDate);
+  document.getElementById('schedCount').textContent=list.length?list.length+'건':'';
+  el.innerHTML=list.length?list.map(s=>`<div class="sched-item">
+    <div class="top">
+      <span class="sched-time" contenteditable onblur="editSchedule(${s.id},'time',this.innerText)">${esc(s.time||'-')}</span>
+      <b style="flex:1" contenteditable onblur="editSchedule(${s.id},'title',this.innerText)">${esc(s.title)}</b>
+      <span class="del" onclick="delSchedule(${s.id})">×</span></div>
+    <div class="sub" style="margin-top:6px" contenteditable onblur="editSchedule(${s.id},'detail',this.innerText)">${esc(s.detail||'')}</div>
+  </div>`).join(''):'<div class="empty">등록된 일정이 없습니다.</div>';
+}
+
+/* ---------- inbox ---------- */
+function addInbox(inputId){
+  const el=document.getElementById(inputId||'inboxInput');
+  const v=el.value.trim();if(!v)return;
+  db.inbox.push({id:uid(),date:today(),t:v,done:false});save();el.value='';
+  renderInbox();renderInboxPage();
+}
+function toggleInbox(id){const x=db.inbox.find(a=>a.id===id);if(x){x.done=!x.done;save();renderInbox();renderInboxPage();}}
+function editInbox(id,val){const x=db.inbox.find(a=>a.id===id);if(!x)return;
+  const v=String(val).trim();if(v)x.t=v;save();renderInbox();renderInboxPage();}
+function delInbox(id){db.inbox=db.inbox.filter(a=>a.id!==id);save();renderInbox();renderInboxPage();}
+function inboxItemHTML(x){return `<li class="${x.done?'done':''}">
+  <div class="chk ${x.done?'done':''}" onclick="toggleInbox(${x.id})">${x.done?'✓':''}</div>
+  <span class="txt" contenteditable onblur="editInbox(${x.id},this.innerText)">${esc(x.t)}</span>
+  <span class="del" onclick="delInbox(${x.id})">×</span></li>`;}
+function renderInbox(){
+  const ul=document.getElementById('inboxList');if(!ul)return;
+  const open=db.inbox.filter(x=>!x.done);
+  ul.innerHTML=db.inbox.length?db.inbox.slice().reverse().map(inboxItemHTML).join('')
+    :'<div class="empty">담아둔 항목이 없습니다.</div>';
+  document.getElementById('inboxCount').textContent=`${open.length} / ${db.inbox.length}`;
+}
+function renderInboxPage(){
+  const el=document.getElementById('inboxPage');if(!el)return;
+  document.getElementById('inboxPageCount').textContent=db.inbox.length+'건';
+  if(!db.inbox.length){el.innerHTML='<div class="empty">담아둔 항목이 없습니다.</div>';return;}
+  const g={};db.inbox.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)))
+    .forEach(x=>{(g[x.date]=g[x.date]||[]).push(x);});
+  el.innerHTML=Object.keys(g).map(d=>`<div class="datehdr">${d}</div><ul class="todo">${g[d].map(inboxItemHTML).join('')}</ul>`).join('');
+}
+
+/* ---------- todos (daily) ---------- */
+function todosToday(){return db.todos[today()]||(db.todos[today()]=[]);}
+function renderTodos(){
+  const list=todosToday(),ul=document.getElementById('todoList');ul.innerHTML='';
+  if(!list.length)ul.innerHTML='<div class="empty">오늘 할 일이 없습니다. 새로 추가해보세요.</div>';
+  list.forEach(x=>{const li=document.createElement('li');li.className=x.done?'done':'';
+    li.innerHTML=`<div class="chk ${x.done?'done':''}" onclick="toggleTodo(${x.id})">${x.done?'✓':''}</div>
+      <span class="txt" contenteditable onblur="editTodo(${x.id},this.innerText)">${esc(x.t)}</span>
+      <span class="del" onclick="delTodo(${x.id})">×</span>`;ul.appendChild(li);});
+  const done=list.filter(x=>x.done).length;
+  document.getElementById('todoCount').textContent=`${done} / ${list.length}`;
+}
+function addTodo(){const i=document.getElementById('todoInput');if(!i.value.trim())return;
+  todosToday().push({id:uid(),t:i.value.trim(),done:false});i.value='';save();renderTodos();renderCal();}
+function toggleTodo(id){const l=todosToday();const x=l.find(a=>a.id===id);if(x){x.done=!x.done;save();renderTodos();}}
+function editTodo(id,val){const x=todosToday().find(a=>a.id===id);if(!x)return;
+  const v=String(val).trim();if(v)x.t=v;save();renderTodos();}
+function delTodo(id){db.todos[today()]=todosToday().filter(a=>a.id!==id);save();renderTodos();renderCal();}
+
+
+/* ---------- segmented control ---------- */
+function segValue(id){const el=document.querySelector('#'+id+' .seg.sel');return el?el.dataset.c:'';}
+document.querySelectorAll('.segwrap').forEach(w=>w.querySelectorAll('.seg').forEach(s=>
+  s.onclick=()=>{w.querySelectorAll('.seg').forEach(x=>x.classList.remove('sel'));s.classList.add('sel');}));
+
+/* ---------- work ---------- */
+const WORK_TABS=['의회운영','법규정','매뉴얼'];
+let dashWorkTab='의회운영', detailWorkTab='의회운영';
+function workCatList(){const s=new Set(db.workCats||[]);db.work.forEach(w=>{if(w.category)s.add(w.category);});return [...s].sort();}
+function workCatDatalist(){return `<datalist id="workCatList">${workCatList().map(c=>`<option value="${escA(c)}">`).join('')}</datalist>`;}
+function addWorkCat(c){c=String(c||'').trim();if(!c)return;db.workCats=db.workCats||[];if(!db.workCats.includes(c))db.workCats.push(c);}
+function renderWorkAll(){renderDashWork();renderWork();}
+
+/* 대시보드: 탭별 제목+내용 입력 */
+function setDashWorkTab(t){dashWorkTab=t;renderDashWork();}
+function addWorkDash(){
+  const title=document.getElementById('wTitle').value.trim(),content=document.getElementById('wContent').value.trim();
+  if(!title&&!content){alert('제목 또는 내용을 입력하세요.');return;}
+  db.work.push({id:uid(),date:today(),cat:dashWorkTab,category:'',title,content});save();
+  document.getElementById('wTitle').value='';document.getElementById('wContent').value='';
+  renderWorkAll();renderCal();
+}
+function renderDashWork(){
+  document.querySelectorAll('#dashWorkTabs .tab').forEach(b=>b.classList.toggle('active',b.dataset.t===dashWorkTab));
+  const el=document.getElementById('dashWorkFeed');if(!el)return;
+  const list=db.work.filter(w=>w.date===today()&&w.cat===dashWorkTab);
+  el.innerHTML=list.length?('<div class="datehdr">오늘 '+dashWorkTab+' 기록</div>'+list.map(w=>
+    `<div class="entry"><div class="meta"><span class="cat-badge b-work">${esc(w.cat)}</span>
+      <b contenteditable onblur="editWork(${w.id},'title',this.innerText)" style="flex:1">${esc(w.title||'')}</b>
+      <span class="del" onclick="delEntry('work',${w.id},renderWorkAll)">×</span></div>
+      <div class="body" contenteditable onblur="editWork(${w.id},'content',this.innerText)">${esc(w.content||'')}</div></div>`).join(''))
+    :'<div class="empty">오늘 '+dashWorkTab+' 기록이 없습니다.</div>';
+}
+
+/* 세부: 탭별 누적 + 입력/수정 */
+function setDetailWorkTab(t){detailWorkTab=t;renderWork();}
+function editWork(id,field,val){const w=db.work.find(x=>x.id===id);if(!w)return;
+  w[field]=String(val).trim();if(field==='category')addWorkCat(w.category);
+  save();renderWorkAll();renderCal();}
+function addWorkDetail(){
+  const title=document.getElementById('wdTitle').value.trim(),content=document.getElementById('wdContent').value.trim();
+  if(!title&&!content){alert('제목 또는 내용을 입력하세요.');return;}
+  const cat=document.getElementById('wdCat').value.trim();addWorkCat(cat);
+  db.work.push({id:uid(),date:document.getElementById('wdDate').value||today(),cat:detailWorkTab,category:cat,title,content});
+  save();['wdTitle','wdContent','wdCat'].forEach(i=>document.getElementById(i).value='');
+  renderWorkAll();renderCal();
+}
+function delEntry(arr,id,render){db[arr]=db[arr].filter(x=>x.id!==id);save();render();renderCal();}
+function groupByDate(arr){const g={};arr.slice().sort((a,b)=>b.date.localeCompare(a.date)).forEach(x=>{(g[x.date]=g[x.date]||[]).push(x);});return g;}
+function renderWork(){
+  document.querySelectorAll('#workTabs .tab').forEach(b=>b.classList.toggle('active',b.dataset.t===detailWorkTab));
+  const pane=document.getElementById('workPane');if(!pane)return;
+  const rows=db.work.filter(w=>w.cat===detailWorkTab);
+  const g=groupByDate(rows);let list='';
+  Object.keys(g).forEach(d=>{list+=`<div class="datehdr">${d}</div>`;
+    g[d].forEach(w=>{list+=`<div class="entry">
+      <div class="meta">
+        <input class="rowsel" list="workCatList" value="${escA(w.category||'')}" placeholder="카테고리" onchange="editWork(${w.id},'category',this.value)">
+        <b contenteditable onblur="editWork(${w.id},'title',this.innerText)" style="flex:1">${esc(w.title||'')}</b>
+        <span class="del" onclick="delEntry('work',${w.id},renderWorkAll)">×</span></div>
+      <div class="body" contenteditable onblur="editWork(${w.id},'content',this.innerText)">${esc(w.content||'')}</div></div>`;});});
+  pane.innerHTML=`${workCatDatalist()}
+  <div class="card"><h3><span class="dot" style="background:var(--yellow)"></span> ${detailWorkTab} 입력</h3>
+    <div class="inrow">
+      <input id="wdDate" type="date" class="in" style="flex:none;width:150px" value="${today()}">
+      <input id="wdCat" class="in" list="workCatList" style="flex:1" placeholder="카테고리 (직접 입력하면 목록에 추가)">
+      <input id="wdTitle" class="in" style="flex:2" placeholder="제목">
+    </div>
+    <textarea id="wdContent" class="in" style="width:100%;min-height:90px;margin-top:8px;resize:vertical" placeholder="내용"></textarea>
+    <div style="margin-top:10px"><button class="btn y" onclick="addWorkDetail()">＋ 추가</button></div></div>
+  <div class="card"><h3><span class="dot" style="background:var(--yellow)"></span> ${detailWorkTab} 누적 기록 <span class="more">${rows.length}건</span></h3>
+    ${list||'<div class="empty">기록이 없습니다.</div>'}</div>`;
+}
+
+/* ---------- reading (books + chapters + excerpts) ---------- */
+let readOpenId=null, editBookMode=false;
+function bookById(id){return db.reading.find(b=>b.id===id);}
+function toggleBookForm(){const f=document.getElementById('bookForm');f.style.display=f.style.display==='none'?'block':'none';}
+function addBook(){
+  const t=document.getElementById('bTitle').value.trim();
+  if(!t){alert('책제목을 입력하세요.');return;}
+  const chapters=document.getElementById('bChapters').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  db.reading.push({id:uid(),title:t,
+    author:document.getElementById('bAuthor').value.trim(),
+    publisher:document.getElementById('bPub').value.trim(),
+    totalPages:Number(document.getElementById('bPages').value)||'',
+    start:document.getElementById('bStart').value,
+    end:document.getElementById('bEnd').value,
+    category:document.getElementById('bCat').value.trim(),
+    link:document.getElementById('bLink').value.trim(),
+    chapters,excerpts:[]});
+  save();
+  ['bTitle','bAuthor','bPub','bPages','bStart','bEnd','bCat','bLink','bChapters'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('bookForm').style.display='none';
+  renderReading();renderCal();
+}
+function fillChapters(){
+  const b=bookById(Number(document.getElementById('exBook').value));
+  const sel=document.getElementById('exChapter');
+  sel.innerHTML=b&&b.chapters.length?b.chapters.map(c=>`<option>${esc(c)}</option>`).join('')
+    :'<option value="">(목차 없음 — 자유 입력)</option>';
+}
+function addExcerpt(){
+  const b=bookById(Number(document.getElementById('exBook').value));
+  if(!b){alert('책을 선택하세요.');return;}
+  const text=document.getElementById('exText').value.trim();
+  if(!text){alert('발췌를 입력하세요.');return;}
+  b.excerpts.push({id:uid(),chapter:document.getElementById('exChapter').value||'(미분류)',
+    date:today(),
+    page:document.getElementById('exPage').value.trim(),text});
+  save();
+  document.getElementById('exText').value='';document.getElementById('exPage').value='';
+  renderReading();renderCal();
+}
+function delExcerpt(bookId,exId){const b=bookById(bookId);if(!b)return;
+  b.excerpts=b.excerpts.filter(e=>e.id!==exId);save();renderReading();renderCal();}
+function editExcerpt(bookId,exId,field,val){const b=bookById(bookId);if(!b)return;
+  const e=b.excerpts.find(x=>x.id===exId);if(!e)return;
+  e[field]=String(val).trim();save();renderReading();renderCal();}
+function editChapter(bookId,idx,val){const b=bookById(bookId);if(!b)return;
+  const nv=String(val).trim();if(!nv)return;const old=b.chapters[idx];
+  b.chapters[idx]=nv;(b.excerpts||[]).forEach(e=>{if(e.chapter===old)e.chapter=nv;});
+  save();renderReading();}
+function delChapter(bookId,idx){const b=bookById(bookId);if(!b)return;
+  if(!confirm('이 챕터를 목차에서 삭제할까요? (발췌는 남습니다)'))return;
+  b.chapters.splice(idx,1);save();renderReading();}
+function delBook(id){if(!confirm('이 책과 발췌 기록을 모두 삭제할까요?'))return;
+  db.reading=db.reading.filter(b=>b.id!==id);readOpenId=null;save();renderReading();renderCal();}
+function addChapter(id){const b=bookById(id);const inp=document.getElementById('chapInput');
+  const v=inp.value.trim();if(!v)return;b.chapters.push(v);save();renderReading();}
+function openBook(id){readOpenId=id;editBookMode=false;renderReading();window.scrollTo(0,0);}
+function closeBook(){readOpenId=null;editBookMode=false;renderReading();window.scrollTo(0,0);}
+function toggleEditBook(){editBookMode=!editBookMode;renderReading();}
+function saveBookEdit(id){const b=bookById(id);if(!b)return;
+  const t=document.getElementById('ebTitle').value.trim();if(!t){alert('도서명을 입력하세요.');return;}
+  b.title=t;
+  b.author=document.getElementById('ebAuthor').value.trim();
+  b.publisher=document.getElementById('ebPub').value.trim();
+  b.totalPages=Number(document.getElementById('ebPages').value)||'';
+  b.start=document.getElementById('ebStart').value;
+  b.end=document.getElementById('ebEnd').value;
+  b.category=document.getElementById('ebCat').value.trim();
+  b.link=document.getElementById('ebLink').value.trim();
+  b.chapters=document.getElementById('ebChapters').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  editBookMode=false;save();renderReading();renderCal();
+}
+/* 독서목록 페이지에서 새 책 추가 */
+function toggleNewBook(){const f=document.getElementById('newBookForm');f.style.display=f.style.display==='none'?'block':'none';}
+function addBookFromList(){
+  const t=document.getElementById('nTitle').value.trim();
+  if(!t){alert('도서명을 입력하세요.');return;}
+  db.reading.push({id:uid(),title:t,
+    author:document.getElementById('nAuthor').value.trim(),
+    publisher:document.getElementById('nPub').value.trim(),
+    totalPages:Number(document.getElementById('nPages').value)||'',
+    start:document.getElementById('nStart').value,
+    end:document.getElementById('nEnd').value,
+    category:document.getElementById('nCat').value.trim(),
+    link:document.getElementById('nLink').value.trim(),
+    chapters:document.getElementById('nChapters').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    excerpts:[]});
+  save();
+  ['nTitle','nAuthor','nPub','nPages','nStart','nEnd','nCat','nLink','nChapters'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('newBookForm').style.display='none';
+  renderReading();renderCal();
+}
+
+/* 대시보드 독서 입력(책·챕터 불러오기 + 오늘 추가한 발췌) */
+function renderReadingInputs(){
+  const cats=[...new Set(db.reading.map(b=>b.category).filter(Boolean))];
+  const cl=document.getElementById('catList');if(cl)cl.innerHTML=cats.map(c=>`<option value="${esc(c)}">`).join('');
+  const bs=document.getElementById('exBook');if(!bs)return;
+  const reading=db.reading.filter(b=>!b.end);const pool=reading.length?reading:db.reading;
+  const prev=bs.value;
+  bs.innerHTML=pool.length?pool.map(b=>`<option value="${b.id}">${esc(b.title)}${b.end?' (완독)':''}</option>`).join('')
+    :'<option value="">등록된 책이 없습니다</option>';
+  if(prev&&pool.some(b=>String(b.id)===prev))bs.value=prev;fillChapters();
+  // 오늘 추가한 발췌 피드
+  const td=today(),feed=[];
+  db.reading.forEach(b=>(b.excerpts||[]).forEach(e=>{if(e.date===td)feed.push({b,e});}));
+  const el=document.getElementById('dashReadFeed');
+  el.innerHTML=feed.length?('<div class="datehdr">오늘 추가한 발췌</div>'+feed.map(({b,e})=>
+    `<div class="entry"><div class="meta"><span class="cat-badge b-read">${esc(b.title)}</span>
+      <span class="day">${esc(e.chapter)} · p.<span contenteditable onblur="editExcerpt(${b.id},${e.id},'page',this.innerText)">${esc(String(e.page||''))}</span></span>
+      <span class="del" style="margin-left:auto" onclick="delExcerpt(${b.id},${e.id})">×</span></div>
+      <div class="body"><span contenteditable onblur="editExcerpt(${b.id},${e.id},'text',this.innerText)">${esc(e.text)}</span></div></div>`).join(''))
+    :'<div class="empty">오늘 추가한 발췌가 없습니다.</div>';
+}
+/* 독서 세부페이지: 독서목록 + 상세(누적) */
+function renderReading(){
+  renderReadingInputs();
+  const listWrap=document.getElementById('readingList'),detWrap=document.getElementById('bookDetail');
+  if(readOpenId&&bookById(readOpenId)){listWrap.style.display='none';detWrap.style.display='block';renderBookDetail(bookById(readOpenId));return;}
+  readOpenId=null;detWrap.style.display='none';listWrap.style.display='block';
+  document.getElementById('readCnt').textContent=db.reading.length+'권';
+  const tb=document.getElementById('bookBody');
+  if(!db.reading.length){tb.innerHTML='<tr><td colspan="7" class="empty">등록된 책이 없습니다. 대시보드 「독서」에서 책을 추가하세요.</td></tr>';return;}
+  tb.innerHTML=db.reading.slice().reverse().map(b=>{
+    const period=b.end?`${fmtK(b.start)}~${fmtK(b.end)}`:(b.start?`${fmtK(b.start)}~ 읽는중`:'읽는중');
+    return `<tr>
+      <td><b style="color:var(--green);cursor:pointer" onclick="openBook(${b.id})">${esc(b.title)}</b>
+        <div style="font-size:11px;color:var(--muted)">발췌 ${b.excerpts.length}개</div></td>
+      <td>${esc(b.author||'')}</td><td>${esc(b.publisher||'')}</td>
+      <td class="amt">${b.totalPages||''}</td><td style="font-size:12px">${period}</td>
+      <td>${b.category?`<span class="cat-badge b-read">${esc(b.category)}</span>`:''}</td>
+      <td><span class="del" onclick="delBook(${b.id})">×</span></td></tr>`;}).join('');
+}
+function renderBookDetail(b){
+  const period=b.end?`${b.start||'?'} ~ ${b.end}  (완독)`:(b.start?`${b.start} ~  (읽는 중)`:'읽는 중');
+  const grouped={};(b.chapters.length?b.chapters:[]).forEach(c=>grouped[c]=[]);
+  b.excerpts.forEach(e=>{(grouped[e.chapter]=grouped[e.chapter]||[]).push(e);});
+  let chaptersHTML='';
+  Object.keys(grouped).forEach(ch=>{
+    const list=grouped[ch].slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+    chaptersHTML+=`<div class="datehdr" style="font-size:13px;color:var(--green)">${esc(ch)} <span style="color:var(--muted);font-weight:600">(${list.length})</span></div>`;
+    if(!list.length)chaptersHTML+='<div class="sub" style="margin:0 0 8px 4px">발췌 없음</div>';
+    list.forEach(e=>{chaptersHTML+=`<div class="entry"><div class="meta">
+      <span class="day">${e.date||''} · p.<span contenteditable onblur="editExcerpt(${b.id},${e.id},'page',this.innerText)">${esc(String(e.page||''))}</span></span>
+      <select class="rowsel" onchange="editExcerpt(${b.id},${e.id},'chapter',this.value)">
+        ${(b.chapters.length?b.chapters:[e.chapter]).map(c=>`<option${c===e.chapter?' selected':''}>${esc(c)}</option>`).join('')}</select>
+      <span class="del" style="margin-left:auto" onclick="delExcerpt(${b.id},${e.id})">×</span></div>
+      <div class="body"><span contenteditable onblur="editExcerpt(${b.id},${e.id},'text',this.innerText)">${esc(e.text)}</span></div></div>`;});
+  });
+  document.getElementById('bookDetail').innerHTML=`
+    <div class="page-head" style="display:flex;align-items:center;gap:12px">
+      <button class="btn ghost" onclick="closeBook()">← 목록</button>
+      <div><h1>${esc(b.title)}</h1><p>${esc(b.author||'')}${b.publisher?' · '+esc(b.publisher):''}${b.totalPages?' · '+b.totalPages+'p':''}</p></div>
+    </div>
+    ${editBookMode?`
+    <div class="card">
+      <h3><span class="dot" style="background:var(--green)"></span> 서지정보 수정</h3>
+      <div class="form">
+        <div class="two">
+          <div class="field"><label>도서명</label><input id="ebTitle" value="${escA(b.title)}"></div>
+          <div class="field"><label>저자 / 역자</label><input id="ebAuthor" value="${escA(b.author||'')}"></div>
+        </div>
+        <div class="two">
+          <div class="field"><label>출판사</label><input id="ebPub" value="${escA(b.publisher||'')}"></div>
+          <div class="field"><label>총페이지</label><input type="number" id="ebPages" value="${b.totalPages||''}"></div>
+        </div>
+        <div class="two">
+          <div class="field"><label>시작일</label><input type="date" id="ebStart" value="${b.start||''}"></div>
+          <div class="field"><label>종료일 (읽는 중이면 비움)</label><input type="date" id="ebEnd" value="${b.end||''}"></div>
+        </div>
+        <div class="two">
+          <div class="field"><label>카테고리</label><input id="ebCat" value="${escA(b.category||'')}"></div>
+          <div class="field"><label>연결 (링크)</label><input id="ebLink" value="${escA(b.link||'')}"></div>
+        </div>
+        <div class="field"><label>목차 (한 줄에 한 챕터씩)</label><textarea id="ebChapters">${esc((b.chapters||[]).join('\n'))}</textarea></div>
+        <div style="display:flex;gap:8px"><button class="btn y" onclick="saveBookEdit(${b.id})">저장</button>
+          <button class="btn ghost" onclick="toggleEditBook()">취소</button></div>
+      </div>
+    </div>`:`
+    <div class="card">
+      <h3><span class="dot" style="background:var(--green)"></span> 책 정보
+        <button class="btn ghost" style="margin-left:auto;padding:7px 12px" onclick="toggleEditBook()">정보 수정</button></h3>
+      <div style="display:flex;flex-wrap:wrap;gap:20px;font-size:13.5px">
+        <div><span style="color:var(--muted)">저자/역자</span><br><b>${esc(b.author||'-')}</b></div>
+        <div><span style="color:var(--muted)">출판사</span><br><b>${esc(b.publisher||'-')}</b></div>
+        <div><span style="color:var(--muted)">총페이지</span><br><b>${b.totalPages||'-'}</b></div>
+        <div><span style="color:var(--muted)">카테고리</span><br><b>${esc(b.category||'-')}</b></div>
+        <div><span style="color:var(--muted)">기간</span><br><b>${period}</b></div>
+        <div><span style="color:var(--muted)">발췌</span><br><b>${b.excerpts.length}개</b></div>
+        ${b.link?`<div><span style="color:var(--muted)">연결</span><br><a href="${escA(b.link)}" target="_blank" style="color:var(--green)">링크 열기</a></div>`:''}
+      </div>
+    </div>`}
+    <div class="card">
+      <h3><span class="dot" style="background:var(--green)"></span> 목차 관리</h3>
+      ${(b.chapters||[]).map((c,i)=>`<div class="memrow" style="align-items:center">
+        <span style="flex:1;font-size:13.5px" contenteditable onblur="editChapter(${b.id},${i},this.innerText)">${esc(c)}</span>
+        <span class="del" style="margin-top:0" onclick="delChapter(${b.id},${i})">×</span></div>`).join('')}
+      <div class="addrow" style="margin-top:10px"><input id="chapInput" placeholder="새 챕터 추가 후 Enter" onkeydown="if(event.key==='Enter')addChapter(${b.id})">
+        <button class="btn" onclick="addChapter(${b.id})">추가</button></div>
+    </div>
+    <div class="card">
+      <h3><span class="dot" style="background:var(--green)"></span> 목차별 발췌</h3>
+      ${b.excerpts.length||b.chapters.length?chaptersHTML:'<div class="empty">발췌 문장이 없습니다. 목록 화면의 &laquo;발췌 추가&raquo;에서 등록하세요.</div>'}
+    </div>`;
+}
+
+/* ---------- study (단어·영어·지식·문화) ---------- */
+const STUDY_TABS=['단어','영어','지식','문화'];
+const isMemTab=t=>t==='단어'||t==='영어';
+let dashStudyTab='단어', detailStudyTab='단어';
+function studyCatList(tab){const s=new Set((db.studyCats&&db.studyCats[tab])||[]);
+  db.study.forEach(x=>{if(x.tab===tab&&x.category)s.add(x.category);});return [...s].sort();}
+function studyCatDatalist(tab){return `<datalist id="studyCatList">${studyCatList(tab).map(c=>`<option value="${escA(c)}">`).join('')}</datalist>`;}
+function addStudyCat(tab,c){c=String(c||'').trim();if(!c)return;
+  db.studyCats=db.studyCats||{};db.studyCats[tab]=db.studyCats[tab]||[];
+  if(!db.studyCats[tab].includes(c))db.studyCats[tab].push(c);}
+function renderStudyAll(){renderDashStudy();renderStudy();}
+let editMemId=null;
+function startEditMem(id){editMemId=id;renderStudyAll();}
+function cancelEditMem(){editMemId=null;renderStudyAll();}
+function saveEditMem(id){const x=db.study.find(s=>s.id===id);if(!x)return;
+  x.term=document.getElementById('emTerm').value.trim();
+  x.meaning=document.getElementById('emMean').value.trim();
+  editMemId=null;save();renderStudyAll();renderCal();}
+function memRow(x){
+  if(editMemId===x.id)return `<div class="memrow">
+    <textarea id="emTerm" class="in" style="flex:1;min-height:56px;resize:vertical">${esc(x.term||'')}</textarea>
+    <textarea id="emMean" class="in" style="flex:1.3;min-height:56px;resize:vertical">${esc(x.meaning||'')}</textarea>
+    <button class="btn y" style="flex:none" onclick="saveEditMem(${x.id})">저장</button>
+    <span class="del" onclick="cancelEditMem()">×</span></div>`;
+  return `<div class="memrow">
+    <span class="mask" style="flex:1" onclick="this.classList.toggle('on')">${esc(x.term||'')}</span>
+    <span class="mask on" style="flex:1.3" onclick="this.classList.toggle('on')">${esc(x.meaning||'')}</span>
+    <span class="edit-ic" title="수정" onclick="startEditMem(${x.id})">수정</span>
+    <span class="del" onclick="delEntry('study',${x.id},renderStudyAll)">×</span></div>`;}
+
+/* 대시보드 */
+function setDashStudyTab(t){dashStudyTab=t;renderDashStudy();}
+function addStudyDash(){
+  const t=dashStudyTab;
+  if(isMemTab(t)){
+    const term=document.getElementById('sTerm').value.trim(),mean=document.getElementById('sMean').value.trim();
+    if(!term){alert('단어를 입력하세요.');return;}
+    db.study.push({id:uid(),date:today(),tab:t,term,meaning:mean});save();
+    document.getElementById('sTerm').value='';document.getElementById('sMean').value='';
+  }else{
+    const title=document.getElementById('sTitle').value.trim(),content=document.getElementById('sContent').value.trim();
+    if(!title&&!content){alert('제목 또는 내용을 입력하세요.');return;}
+    const cat=document.getElementById('sCat').value.trim();addStudyCat(t,cat);
+    db.study.push({id:uid(),date:today(),tab:t,category:cat,title,content});save();
+    ['sTitle','sContent','sCat'].forEach(i=>document.getElementById(i).value='');
+  }
+  renderStudyAll();renderCal();
+}
+function renderDashStudy(){
+  document.querySelectorAll('#dashStudyTabs .tab').forEach(b=>b.classList.toggle('active',b.dataset.t===dashStudyTab));
+  const t=dashStudyTab,form=document.getElementById('dashStudyForm'),feed=document.getElementById('dashStudyFeed');
+  if(!form)return;
+  form.innerHTML=isMemTab(t)?(t==='영어'?`<div class="inrow" style="align-items:flex-start">
+      <textarea id="sTerm" class="in" style="flex:1;min-height:60px;resize:vertical" placeholder="영어 문장"></textarea>
+      <textarea id="sMean" class="in" style="flex:1.3;min-height:60px;resize:vertical" placeholder="해석"></textarea>
+      <button class="btn y" style="flex:none" onclick="addStudyDash()">＋ 추가</button></div>`
+    :`<div class="inrow">
+      <input id="sTerm" class="in" style="flex:1" placeholder="단어">
+      <input id="sMean" class="in" style="flex:1.3" placeholder="뜻">
+      <button class="btn y" style="flex:none" onclick="addStudyDash()">＋ 추가</button></div>`)
+    :`${studyCatDatalist(t)}<div class="inrow">
+      <input id="sCat" class="in" list="studyCatList" style="flex:1" placeholder="카테고리 (직접 입력하면 목록에 추가)">
+      <input id="sTitle" class="in" style="flex:2" placeholder="제목"></div>
+      <textarea id="sContent" class="in" style="width:100%;min-height:90px;margin-top:8px;resize:vertical" placeholder="내용"></textarea>
+      <div style="margin-top:10px"><button class="btn y" onclick="addStudyDash()">＋ 추가</button></div>`;
+  const list=db.study.filter(x=>x.tab===t&&x.date===today());
+  feed.innerHTML=list.length?(`<div class="datehdr">오늘 ${t}${isMemTab(t)?' (뜻을 눌러 확인)':''}</div>`+
+    (isMemTab(t)?list.map(memRow).join(''):list.map(x=>
+      `<div class="entry"><div class="meta">${x.category?`<span class="cat-badge b-study">${esc(x.category)}</span>`:''}
+        <b contenteditable onblur="editStudy(${x.id},'title',this.innerText)" style="flex:1">${esc(x.title||'')}</b>
+        <span class="del" onclick="delEntry('study',${x.id},renderStudyAll)">×</span></div>
+        <div class="body" contenteditable onblur="editStudy(${x.id},'content',this.innerText)">${esc(x.content||'')}</div></div>`).join('')))
+    :`<div class="empty">오늘 ${t} 기록이 없습니다.</div>`;
+}
+
+/* 세부 */
+function setDetailStudyTab(t){detailStudyTab=t;renderStudy();}
+function editStudy(id,field,val){const x=db.study.find(s=>s.id===id);if(!x)return;
+  x[field]=String(val).trim();if(field==='category')addStudyCat(x.tab,x.category);
+  save();renderStudyAll();renderCal();}
+function addStudyDetail(){
+  const t=detailStudyTab,d=document.getElementById('sdDate').value||today();
+  if(isMemTab(t)){
+    const term=document.getElementById('sdTerm').value.trim(),mean=document.getElementById('sdMean').value.trim();
+    if(!term){alert('단어를 입력하세요.');return;}
+    db.study.push({id:uid(),date:d,tab:t,term,meaning:mean});save();
+    document.getElementById('sdTerm').value='';document.getElementById('sdMean').value='';
+  }else{
+    const title=document.getElementById('sdTitle').value.trim(),content=document.getElementById('sdContent').value.trim();
+    if(!title&&!content){alert('제목 또는 내용을 입력하세요.');return;}
+    const cat=document.getElementById('sdCat').value.trim();addStudyCat(t,cat);
+    db.study.push({id:uid(),date:d,tab:t,category:cat,title,content});save();
+    ['sdTitle','sdContent','sdCat'].forEach(i=>document.getElementById(i).value='');
+  }
+  renderStudyAll();renderCal();
+}
+function renderStudy(){
+  document.querySelectorAll('#studyTabs .tab').forEach(b=>b.classList.toggle('active',b.dataset.t===detailStudyTab));
+  const pane=document.getElementById('studyPane');if(!pane)return;
+  const t=detailStudyTab,rows=db.study.filter(x=>x.tab===t),g=groupByDate(rows);
+  let list='';
+  Object.keys(g).forEach(d=>{list+=`<div class="datehdr">${d}</div>`;
+    g[d].forEach(x=>{list+=isMemTab(t)?memRow(x):`<div class="entry">
+      <div class="meta">
+        <input class="rowsel" list="studyCatList" value="${escA(x.category||'')}" placeholder="카테고리" onchange="editStudy(${x.id},'category',this.value)">
+        <b contenteditable onblur="editStudy(${x.id},'title',this.innerText)" style="flex:1">${esc(x.title||'')}</b>
+        <span class="del" onclick="delEntry('study',${x.id},renderStudyAll)">×</span></div>
+      <div class="body" contenteditable onblur="editStudy(${x.id},'content',this.innerText)">${esc(x.content||'')}</div></div>`;});});
+  const form=isMemTab(t)?(t==='영어'?`<div class="inrow" style="align-items:flex-start">
+      <input id="sdDate" type="date" class="in" style="flex:none;width:150px" value="${today()}">
+      <textarea id="sdTerm" class="in" style="flex:1;min-height:60px;resize:vertical" placeholder="영어 문장"></textarea>
+      <textarea id="sdMean" class="in" style="flex:1.3;min-height:60px;resize:vertical" placeholder="해석"></textarea>
+      <button class="btn y" style="flex:none" onclick="addStudyDetail()">＋ 추가</button></div>`
+    :`<div class="inrow">
+      <input id="sdDate" type="date" class="in" style="flex:none;width:150px" value="${today()}">
+      <input id="sdTerm" class="in" style="flex:1" placeholder="단어">
+      <input id="sdMean" class="in" style="flex:1.3" placeholder="뜻">
+      <button class="btn y" style="flex:none" onclick="addStudyDetail()">＋ 추가</button></div>`)
+    :`<div class="inrow">
+      <input id="sdDate" type="date" class="in" style="flex:none;width:150px" value="${today()}">
+      <input id="sdCat" class="in" list="studyCatList" style="flex:1" placeholder="카테고리 (직접 입력하면 목록에 추가)">
+      <input id="sdTitle" class="in" style="flex:2" placeholder="제목"></div>
+      <textarea id="sdContent" class="in" style="width:100%;min-height:90px;margin-top:8px;resize:vertical" placeholder="내용"></textarea>
+      <div style="margin-top:10px"><button class="btn y" onclick="addStudyDetail()">＋ 추가</button></div>`;
+  pane.innerHTML=`${studyCatDatalist(t)}
+  <div class="card"><h3><span class="dot" style="background:var(--red)"></span> ${t} 입력</h3>${form}</div>
+  <div class="card"><h3><span class="dot" style="background:var(--red)"></span> ${t} 누적 <span class="more">${rows.length}건</span></h3>
+    ${list||'<div class="empty">기록이 없습니다.</div>'}</div>`;
+}
+
+/* ---------- assets (지출·투자·수입 탭) ---------- */
+const ASSET_CATS={
+  지출:['데이트','식비','모임','세탁','문화생활','유류&교통','이발','기타','경조사'],
+  투자:['현금','적금','주식','채권','코인','연금저축','행정공제'],
+  수입:['월급','명절수당','성과급','정근수당','연가보상비','여비','기타']
+};
+const PALETTE=['#e8615a','#f4b740','#2f6f5e','#e0a83a','#6a8fd8','#b56fb0','#4bb3a5','#d98555','#c98a3a','#8a9490','#9c6ade','#3aa0c9'];
+let dashAssetTab='지출', detailAssetTab='지출';
+const monthOf=d=>(d||'').slice(0,7);
+const thisMonth=()=>monthOf(today());
+const lastMonth=()=>{const t=new Date();t.setDate(1);t.setMonth(t.getMonth()-1);return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0');};
+function sumAssets(f){return db.assets.filter(f).reduce((s,a)=>s+(Number(a.amount)||0),0);}
+function fillAssetCat(id,type){const s=document.getElementById(id);if(s)s.innerHTML=ASSET_CATS[type].map(c=>`<option>${esc(c)}</option>`).join('');}
+function donutFromMap(map,size,vertical){
+  size=size||150;const entries=Object.entries(map).filter(([,v])=>v>0);
+  const total=entries.reduce((s,[,v])=>s+v,0);
+  let off=25,seg='<circle cx="21" cy="21" r="15.9" fill="none" stroke="#eee" stroke-width="6"/>';
+  entries.forEach(([,v],i)=>{const p=total?v/total*100:0;
+    seg+=`<circle cx="21" cy="21" r="15.9" fill="none" stroke="${PALETTE[i%PALETTE.length]}" stroke-width="6" stroke-dasharray="${p} ${100-p}" stroke-dashoffset="${off}"/>`;off-=p;});
+  const svg=`<svg width="${size}" height="${size}" viewBox="0 0 42 42">${seg}<text x="21" y="22.5" text-anchor="middle" font-size="4.2" font-weight="700" fill="#12312b">${shortWon(total)}</text></svg>`;
+  const legend=entries.length?entries.map(([k,v],i)=>`<div><span class="sw" style="background:${PALETTE[i%PALETTE.length]}"></span> ${esc(k)} <b style="margin-left:auto">${won(v)}</b></div>`).join(''):'<div class="empty">데이터 없음</div>';
+  if(vertical)return `<div style="text-align:center">${svg}</div><div class="legend">${legend}</div>`;
+  return `<div class="donut-wrap"><div>${svg}</div><div class="legend" style="flex:1">${legend}</div></div>`;
+}
+function renderAssetsAll(){renderDashAsset();renderAssets();}
+
+/* 대시보드: 탭별 빠른 입력 */
+function setDashAssetTab(t){dashAssetTab=t;renderDashAsset();}
+function addAssetDash(){
+  const amt=parseNum(document.getElementById('dAmount').value);
+  if(!amt){alert('금액을 입력하세요.');return;}
+  db.assets.push({id:uid(),date:today(),type:dashAssetTab,category:document.getElementById('dCat').value,
+    item:document.getElementById('dItem').value.trim(),amount:amt,note:document.getElementById('dNote').value.trim()});
+  save();['dAmount','dItem','dNote'].forEach(i=>document.getElementById(i).value='');
+  renderDashAsset();renderAssets();renderCal();
+}
+function renderDashAsset(){
+  document.querySelectorAll('#dashAssetTabs .tab').forEach(b=>b.classList.toggle('active',b.dataset.t===dashAssetTab));
+  fillAssetCat('dCat',dashAssetTab);
+  const td=today();const list=db.assets.filter(a=>a.type===dashAssetTab&&a.date===td);
+  const el=document.getElementById('dashAssetFeed');if(!el)return;
+  el.innerHTML=list.length?('<div class="datehdr">오늘 '+dashAssetTab+' 내역</div>'+list.map(a=>
+    `<div class="entry"><div class="meta"><span class="cat-badge b-${a.type}">${esc(a.category)}</span>
+      <b contenteditable onblur="editAsset(${a.id},'item',this.innerText)" style="flex:1">${esc(a.item||'')}</b>
+      <b contenteditable onblur="editAsset(${a.id},'amount',this.innerText)">${Number(a.amount||0).toLocaleString()}</b>
+      <span class="del" onclick="delEntry('assets',${a.id},renderAssetsAll)">×</span></div>
+      <div class="sub" contenteditable onblur="editAsset(${a.id},'note',this.innerText)">${esc(a.note||'')}</div></div>`).join(''))
+    :'<div class="empty">오늘 '+dashAssetTab+' 내역이 없습니다.</div>';
+}
+
+/* 세부: 탭별 페이지 */
+function setDetailAssetTab(t){detailAssetTab=t;renderAssets();}
+function editAsset(id,field,val){const a=db.assets.find(x=>x.id===id);if(!a)return;
+  if(field==='amount')a.amount=Number(String(val).replace(/[^0-9]/g,''))||0;else a[field]=String(val).trim();
+  save();renderAssetsAll();renderCal();}
+function catSelect(a,type){return `<select class="rowsel" onchange="editAsset(${a.id},'category',this.value)">${ASSET_CATS[type].map(c=>`<option${c===a.category?' selected':''}>${esc(c)}</option>`).join('')}</select>`;}
+function assetLedger(type){
+  const rows=db.assets.filter(a=>a.type===type).sort((a,b)=>b.date.localeCompare(a.date));
+  if(!rows.length)return '<tr><td colspan="6" class="empty">내역이 없습니다. 위 입력창에서 추가하세요.</td></tr>';
+  return rows.map(a=>`<tr>
+    <td style="white-space:nowrap">${a.date}</td>
+    <td>${catSelect(a,type)}</td>
+    <td contenteditable onblur="editAsset(${a.id},'item',this.innerText)">${esc(a.item||'')}</td>
+    <td class="amt" contenteditable onblur="editAsset(${a.id},'amount',this.innerText)">${Number(a.amount||0).toLocaleString()}</td>
+    <td contenteditable onblur="editAsset(${a.id},'note',this.innerText)">${esc(a.note||'')}</td>
+    <td><span class="del" onclick="delEntry('assets',${a.id},renderAssetsAll)">×</span></td></tr>`).join('');
+}
+function assetLedgerSlim(type){
+  const rows=db.assets.filter(a=>a.type===type).sort((a,b)=>b.date.localeCompare(a.date));
+  if(!rows.length)return '<tr><td colspan="5" class="empty">내역이 없습니다. 위 입력창에서 추가하세요.</td></tr>';
+  return rows.map(a=>`<tr>
+    <td style="white-space:nowrap">${a.date.slice(5)}</td>
+    <td>${catSelect(a,type)}</td>
+    <td contenteditable onblur="editAsset(${a.id},'item',this.innerText)">${esc(a.item||'')}</td>
+    <td class="amt" contenteditable onblur="editAsset(${a.id},'amount',this.innerText)">${Number(a.amount||0).toLocaleString()}</td>
+    <td><span class="del" onclick="delEntry('assets',${a.id},renderAssetsAll)">×</span></td></tr>`).join('');
+}
+function assetInputRow(type){
+  return `<div class="inrow">
+    <input type="date" id="eDate" class="in" style="flex:none;width:148px" value="${today()}">
+    <select id="eCat" class="in" style="flex:1">${ASSET_CATS[type].map(c=>`<option>${esc(c)}</option>`).join('')}</select>
+    <input id="eItem" class="in" style="flex:1.6" placeholder="내역">
+    <input id="eAmt" class="in" inputmode="numeric" style="flex:1" placeholder="금액" oninput="fmtNum(this)">
+    <input id="eNote" class="in" style="flex:1" placeholder="비고">
+    <button class="btn y" style="flex:none" onclick="addAssetDetail('${type}')">추가</button>
+  </div>`;
+}
+function addAssetDetail(type){
+  const amt=parseNum(document.getElementById('eAmt').value);
+  if(!amt){alert('금액을 입력하세요.');return;}
+  db.assets.push({id:uid(),date:document.getElementById('eDate').value||today(),type,
+    category:document.getElementById('eCat').value,item:document.getElementById('eItem').value.trim(),
+    amount:amt,note:document.getElementById('eNote').value.trim()});
+  save();renderAssetsAll();renderCal();
+}
+function incomeTrendSVG(){
+  const now=new Date();now.setDate(1);const months=[];
+  for(let i=5;i>=0;i--){const d=new Date(now);d.setMonth(d.getMonth()-i);months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}
+  const vals=months.map(m=>sumAssets(a=>a.type==='수입'&&monthOf(a.date)===m));
+  const max=Math.max(...vals,1);
+  const W=600,H=400,padL=22,padR=22,padT=44,padB=46,n=months.length,cw=(W-padL-padR)/n;
+  const y=v=>padT+(H-padT-padB)*(1-v/max),cx=i=>padL+cw*i+cw/2;
+  let bars='',labels='';
+  vals.forEach((v,i)=>{const bh=(H-padT-padB)*(v/max),bx=padL+cw*i+cw*0.26,bw=cw*0.48;
+    bars+=`<rect x="${bx}" y="${H-padB-bh}" width="${bw}" height="${bh}" rx="6" fill="var(--green-soft)"/>`;
+    labels+=`<text x="${cx(i)}" y="${H-padB+26}" text-anchor="middle" font-size="18" fill="#8a9490">${(+months[i].slice(5))}월</text>`;
+    labels+=`<text x="${cx(i)}" y="${y(v)-14}" text-anchor="middle" font-size="17" font-weight="700" fill="#2f6f5e">${v?shortWon(v):''}</text>`;
+  });
+  const pts=vals.map((v,i)=>cx(i)+','+y(v)).join(' ');
+  const dots=vals.map((v,i)=>`<circle cx="${cx(i)}" cy="${y(v)}" r="6" fill="var(--green)"/>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">
+    <line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="var(--line)"/>
+    ${bars}<polyline fill="none" stroke="var(--green)" stroke-width="3.5" points="${pts}"/>${dots}${labels}</svg>`;
+}
+function setBudget(cat,txt){db.budget[cat]=Number(String(txt).replace(/[^0-9]/g,''))||0;save();renderAssets();}
+function addFixed(){const n=document.getElementById('fName').value.trim(),amt=parseNum(document.getElementById('fAmount').value);
+  if(!n){alert('내용을 입력하세요.');return;}if(!amt){alert('금액을 입력하세요.');return;}
+  db.fixed.push({id:uid(),name:n,amount:amt,note:document.getElementById('fNote').value.trim()});save();
+  ['fName','fAmount','fNote'].forEach(i=>document.getElementById(i).value='');renderAssets();}
+function delFixed(id){db.fixed=db.fixed.filter(f=>f.id!==id);save();renderAssets();}
+function editFixed(id,field,val){const f=db.fixed.find(x=>x.id===id);if(!f)return;
+  if(field==='amount')f.amount=parseNum(val);else f[field]=String(val).trim();
+  save();renderAssets();}
+
+function paneExpense(){
+  const mk=thisMonth(),lmk=lastMonth();
+  let setSum=0,spentSum=0,lastSum=0,brows='';
+  ASSET_CATS.지출.forEach(cat=>{
+    const set=db.budget[cat]||0;
+    const spent=sumAssets(a=>a.type==='지출'&&a.category===cat&&monthOf(a.date)===mk);
+    const last=sumAssets(a=>a.type==='지출'&&a.category===cat&&monthOf(a.date)===lmk);
+    setSum+=set;spentSum+=spent;lastSum+=last;
+    brows+=`<tr><td>${cat}</td><td class="amt" contenteditable onblur="setBudget('${cat}',this.innerText)">${set.toLocaleString()}</td>
+      <td class="amt" style="color:${set-spent<0?'var(--red)':'inherit'}">${(set-spent).toLocaleString()}</td><td class="amt">${last.toLocaleString()}</td></tr>`;
+  });
+  brows+=`<tr style="font-weight:800"><td>합계</td><td class="amt">${setSum.toLocaleString()}</td><td class="amt">${(setSum-spentSum).toLocaleString()}</td><td class="amt">${lastSum.toLocaleString()}</td></tr>`;
+  let fixedSum=0,frows='';
+  db.fixed.forEach(f=>{fixedSum+=Number(f.amount)||0;
+    frows+=`<tr><td contenteditable onblur="editFixed(${f.id},'name',this.innerText)">${esc(f.name)}</td>
+      <td class="amt" contenteditable onblur="editFixed(${f.id},'amount',this.innerText)">${Number(f.amount||0).toLocaleString()}</td>
+      <td contenteditable onblur="editFixed(${f.id},'note',this.innerText)">${esc(f.note||'')}</td>
+      <td><span class="del" onclick="delFixed(${f.id})">×</span></td></tr>`;});
+  const pieMap={};ASSET_CATS.지출.forEach(c=>{const v=sumAssets(a=>a.type==='지출'&&a.category===c&&monthOf(a.date)===mk);if(v)pieMap[c]=v;});
+  return `
+  <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 지출 입력</h3>${assetInputRow('지출')}</div>
+  <div class="g2">
+    <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 가계부 <span class="more">이번달 ${won(spentSum)}</span></h3>
+      <table class="ledger"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th>비고</th><th></th></tr></thead>
+      <tbody>${assetLedger('지출')}</tbody></table></div>
+    <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 이번달 지출</h3>${donutFromMap(pieMap,300,true)}</div>
+  </div>
+  <div class="g2">
+    <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 카테고리별 월 설정액</h3>
+      <table class="ledger"><thead><tr><th>카테고리</th><th class="amt">설정</th><th class="amt">잔액</th><th class="amt">지난달</th></tr></thead>
+      <tbody>${brows}</tbody></table></div>
+    <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 고정지출 <span class="more">합계 ${won(fixedSum)}</span></h3>
+      <table class="ledger"><thead><tr><th>내용</th><th class="amt">금액</th><th>비고</th><th></th></tr></thead>
+      <tbody>${frows||'<tr><td colspan="4" class="empty">항목이 없습니다.</td></tr>'}</tbody></table>
+      <div class="inrow" style="margin-top:10px"><input id="fName" class="in" style="flex:2" placeholder="내용">
+        <input id="fAmount" class="in" inputmode="numeric" style="flex:1" placeholder="금액" oninput="fmtNum(this)">
+        <input id="fNote" class="in" style="flex:1" placeholder="비고"><button class="btn" style="flex:none" onclick="addFixed()">추가</button></div></div>
+  </div>`;
+}
+function paneInvest(){
+  const port={};ASSET_CATS.투자.forEach(c=>{const v=sumAssets(a=>a.type==='투자'&&a.category===c);if(v)port[c]=v;});
+  const stock={};db.assets.filter(a=>a.type==='투자'&&a.category==='주식').forEach(a=>{const k=a.item||'기타';stock[k]=(stock[k]||0)+(Number(a.amount)||0);});
+  const total=sumAssets(a=>a.type==='투자');
+  return `
+  <div class="card"><h3><span class="dot" style="background:#e0a83a"></span> 투자 입력</h3>${assetInputRow('투자')}</div>
+  <div class="g3">
+    <div class="card"><h3><span class="dot" style="background:#e0a83a"></span> 투자 내역 <span class="more">총 ${won(total)}</span></h3>
+      <table class="ledger"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th></th></tr></thead>
+      <tbody>${assetLedgerSlim('투자')}</tbody></table></div>
+    <div class="card"><h3><span class="dot" style="background:#e0a83a"></span> 자산 포트폴리오</h3>${donutFromMap(port,240,true)}</div>
+    <div class="card"><h3><span class="dot" style="background:#e0a83a"></span> 주식별 투자 현황</h3>${donutFromMap(stock,240,true)}</div>
+  </div>`;
+}
+function paneIncome(){
+  const total=sumAssets(a=>a.type==='수입');
+  return `
+  <div class="card"><h3><span class="dot" style="background:var(--green)"></span> 수입 입력</h3>${assetInputRow('수입')}</div>
+  <div class="g2">
+    <div class="card"><h3><span class="dot" style="background:var(--green)"></span> 수입 내역 <span class="more">총 ${won(total)}</span></h3>
+      <table class="ledger"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th></th></tr></thead>
+      <tbody>${assetLedgerSlim('수입')}</tbody></table></div>
+    <div class="card"><h3><span class="dot" style="background:var(--green)"></span> 월별 수입 추이 <span class="more">최근 6개월</span></h3>${incomeTrendSVG()}</div>
+  </div>`;
+}
+function renderAssets(){
+  document.querySelectorAll('#assetTabs .tab').forEach(b=>b.classList.toggle('active',b.dataset.t===detailAssetTab));
+  const pane=document.getElementById('assetPane');if(!pane)return;
+  pane.innerHTML=detailAssetTab==='지출'?paneExpense():detailAssetTab==='투자'?paneInvest():paneIncome();
+}
+
+
+/* ---------- dashboard summaries ---------- */
+function renderDash(){
+  /* 각 영역은 전용 render 함수에서 처리 */
+}
+
+/* ---------- settings ---------- */
+function clearToday(){if(!confirm('오늘의 할 일을 비울까요? (누적 기록은 유지됩니다)'))return;
+  delete db.todos[today()];save();renderAll();}
+function resetAll(){if(!confirm('모든 데이터를 삭제하고 초기 예시 상태로 되돌립니다. 계속할까요?'))return;
+  db=seed();save();renderAll();}
+
+/* ---------- render all ---------- */
+function renderAll(){
+  renderTop();renderCal();renderSchedule();renderTodos();renderInbox();renderInboxPage();
+  renderWork();renderDashWork();renderReading();renderStudy();renderDashStudy();
+  renderAssets();renderDashAsset();renderDash();
+}
+renderAll();
+
+/* ---------- daily rollover check ---------- */
+setInterval(()=>{if(today()!==curKey){curKey=today();const t=new Date();viewY=t.getFullYear();viewM=t.getMonth();selDate=today();renderAll();}},30000);
+</script>
+</body>
+</html>
