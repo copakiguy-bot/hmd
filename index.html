@@ -89,7 +89,9 @@
   .sched-item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
   .sched-item .top{display:flex;align-items:center;gap:8px}
   .sched-time{font-size:11.5px;font-weight:700;color:#8a6412;background:var(--yellow-soft);border-radius:5px;padding:2px 7px;white-space:nowrap}
-
+  .sched-item.done b{text-decoration:line-through;color:var(--muted)}
+  .sched-item.done .sched-time{opacity:.5}
+  .sched-item.done .sub{text-decoration:line-through;color:var(--muted)}
   /* To-do */
   .todo li{list-style:none;display:flex;align-items:center;gap:11px;padding:10px 4px;border-bottom:1px solid var(--line)}
   .todo li:last-child{border-bottom:none}
@@ -590,6 +592,7 @@ function addSchedule(){
 function editSchedule(id,field,val){const s=db.schedules.find(x=>x.id===id);if(!s)return;
   s[field]=String(val).trim();save();renderCal();renderSchedule();}
 function delSchedule(id){db.schedules=db.schedules.filter(s=>s.id!==id);save();renderCal();renderSchedule();}
+function toggleSchedule(id){const s=db.schedules.find(x=>x.id===id);if(!s)return;s.done=!s.done;save();renderCal();renderSchedule();}
 function renderSchedule(){
   const el=document.getElementById('schedList');if(!el)return;
   const [y,m,d]=selDate.split('-');
@@ -597,7 +600,9 @@ function renderSchedule(){
   document.getElementById('schedLabel').textContent=`${+m}월 ${+d}일 (${dow})${selDate===today()?' · 오늘':''}`;
   const list=schedOf(selDate);
   document.getElementById('schedCount').textContent=list.length?list.length+'건':'';
-  el.innerHTML=list.length?list.map(s=>`<div class="sched-item">
+  el.innerHTML=list.length?list.map(s=>`<div class="sched-item ${s.done?'done':''}">
+    <div class="top">
+      <div class="chk ${s.done?'done':''}" onclick="toggleSchedule(${s.id})">${s.done?'✓':''}</div>
     <div class="top">
       <span class="sched-time" contenteditable onblur="editSchedule(${s.id},'time',this.innerText)">${esc(s.time||'-')}</span>
       <b style="flex:1" contenteditable onblur="editSchedule(${s.id},'title',this.innerText)">${esc(s.title)}</b>
