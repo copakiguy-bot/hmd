@@ -79,15 +79,19 @@
   .cal td .d:hover{background:var(--cream)}
   .cal td .d.sel{border-color:var(--yellow);background:#fffdf5}
   .cal td .d.muted .dnum{color:#cfd6d2}
-  .dnum{font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:4px}
-  .d.today .dnum span.n{background:var(--dark);color:#fff;border-radius:50%;width:22px;height:22px;
-    display:inline-flex;align-items:center;justify-content:center;font-size:11.5px}
+  .dnum{font-size:15px;font-weight:700;display:flex;align-items:center;gap:4px}
+  .d.today .dnum span.n{background:var(--dark);color:#fff;border-radius:50%;width:26px;height:26px;
+    display:inline-flex;align-items:center;justify-content:center;font-size:13.5px}
   .rec{width:5px;height:5px;border-radius:50%;background:var(--yellow);display:inline-block}
   .schip{font-size:10.5px;background:var(--yellow-soft);color:#8a6412;border-radius:5px;padding:2px 5px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
   .smore{font-size:10px;color:var(--muted);padding-left:4px}
   .cal td .d.hol .dnum,.cal td .d.sun .dnum{color:var(--red)}
   .holname{font-size:9px;color:var(--red);font-weight:700;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lun{font-size:8.5px;color:#3a7bd5;font-weight:600;margin-left:3px}
+  .term{font-size:8.5px;color:var(--green);font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  .lunar-toggle{border:1px solid var(--line);background:var(--cream);color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;border-radius:7px;padding:3px 9px;cursor:pointer;margin-left:8px}
+  .lunar-toggle.on{background:var(--dark);color:#fff;border-color:var(--dark)}
   .sched-item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
   .sched-item .top{display:flex;align-items:center;gap:8px}
   .sched-time{font-size:11.5px;font-weight:700;color:#8a6412;background:var(--yellow-soft);border-radius:5px;padding:2px 7px;white-space:nowrap}
@@ -227,7 +231,7 @@
     <div class="grid">
       <div class="card" style="grid-column:1/-1">
         <h3><span class="dot"></span> SCHEDULE</h3>
-        <div class="cal-head"><b id="calTitle"></b>
+        <div class="cal-head"><b id="calTitle"></b><button id="lunarBtn" class="lunar-toggle" onclick="toggleLunar()">음력</button>
           <div class="cal-nav"><button onclick="shiftMonth(-1)">‹</button> <button onclick="goToday()" style="width:auto;padding:0 10px;font-size:12px">오늘</button> <button onclick="shiftMonth(1)">›</button></div>
         </div>
         <table class="cal"><thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead>
@@ -237,7 +241,7 @@
         <h3><span class="dot"></span> <span id="schedLabel"></span> <span class="more" id="schedCount"></span></h3>
         <div id="schedList" class="fill"></div>
         <div class="inrow" style="margin-top:12px">
-          <input id="schTime" class="in" style="flex:none;width:96px" placeholder="시간">
+          <input id="schTime" class="in" style="flex:none;width:96px" placeholder="시간 예:1300" onblur="this.value=normTime(this.value)">
           <input id="schTitle" class="in" style="flex:1" placeholder="일정 제목" onkeydown="if(event.key==='Enter')addSchedule()">
         </div>
         <textarea id="schDetail" class="in" style="width:100%;min-height:70px;margin-top:8px;resize:vertical" placeholder="세부 내용"></textarea>
@@ -565,6 +569,11 @@ const HOLIDAYS={
   '2027-10-03':'개천절','2027-10-04':'대체공휴일','2027-10-09':'한글날','2027-10-11':'대체공휴일',
   '2027-12-25':'성탄절','2027-12-27':'대체공휴일'
 };
+const LUNAR_MONTHS=[["2024-12-01",11,0],["2024-12-31",12,0],["2025-01-29",1,0],["2025-02-28",2,0],["2025-03-29",3,0],["2025-04-28",4,0],["2025-05-27",5,0],["2025-06-25",6,0],["2025-07-25",6,1],["2025-08-23",7,0],["2025-09-22",8,0],["2025-10-21",9,0],["2025-11-20",10,0],["2025-12-20",11,0],["2026-01-19",12,0],["2026-02-17",1,0],["2026-03-19",2,0],["2026-04-17",3,0],["2026-05-17",4,0],["2026-06-15",5,0],["2026-07-14",6,0],["2026-08-13",7,0],["2026-09-11",8,0],["2026-10-11",9,0],["2026-11-09",10,0],["2026-12-09",11,0],["2027-01-08",12,0],["2027-02-07",1,0],["2027-03-08",2,0],["2027-04-07",3,0],["2027-05-06",4,0],["2027-06-05",5,0],["2027-07-04",6,0],["2027-08-02",7,0],["2027-09-01",8,0],["2027-09-30",9,0],["2027-10-29",10,0],["2027-11-28",11,0],["2027-12-28",12,0],["2028-01-27",1,0],["2028-02-25",2,0]];
+const SOLARTERM={"2025-01-05":"소한","2025-01-20":"대한","2025-02-03":"입춘","2025-02-18":"우수","2025-03-05":"경칩","2025-03-20":"춘분","2025-04-04":"청명","2025-04-20":"곡우","2025-05-05":"입하","2025-05-21":"소만","2025-06-05":"망종","2025-06-21":"하지","2025-07-07":"소서","2025-07-22":"대서","2025-08-07":"입추","2025-08-23":"처서","2025-09-07":"백로","2025-09-23":"추분","2025-10-08":"한로","2025-10-23":"상강","2025-11-07":"입동","2025-11-22":"소설","2025-12-07":"대설","2025-12-21":"동지","2026-01-05":"소한","2026-01-20":"대한","2026-02-04":"입춘","2026-02-18":"우수","2026-03-05":"경칩","2026-03-20":"춘분","2026-04-05":"청명","2026-04-20":"곡우","2026-05-05":"입하","2026-05-21":"소만","2026-06-05":"망종","2026-06-21":"하지","2026-07-07":"소서","2026-07-23":"대서","2026-08-07":"입추","2026-08-23":"처서","2026-09-07":"백로","2026-09-23":"추분","2026-10-08":"한로","2026-10-23":"상강","2026-11-07":"입동","2026-11-22":"소설","2026-12-07":"대설","2026-12-22":"동지","2027-01-05":"소한","2027-01-20":"대한","2027-02-04":"입춘","2027-02-19":"우수","2027-03-06":"경칩","2027-03-21":"춘분","2027-04-05":"청명","2027-04-20":"곡우","2027-05-06":"입하","2027-05-21":"소만","2027-06-06":"망종","2027-06-21":"하지","2027-07-07":"소서","2027-07-23":"대서","2027-08-08":"입추","2027-08-23":"처서","2027-09-08":"백로","2027-09-23":"추분","2027-10-08":"한로","2027-10-23":"상강","2027-11-07":"입동","2027-11-22":"소설","2027-12-07":"대설","2027-12-22":"동지"};
+let showLunar=false;
+function lunarOf(key){let seg=null;for(let i=0;i<LUNAR_MONTHS.length;i++){if(LUNAR_MONTHS[i][0]<=key)seg=LUNAR_MONTHS[i];else break;}if(!seg)return '';const a=new Date(seg[0]+'T00:00:00'),b=new Date(key+'T00:00:00');const diff=Math.round((b-a)/86400000);return (seg[2]?'윤':'')+seg[1]+'.'+(diff+1);}
+function toggleLunar(){showLunar=!showLunar;const btn=document.getElementById('lunarBtn');if(btn)btn.classList.toggle('on',showLunar);renderCal();}
 function schedOf(d){return db.schedules.filter(s=>s.date===d)
   .sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));}
 function renderCal(){
@@ -582,10 +591,11 @@ function renderCal(){
         const sc=schedOf(key);
         const hn=HOLIDAYS[key];
         const isSun=new Date(viewY,viewM,day).getDay()===0;
+        const st=SOLARTERM[key];
         const chips=sc.slice(0,2).map(s=>`<span class="schip" draggable="true" ondragstart="schedDragStart(event,${s.id})">${s.time?esc(s.time)+' ':''}${esc(s.title)}</span>`).join('')
           +(sc.length>2?`<span class="smore">+${sc.length-2}</span>`:'');
         html+=`<td><div class="d ${key===tk?'today':''} ${key===selDate?'sel':''} ${hn?'hol':''} ${isSun?'sun':''}" onclick="selectDate('${key}')" ondragover="event.preventDefault()" ondrop="schedDrop(event,'${key}')">
-          <div class="dnum"><span class="n">${day}</span>${set.has(key)?'<span class="rec"></span>':''}</div>${hn?`<span class="holname">${esc(hn)}</span>`:''}${chips}</div></td>`;day++;}
+          <div class="dnum"><span class="n">${day}</span>${showLunar?`<span class="lun">(${lunarOf(key)})</span>`:''}${set.has(key)?'<span class="rec"></span>':''}</div>${hn?`<span class="holname">${esc(hn)}</span>`:''}${st?`<span class="term">${st}</span>`:''}${chips}</div></td>`;day++;}
     }html+='</tr>';if(day>dim&&r>=4)break;}
   document.getElementById('calBody').innerHTML=html;
 }
@@ -594,16 +604,17 @@ function goToday(){const t=new Date();viewY=t.getFullYear();viewM=t.getMonth();s
 function selectDate(k){selDate=k;renderCal();renderSchedule();}
 
 /* ---------- schedules ---------- */
+function normTime(v){v=String(v).trim();const d=v.replace(/[^0-9]/g,'');if(/^[0-9]{3,4}$/.test(d)){const H=parseInt(d.slice(0,d.length-2),10),M=parseInt(d.slice(-2),10);if(H<24&&M<60)return String(H).padStart(2,'0')+':'+String(M).padStart(2,'0');}return v;}
 function addSchedule(){
   const title=document.getElementById('schTitle').value.trim();
   if(!title){alert('일정 제목을 입력하세요.');return;}
-  db.schedules.push({id:uid(),date:selDate,time:document.getElementById('schTime').value.trim(),
+  db.schedules.push({id:uid(),date:selDate,time:normTime(document.getElementById('schTime').value),
     title,detail:document.getElementById('schDetail').value.trim()});
   save();['schTitle','schTime','schDetail'].forEach(i=>document.getElementById(i).value='');
   renderCal();renderSchedule();
 }
 function editSchedule(id,field,val){const s=db.schedules.find(x=>x.id===id);if(!s)return;
-  s[field]=String(val).trim();save();renderCal();renderSchedule();}
+  s[field]=field==='time'?normTime(val):String(val).trim();save();renderCal();renderSchedule();}
 function delSchedule(id){db.schedules=db.schedules.filter(s=>s.id!==id);save();renderCal();renderSchedule();}
 function toggleSchedule(id){const s=db.schedules.find(x=>x.id===id);if(!s)return;s.done=!s.done;save();renderCal();renderSchedule();}
 function nextDay(ds){const [y,m,d]=ds.split('-').map(Number);const dt=new Date(y,m-1,d+1);return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');}
