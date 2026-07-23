@@ -465,6 +465,16 @@
   <section class="view" id="view-settings">
     <div class="page-head"><h1>설정</h1></div>
     <div class="card">
+      <h3><span class="dot" style="background:#6a8fd8"></span> 클라우드 동기화</h3>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px">여러 기기(PC·아이폰)에서 같은 데이터를 보려면, 모든 기기에 <b>같은 동기화 코드</b>를 입력하세요. 이후 입력하는 내용은 자동으로 저장·동기화됩니다.</p>
+      <div class="inrow">
+        <input id="syncInput" class="in" style="flex:1" placeholder="동기화 코드 (나만 아는 비밀 문구)">
+        <button class="btn y" style="flex:none" onclick="setSyncCode()">연결</button>
+        <button class="btn ghost" style="flex:none" onclick="clearSyncCode()">해제</button>
+      </div>
+      <div id="syncStatus" style="margin-top:8px;font-size:13px;color:var(--muted)"></div>
+    </div>
+    <div class="card">
       <h3><span class="dot"></span> 데이터 관리</h3>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn ghost" onclick="clearToday()">오늘 항목 비우기</button>
@@ -477,15 +487,17 @@
 <script>
 /* ---------- storage ---------- */
 const KEY='dailypage_v7';
+const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
+const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
+const SYNC_KEY='dailypage_sync';
 const dstr=(off=0)=>{const t=new Date();t.setDate(t.getDate()-off);
   return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');};
 const today=()=>dstr(0);
 let db=load();
-if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];
-if(!db.studyCats)db.studyCats={지식:[],문화:[]};
-if(!db.schedules)db.schedules=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];
+function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];}
+ensureFields();
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.work)return s;}catch(e){}return seed();}
-function save(){localStorage.setItem(KEY,JSON.stringify(db));}
+function save(){localStorage.setItem(KEY,JSON.stringify(db));cloudPushDebounced();}
 function uid(){return Date.now()+Math.floor(Math.random()*1000);}
 function seed(){
   return {
@@ -625,6 +637,16 @@ function delDiary(id){db.diary=db.diary.filter(function(a){return a.id!==id;});s
 function diaryItem(x){return '<div class="entry"><div class="body" contenteditable onblur="editDiary('+x.id+',this.innerText)">'+esc(x.text)+'</div><div style="text-align:right;margin-top:4px"><span class="del" onclick="delDiary('+x.id+')">×</span></div></div>';}
 function renderDiary(){var el=document.getElementById('dashDiaryFeed');if(!el)return;var td=today();var list=db.diary.filter(function(x){return x.date===td;});el.innerHTML=list.length?('<div class="datehdr">오늘</div>'+list.map(diaryItem).join('')):'<div class="empty">오늘 일기가 없습니다.</div>';}
 function renderDiaryPage(){var el=document.getElementById('diaryPage');if(!el)return;var cnt=document.getElementById('diaryCount');if(cnt)cnt.textContent=db.diary.length+'건';if(!db.diary.length){el.innerHTML='<div class="empty">작성한 일기가 없습니다.</div>';return;}var g={};db.diary.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));}).forEach(function(x){(g[x.date]=g[x.date]||[]).push(x);});el.innerHTML=Object.keys(g).map(function(d){return '<div class="datehdr">'+d+'</div>'+g[d].map(diaryItem).join('');}).join('');}
+let __pushT=null;
+function syncCode(){return localStorage.getItem(SYNC_KEY)||'';}
+function cloudHeaders(){return {apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json'};}
+function setSyncStatus(t){var el=document.getElementById('syncStatus');if(el)el.textContent=t;}
+function renderSyncUI(){var inp=document.getElementById('syncInput');if(inp&&!inp.value)inp.value=syncCode();if(syncCode())setSyncStatus('연결됨: '+syncCode());}
+function cloudPushDebounced(){if(!syncCode())return;clearTimeout(__pushT);__pushT=setTimeout(cloudPush,900);}
+function cloudPush(){var c=syncCode();if(!c)return;fetch(SUPA_URL+'/rest/v1/store?on_conflict=key',{method:'POST',headers:Object.assign({},cloudHeaders(),{Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({key:c,data:db,updated_at:new Date().toISOString()})}).then(function(r){setSyncStatus(r.ok?('저장됨 · '+c):('저장 오류 '+r.status));}).catch(function(){setSyncStatus('오프라인 (로컬만 저장)');});}
+function cloudPull(ask,cb){var c=syncCode();if(!c){if(cb)cb(false);return;}setSyncStatus('불러오는 중…');fetch(SUPA_URL+'/rest/v1/store?key=eq.'+encodeURIComponent(c)+'&select=data',{headers:cloudHeaders()}).then(function(r){return r.json();}).then(function(j){if(Array.isArray(j)&&j.length&&j[0].data){if(ask&&!confirm('클라우드에 저장된 데이터가 있어요. 이 기기로 불러올까요? (현재 기기의 내용은 대체됩니다)')){setSyncStatus('연결됨: '+c);if(cb)cb(true);return;}db=j[0].data;ensureFields();localStorage.setItem(KEY,JSON.stringify(db));renderAll();setSyncStatus('불러옴 · 연결됨: '+c);if(cb)cb(true);}else{setSyncStatus('연결됨: '+c);if(cb)cb(false);}}).catch(function(){setSyncStatus('오프라인');if(cb)cb(false);});}
+function setSyncCode(){var el=document.getElementById('syncInput');var v=el.value.trim();if(!v){alert('동기화 코드를 입력하세요.');return;}localStorage.setItem(SYNC_KEY,v);cloudPull(true,function(found){if(!found)cloudPush();});}
+function clearSyncCode(){localStorage.removeItem(SYNC_KEY);var inp=document.getElementById('syncInput');if(inp)inp.value='';setSyncStatus('연결 해제됨 (이 기기)');}
 function schedOf(d){return db.schedules.filter(s=>s.date===d)
   .sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));}
 function renderCal(){
@@ -1365,7 +1387,7 @@ function renderAll(){
   renderWork();renderDashWork();renderReading();renderStudy();renderDashStudy();
   renderAssets();renderDashAsset();renderDiary();renderDiaryPage();renderDash();
 }
-renderAll();
+renderAll();renderSyncUI();if(syncCode())cloudPull(false);
 
 /* ---------- daily rollover check ---------- */
 setInterval(()=>{if(today()!==curKey){curKey=today();const t=new Date();viewY=t.getFullYear();viewM=t.getMonth();selDate=today();renderAll();}},30000);
