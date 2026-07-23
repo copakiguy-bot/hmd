@@ -92,6 +92,15 @@
   .term{font-size:8.5px;color:var(--green);font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
   .lunar-toggle{border:1px solid var(--line);background:var(--cream);color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;border-radius:7px;padding:3px 9px;cursor:pointer}
   .lunar-toggle.on{background:var(--dark);color:#fff;border-color:var(--dark)}
+  .wx{display:flex;flex-direction:column;align-items:center;gap:0;margin-top:2px;line-height:1.15}
+  .wx-ic{font-size:15px}
+  .wx-t{font-size:9.5px;font-weight:700}
+  .wx-p{font-size:8.5px;color:#3a7bd5;font-weight:600}
+  .wx-load{font-size:11px;color:var(--muted)}
+  .wx-table{width:100%;border-collapse:collapse;font-size:13px}
+  .wx-table th{color:var(--muted);font-weight:600;font-size:11px;padding:7px 4px;border-bottom:1px solid var(--line);text-align:center}
+  .wx-table td{padding:8px 4px;border-bottom:1px solid var(--line);text-align:center}
+  .wx-table tr:last-child td{border-bottom:none}
   .sched-item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
   .sched-item .top{display:flex;align-items:center;gap:8px}
   .sched-time{font-size:11.5px;font-weight:700;color:#8a6412;background:var(--yellow-soft);border-radius:5px;padding:2px 7px;white-space:nowrap}
@@ -231,7 +240,7 @@
     <div class="grid">
       <div class="card" style="grid-column:1/-1">
         <h3><span class="dot"></span> SCHEDULE</h3>
-        <div class="cal-head"><div style="display:flex;align-items:center;gap:7px"><b id="calTitle"></b><button id="lunarBtn" class="lunar-toggle" onclick="toggleLunar()">음력</button></div>
+        <div class="cal-head"><div style="display:flex;align-items:center;gap:7px"><b id="calTitle"></b><button id="lunarBtn" class="lunar-toggle" onclick="toggleLunar()">음력</button><button id="weatherBtn" class="lunar-toggle" onclick="toggleWeather()">날씨</button></div>
           <div class="cal-nav"><button onclick="shiftMonth(-1)">‹</button> <button onclick="goToday()" style="width:auto;padding:0 10px;font-size:12px">오늘</button> <button onclick="shiftMonth(1)">›</button></div>
         </div>
         <table class="cal"><thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead>
@@ -574,6 +583,12 @@ const SOLARTERM={"2025-01-05":"소한","2025-01-20":"대한","2025-02-03":"입�
 let showLunar=false;
 function lunarOf(key){let seg=null;for(let i=0;i<LUNAR_MONTHS.length;i++){if(LUNAR_MONTHS[i][0]<=key)seg=LUNAR_MONTHS[i];else break;}if(!seg)return '';const a=new Date(seg[0]+'T00:00:00'),b=new Date(key+'T00:00:00');const diff=Math.round((b-a)/86400000);return (seg[2]?'윤':'')+seg[1]+'.'+(diff+1);}
 function toggleLunar(){showLunar=!showLunar;const btn=document.getElementById('lunarBtn');if(btn)btn.classList.toggle('on',showLunar);renderCal();}
+let showWeather=false, weatherData=null, weatherLoading=false;
+function wxIcon(c){c=Number(c);if(c===0)return '☀️';if(c===1||c===2)return '🌤️';if(c===3)return '☁️';if(c===45||c===48)return '🌫️';if(c>=51&&c<=57)return '🌦️';if(c>=61&&c<=67)return '🌧️';if(c>=71&&c<=77)return '🌨️';if(c>=80&&c<=82)return '🌦️';if(c>=85&&c<=86)return '🌨️';if(c>=95)return '⛈️';return '·';}
+async function fetchWeather(){if(weatherData||weatherLoading)return;weatherLoading=true;try{var url='https://api.open-meteo.com/v1/forecast?latitude=36.6&longitude=126.66&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&hourly=temperature_2m,precipitation_probability,relative_humidity_2m,weather_code&timezone=Asia/Seoul&forecast_days=14';var r=await fetch(url);weatherData=await r.json();}catch(e){weatherData={error:String(e)};}weatherLoading=false;renderCal();renderSchedule();}
+function weatherCellHTML(key){if(!weatherData||!weatherData.daily)return weatherLoading?'<span class="wx-load">…</span>':'';var t=weatherData.daily.time;var i=t?t.indexOf(key):-1;if(i<0)return '';var hi=Math.round(weatherData.daily.temperature_2m_max[i]);var lo=Math.round(weatherData.daily.temperature_2m_min[i]);var pop=weatherData.daily.precipitation_probability_max[i];return '<div class="wx"><span class="wx-ic">'+wxIcon(weatherData.daily.weather_code[i])+'</span><span class="wx-t">'+hi+'°/'+lo+'°</span><span class="wx-p">☔'+(pop==null?'-':pop)+'%</span></div>';}
+function hourlyWeatherHTML(key){if(weatherLoading)return '<div class="empty">날씨 불러오는 중…</div>';if(!weatherData||!weatherData.hourly)return '<div class="empty">날씨 데이터를 불러오지 못했습니다.</div>';var H=weatherData.hourly;var rows='';for(var i=0;i<H.time.length;i++){if(H.time[i].slice(0,10)!==key)continue;var hh=H.time[i].slice(11,16);var pop=H.precipitation_probability[i];var hum=H.relative_humidity_2m[i];rows+='<tr><td>'+hh+'</td><td>'+wxIcon(H.weather_code[i])+'</td><td>'+Math.round(H.temperature_2m[i])+'°</td><td>'+(pop==null?'-':pop+'%')+'</td><td>'+(hum==null?'-':hum+'%')+'</td></tr>';}if(!rows)return '<div class="empty">해당 날짜의 시간별 예보가 없습니다. (오늘부터 2주 이내만 제공)</div>';return '<table class="wx-table"><thead><tr><th>시간</th><th>날씨</th><th>기온</th><th>강수</th><th>습도</th></tr></thead><tbody>'+rows+'</tbody></table>';}
+function toggleWeather(){showWeather=!showWeather;var b=document.getElementById('weatherBtn');if(b)b.classList.toggle('on',showWeather);if(showWeather&&!weatherData)fetchWeather();renderCal();renderSchedule();}
 function schedOf(d){return db.schedules.filter(s=>s.date===d)
   .sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));}
 function renderCal(){
@@ -595,7 +610,7 @@ function renderCal(){
         const chips=sc.slice(0,2).map(s=>`<span class="schip" draggable="true" ondragstart="schedDragStart(event,${s.id})">${s.time?esc(s.time)+' ':''}${esc(s.title)}</span>`).join('')
           +(sc.length>2?`<span class="smore">+${sc.length-2}</span>`:'');
         html+=`<td><div class="d ${key===tk?'today':''} ${key===selDate?'sel':''} ${hn?'hol':''} ${isSun?'sun':''}" onclick="selectDate('${key}')" ondragover="event.preventDefault()" ondrop="schedDrop(event,'${key}')">
-          <div class="dnum"><span class="n">${day}</span>${showLunar?`<span class="lun">(${lunarOf(key)})</span>`:''}${set.has(key)?'<span class="rec"></span>':''}</div>${hn?`<span class="holname">${esc(hn)}</span>`:''}${st?`<span class="term">${st}</span>`:''}${chips}</div></td>`;day++;}
+          <div class="dnum"><span class="n">${day}</span>${showLunar?`<span class="lun">(${lunarOf(key)})</span>`:''}${set.has(key)?'<span class="rec"></span>':''}</div>${hn?`<span class="holname">${esc(hn)}</span>`:''}${showWeather?weatherCellHTML(key):`${st?`<span class="term">${st}</span>`:''}${chips}`}</div></td>`;day++;}
     }html+='</tr>';if(day>dim&&r>=4)break;}
   document.getElementById('calBody').innerHTML=html;
 }
@@ -627,6 +642,7 @@ function renderSchedule(){
   const [y,m,d]=selDate.split('-');
   const dow=['일','월','화','수','목','금','토'][new Date(+y,+m-1,+d).getDay()];
   document.getElementById('schedLabel').textContent=`${+m}월 ${+d}일 (${dow})${selDate===today()?' · 오늘':''}`;
+  if(showWeather){document.getElementById('schedCount').textContent='';el.innerHTML=hourlyWeatherHTML(selDate);return;}
   const list=schedOf(selDate);
   document.getElementById('schedCount').textContent=list.length?list.length+'건':'';
   el.innerHTML=list.length?list.map(s=>`<div class="sched-item ${s.done?'done':''}">
