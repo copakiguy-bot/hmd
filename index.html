@@ -87,9 +87,9 @@
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
   .smore{font-size:10px;color:var(--muted);padding-left:4px}
   .cal td .d.hol .dnum,.cal td .d.sun .dnum{color:var(--red)}
-  .holname{font-size:8px;color:var(--red);font-weight:700;line-height:1.25;white-space:nowrap;max-width:66px;overflow:hidden;text-overflow:ellipsis}
+  .holname{font-size:12px;color:var(--red);font-weight:700;line-height:1.2;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
   .lun{font-size:8.5px;color:#3a7bd5;font-weight:600;margin-left:3px}
-  .term{font-size:8px;color:var(--green);font-weight:700;line-height:1.2;white-space:nowrap;max-width:66px;overflow:hidden;text-overflow:ellipsis}
+  .term{font-size:12px;color:var(--green);font-weight:700;line-height:1.2;white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis}
   .lunar-toggle{border:1px solid var(--line);background:var(--cream);color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;border-radius:7px;padding:3px 9px;cursor:pointer}
   .lunar-toggle.on{background:var(--dark);color:#fff;border-color:var(--dark)}
   .wx{display:flex;flex-direction:column;align-items:center;gap:0;margin-top:2px;line-height:1.15}
@@ -98,9 +98,9 @@
   .wx-p{font-size:8.5px;color:#3a7bd5;font-weight:600}
   .wx-load{font-size:11px;color:var(--muted)}
   .wx-scroll{overflow-x:auto}
-  .wx-table{border-collapse:collapse;font-size:12.5px}
-  .wx-table th{color:var(--muted);font-weight:700;font-size:12px;padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;position:sticky;left:0;background:var(--card)}
-  .wx-table td{padding:7px 0;width:46px;min-width:46px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+  .wx-table{border-collapse:collapse;font-size:12.5px;width:100%;table-layout:fixed}
+  .wx-table th{color:var(--muted);font-weight:700;font-size:12px;width:42px;padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;position:sticky;left:0;background:var(--card)}
+  .wx-table td{padding:7px 2px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap;overflow:hidden}
   .wx-day{display:block;font-size:9px;color:#a9721a;font-weight:800;line-height:1.1}
   .wx-cr td{padding:0;border-bottom:none}
   .wx-table .wx-h{font-weight:700;color:var(--text)}
@@ -227,6 +227,7 @@
   <div class="nav" data-v="study">Study</div>
   <div class="nav" data-v="assets">Assets</div>
   <div class="nav" data-v="inbox">Inbox</div>
+  <div class="nav" data-v="diary">Diary</div>
   <div class="nav" data-v="settings">Settings</div>
 </aside>
 
@@ -245,7 +246,7 @@
     <div class="grid">
       <div class="card" style="grid-column:1/-1">
         <h3><span class="dot"></span> SCHEDULE</h3>
-        <div class="cal-head"><div style="display:flex;align-items:center;gap:7px"><b id="calTitle"></b><button id="lunarBtn" class="lunar-toggle" onclick="toggleLunar()">음력</button><button id="weatherBtn" class="lunar-toggle" onclick="toggleWeather()">날씨</button></div>
+        <div class="cal-head"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><b id="calTitle"></b><button id="lunarBtn" class="lunar-toggle" onclick="toggleLunar()">음력</button><button id="weatherBtn" class="lunar-toggle" onclick="toggleWeather()">날씨</button><button id="workSecBtn" class="lunar-toggle" onclick="toggleSection('work')">업무</button><button id="studySecBtn" class="lunar-toggle" onclick="toggleSection('study')">매일매일</button><button id="readSecBtn" class="lunar-toggle" onclick="toggleSection('read')">독서</button><button id="assetSecBtn" class="lunar-toggle" onclick="toggleSection('asset')">자산</button><button id="diarySecBtn" class="lunar-toggle" onclick="toggleSection('diary')">일기</button></div>
           <div class="cal-nav"><button onclick="shiftMonth(-1)">‹</button> <button onclick="goToday()" style="width:auto;padding:0 10px;font-size:12px">오늘</button> <button onclick="shiftMonth(1)">›</button></div>
         </div>
         <table class="cal"><thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead>
@@ -271,8 +272,7 @@
       </div>
     </div>
 
-    <div class="section-title">오늘의 요약</div>
-    <div class="card">
+    <div class="card" id="workSecCard" style="display:none">
       <h3><span class="dot" style="background:var(--yellow)"></span> 업무 <span class="more" onclick="go('work')">전체 →</span></h3>
       <div class="tabs" id="dashWorkTabs">
         <button class="tab wk" data-t="의회운영" onclick="setDashWorkTab('의회운영')">의회운영</button>
@@ -286,7 +286,7 @@
       </div>
       <div id="dashWorkFeed" style="margin-top:12px"></div>
     </div>
-    <div class="card">
+    <div class="card" id="studySecCard" style="display:none">
       <h3><span class="dot" style="background:var(--red)"></span> 우리는 매일매일 <span class="more" onclick="go('study')">전체 →</span></h3>
       <div class="tabs" id="dashStudyTabs">
         <button class="tab st" data-t="단어" onclick="setDashStudyTab('단어')">단어</button>
@@ -297,7 +297,7 @@
       <div id="dashStudyForm" style="margin-top:14px"></div>
       <div id="dashStudyFeed" style="margin-top:12px"></div>
     </div>
-    <div class="card">
+    <div class="card" id="readSecCard" style="display:none">
       <h3><span class="dot" style="background:var(--green)"></span> 독서 <span class="more" onclick="go('reading')">독서목록 →</span></h3>
       <div class="inrow">
         <select id="exBook" class="in" onchange="fillChapters()" style="flex:1.2"></select>
@@ -331,7 +331,7 @@
       </div>
       <div id="dashReadFeed" style="margin-top:12px"></div>
     </div>
-    <div class="card">
+    <div class="card" id="assetSecCard" style="display:none">
       <h3><span class="dot"></span> 자산 <span class="more" onclick="go('assets')">가계부 →</span></h3>
       <div class="tabs" id="dashAssetTabs">
         <button class="tab exp" data-t="지출" onclick="setDashAssetTab('지출')">지출</button>
@@ -346,6 +346,12 @@
         <button class="btn y" style="flex:none" onclick="addAssetDash()">추가</button>
       </div>
       <div id="dashAssetFeed" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="diarySecCard" style="display:none">
+      <h3><span class="dot" style="background:#6a8fd8"></span> 일기 <span class="more" onclick="go('diary')">전체 →</span></h3>
+      <textarea id="diaryInput" class="in" style="width:100%;min-height:110px;resize:vertical" placeholder="오늘의 일기를 남겨보세요"></textarea>
+      <div style="margin-top:10px"><button class="btn y" onclick="addDiary()">＋ 저장</button></div>
+      <div id="dashDiaryFeed" style="margin-top:12px"></div>
     </div>
 
   </section>
@@ -438,6 +444,16 @@
     <div class="card"><h3><span class="dot"></span> 누적 <span class="more" id="inboxPageCount"></span></h3><div id="inboxPage"></div></div>
   </section>
 
+  <!-- ===== 일기 ===== -->
+  <section class="view" id="view-diary">
+    <div class="page-head"><h1>일기</h1></div>
+    <div class="card">
+      <h3><span class="dot" style="background:#6a8fd8"></span> 새 일기</h3>
+      <textarea id="diaryInput2" class="in" style="width:100%;min-height:120px;resize:vertical" placeholder="오늘의 일기"></textarea>
+      <div style="margin-top:10px"><button class="btn y" onclick="addDiary('diaryInput2')">＋ 저장</button></div>
+    </div>
+    <div class="card"><h3><span class="dot"></span> 누적 <span class="more" id="diaryCount"></span></h3><div id="diaryPage"></div></div>
+  </section>
   <!-- ===== 설정 ===== -->
   <section class="view" id="view-settings">
     <div class="page-head"><h1>설정</h1></div>
@@ -460,7 +476,7 @@ const today=()=>dstr(0);
 let db=load();
 if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];
 if(!db.studyCats)db.studyCats={지식:[],문화:[]};
-if(!db.schedules)db.schedules=[];if(!db.inbox)db.inbox=[];
+if(!db.schedules)db.schedules=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.work)return s;}catch(e){}return seed();}
 function save(){localStorage.setItem(KEY,JSON.stringify(db));}
 function uid(){return Date.now()+Math.floor(Math.random()*1000);}
@@ -584,7 +600,7 @@ const HOLIDAYS={
   '2027-12-25':'성탄절','2027-12-27':'대체공휴일'
 };
 const LUNAR_MONTHS=[["2024-12-01",11,0],["2024-12-31",12,0],["2025-01-29",1,0],["2025-02-28",2,0],["2025-03-29",3,0],["2025-04-28",4,0],["2025-05-27",5,0],["2025-06-25",6,0],["2025-07-25",6,1],["2025-08-23",7,0],["2025-09-22",8,0],["2025-10-21",9,0],["2025-11-20",10,0],["2025-12-20",11,0],["2026-01-19",12,0],["2026-02-17",1,0],["2026-03-19",2,0],["2026-04-17",3,0],["2026-05-17",4,0],["2026-06-15",5,0],["2026-07-14",6,0],["2026-08-13",7,0],["2026-09-11",8,0],["2026-10-11",9,0],["2026-11-09",10,0],["2026-12-09",11,0],["2027-01-08",12,0],["2027-02-07",1,0],["2027-03-08",2,0],["2027-04-07",3,0],["2027-05-06",4,0],["2027-06-05",5,0],["2027-07-04",6,0],["2027-08-02",7,0],["2027-09-01",8,0],["2027-09-30",9,0],["2027-10-29",10,0],["2027-11-28",11,0],["2027-12-28",12,0],["2028-01-27",1,0],["2028-02-25",2,0]];
-const SOLARTERM={"2025-01-05":"소한","2025-01-20":"대한","2025-02-03":"입춘","2025-02-18":"우수","2025-03-05":"경칩","2025-03-20":"춘분","2025-04-04":"청명","2025-04-20":"곡우","2025-05-05":"입하","2025-05-21":"소만","2025-06-05":"망종","2025-06-21":"하지","2025-07-07":"소서","2025-07-22":"대서","2025-08-07":"입추","2025-08-23":"처서","2025-09-07":"백로","2025-09-23":"추분","2025-10-08":"한로","2025-10-23":"상강","2025-11-07":"입동","2025-11-22":"소설","2025-12-07":"대설","2025-12-21":"동지","2026-01-05":"소한","2026-01-20":"대한","2026-02-04":"입춘","2026-02-18":"우수","2026-03-05":"경칩","2026-03-20":"춘분","2026-04-05":"청명·한식","2026-04-20":"곡우","2026-05-05":"입하","2026-05-21":"소만","2026-06-05":"망종","2026-06-21":"하지","2026-07-07":"소서","2026-07-23":"대서","2026-08-07":"입추","2026-08-23":"처서","2026-09-07":"백로","2026-09-23":"추분","2026-10-08":"한로","2026-10-23":"상강","2026-11-07":"입동","2026-11-22":"소설","2026-12-07":"대설","2026-12-22":"동지","2027-01-05":"소한","2027-01-20":"대한","2027-02-04":"입춘","2027-02-19":"우수","2027-03-06":"경칩","2027-03-21":"춘분","2027-04-05":"청명","2027-04-20":"곡우","2027-05-06":"입하","2027-05-21":"소만","2027-06-06":"망종","2027-06-21":"하지","2027-07-07":"소서","2027-07-23":"대서","2027-08-08":"입추·칠석","2027-08-23":"처서","2027-09-08":"백로","2027-09-23":"추분","2027-10-08":"한로","2027-10-23":"상강","2027-11-07":"입동","2027-11-22":"소설","2027-12-07":"대설","2027-12-22":"동지","2025-07-20":"초복","2025-07-30":"중복","2025-08-09":"말복","2025-02-12":"정월대보름","2025-05-31":"단오","2025-08-29":"칠석","2026-07-15":"초복","2026-07-25":"중복","2026-08-14":"말복","2026-03-03":"정월대보름","2026-06-19":"단오","2026-08-19":"칠석","2027-07-20":"초복","2027-07-30":"중복","2027-08-09":"말복","2027-02-21":"정월대보름","2027-06-09":"단오","2025-04-05":"한식","2027-04-06":"한식"};
+const SOLARTERM={"2025-01-05":"소한(小寒)","2025-01-20":"대한(大寒)","2025-02-03":"입춘(立春)","2025-02-18":"우수(雨水)","2025-03-05":"경칩(驚蟄)","2025-03-20":"춘분(春分)","2025-04-04":"청명(淸明)","2025-04-20":"곡우(穀雨)","2025-05-05":"입하(立夏)","2025-05-21":"소만(小滿)","2025-06-05":"망종(芒種)","2025-06-21":"하지(夏至)","2025-07-07":"소서(小暑)","2025-07-22":"대서(大暑)","2025-08-07":"입추(立秋)","2025-08-23":"처서(處暑)","2025-09-07":"백로(白露)","2025-09-23":"추분(秋分)","2025-10-08":"한로(寒露)","2025-10-23":"상강(霜降)","2025-11-07":"입동(立冬)","2025-11-22":"소설(小雪)","2025-12-07":"대설(大雪)","2025-12-21":"동지(冬至)","2026-01-05":"소한(小寒)","2026-01-20":"대한(大寒)","2026-02-04":"입춘(立春)","2026-02-18":"우수(雨水)","2026-03-05":"경칩(驚蟄)","2026-03-20":"춘분(春分)","2026-04-05":"청명(淸明)·한식(寒食)","2026-04-20":"곡우(穀雨)","2026-05-05":"입하(立夏)","2026-05-21":"소만(小滿)","2026-06-05":"망종(芒種)","2026-06-21":"하지(夏至)","2026-07-07":"소서(小暑)","2026-07-23":"대서(大暑)","2026-08-07":"입추(立秋)","2026-08-23":"처서(處暑)","2026-09-07":"백로(白露)","2026-09-23":"추분(秋分)","2026-10-08":"한로(寒露)","2026-10-23":"상강(霜降)","2026-11-07":"입동(立冬)","2026-11-22":"소설(小雪)","2026-12-07":"대설(大雪)","2026-12-22":"동지(冬至)","2027-01-05":"소한(小寒)","2027-01-20":"대한(大寒)","2027-02-04":"입춘(立春)","2027-02-19":"우수(雨水)","2027-03-06":"경칩(驚蟄)","2027-03-21":"춘분(春分)","2027-04-05":"청명(淸明)","2027-04-20":"곡우(穀雨)","2027-05-06":"입하(立夏)","2027-05-21":"소만(小滿)","2027-06-06":"망종(芒種)","2027-06-21":"하지(夏至)","2027-07-07":"소서(小暑)","2027-07-23":"대서(大暑)","2027-08-08":"입추(立秋)·칠석(七夕)","2027-08-23":"처서(處暑)","2027-09-08":"백로(白露)","2027-09-23":"추분(秋分)","2027-10-08":"한로(寒露)","2027-10-23":"상강(霜降)","2027-11-07":"입동(立冬)","2027-11-22":"소설(小雪)","2027-12-07":"대설(大雪)","2027-12-22":"동지(冬至)","2025-07-20":"초복(初伏)","2025-07-30":"중복(中伏)","2025-08-09":"말복(末伏)","2025-02-12":"정월대보름","2025-05-31":"단오(端午)","2025-08-29":"칠석(七夕)","2026-07-15":"초복(初伏)","2026-07-25":"중복(中伏)","2026-08-14":"말복(末伏)","2026-03-03":"정월대보름","2026-06-19":"단오(端午)","2026-08-19":"칠석(七夕)","2027-07-20":"초복(初伏)","2027-07-30":"중복(中伏)","2027-08-09":"말복(末伏)","2027-02-21":"정월대보름","2027-06-09":"단오(端午)","2025-04-05":"한식(寒食)","2027-04-06":"한식(寒食)"};
 let showLunar=false;
 function lunarOf(key){let seg=null;for(let i=0;i<LUNAR_MONTHS.length;i++){if(LUNAR_MONTHS[i][0]<=key)seg=LUNAR_MONTHS[i];else break;}if(!seg)return '';const a=new Date(seg[0]+'T00:00:00'),b=new Date(key+'T00:00:00');const diff=Math.round((b-a)/86400000);return (seg[2]?'윤':'')+seg[1]+'.'+(diff+1);}
 function toggleLunar(){showLunar=!showLunar;const btn=document.getElementById('lunarBtn');if(btn)btn.classList.toggle('on',showLunar);renderCal();}
@@ -592,9 +608,16 @@ let showWeather=false, weatherData=null, weatherLoading=false;
 function wxIcon(c){c=Number(c);if(c===0)return '☀️';if(c===1||c===2)return '🌤️';if(c===3)return '☁️';if(c===45||c===48)return '🌫️';if(c>=51&&c<=57)return '🌦️';if(c>=61&&c<=67)return '🌧️';if(c>=71&&c<=77)return '🌨️';if(c>=80&&c<=82)return '🌦️';if(c>=85&&c<=86)return '🌨️';if(c>=95)return '⛈️';return '·';}
 async function fetchWeather(){if(weatherData||weatherLoading)return;weatherLoading=true;try{var url='https://api.open-meteo.com/v1/forecast?latitude=36.6&longitude=126.66&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&hourly=temperature_2m,precipitation_probability,relative_humidity_2m,weather_code&timezone=Asia/Seoul&forecast_days=14';var r=await fetch(url);weatherData=await r.json();}catch(e){weatherData={error:String(e)};}weatherLoading=false;renderCal();renderSchedule();}
 function weatherCellHTML(key){if(!weatherData||!weatherData.daily)return weatherLoading?'<span class="wx-load">…</span>':'';var t=weatherData.daily.time;var i=t?t.indexOf(key):-1;if(i<0)return '';var hi=Math.round(weatherData.daily.temperature_2m_max[i]);var lo=Math.round(weatherData.daily.temperature_2m_min[i]);var pop=weatherData.daily.precipitation_probability_max[i];return '<div class="wx"><span class="wx-ic">'+wxIcon(weatherData.daily.weather_code[i])+'</span><span class="wx-t">'+hi+'°/'+lo+'°</span><span class="wx-p">☔'+(pop==null?'-':pop)+'%</span></div>';}
-function hourlyWeatherHTML(key){if(weatherLoading)return '<div class="empty">날씨 불러오는 중…</div>';if(!weatherData||!weatherData.hourly)return '<div class="empty">날씨 데이터를 불러오지 못했습니다.</div>';var H=weatherData.hourly;var keys=[key,nextDay(key)];var idx=[];for(var i=0;i<H.time.length;i++){var dp=H.time[i].slice(0,10);if(keys.indexOf(dp)<0)continue;if((+H.time[i].slice(11,13))%3===0)idx.push(i);}if(!idx.length)return '<div class="empty">해당 날짜의 시간별 예보가 없습니다. (오늘부터 2주 이내만 제공)</div>';var CW=46;var head='<tr><th></th>';var lastD='';for(var a=0;a<idx.length;a++){var t=H.time[idx[a]];var dp=t.slice(0,10);var hh=+t.slice(11,13);var dl='';if(dp!==lastD){dl='<span class="wx-day">'+(+dp.slice(8,10))+'일</span>';lastD=dp;}head+='<td class="wx-h">'+dl+hh+'시</td>';}head+='</tr>';function rowf(lb,f){var o='<tr><th>'+lb+'</th>';for(var a=0;a<idx.length;a++)o+=f(idx[a]);return o+'</tr>';}var rW=rowf('날씨',function(i){return '<td>'+wxIcon(H.weather_code[i])+'</td>';});var temps=[];for(var a=0;a<idx.length;a++)temps.push(Math.round(H.temperature_2m[idx[a]]));var mx=Math.max.apply(null,temps),mn=Math.min.apply(null,temps),ch=54,pd=16;function ty(v){return mx===mn?ch/2:pd+(ch-2*pd)*(1-(v-mn)/(mx-mn));}var pts='',dots='';for(var a=0;a<temps.length;a++){var x=CW*a+CW/2,y=ty(temps[a]);pts+=x+','+y+' ';dots+='<circle cx="'+x+'" cy="'+y+'" r="2.5" fill="#3a7bd5"/><text x="'+x+'" y="'+(y-6)+'" text-anchor="middle" font-size="9" fill="#12312b">'+temps[a]+'°</text>';}var sw=CW*temps.length;var chartRow='<tr class="wx-cr"><th></th><td colspan="'+temps.length+'"><svg width="'+sw+'" height="'+ch+'" viewBox="0 0 '+sw+' '+ch+'" style="display:block"><polyline fill="none" stroke="#7fb0e8" stroke-width="2" points="'+pts+'"/>'+dots+'</svg></td></tr>';var rT=rowf('기온',function(i){return '<td>'+Math.round(H.temperature_2m[i])+'°</td>';});var rP=rowf('강수',function(i){var p=H.precipitation_probability[i];return '<td class="wx-pp">'+(p==null?'-':p+'%')+'</td>';});var rH=rowf('습도',function(i){var h=H.relative_humidity_2m[i];return '<td>'+(h==null?'-':h+'%')+'</td>';});return '<div class="wx-scroll"><table class="wx-table">'+head+rW+chartRow+rT+rP+rH+'</table></div>';}
+function hourlyWeatherHTML(key){if(weatherLoading)return '<div class="empty">날씨 불러오는 중…</div>';if(!weatherData||!weatherData.hourly)return '<div class="empty">날씨 데이터를 불러오지 못했습니다.</div>';var H=weatherData.hourly;var keys=[key,nextDay(key)];var idx=[];for(var i=0;i<H.time.length;i++){var dp=H.time[i].slice(0,10);if(keys.indexOf(dp)<0)continue;if((+H.time[i].slice(11,13))%3===0)idx.push(i);}if(!idx.length)return '<div class="empty">해당 날짜의 시간별 예보가 없습니다. (오늘부터 2주 이내만 제공)</div>';var CW=46;var head='<tr><th></th>';var lastD='';for(var a=0;a<idx.length;a++){var t=H.time[idx[a]];var dp=t.slice(0,10);var hh=+t.slice(11,13);var dl='';if(dp!==lastD){dl='<span class="wx-day">'+(+dp.slice(8,10))+'일</span>';lastD=dp;}head+='<td class="wx-h">'+dl+hh+'시</td>';}head+='</tr>';function rowf(lb,f){var o='<tr><th>'+lb+'</th>';for(var a=0;a<idx.length;a++)o+=f(idx[a]);return o+'</tr>';}var rW=rowf('날씨',function(i){return '<td>'+wxIcon(H.weather_code[i])+'</td>';});var temps=[];for(var a=0;a<idx.length;a++)temps.push(Math.round(H.temperature_2m[idx[a]]));var mx=Math.max.apply(null,temps),mn=Math.min.apply(null,temps),ch=54,pd=16;function ty(v){return mx===mn?ch/2:pd+(ch-2*pd)*(1-(v-mn)/(mx-mn));}var pts='',dots='',VW=1000;for(var a=0;a<temps.length;a++){var x=(a+0.5)/temps.length*VW,y=ty(temps[a]);pts+=x+','+y+' ';dots+='<circle cx="'+x+'" cy="'+y+'" r="5" fill="#3a7bd5"/>';}var chartRow='<tr class="wx-cr"><th></th><td colspan="'+temps.length+'"><svg width="100%" height="'+ch+'" viewBox="0 0 '+VW+' '+ch+'" preserveAspectRatio="none" style="display:block"><polyline fill="none" stroke="#7fb0e8" stroke-width="2" points="'+pts+'"/>'+dots+'</svg></td></tr>';var rT=rowf('기온',function(i){return '<td>'+Math.round(H.temperature_2m[i])+'°</td>';});var rP=rowf('강수',function(i){var p=H.precipitation_probability[i];return '<td class="wx-pp">'+(p==null?'-':p+'%')+'</td>';});var rH=rowf('습도',function(i){var h=H.relative_humidity_2m[i];return '<td>'+(h==null?'-':h+'%')+'</td>';});return '<div class="wx-scroll"><table class="wx-table">'+head+rW+chartRow+rT+rP+rH+'</table></div>';}
+function toggleSection(name){var c=document.getElementById(name+'SecCard');var b=document.getElementById(name+'SecBtn');if(!c)return;var on=c.style.display!=='none';c.style.display=on?'none':'';if(b)b.classList.toggle('on',!on);}
 function applyWeatherLayout(){var sc=document.getElementById('schedCard'),ib=document.getElementById('inboxCard'),af=document.getElementById('schedAddForm');if(sc)sc.style.gridColumn=showWeather?'1/-1':'';if(ib)ib.style.display=showWeather?'none':'';if(af)af.style.display=showWeather?'none':'';}
 function toggleWeather(){showWeather=!showWeather;var b=document.getElementById('weatherBtn');if(b)b.classList.toggle('on',showWeather);if(showWeather&&!weatherData)fetchWeather();applyWeatherLayout();renderCal();renderSchedule();}
+function addDiary(inputId){var el=document.getElementById(inputId||'diaryInput');if(!el)return;var v=el.value.trim();if(!v)return;db.diary.push({id:uid(),date:today(),text:v});save();el.value='';renderDiary();renderDiaryPage();renderCal();}
+function editDiary(id,val){var x=db.diary.find(function(a){return a.id===id;});if(!x)return;var v=String(val).trim();if(v)x.text=v;save();}
+function delDiary(id){db.diary=db.diary.filter(function(a){return a.id!==id;});save();renderDiary();renderDiaryPage();}
+function diaryItem(x){return '<div class="entry"><div class="body" contenteditable onblur="editDiary('+x.id+',this.innerText)">'+esc(x.text)+'</div><div style="text-align:right;margin-top:4px"><span class="del" onclick="delDiary('+x.id+')">×</span></div></div>';}
+function renderDiary(){var el=document.getElementById('dashDiaryFeed');if(!el)return;var td=today();var list=db.diary.filter(function(x){return x.date===td;});el.innerHTML=list.length?('<div class="datehdr">오늘</div>'+list.map(diaryItem).join('')):'<div class="empty">오늘 일기가 없습니다.</div>';}
+function renderDiaryPage(){var el=document.getElementById('diaryPage');if(!el)return;var cnt=document.getElementById('diaryCount');if(cnt)cnt.textContent=db.diary.length+'건';if(!db.diary.length){el.innerHTML='<div class="empty">작성한 일기가 없습니다.</div>';return;}var g={};db.diary.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));}).forEach(function(x){(g[x.date]=g[x.date]||[]).push(x);});el.innerHTML=Object.keys(g).map(function(d){return '<div class="datehdr">'+d+'</div>'+g[d].map(diaryItem).join('');}).join('');}
 function schedOf(d){return db.schedules.filter(s=>s.date===d)
   .sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));}
 function renderCal(){
@@ -1333,7 +1356,7 @@ function resetAll(){if(!confirm('모든 데이터를 삭제하고 초기 예시 
 function renderAll(){
   renderTop();renderCal();renderSchedule();renderTodos();renderInbox();renderInboxPage();
   renderWork();renderDashWork();renderReading();renderStudy();renderDashStudy();
-  renderAssets();renderDashAsset();renderDash();
+  renderAssets();renderDashAsset();renderDiary();renderDiaryPage();renderDash();
 }
 renderAll();
 
