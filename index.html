@@ -97,10 +97,13 @@
   .wx-t{font-size:9.5px;font-weight:700}
   .wx-p{font-size:8.5px;color:#3a7bd5;font-weight:600}
   .wx-load{font-size:11px;color:var(--muted)}
-  .wx-table{width:100%;border-collapse:collapse;font-size:13px}
-  .wx-table th{color:var(--muted);font-weight:600;font-size:11px;padding:7px 4px;border-bottom:1px solid var(--line);text-align:center}
-  .wx-table td{padding:8px 4px;border-bottom:1px solid var(--line);text-align:center}
-  .wx-table tr:last-child td{border-bottom:none}
+  .wx-scroll{overflow-x:auto}
+  .wx-table{border-collapse:collapse;font-size:12.5px}
+  .wx-table th{color:var(--muted);font-weight:700;font-size:12px;padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;position:sticky;left:0;background:var(--card)}
+  .wx-table td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+  .wx-table .wx-h{font-weight:700;color:var(--text)}
+  .wx-table .wx-pp{color:#3a7bd5;font-weight:600}
+  .wx-table tr:last-child td,.wx-table tr:last-child th{border-bottom:none}
   .sched-item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
   .sched-item .top{display:flex;align-items:center;gap:8px}
   .sched-time{font-size:11.5px;font-weight:700;color:#8a6412;background:var(--yellow-soft);border-radius:5px;padding:2px 7px;white-space:nowrap}
@@ -246,17 +249,17 @@
         <table class="cal"><thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead>
         <tbody id="calBody"></tbody></table>
       </div>
-      <div class="card">
+      <div class="card" id="schedCard">
         <h3><span class="dot"></span> <span id="schedLabel"></span> <span class="more" id="schedCount"></span></h3>
-        <div id="schedList" class="fill"></div>
+        <div id="schedList" class="fill"></div><div id="schedAddForm">
         <div class="inrow" style="margin-top:12px">
           <input id="schTime" class="in" style="flex:none;width:96px" placeholder="시간 예:1300" onblur="this.value=normTime(this.value)">
           <input id="schTitle" class="in" style="flex:1" placeholder="일정 제목" onkeydown="if(event.key==='Enter')addSchedule()">
         </div>
         <textarea id="schDetail" class="in" style="width:100%;min-height:70px;margin-top:8px;resize:vertical" placeholder="세부 내용"></textarea>
-        <div style="margin-top:10px"><button class="btn y" onclick="addSchedule()">＋ 일정 추가</button></div>
+        <div style="margin-top:10px"><button class="btn y" onclick="addSchedule()">＋ 일정 추가</button></div></div>
       </div>
-      <div class="card">
+      <div class="card" id="inboxCard">
         <h3><span class="dot"></span> INBOX <span class="more" id="inboxCount"></span></h3>
         <ul class="todo fill" id="inboxList"></ul>
         <div class="addrow">
@@ -587,8 +590,9 @@ let showWeather=false, weatherData=null, weatherLoading=false;
 function wxIcon(c){c=Number(c);if(c===0)return '☀️';if(c===1||c===2)return '🌤️';if(c===3)return '☁️';if(c===45||c===48)return '🌫️';if(c>=51&&c<=57)return '🌦️';if(c>=61&&c<=67)return '🌧️';if(c>=71&&c<=77)return '🌨️';if(c>=80&&c<=82)return '🌦️';if(c>=85&&c<=86)return '🌨️';if(c>=95)return '⛈️';return '·';}
 async function fetchWeather(){if(weatherData||weatherLoading)return;weatherLoading=true;try{var url='https://api.open-meteo.com/v1/forecast?latitude=36.6&longitude=126.66&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&hourly=temperature_2m,precipitation_probability,relative_humidity_2m,weather_code&timezone=Asia/Seoul&forecast_days=14';var r=await fetch(url);weatherData=await r.json();}catch(e){weatherData={error:String(e)};}weatherLoading=false;renderCal();renderSchedule();}
 function weatherCellHTML(key){if(!weatherData||!weatherData.daily)return weatherLoading?'<span class="wx-load">…</span>':'';var t=weatherData.daily.time;var i=t?t.indexOf(key):-1;if(i<0)return '';var hi=Math.round(weatherData.daily.temperature_2m_max[i]);var lo=Math.round(weatherData.daily.temperature_2m_min[i]);var pop=weatherData.daily.precipitation_probability_max[i];return '<div class="wx"><span class="wx-ic">'+wxIcon(weatherData.daily.weather_code[i])+'</span><span class="wx-t">'+hi+'°/'+lo+'°</span><span class="wx-p">☔'+(pop==null?'-':pop)+'%</span></div>';}
-function hourlyWeatherHTML(key){if(weatherLoading)return '<div class="empty">날씨 불러오는 중…</div>';if(!weatherData||!weatherData.hourly)return '<div class="empty">날씨 데이터를 불러오지 못했습니다.</div>';var H=weatherData.hourly;var rows='';for(var i=0;i<H.time.length;i++){if(H.time[i].slice(0,10)!==key)continue;var hh=H.time[i].slice(11,16);var pop=H.precipitation_probability[i];var hum=H.relative_humidity_2m[i];rows+='<tr><td>'+hh+'</td><td>'+wxIcon(H.weather_code[i])+'</td><td>'+Math.round(H.temperature_2m[i])+'°</td><td>'+(pop==null?'-':pop+'%')+'</td><td>'+(hum==null?'-':hum+'%')+'</td></tr>';}if(!rows)return '<div class="empty">해당 날짜의 시간별 예보가 없습니다. (오늘부터 2주 이내만 제공)</div>';return '<table class="wx-table"><thead><tr><th>시간</th><th>날씨</th><th>기온</th><th>강수</th><th>습도</th></tr></thead><tbody>'+rows+'</tbody></table>';}
-function toggleWeather(){showWeather=!showWeather;var b=document.getElementById('weatherBtn');if(b)b.classList.toggle('on',showWeather);if(showWeather&&!weatherData)fetchWeather();renderCal();renderSchedule();}
+function hourlyWeatherHTML(key){if(weatherLoading)return '<div class="empty">날씨 불러오는 중…</div>';if(!weatherData||!weatherData.hourly)return '<div class="empty">날씨 데이터를 불러오지 못했습니다.</div>';var H=weatherData.hourly;var idx=[];for(var i=0;i<H.time.length;i++){if(H.time[i].slice(0,10)!==key)continue;if((+H.time[i].slice(11,13))%3===0)idx.push(i);}if(!idx.length)return '<div class="empty">해당 날짜의 시간별 예보가 없습니다. (오늘부터 2주 이내만 제공)</div>';var head='<tr><th></th>';for(var a=0;a<idx.length;a++)head+='<td class="wx-h">'+(+H.time[idx[a]].slice(11,13))+'시</td>';head+='</tr>';function rowf(lb,f){var o='<tr><th>'+lb+'</th>';for(var a=0;a<idx.length;a++)o+=f(idx[a]);return o+'</tr>';}var rW=rowf('날씨',function(i){return '<td>'+wxIcon(H.weather_code[i])+'</td>';});var rT=rowf('기온',function(i){return '<td>'+Math.round(H.temperature_2m[i])+'°</td>';});var rP=rowf('강수',function(i){var p=H.precipitation_probability[i];return '<td class="wx-pp">'+(p==null?'-':p+'%')+'</td>';});var rH=rowf('습도',function(i){var h=H.relative_humidity_2m[i];return '<td>'+(h==null?'-':h+'%')+'</td>';});return '<div class="wx-scroll"><table class="wx-table">'+head+rW+rT+rP+rH+'</table></div>';}
+function applyWeatherLayout(){var sc=document.getElementById('schedCard'),ib=document.getElementById('inboxCard'),af=document.getElementById('schedAddForm');if(sc)sc.style.gridColumn=showWeather?'1/-1':'';if(ib)ib.style.display=showWeather?'none':'';if(af)af.style.display=showWeather?'none':'';}
+function toggleWeather(){showWeather=!showWeather;var b=document.getElementById('weatherBtn');if(b)b.classList.toggle('on',showWeather);if(showWeather&&!weatherData)fetchWeather();applyWeatherLayout();renderCal();renderSchedule();}
 function schedOf(d){return db.schedules.filter(s=>s.date===d)
   .sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));}
 function renderCal(){
