@@ -74,7 +74,7 @@
   .cal{width:100%;border-collapse:collapse;table-layout:fixed}
   .cal th{font-size:11.5px;color:var(--muted);font-weight:600;padding:8px 0;text-align:center}
   .cal td{padding:2px;vertical-align:top}
-  .cal td .d{min-height:84px;border-radius:10px;padding:6px;font-size:13px;cursor:pointer;transition:.12s;
+  .cal td .d{min-height:104px;border-radius:10px;padding:6px;font-size:13px;cursor:pointer;transition:.12s;
     border:1.5px solid transparent;display:flex;flex-direction:column;gap:3px;overflow:hidden}
   .cal td .d:hover{background:var(--cream)}
   .cal td .d.sel{border-color:var(--yellow);background:#fffdf5}
@@ -103,6 +103,8 @@
   .todo .done .txt{text-decoration:line-through;color:var(--muted)}
   .del{color:#cfd6d2;cursor:pointer;font-size:16px;padding:0 4px;line-height:1}
   .del:hover{color:var(--red)}
+  .post{color:#8a6412;background:var(--yellow-soft);cursor:pointer;font-size:11px;font-weight:700;border-radius:5px;padding:2px 6px;white-space:nowrap}
+  .post:hover{background:var(--yellow);color:var(--dark)}
 
   .addrow{display:flex;gap:8px;margin-top:12px}
   input,select,textarea{font-family:inherit}
@@ -223,21 +225,13 @@
   <section class="view on" id="view-dashboard">
     <div class="page-head"><h1>Hello, My day!</h1></div>
     <div class="grid">
-      <div class="card">
+      <div class="card" style="grid-column:1/-1">
         <h3><span class="dot"></span> SCHEDULE</h3>
         <div class="cal-head"><b id="calTitle"></b>
           <div class="cal-nav"><button onclick="shiftMonth(-1)">‹</button> <button onclick="goToday()" style="width:auto;padding:0 10px;font-size:12px">오늘</button> <button onclick="shiftMonth(1)">›</button></div>
         </div>
         <table class="cal"><thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead>
         <tbody id="calBody"></tbody></table>
-      </div>
-      <div class="card">
-        <h3><span class="dot"></span> TO DO LIST <span class="more" id="todoCount"></span></h3>
-        <ul class="todo fill" id="todoList"></ul>
-        <div class="addrow">
-          <input id="todoInput" placeholder="할 일 입력 후 Enter" onkeydown="if(event.key==='Enter')addTodo()">
-          <button class="btn" onclick="addTodo()">추가</button>
-        </div>
       </div>
       <div class="card">
         <h3><span class="dot"></span> <span id="schedLabel"></span> <span class="more" id="schedCount"></span></h3>
@@ -563,10 +557,10 @@ const HOLIDAYS={
   '2025-10-07':'추석','2025-10-08':'대체공휴일','2025-10-09':'한글날','2025-12-25':'성탄절',
   '2026-01-01':'신정','2026-02-16':'설날','2026-02-17':'설날','2026-02-18':'설날','2026-03-01':'삼일절',
   '2026-03-02':'대체공휴일','2026-05-05':'어린이날','2026-05-24':'부처님오신날','2026-05-25':'대체공휴일',
-  '2026-06-06':'현충일','2026-08-15':'광복절','2026-08-17':'대체공휴일','2026-09-24':'추석','2026-09-25':'추석',
+  '2026-06-06':'현충일','2026-07-17':'제헌절','2026-08-15':'광복절','2026-08-17':'대체공휴일','2026-09-24':'추석','2026-09-25':'추석',
   '2026-09-26':'추석','2026-10-03':'개천절','2026-10-05':'대체공휴일','2026-10-09':'한글날','2026-12-25':'성탄절',
   '2027-01-01':'신정','2027-02-06':'설날','2027-02-07':'설날','2027-02-08':'설날','2027-02-09':'대체공휴일',
-  '2027-03-01':'삼일절','2027-05-05':'어린이날','2027-05-13':'부처님오신날','2027-06-06':'현충일',
+  '2027-03-01':'삼일절','2027-05-05':'어린이날','2027-05-13':'부처님오신날','2027-06-06':'현충일','2027-07-17':'제헌절','2027-07-19':'대체공휴일',
   '2027-08-15':'광복절','2027-08-16':'대체공휴일','2027-09-14':'추석','2027-09-15':'추석','2027-09-16':'추석',
   '2027-10-03':'개천절','2027-10-04':'대체공휴일','2027-10-09':'한글날','2027-10-11':'대체공휴일',
   '2027-12-25':'성탄절','2027-12-27':'대체공휴일'
@@ -588,9 +582,9 @@ function renderCal(){
         const sc=schedOf(key);
         const hn=HOLIDAYS[key];
         const isSun=new Date(viewY,viewM,day).getDay()===0;
-        const chips=sc.slice(0,2).map(s=>`<span class="schip">${s.time?esc(s.time)+' ':''}${esc(s.title)}</span>`).join('')
+        const chips=sc.slice(0,2).map(s=>`<span class="schip" draggable="true" ondragstart="schedDragStart(event,${s.id})">${s.time?esc(s.time)+' ':''}${esc(s.title)}</span>`).join('')
           +(sc.length>2?`<span class="smore">+${sc.length-2}</span>`:'');
-        html+=`<td><div class="d ${key===tk?'today':''} ${key===selDate?'sel':''} ${hn?'hol':''} ${isSun?'sun':''}" onclick="selectDate('${key}')">
+        html+=`<td><div class="d ${key===tk?'today':''} ${key===selDate?'sel':''} ${hn?'hol':''} ${isSun?'sun':''}" onclick="selectDate('${key}')" ondragover="event.preventDefault()" ondrop="schedDrop(event,'${key}')">
           <div class="dnum"><span class="n">${day}</span>${set.has(key)?'<span class="rec"></span>':''}</div>${hn?`<span class="holname">${esc(hn)}</span>`:''}${chips}</div></td>`;day++;}
     }html+='</tr>';if(day>dim&&r>=4)break;}
   document.getElementById('calBody').innerHTML=html;
@@ -612,6 +606,11 @@ function editSchedule(id,field,val){const s=db.schedules.find(x=>x.id===id);if(!
   s[field]=String(val).trim();save();renderCal();renderSchedule();}
 function delSchedule(id){db.schedules=db.schedules.filter(s=>s.id!==id);save();renderCal();renderSchedule();}
 function toggleSchedule(id){const s=db.schedules.find(x=>x.id===id);if(!s)return;s.done=!s.done;save();renderCal();renderSchedule();}
+function nextDay(ds){const [y,m,d]=ds.split('-').map(Number);const dt=new Date(y,m-1,d+1);return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');}
+function postponeSchedule(id){const s=db.schedules.find(x=>x.id===id);if(!s)return;s.date=nextDay(s.date);save();renderCal();renderSchedule();}
+let dragSchedId=null;
+function schedDragStart(e,id){dragSchedId=id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',String(id));}
+function schedDrop(e,key){e.preventDefault();const id=dragSchedId!=null?dragSchedId:Number(e.dataTransfer.getData('text/plain'));const s=db.schedules.find(x=>x.id===id);if(s){s.date=key;save();renderCal();renderSchedule();}dragSchedId=null;}
 function renderSchedule(){
   const el=document.getElementById('schedList');if(!el)return;
   const [y,m,d]=selDate.split('-');
@@ -624,7 +623,7 @@ function renderSchedule(){
       <div class="chk ${s.done?'done':''}" onclick="toggleSchedule(${s.id})">${s.done?'✓':''}</div>
       <span class="sched-time" contenteditable onblur="editSchedule(${s.id},'time',this.innerText)">${esc(s.time||'-')}</span>
       <b style="flex:1" contenteditable onblur="editSchedule(${s.id},'title',this.innerText)">${esc(s.title)}</b>
-      <span class="del" onclick="delSchedule(${s.id})">×</span></div>
+      <span class="post" title="내일로 미루기" onclick="postponeSchedule(${s.id})">→내일</span><span class="del" onclick="delSchedule(${s.id})">×</span></div>
     <div class="sub" style="margin-top:6px" contenteditable onblur="editSchedule(${s.id},'detail',this.innerText)">${esc(s.detail||'')}</div>
   </div>`).join(''):'<div class="empty">등록된 일정이 없습니다.</div>';
 }
@@ -663,7 +662,8 @@ function renderInboxPage(){
 /* ---------- todos (daily) ---------- */
 function todosToday(){return db.todos[today()]||(db.todos[today()]=[]);}
 function renderTodos(){
-  const list=todosToday(),ul=document.getElementById('todoList');ul.innerHTML='';
+  const ul=document.getElementById('todoList');if(!ul)return;
+  const list=todosToday();ul.innerHTML='';
   if(!list.length)ul.innerHTML='<div class="empty">오늘 할 일이 없습니다. 새로 추가해보세요.</div>';
   list.forEach(x=>{const li=document.createElement('li');li.className=x.done?'done':'';
     li.innerHTML=`<div class="chk ${x.done?'done':''}" onclick="toggleTodo(${x.id})">${x.done?'✓':''}</div>
