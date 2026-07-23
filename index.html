@@ -86,6 +86,8 @@
   .schip{font-size:10.5px;background:var(--yellow-soft);color:#8a6412;border-radius:5px;padding:2px 5px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
   .smore{font-size:10px;color:var(--muted);padding-left:4px}
+  .cal td .d.hol .dnum,.cal td .d.sun .dnum{color:var(--red)}
+  .holname{font-size:9px;color:var(--red);font-weight:700;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .sched-item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
   .sched-item .top{display:flex;align-items:center;gap:8px}
   .sched-time{font-size:11.5px;font-weight:700;color:#8a6412;background:var(--yellow-soft);border-radius:5px;padding:2px 7px;white-space:nowrap}
@@ -554,6 +556,21 @@ function daysWithData(){
     (x.excerpts||[]).forEach(e=>{if(e.date)s.add(e.date);});});
   return s;
 }
+const HOLIDAYS={
+  '2025-01-01':'신정','2025-01-27':'임시공휴일','2025-01-28':'설날','2025-01-29':'설날','2025-01-30':'설날',
+  '2025-03-01':'삼일절','2025-03-03':'대체공휴일','2025-05-05':'어린이날·부처님오신날','2025-05-06':'대체공휴일',
+  '2025-06-06':'현충일','2025-08-15':'광복절','2025-10-03':'개천절','2025-10-05':'추석','2025-10-06':'추석',
+  '2025-10-07':'추석','2025-10-08':'대체공휴일','2025-10-09':'한글날','2025-12-25':'성탄절',
+  '2026-01-01':'신정','2026-02-16':'설날','2026-02-17':'설날','2026-02-18':'설날','2026-03-01':'삼일절',
+  '2026-03-02':'대체공휴일','2026-05-05':'어린이날','2026-05-24':'부처님오신날','2026-05-25':'대체공휴일',
+  '2026-06-06':'현충일','2026-08-15':'광복절','2026-08-17':'대체공휴일','2026-09-24':'추석','2026-09-25':'추석',
+  '2026-09-26':'추석','2026-10-03':'개천절','2026-10-05':'대체공휴일','2026-10-09':'한글날','2026-12-25':'성탄절',
+  '2027-01-01':'신정','2027-02-06':'설날','2027-02-07':'설날','2027-02-08':'설날','2027-02-09':'대체공휴일',
+  '2027-03-01':'삼일절','2027-05-05':'어린이날','2027-05-13':'부처님오신날','2027-06-06':'현충일',
+  '2027-08-15':'광복절','2027-08-16':'대체공휴일','2027-09-14':'추석','2027-09-15':'추석','2027-09-16':'추석',
+  '2027-10-03':'개천절','2027-10-04':'대체공휴일','2027-10-09':'한글날','2027-10-11':'대체공휴일',
+  '2027-12-25':'성탄절','2027-12-27':'대체공휴일'
+};
 function schedOf(d){return db.schedules.filter(s=>s.date===d)
   .sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));}
 function renderCal(){
@@ -569,10 +586,12 @@ function renderCal(){
       else if(day>dim)html+=`<td><div class="d muted"><div class="dnum"><span class="n">${nx++}</span></div></div></td>`;
       else{const key=`${viewY}-${String(viewM+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
         const sc=schedOf(key);
+        const hn=HOLIDAYS[key];
+        const isSun=new Date(viewY,viewM,day).getDay()===0;
         const chips=sc.slice(0,2).map(s=>`<span class="schip">${s.time?esc(s.time)+' ':''}${esc(s.title)}</span>`).join('')
           +(sc.length>2?`<span class="smore">+${sc.length-2}</span>`:'');
-        html+=`<td><div class="d ${key===tk?'today':''} ${key===selDate?'sel':''}" onclick="selectDate('${key}')">
-          <div class="dnum"><span class="n">${day}</span>${set.has(key)?'<span class="rec"></span>':''}</div>${chips}</div></td>`;day++;}
+        html+=`<td><div class="d ${key===tk?'today':''} ${key===selDate?'sel':''} ${hn?'hol':''} ${isSun?'sun':''}" onclick="selectDate('${key}')">
+          <div class="dnum"><span class="n">${day}</span>${set.has(key)?'<span class="rec"></span>':''}</div>${hn?`<span class="holname">${esc(hn)}</span>`:''}${chips}</div></td>`;day++;}
     }html+='</tr>';if(day>dim&&r>=4)break;}
   document.getElementById('calBody').innerHTML=html;
 }
