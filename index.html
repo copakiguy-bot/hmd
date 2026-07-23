@@ -603,7 +603,6 @@ function renderSchedule(){
   el.innerHTML=list.length?list.map(s=>`<div class="sched-item ${s.done?'done':''}">
     <div class="top">
       <div class="chk ${s.done?'done':''}" onclick="toggleSchedule(${s.id})">${s.done?'✓':''}</div>
-    <div class="top">
       <span class="sched-time" contenteditable onblur="editSchedule(${s.id},'time',this.innerText)">${esc(s.time||'-')}</span>
       <b style="flex:1" contenteditable onblur="editSchedule(${s.id},'title',this.innerText)">${esc(s.title)}</b>
       <span class="del" onclick="delSchedule(${s.id})">×</span></div>
