@@ -234,21 +234,122 @@
   #mindCanvas{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fbfbf8;min-height:460px;margin-top:4px}
   .mind-canvas{position:relative;min-width:100%;min-height:100%}
   .mind-svg{position:absolute;left:0;top:0;pointer-events:none}
-  .mnode{position:absolute;min-width:74px;max-width:170px;background:#fff;border:1.5px solid var(--yellow);border-radius:10px;padding:6px 9px;box-shadow:var(--shadow);cursor:move;display:flex;align-items:center;gap:6px;font-size:13px;user-select:none}
-  .mnode.root{border-color:var(--green);background:var(--green-soft);font-weight:700}
-  .mnode .mtext{outline:none;min-width:16px;cursor:text;white-space:pre-wrap;word-break:break-word}
+  .mnode{position:absolute;max-width:240px;background:none;border:none;box-shadow:none;padding:0;cursor:grab;display:inline-flex;align-items:flex-end;gap:5px;font-size:13.5px;z-index:1;transition:opacity .1s}
+  .mnode.dragging{opacity:.4;cursor:grabbing;z-index:5}
+  .mnode.drop .mtext{background:var(--yellow-soft);border-radius:6px;box-shadow:0 0 0 2px var(--yellow)}
+  .mnode .mtog{cursor:pointer;font-size:9px;min-width:15px;height:15px;line-height:13px;text-align:center;border:1.4px solid currentColor;border-radius:50%;background:#fff;font-weight:800;flex-shrink:0;margin-bottom:2px;user-select:none;padding:0 2px}
+  .mnode .mtog.col{background:var(--cream)}
+  .mnode.root{background:#fff;border:1.5px solid #12312b;border-radius:10px;padding:7px 14px;box-shadow:var(--shadow);align-items:center}
+  .mnode.root .mtext{border-bottom:none;font-weight:800;font-size:15.5px;color:#12312b;padding:0}
+  .mnode .mtext{outline:none;min-width:14px;cursor:text;font-weight:600;line-height:1.5;white-space:pre-wrap;word-break:break-word;padding:0 0 0;border-bottom:1.25px solid currentColor}
+  .mnode .mtext:empty::before{content:'…';color:#c3cbc7}
   .mnode .madd{cursor:pointer;color:var(--green);font-weight:800;font-size:14px}
   .mnode .mdel{cursor:pointer;color:#cfd6d2;font-size:14px}
   .mnode .mdel:hover{color:var(--red)}
   .idea-open{cursor:pointer;flex-shrink:0;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#f4b740,#e8615a);color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+  .txt.link{cursor:pointer;border-bottom:1px dashed var(--line)}
+  .txt.link:hover{color:var(--green);border-bottom-color:var(--green)}
+  .idea-edit{cursor:pointer;flex-shrink:0;font-size:11.5px;color:var(--muted);background:var(--cream);padding:3px 9px;border-radius:7px;font-weight:600}
+  .idea-edit:hover{background:var(--line);color:var(--dark)}
   #diaryInput,#diaryInput2,#exText{font-family:'Nanum Myeongjo',serif}
+  .rowdate{border:1px solid var(--line);border-radius:8px;padding:5px 6px;font-size:12px;font-family:inherit;background:#fff;color:var(--text);max-width:140px}
+
+  /* ===== Work Vault (Obsidian-style) ===== */
+  .wv{display:flex;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--card);box-shadow:var(--shadow);min-height:600px}
+  .wv-side{width:280px;flex-shrink:0;border-right:1px solid var(--line);background:#fbfaf5;display:flex;flex-direction:column}
+  .wv-main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .wv-tools{display:flex;align-items:center;gap:8px;padding:12px 12px 8px}
+  .wv-vault{font-size:14px;font-weight:800;color:var(--dark);flex:1}
+  .wv-tbtns{display:flex;gap:4px}
+  .wv-tbtns button{border:none;background:var(--cream);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px;line-height:1}
+  .wv-tbtns button:hover{background:var(--yellow-soft)}
+  .wv-search{margin:0 12px 8px;border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:13px;outline:none;font-family:inherit}
+  .wv-search:focus{border-color:var(--yellow)}
+  .wv-tags{display:flex;flex-wrap:wrap;gap:5px;padding:0 12px 8px}
+  .wv-tag{font-size:11px;background:var(--yellow-soft);color:#a9721a;border-radius:20px;padding:2px 9px;cursor:pointer;font-weight:600}
+  .wv-tag.on{background:var(--yellow);color:var(--dark)}
+  .wv-tree{flex:1;overflow:auto;padding:4px 6px 12px}
+  .wv-row{display:flex;align-items:center;gap:5px;padding:5px 6px;border-radius:8px;cursor:pointer;font-size:13.5px;position:relative;user-select:none}
+  .wv-row:hover{background:#efeee7}
+  .wv-file.on{background:var(--yellow-soft)}
+  .wv-ca{width:12px;font-size:10px;color:var(--muted);flex-shrink:0}
+  .wv-ic{font-size:13px;flex-shrink:0}
+  .wv-nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wv-act{display:none;gap:2px}
+  .wv-row:hover .wv-act{display:flex}
+  .wv-act i{font-style:normal;font-size:12px;padding:2px 3px;border-radius:5px;cursor:pointer;opacity:.65}
+  .wv-act i:hover{opacity:1;background:#fff}
+  .wv-empty,.wv-blank{color:var(--muted);font-size:13px;text-align:center;padding:34px 14px;line-height:1.7}
+  .wv-blank{margin:auto}
+  .wv-head{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .wv-path{font-size:13px;color:var(--muted);flex:1;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:80px}
+  .wv-htools{display:flex;align-items:center;gap:8px}
+  .wv-seg{display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .wv-seg i{font-style:normal;font-size:12px;padding:6px 11px;cursor:pointer;color:var(--muted);font-weight:700}
+  .wv-seg i.on{background:var(--dark);color:#fff}
+  .wv-hbtn{font-style:normal;font-size:12px;color:var(--muted);cursor:pointer;padding:6px 8px;border-radius:7px;font-weight:600}
+  .wv-hbtn:hover{background:var(--cream);color:var(--dark)}
+  .wv-body{flex:1;display:flex;min-height:0}
+  .wv-pane{overflow:auto;padding:0}
+  .wv-pane.only{flex:1}
+  .wv-pane.half{flex:1;min-width:0}
+  .wv-pane.border{border-left:1px solid var(--line)}
+  .wv-editor{width:100%;height:100%;min-height:420px;border:none;outline:none;resize:none;padding:20px 22px;font-size:14.5px;line-height:1.75;font-family:'SFMono-Regular',ui-monospace,Menlo,Consolas,monospace;color:var(--text);background:#fffef9}
+  .wv-preview{padding:20px 24px;font-size:14.5px;line-height:1.8;color:var(--text)}
+  .wv-preview h1,.wv-preview h2,.wv-preview h3,.wv-preview h4,.wv-preview h5,.wv-preview h6{letter-spacing:-.3px;margin:18px 0 8px;line-height:1.35}
+  .wv-preview h1{font-size:24px;border-bottom:1px solid var(--line);padding-bottom:6px}
+  .wv-preview h2{font-size:20px}
+  .wv-preview h3{font-size:17px}
+  .wv-preview h4{font-size:15px}
+  .wv-preview p{margin:9px 0}
+  .wv-preview ul,.wv-preview ol{margin:8px 0 8px 22px}
+  .wv-preview li{margin:3px 0}
+  .wv-preview li.wv-task{list-style:none;margin-left:-18px}
+  .wv-preview blockquote{border-left:3px solid var(--yellow);background:var(--cream);margin:10px 0;padding:8px 14px;border-radius:0 8px 8px 0;color:#4a5751}
+  .wv-preview code{background:#f0efe8;border-radius:5px;padding:1px 6px;font-size:13px;font-family:ui-monospace,Menlo,Consolas,monospace}
+  .wv-preview pre.wv-code{background:#12312b;color:#e6efe9;border-radius:10px;padding:14px 16px;overflow:auto;margin:12px 0}
+  .wv-preview pre.wv-code code{background:none;color:inherit;padding:0}
+  .wv-preview hr{border:none;border-top:1px solid var(--line);margin:16px 0}
+  .wv-preview a{color:var(--green);cursor:pointer;text-decoration:none;border-bottom:1px solid transparent}
+  .wv-preview a:hover{border-bottom-color:currentColor}
+  .wv-preview table.wv-tbl{border-collapse:collapse;margin:12px 0;font-size:13.5px;width:100%}
+  .wv-preview .wv-tbl th,.wv-preview .wv-tbl td{border:1px solid var(--line);padding:7px 11px;text-align:left}
+  .wv-preview .wv-tbl th{background:var(--cream)}
+  .wv-preview img{border-radius:10px}
+  .wv-wl{color:#6a4bd1 !important;background:#efeafc;border-radius:5px;padding:1px 6px;border-bottom:none !important}
+  .wv-wl.miss{color:#c05a53 !important;background:#f9e7e5;border-bottom:1px dashed #c05a53 !important}
+  .wv-tg{color:#a9721a;background:var(--yellow-soft);border-radius:20px;padding:1px 8px;font-size:.86em;cursor:pointer;font-weight:600}
+  .wv-bl{border-top:1px solid var(--line);padding:12px 20px;background:#fbfaf5}
+  .wv-bl b{font-size:12px;color:var(--muted);display:block;margin-bottom:6px;letter-spacing:.3px}
+  .wv-bl a{display:inline-block;margin:0 8px 6px 0;font-size:13px;color:var(--green);cursor:pointer;background:var(--green-soft);padding:3px 10px;border-radius:8px}
+  .wv-graph-ov{position:fixed;inset:0;background:rgba(18,49,43,.42);display:flex;align-items:center;justify-content:center;z-index:99}
+  .wv-graph-box{background:var(--card);border-radius:18px;width:min(700px,92vw);box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden}
+  .wv-graph-top{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .wv-gx{cursor:pointer;font-size:16px;color:var(--muted)}
+  .wv-graph-svg{width:100%;height:min(560px,70vh);display:block;background:#fbfaf5}
+  .wv-gn{cursor:pointer}
+  .wv-gn:hover circle{fill:var(--red)}
+  @media(max-width:1000px){.wv{flex-direction:column;min-height:auto}.wv-side{width:auto;border-right:none;border-bottom:1px solid var(--line);max-height:320px}.wv-body{flex-direction:column}.wv-pane.border{border-left:none;border-top:1px solid var(--line)}.wv-editor{min-height:260px}}
+
+
+  /* 단어 확대 팝업 */
+  .zoom-ic{cursor:pointer;font-size:14px;color:#c3cbc7;margin-top:6px;flex:none;user-select:none}
+  .zoom-ic:hover{color:var(--dark)}
+  .word-ov{position:fixed;inset:0;background:rgba(18,49,43,.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+  .word-box{background:var(--card);border-radius:22px;padding:46px 40px;max-width:660px;width:100%;text-align:center;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.3)}
+  .word-close{position:absolute;top:14px;right:20px;cursor:pointer;font-size:20px;color:var(--muted);line-height:1}
+  .word-close:hover{color:var(--dark)}
+  .word-term{font-size:clamp(36px,7vw,66px);font-weight:800;letter-spacing:-1px;color:var(--dark);line-height:1.25;word-break:keep-all}
+  .word-mean{margin-top:24px;font-size:clamp(17px,2.6vw,25px);color:#4a5751;line-height:1.6;cursor:pointer;display:inline-block;padding:6px 14px;border-radius:12px}
+  .word-mean.masked{background:var(--line);color:transparent;user-select:none;min-width:160px}
+  .word-hint{margin-top:14px;font-size:13px;color:var(--muted)}
 </style>
 </head>
 <body>
 
 <button class="menu-btn" onclick="toggleMenu()">☰</button>
 <aside class="sidebar">
-  <div class="logo"><span class="mark"></span> Daily</div>
+  <div class="logo"><span class="mark"></span> HMD</div>
   <div class="nav active" data-v="dashboard">Dashboard</div>
   <div class="nav" data-v="work">Work</div>
   <div class="nav" data-v="reading">Reading</div>
@@ -471,7 +572,7 @@
     </div>
     <div class="card"><h3><span class="dot"></span> 누적 <span class="more" id="inboxPageCount"></span></h3><div id="inboxPage"></div></div>
       <div class="card" id="ideaCard"><h3><span class="dot" style="background:#6a8fd8"></span> 아이디어 구체화 <span class="more" id="ideaLabel">🧠 를 눌러 시작</span></h3>
-        <div id="mindToolbar" style="display:none;margin-bottom:8px"><button class="btn y" onclick="mindAddFocus(mindRoot())">＋ 생각 추가</button> <span style="font-size:11.5px;color:var(--muted)">노드에서 <b>Tab</b>=하위 생각 · 끌어서 배치 · 글자 눌러 수정</span></div>
+        <div id="mindToolbar" style="display:none;margin-bottom:8px"><button class="btn y" onclick="mindAddFocus(mindRoot())">＋ 생각 추가</button> <span style="font-size:11.5px;color:var(--muted)"><b>Tab</b>=하위 · <b>Enter</b>=대등 · <b>Shift+Enter</b>=줄바꿈 · 칸을 끌어 이동 · ○ 눌러 가지접기</span></div>
         <div id="mindCanvas"></div>
       </div>
   </section>
@@ -678,26 +779,111 @@ function cloudPull(ask,cb){var c=syncCode();if(!c){if(cb)cb(false);return;}setSy
 function setSyncCode(){var el=document.getElementById('syncInput');var v=el.value.trim();if(!v){alert('동기화 코드를 입력하세요.');return;}localStorage.setItem(SYNC_KEY,v);cloudPull(true,function(found){if(!found)cloudPush();});}
 function clearSyncCode(){localStorage.removeItem(SYNC_KEY);var inp=document.getElementById('syncInput');if(inp)inp.value='';setSyncStatus('연결 해제됨 (이 기기)');}
 let curIdea=null;
-function inboxPageItemHTML(x){return '<li class="'+(x.done?"done":"")+'">'+'<div class="chk '+(x.done?"done":"")+'" onclick="toggleInbox('+x.id+')">'+(x.done?"✓":"")+'</div>'+'<span class="txt" contenteditable onblur="editInbox('+x.id+',this.innerText)">'+esc(x.t)+'</span>'+'<span class="idea-open" title="마인드맵" onclick="openIdea('+x.id+')">K</span>'+'<span class="del" onclick="delInbox('+x.id+')">×</span></li>';}
+var editInboxId=null;
+function inboxPageItemHTML(x){var editing=editInboxId===x.id;var title=editing?'<span class="txt" id="inbEditField" contenteditable onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}" onblur="saveEditInbox('+x.id+',this.innerText)">'+esc(x.t)+'</span>':'<span class="txt link" title="마인드맵 열기" onclick="openMind('+x.id+')">'+esc(x.t)+'</span>';return '<li class="'+(x.done?"done":"")+'">'+'<div class="chk '+(x.done?"done":"")+'" onclick="toggleInbox('+x.id+')">'+(x.done?"✓":"")+'</div>'+title+'<span class="idea-edit" title="제목 수정" onclick="startEditInbox('+x.id+')">제목 수정</span>'+'<span class="del" onclick="delInbox('+x.id+')">×</span></li>';}
+function startEditInbox(id){editInboxId=id;renderInboxPage();setTimeout(function(){var el=document.getElementById("inbEditField");if(el){el.focus();var r=document.createRange();r.selectNodeContents(el);var sl=window.getSelection();sl.removeAllRanges();sl.addRange(r);}},0);}
+function saveEditInbox(id,val){var x=db.inbox.find(function(a){return a.id===id;});if(x){var v=String(val).trim();if(v)x.t=v;}editInboxId=null;save();renderInbox();renderInboxPage();}
+function openMind(id){openIdea(id);var c=document.getElementById("ideaCard");if(c)c.scrollIntoView({behavior:"smooth",block:"start"});}
 function curIdeaObj(){return db.inbox.find(function(a){return a.id===curIdea;});}
 function openIdea(id){var x=db.inbox.find(function(a){return a.id===id;});if(!x)return;curIdea=id;if(!x.mind||!x.mind.length){x.mind=[{id:1,t:x.t,x:30,y:30,p:0}];save();}var lbl=document.getElementById("ideaLabel");if(lbl)lbl.textContent=x.t.slice(0,24);var tb=document.getElementById("mindToolbar");if(tb)tb.style.display="";renderMind();}
 function mindRoot(){var x=curIdeaObj();return (x&&x.mind&&x.mind.length)?x.mind[0].id:1;}
 function mindUid(){var x=curIdeaObj();var m=0;x.mind.forEach(function(n){if(n.id>m)m=n.id;});return m+1;}
-function mindAdd(pid){var x=curIdeaObj();if(!x)return;var p=x.mind.find(function(n){return n.id===pid;});var sib=x.mind.filter(function(n){return n.p===pid;}).length;var nx=(p?p.x:30)+150;var ny=(p?p.y:30)+sib*66;var nid=mindUid();x.mind.push({id:nid,t:"새 생각",x:nx,y:ny,p:pid});save();renderMind();return nid;}
+function mindAdd(pid){var x=curIdeaObj();if(!x)return;var nid=mindUid();x.mind.push({id:nid,t:"",p:pid});save();renderMind();return nid;}
 function mindAddFocus(pid){var nid=mindAdd(pid);setTimeout(function(){var el=document.querySelector('.mnode[data-id="'+nid+'"] .mtext');if(el){el.focus();var r=document.createRange();r.selectNodeContents(el);var sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);}},0);}
-function mindKey(e,id){if(e.key==='Tab'){e.preventDefault();e.target.blur();mindAddFocus(id);}}
+function mindSibParent(id){var x=curIdeaObj();var n=x.mind.find(function(a){return a.id===id;});if(!n)return x.mind[0].id;return (n.p&&n.p!==0)?n.p:x.mind[0].id;}
+function mindAddSiblingFocus(id){mindAddFocus(mindSibParent(id));}
+function mindKey(e,id){if(e.key==='Tab'){e.preventDefault();e.target.blur();mindAddFocus(id);}else if(e.key==='Enter'){if(e.shiftKey){e.preventDefault();document.execCommand('insertLineBreak');}else{e.preventDefault();e.target.blur();mindAddSiblingFocus(id);}}}
 function mindDepth(x,n){var d=0,c=n;while(c&&c.p){var pn=x.mind.find(function(a){return a.id===c.p;});if(!pn)break;d++;c=pn;}return d;}
 var MB=["#2f6f5e","#c99a2e","#d0574f","#4a76c4","#9c6ade","#3a9e93"];
 var MBG=["#dbeee6","#fbe6b8","#f7d3d1","#dde7f8","#ece0fb","#d6f0ec"];
 function mindEdit(id,t){var x=curIdeaObj();if(!x)return;var n=x.mind.find(function(a){return a.id===id;});if(n){n.t=String(t).trim();save();}}
 function mindDel(id){var x=curIdeaObj();if(!x||id===x.mind[0].id)return;var rm=[id],ch=true;while(ch){ch=false;x.mind.forEach(function(n){if(rm.indexOf(n.p)>=0&&rm.indexOf(n.id)<0){rm.push(n.id);ch=true;}});}x.mind=x.mind.filter(function(n){return rm.indexOf(n.id)<0;});save();renderMind();}
-function mindLines(x){var s="";x.mind.forEach(function(n){if(n.p){var pn=x.mind.find(function(a){return a.id===n.p;});if(pn){var x1=pn.x+72,y1=pn.y+18,x2=n.x+72,y2=n.y+18;s+='<path d="M'+x1+' '+y1+' C'+(x1+45)+' '+y1+' '+(x2-45)+' '+y2+' '+x2+' '+y2+'" stroke="#c3cbc7" stroke-width="2" fill="none"/>';}}});return s;}
-function renderMind(){var el=document.getElementById("mindCanvas");if(!el)return;var x=curIdeaObj();if(!x||!x.mind){el.innerHTML='<div class="empty">왼쪽 목록에서 🧠 를 눌러 아이디어를 펼쳐보세요.</div>';return;}var mw=400,mh=320;x.mind.forEach(function(n){if(n.x+180>mw)mw=n.x+180;if(n.y+70>mh)mh=n.y+70;});var nodes=x.mind.map(function(n){var root=n.id===x.mind[0].id;var d=mindDepth(x,n);return '<div class="mnode'+(root?" root":"")+'" data-id="'+n.id+'" style="left:'+n.x+'px;top:'+n.y+'px;border-color:'+MB[d%6]+';background:'+MBG[d%6]+'" onmousedown="mindDragStart(event,'+n.id+')"><span class="mtext" contenteditable onkeydown="mindKey(event,'+n.id+')" onblur="mindEdit('+n.id+',this.innerText)">'+esc(n.t)+'</span>'+(root?"":'<span class="mdel" onclick="mindDel('+n.id+')" title="삭제">×</span>')+'</div>';}).join("");el.innerHTML='<div class="mind-canvas" style="width:'+mw+'px;height:'+mh+'px"><svg class="mind-svg" width="'+mw+'" height="'+mh+'">'+mindLines(x)+'</svg>'+nodes+'</div>';}
+function mindNodeById(x,id){return x.mind.find(function(a){return a.id===id;});}
+function mindEstW(n){var t=(n&&n.t)||"";var line=String(t).split("\n").reduce(function(m,s){return Math.max(m,s.length);},0);if(!line)return 22;return Math.max(24,Math.min(240,line*13+10));}
+function mindLines2(n){var t=String((n&&n.t)||"");var br=t.split("\n").length;var raw=1;t.split("\n").forEach(function(s){raw=Math.max(raw,Math.ceil((s.length*13+10)/240));});return Math.max(1,br,raw);}
+function mindChildrenAll(x,id){return x.mind.filter(function(n){return n.p===id;});}
+function mindDescCount(x,id){var c=0;mindChildrenAll(x,id).forEach(function(ch){c+=1+mindDescCount(x,ch.id);});return c;}
+function mindFullW(x,n){var root=(!n.p||n.p===0);var w=mindEstW(n)+(root?28:0);if(mindChildrenAll(x,n.id).length>0&&!n.collapsed)w+=18;return w;}
+function mindLayout(x){
+  var nodes=x.mind, root=nodes[0];
+  function childrenAll(id){return nodes.filter(function(n){return n.p===id;});}
+  function visch(n){return n.collapsed?[]:childrenAll(n.id);}
+  var col={},soft={};
+  function assignBranch(n,c,s){col[n.id]=c;soft[n.id]=s;childrenAll(n.id).forEach(function(ch){assignBranch(ch,c,s);});}
+  childrenAll(root.id).forEach(function(n,i){var k=i%6;assignBranch(n,MB[k],MBG[k]);});
+  var ROW=34, GAP=50, pos={}, cursor=0;
+  function rec(n,depth,xLeft){
+    var vch=visch(n), y;
+    if(!vch.length){var ln=mindLines2(n);y=(cursor+(ln-1)/2)*ROW;cursor+=ln;}
+    else{var cx=xLeft+mindFullW(x,n)+GAP;var cys=vch.map(function(c){return rec(c,depth+1,cx);});y=(cys[0]+cys[cys.length-1])/2;}
+    pos[n.id]={x:xLeft,y:y,depth:depth,dir:depth?1:0,col:col[n.id]||'#12312b',soft:soft[n.id]||'#12312b',w:mindFullW(x,n),hasCh:childrenAll(n.id).length>0,collapsed:!!n.collapsed};
+    return y;
+  }
+  var vroot=visch(root), rootY;
+  if(vroot.length){var cx=mindFullW(x,root)+GAP;var cys=[];vroot.forEach(function(c){cys.push(rec(c,1,cx));cursor++;});rootY=(cys[0]+cys[cys.length-1])/2;}
+  else rootY=0;
+  pos[root.id]={x:0,y:rootY,depth:0,dir:0,col:'#12312b',soft:'#12312b',w:mindFullW(x,root),hasCh:childrenAll(root.id).length>0,collapsed:!!root.collapsed};
+  return pos;
+}
+function mindConnectors(x,pos,offX,offY){
+  var s="";
+  x.mind.forEach(function(n){
+    if(!n.p||n.p===0)return;
+    var c=pos[n.id], p=pos[n.p]; if(!c||!p)return;
+    var x1=offX+p.x+p.w, y1=offY+p.y, x2=offX+c.x, y2=offY+c.y;
+    var dx=(x2-x1), c1=x1+dx*0.5, c2=x2-dx*0.5;
+    var sw=Math.max(0.8,1.7-c.depth*0.3);
+    s+='<path d="M'+x1.toFixed(1)+' '+y1.toFixed(1)+' C'+c1.toFixed(1)+' '+y1.toFixed(1)+' '+c2.toFixed(1)+' '+y2.toFixed(1)+' '+x2.toFixed(1)+' '+y2.toFixed(1)+'" stroke="'+(c.col||'#c3cbc7')+'" stroke-width="'+sw.toFixed(1)+'" fill="none" stroke-linecap="round"/>';
+  });
+  return s;
+}
+function renderMind(){
+  var el=document.getElementById("mindCanvas");if(!el)return;
+  var x=curIdeaObj();
+  if(!x||!x.mind||!x.mind.length){el.innerHTML='<div class="empty">왼쪽 목록에서 🧠 를 눌러 아이디어를 펼쳐보세요.</div>';return;}
+  var pos=mindLayout(x);
+  var minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
+  x.mind.forEach(function(n){var p=pos[n.id];if(!p)return;minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x+p.w);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);});
+  var padX=100,padY=80, offX=padX-minX, offY=padY-minY;
+  var W=Math.max(560,(maxX-minX)+padX*2), H=Math.max(340,(maxY-minY)+padY*2);
+  var nodesHTML=x.mind.map(function(n){
+    var p=pos[n.id]; if(!p)return '';
+    var root=!n.p||n.p===0;
+    var col=root?'#12312b':(p.col||'#2f6f5e');
+    var tog=p.hasCh?'<span class="mtog'+(p.collapsed?' col':'')+'" onclick="mindToggle(event,'+n.id+')" title="가지 접기/펼치기">'+(p.collapsed?mindDescCount(x,n.id):'')+'</span>':'';
+    return '<div class="mnode'+(root?' root':'')+'" data-id="'+n.id+'" draggable="false" onmousedown="mindDown(event,'+n.id+')" style="left:'+(offX+p.x)+'px;top:'+(offY+p.y)+'px;transform:'+(root?'translate(0,-50%)':'translate(0,-100%)')+';color:'+col+'"><span class="mtext" contenteditable onkeydown="mindKey(event,'+n.id+')" onblur="mindEdit('+n.id+',this.innerText)">'+esc(n.t)+'</span>'+tog+(root?'':'<span class="mdel" onclick="mindDel('+n.id+')" title="삭제">×</span>')+'</div>';
+  }).join("");
+  el.innerHTML='<div class="mind-canvas" style="width:'+W+'px;height:'+H+'px"><svg class="mind-svg" width="'+W+'" height="'+H+'">'+mindConnectors(x,pos,offX,offY)+'</svg>'+nodesHTML+'</div>';
+  var rp=pos[x.mind[0].id];if(rp){el.scrollLeft=Math.max(0,offX+rp.x-el.clientWidth/2);el.scrollTop=Math.max(0,offY+rp.y-el.clientHeight/2);}
+}
 function updateMindPanel(){var mc=document.getElementById("mindCanvas");if(!mc)return;if(curIdea){renderMind();}else{mc.innerHTML='<div class="empty">왼쪽 목록에서 🧠 를 눌러 아이디어를 펼쳐보세요.</div>';}}
-var mindDrag=null;
-function mindDragStart(e,id){var t=e.target;if(t.classList.contains("mtext")||t.classList.contains("madd")||t.classList.contains("mdel"))return;e.preventDefault();var x=curIdeaObj();var n=x.mind.find(function(a){return a.id===id;});mindDrag={id:id,sx:e.clientX,sy:e.clientY,ox:n.x,oy:n.y};document.addEventListener("mousemove",mindDragMove);document.addEventListener("mouseup",mindDragEnd);}
-function mindDragMove(e){if(!mindDrag)return;var x=curIdeaObj();var n=x.mind.find(function(a){return a.id===mindDrag.id;});n.x=Math.max(0,mindDrag.ox+(e.clientX-mindDrag.sx));n.y=Math.max(0,mindDrag.oy+(e.clientY-mindDrag.sy));var el=document.querySelector('.mnode[data-id="'+mindDrag.id+'"]');if(el){el.style.left=n.x+"px";el.style.top=n.y+"px";}var svg=document.querySelector(".mind-svg");if(svg)svg.innerHTML=mindLines(x);}
-function mindDragEnd(){if(mindDrag){save();mindDrag=null;}document.removeEventListener("mousemove",mindDragMove);document.removeEventListener("mouseup",mindDragEnd);}
+function mindToggle(e,id){e.stopPropagation();var x=curIdeaObj();if(!x)return;var n=x.mind.find(function(a){return a.id===id;});if(!n)return;n.collapsed=!n.collapsed;save();renderMind();}
+var mDrag=null;
+function mindDown(e,id){if(e.button!==0)return;var t=e.target;if(t.classList.contains("mtog")||t.classList.contains("mdel"))return;var x=curIdeaObj();if(!x)return;mDrag={id:id,sx:e.clientX,sy:e.clientY,moved:false,root:(id===x.mind[0].id)};document.addEventListener("mousemove",mindMove);document.addEventListener("mouseup",mindUp);}
+function mindTargetAt(cx,cy,selfId){if(!document.elementsFromPoint)return null;var els=document.elementsFromPoint(cx,cy);for(var i=0;i<els.length;i++){var m=els[i].closest?els[i].closest(".mnode"):null;if(m){var tid=parseInt(m.getAttribute("data-id"),10);if(tid!==selfId)return tid;}}return null;}
+function mindMove(e){
+  if(!mDrag)return;
+  if(!mDrag.moved){
+    if(Math.abs(e.clientX-mDrag.sx)+Math.abs(e.clientY-mDrag.sy)<5)return;
+    mDrag.moved=true;
+    if(mDrag.root){mDrag=null;document.removeEventListener("mousemove",mindMove);document.removeEventListener("mouseup",mindUp);return;}
+    if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();
+    if(window.getSelection)window.getSelection().removeAllRanges();
+    var el=document.querySelector('.mnode[data-id="'+mDrag.id+'"]');if(el)el.classList.add("dragging");
+  }
+  e.preventDefault();
+  document.querySelectorAll(".mnode.drop").forEach(function(n){n.classList.remove("drop");});
+  var tid=mindTargetAt(e.clientX,e.clientY,mDrag.id);
+  if(tid!=null){var te=document.querySelector('.mnode[data-id="'+tid+'"]');if(te)te.classList.add("drop");}
+}
+function mindUp(e){
+  document.removeEventListener("mousemove",mindMove);document.removeEventListener("mouseup",mindUp);
+  if(mDrag&&mDrag.moved){var tid=mindTargetAt(e.clientX,e.clientY,mDrag.id);if(tid!=null)mindReparent(mDrag.id,tid);}
+  document.querySelectorAll(".mnode.drop,.mnode.dragging").forEach(function(n){n.classList.remove("drop");n.classList.remove("dragging");});
+  mDrag=null;
+}
+function mindIsDesc(x,ancId,id){var cur=x.mind.find(function(a){return a.id===id;});while(cur&&cur.p){if(cur.p===ancId)return true;cur=x.mind.find(function(a){return a.id===cur.p;});}return false;}
+function mindReparent(id,targetId){var x=curIdeaObj();if(!x)return;if(id===targetId)return;if(mindIsDesc(x,id,targetId))return;var n=x.mind.find(function(a){return a.id===id;});if(!n||n.p===targetId)return;n.p=targetId;var t=x.mind.find(function(a){return a.id===targetId;});if(t)t.collapsed=false;save();renderMind();}
 function schedOf(d){return db.schedules.filter(s=>s.date===d)
   .sort((a,b)=>String(a.time||'').localeCompare(String(b.time||'')));}
 function renderCal(){
@@ -836,7 +1022,11 @@ function setDashWorkTab(t){dashWorkTab=t;renderDashWork();}
 function addWorkDash(){
   const title=document.getElementById('wTitle').value.trim(),content=document.getElementById('wContent').value.trim();
   if(!title&&!content){alert('제목 또는 내용을 입력하세요.');return;}
-  db.work.push({id:uid(),date:today(),cat:dashWorkTab,category:'',title,content});save();
+  ensureWorkVault();
+  const V=db.workVault[dashWorkTab];
+  const note={id:wvUid(),type:'file',name:wvUniqueName(V.nodes,title||('메모 '+today())),content:content,updated:today()};
+  V.nodes.push(note);
+  db.work.push({id:uid(),date:today(),cat:dashWorkTab,category:'',title,content,noteId:note.id});save();
   document.getElementById('wTitle').value='';document.getElementById('wContent').value='';
   renderWorkAll();renderCal();
 }
@@ -847,7 +1037,7 @@ function renderDashWork(){
   el.innerHTML=list.length?('<div class="datehdr">오늘 '+dashWorkTab+' 기록</div>'+list.map(w=>
     `<div class="entry"><div class="meta"><span class="cat-badge b-work">${esc(w.cat)}</span>
       <b contenteditable onblur="editWork(${w.id},'title',this.innerText)" style="flex:1">${esc(w.title||'')}</b>
-      <span class="del" onclick="delEntry('work',${w.id},renderWorkAll)">×</span></div>
+      <span class="del" onclick="delWorkEntry(${w.id})">×</span></div>
       <div class="body" contenteditable onblur="editWork(${w.id},'content',this.innerText)">${esc(w.content||'')}</div></div>`).join(''))
     :'<div class="empty">오늘 '+dashWorkTab+' 기록이 없습니다.</div>';
 }
@@ -856,6 +1046,10 @@ function renderDashWork(){
 function setDetailWorkTab(t){detailWorkTab=t;renderWork();}
 function editWork(id,field,val){const w=db.work.find(x=>x.id===id);if(!w)return;
   w[field]=String(val).trim();if(field==='category')addWorkCat(w.category);
+  if(w.noteId&&db.workVault){for(const cat in db.workVault){const r=wvFind(db.workVault[cat],w.noteId);if(r){if(field==='title')r.node.name=wvUniqueName(r.list.filter(n=>n!==r.node),w.title||('메모 '+w.date));else if(field==='content')r.node.content=w.content;r.node.updated=today();break;}}}
+  save();renderWorkAll();renderCal();}
+function delWorkEntry(id){const w=db.work.find(x=>x.id===id);db.work=db.work.filter(x=>x.id!==id);
+  if(w&&w.noteId&&db.workVault){for(const cat in db.workVault){const r=wvFind(db.workVault[cat],w.noteId);if(r){r.list.splice(r.list.indexOf(r.node),1);if(db.workVault[cat].active===w.noteId)db.workVault[cat].active=null;break;}}}
   save();renderWorkAll();renderCal();}
 function addWorkDetail(){
   const title=document.getElementById('wdTitle').value.trim(),content=document.getElementById('wdContent').value.trim();
@@ -870,27 +1064,289 @@ function groupByDate(arr){const g={};arr.slice().sort((a,b)=>b.date.localeCompar
 function renderWork(){
   document.querySelectorAll('#workTabs .tab').forEach(b=>b.classList.toggle('active',b.dataset.t===detailWorkTab));
   const pane=document.getElementById('workPane');if(!pane)return;
-  const rows=db.work.filter(w=>w.cat===detailWorkTab);
-  const g=groupByDate(rows);let list='';
-  Object.keys(g).forEach(d=>{list+=`<div class="datehdr">${d}</div>`;
-    g[d].forEach(w=>{list+=`<div class="entry">
-      <div class="meta">
-        <input class="rowsel" list="workCatList" value="${escA(w.category||'')}" placeholder="카테고리" onchange="editWork(${w.id},'category',this.value)">
-        <b contenteditable onblur="editWork(${w.id},'title',this.innerText)" style="flex:1">${esc(w.title||'')}</b>
-        <span class="del" onclick="delEntry('work',${w.id},renderWorkAll)">×</span></div>
-      <div class="body" contenteditable onblur="editWork(${w.id},'content',this.innerText)">${esc(w.content||'')}</div></div>`;});});
-  pane.innerHTML=`${workCatDatalist()}
-  <div class="card"><h3><span class="dot" style="background:var(--yellow)"></span> ${detailWorkTab} 입력</h3>
-    <div class="inrow">
-      <input id="wdDate" type="date" class="in" style="flex:none;width:150px" value="${today()}">
-      <input id="wdCat" class="in" list="workCatList" style="flex:1" placeholder="카테고리 (직접 입력하면 목록에 추가)">
-      <input id="wdTitle" class="in" style="flex:2" placeholder="제목">
-    </div>
-    <textarea id="wdContent" class="in" style="width:100%;min-height:90px;margin-top:8px;resize:vertical" placeholder="내용"></textarea>
-    <div style="margin-top:10px"><button class="btn y" onclick="addWorkDetail()">＋ 추가</button></div></div>
-  <div class="card"><h3><span class="dot" style="background:var(--yellow)"></span> ${detailWorkTab} 누적 기록 <span class="more">${rows.length}건</span></h3>
-    ${list||'<div class="empty">기록이 없습니다.</div>'}</div>`;
+  ensureWorkVault();
+  const V=db.workVault[detailWorkTab];
+  pane.innerHTML=`<div class="wv"><div class="wv-side">${wvSideHTML(V)}</div><div class="wv-main">${wvMainHTML(V)}</div></div>`;
 }
+
+/* ===== Work Vault (Obsidian-style) ===== */
+const WV_TABS=['의회운영','법규정','매뉴얼'];
+let wvDragId=null;
+function wvUid(){return 'n'+Date.now().toString(36)+Math.floor(Math.random()*1e5).toString(36);}
+function wvA(s){return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function wvBlank(){return {nodes:[],active:null,open:{},mode:'split',q:'',tag:''};}
+function wvTagify(s){return String(s||'').trim().replace(/\s+/g,'-').replace(/#/g,'');}
+function ensureWorkVault(){
+  if(!db.workVault)db.workVault={};
+  WV_TABS.forEach(t=>{if(!db.workVault[t])db.workVault[t]=wvBlank();});
+  if(!db.workVaultMigrated){
+    (db.work||[]).forEach(w=>{
+      const t=w.cat;if(!db.workVault[t])return;
+      const list=db.workVault[t].nodes;
+      const nm=wvUniqueName(list,(w.title&&w.title.trim())||'무제');
+      let body=w.content||'';
+      if(w.category)body='#'+wvTagify(w.category)+'\n\n'+body;
+      list.push({id:wvUid(),type:'file',name:nm,content:body,updated:w.date||today()});
+    });
+    db.workVaultMigrated=true;save();
+  }
+}
+function wvUniqueName(list,name){
+  name=(name||'').trim()||'무제';const low=n=>n.toLowerCase();
+  const has=n=>list.some(x=>low(x.name)===low(n));
+  if(!has(name))return name;let i=2;while(has(name+' '+i))i++;return name+' '+i;
+}
+function wvFind(V,id,nodes,parent){
+  nodes=nodes||V.nodes;
+  for(const n of nodes){
+    if(n.id===id)return {node:n,parent:parent||null,list:nodes};
+    if(n.type==='folder'&&n.children){const r=wvFind(V,id,n.children,n);if(r)return r;}
+  }
+  return null;
+}
+function wvActiveFile(V){if(!V.active)return null;const r=wvFind(V,V.active);return r&&r.node.type==='file'?r.node:null;}
+function wvAllFiles(V,nodes,out){
+  nodes=nodes||V.nodes;out=out||[];
+  nodes.forEach(n=>{if(n.type==='file')out.push(n);else if(n.children)wvAllFiles(V,n.children,out);});
+  return out;
+}
+function wvPath(V,id){
+  function rec(nodes,trail){
+    for(const n of nodes){
+      if(n.id===id)return trail.concat(n.name);
+      if(n.type==='folder'&&n.children){const r=rec(n.children,trail.concat(n.name));if(r)return r;}
+    }
+    return null;
+  }
+  const p=rec(V.nodes,[]);return p?p.join('  /  '):'';
+}
+function wvFileTags(node){
+  const t=new Set();const re=/(^|\s)#([A-Za-z0-9가-힣/_-]+)/g;let m;
+  while(m=re.exec(node.content||''))t.add(m[2]);
+  return [...t];
+}
+function wvAllTags(V){const s=new Set();wvAllFiles(V).forEach(f=>wvFileTags(f).forEach(t=>s.add(t)));return [...s].sort();}
+function wvFileByName(V,name){const low=name.toLowerCase();return wvAllFiles(V).find(f=>f.name.toLowerCase()===low)||null;}
+function wvBacklinks(V,name){
+  const low=name.toLowerCase(),out=[];
+  wvAllFiles(V).forEach(f=>{
+    if(f.name.toLowerCase()===low)return;
+    const re=/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g;let m;
+    while(m=re.exec(f.content||'')){if(m[1].trim().toLowerCase()===low){out.push(f);break;}}
+  });
+  return out;
+}
+function wvMatch(node,V){
+  if(node.type==='file'){
+    let ok=true;
+    if(V.q){const q=V.q.toLowerCase();ok=node.name.toLowerCase().includes(q)||(node.content||'').toLowerCase().includes(q);}
+    if(ok&&V.tag)ok=wvFileTags(node).includes(V.tag);
+    return ok;
+  }
+  return (node.children||[]).some(c=>wvMatch(c,V));
+}
+function wvSideHTML(V){
+  const tags=wvAllTags(V);
+  const chips=tags.map(t=>`<span class="wv-tag${V.tag===t?' on':''}" onclick="wvFilterTag('${wvA(t)}')">#${esc(t)}</span>`).join('');
+  return `<div class="wv-tools"><b class="wv-vault">${esc(detailWorkTab)}</b>
+    <span class="wv-tbtns"><button onclick="wvNewFile(null)" title="새 노트">＋📝</button><button onclick="wvNewFolder(null)" title="새 폴더">＋📁</button><button onclick="wvGraph()" title="그래프 뷰">🕸</button></span></div>
+    <input id="wvq" class="wv-search" placeholder="🔍 노트·내용 검색" value="${escA(V.q||'')}" oninput="wvSearch(this.value)">
+    ${chips?`<div class="wv-tags">${chips}</div>`:''}
+    <div class="wv-tree" id="wvTree" ondragover="wvDragOver(event)" ondrop="wvDrop(event,null)">${wvTreeHTML(V)}</div>`;
+}
+function wvTreeHTML(V){
+  const filtering=!!(V.q||V.tag);
+  function rows(nodes,depth){
+    let h='';
+    const sorted=nodes.slice().sort((a,b)=>a.type===b.type?a.name.localeCompare(b.name,'ko'):(a.type==='folder'?-1:1));
+    sorted.forEach(n=>{
+      if(filtering&&!wvMatch(n,V))return;
+      const pad=6+depth*15;
+      if(n.type==='folder'){
+        const open=filtering||V.open[n.id];
+        h+=`<div class="wv-row wv-folder" style="padding-left:${pad}px" draggable="true" ondragstart="wvDragStart(event,'${n.id}')" ondragover="wvDragOver(event)" ondrop="wvDrop(event,'${n.id}')" onclick="wvToggle('${n.id}')">
+          <span class="wv-ca">${open?'▾':'▸'}</span><span class="wv-ic">📁</span><span class="wv-nm">${esc(n.name)}</span>
+          <span class="wv-act"><i onclick="event.stopPropagation();wvNewFile('${n.id}')" title="새 노트">📝</i><i onclick="event.stopPropagation();wvNewFolder('${n.id}')" title="새 폴더">📁</i><i onclick="event.stopPropagation();wvRename('${n.id}')" title="이름변경">✎</i><i onclick="event.stopPropagation();wvDelete('${n.id}')" title="삭제">🗑</i></span></div>`;
+        if(open)h+=rows(n.children||[],depth+1);
+      }else{
+        const act=V.active===n.id;
+        h+=`<div class="wv-row wv-file${act?' on':''}" style="padding-left:${pad+12}px" draggable="true" ondragstart="wvDragStart(event,'${n.id}')" onclick="wvOpen('${n.id}')">
+          <span class="wv-ic">📄</span><span class="wv-nm">${esc(n.name)}</span>
+          <span class="wv-act"><i onclick="event.stopPropagation();wvRename('${n.id}')" title="이름변경">✎</i><i onclick="event.stopPropagation();wvDelete('${n.id}')" title="삭제">🗑</i></span></div>`;
+      }
+    });
+    return h;
+  }
+  return rows(V.nodes,0)||'<div class="wv-empty">아직 노트가 없어요.<br>위의 ＋📝 로 첫 노트를 만들어 보세요.</div>';
+}
+function wvMainHTML(V){
+  const f=wvActiveFile(V);
+  if(!f)return `<div class="wv-blank">← 왼쪽에서 노트를 선택하거나<br>새 노트를 만들어 보세요.</div>`;
+  const path=wvPath(V,f.id);
+  const seg=`<span class="wv-seg"><i class="${V.mode==='edit'?'on':''}" onclick="wvSetMode('edit')">편집</i><i class="${V.mode==='split'?'on':''}" onclick="wvSetMode('split')">분할</i><i class="${V.mode==='read'?'on':''}" onclick="wvSetMode('read')">미리보기</i></span>`;
+  const editor=`<textarea id="wvEditor" class="wv-editor" placeholder="마크다운으로 작성하세요.  예) # 제목  **굵게**  - 목록  [[다른 노트]]  #태그" oninput="wvEditInput()">${esc(f.content||'')}</textarea>`;
+  const preview=`<div class="wv-preview" id="wvPreview">${wvMd(f.content||'',V)}</div>`;
+  let center;
+  if(V.mode==='edit')center=`<div class="wv-pane only">${editor}</div>`;
+  else if(V.mode==='read')center=`<div class="wv-pane only">${preview}</div>`;
+  else center=`<div class="wv-pane half">${editor}</div><div class="wv-pane half border">${preview}</div>`;
+  const bl=wvBacklinks(V,f.name);
+  const blHTML=bl.length?`<div class="wv-bl"><b>🔗 백링크 (${bl.length})</b>${bl.map(b=>`<a onclick="wvOpen('${b.id}')">${esc(b.name)}</a>`).join('')}</div>`:'';
+  return `<div class="wv-head"><span class="wv-path">📄 ${esc(path)}</span><span class="wv-htools">${seg}<i class="wv-hbtn" onclick="wvRename('${f.id}')">✎ 이름</i><i class="wv-hbtn" onclick="wvDelete('${f.id}')">🗑 삭제</i></span></div><div class="wv-body">${center}</div>${blHTML}`;
+}
+function wvEditInput(){
+  const V=db.workVault[detailWorkTab];const f=wvActiveFile(V);if(!f)return;
+  const ta=document.getElementById('wvEditor');f.content=ta.value;f.updated=today();
+  const pv=document.getElementById('wvPreview');if(pv)pv.innerHTML=wvMd(f.content,V);
+  clearTimeout(window.__wvT);window.__wvT=setTimeout(save,400);
+}
+function wvSearch(v){const V=db.workVault[detailWorkTab];V.q=v;save();const el=document.getElementById('wvTree');if(el)el.innerHTML=wvTreeHTML(V);}
+function wvFilterTag(t){const V=db.workVault[detailWorkTab];V.tag=(V.tag===t?'':t);save();renderWork();}
+function wvSetMode(m){const V=db.workVault[detailWorkTab];V.mode=m;save();renderWork();}
+function wvOpen(id){const V=db.workVault[detailWorkTab];V.active=id;wvExpandTo(V,id);save();renderWork();}
+function wvToggle(id){const V=db.workVault[detailWorkTab];V.open[id]=!V.open[id];save();renderWork();}
+function wvExpandTo(V,id){
+  function rec(nodes,trail){
+    for(const n of nodes){
+      if(n.id===id){trail.forEach(fid=>V.open[fid]=true);return true;}
+      if(n.type==='folder'&&n.children&&rec(n.children,trail.concat(n.id)))return true;
+    }
+    return false;
+  }
+  rec(V.nodes,[]);
+}
+function wvNewFile(parentId){
+  const name=prompt('새 노트 이름','제목 없는 노트');if(name===null)return;
+  const V=db.workVault[detailWorkTab];
+  const parent=parentId?wvFind(V,parentId).node:null;
+  const list=parent?(parent.children=parent.children||[]):V.nodes;
+  const node={id:wvUid(),type:'file',name:wvUniqueName(list,name),content:'',updated:today()};
+  list.push(node);if(parent)V.open[parent.id]=true;V.active=node.id;save();renderWork();
+}
+function wvNewFolder(parentId){
+  const name=prompt('새 폴더 이름','새 폴더');if(name===null)return;
+  const V=db.workVault[detailWorkTab];
+  const parent=parentId?wvFind(V,parentId).node:null;
+  const list=parent?(parent.children=parent.children||[]):V.nodes;
+  const node={id:wvUid(),type:'folder',name:wvUniqueName(list,name),children:[]};
+  list.push(node);if(parent)V.open[parent.id]=true;V.open[node.id]=true;save();renderWork();
+}
+function wvRename(id){
+  const V=db.workVault[detailWorkTab];const r=wvFind(V,id);if(!r)return;
+  const old=r.node.name;const name=prompt('이름 변경',old);if(name===null)return;
+  const nm=wvUniqueName(r.list.filter(x=>x!==r.node),name);
+  r.node.name=nm;
+  if(r.node.type==='file'&&old!==nm)wvUpdateLinks(V,old,nm);
+  save();renderWork();
+}
+function wvUpdateLinks(V,oldName,newName){
+  const re=new RegExp('\\[\\[\\s*'+oldName.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*(\\|[^\\]]+)?\\]\\]','gi');
+  wvAllFiles(V).forEach(f=>{f.content=(f.content||'').replace(re,(m,alias)=>'[['+newName+(alias||'')+']]');});
+}
+function wvDelete(id){
+  const V=db.workVault[detailWorkTab];const r=wvFind(V,id);if(!r)return;
+  const kind=r.node.type==='folder'?'폴더(하위 포함)':'노트';
+  if(!confirm('이 '+kind+'을(를) 삭제할까요?\n\n'+r.node.name))return;
+  r.list.splice(r.list.indexOf(r.node),1);
+  if(V.active&&!wvFind(V,V.active))V.active=null;
+  save();renderWork();
+}
+function wvOpenByName(name){
+  const V=db.workVault[detailWorkTab];let f=wvFileByName(V,name);
+  if(!f){if(!confirm('“'+name+'” 노트가 없어요. 새로 만들까요?'))return;
+    f={id:wvUid(),type:'file',name:wvUniqueName(V.nodes,name),content:'',updated:today()};V.nodes.push(f);}
+  V.active=f.id;wvExpandTo(V,f.id);save();renderWork();
+}
+function wvIsDescendant(V,ancestorId,maybeId){
+  const r=wvFind(V,ancestorId);if(!r||r.node.type!=='folder')return false;
+  return !!wvFind(V,maybeId,r.node.children||[]);
+}
+function wvDragStart(e,id){wvDragId=id;e.dataTransfer.setData('text/plain',id);e.dataTransfer.effectAllowed='move';e.stopPropagation();}
+function wvDragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';}
+function wvDrop(e,folderId){
+  e.preventDefault();e.stopPropagation();
+  const id=wvDragId||e.dataTransfer.getData('text/plain');wvDragId=null;if(!id)return;
+  const V=db.workVault[detailWorkTab];
+  if(id===folderId)return;
+  if(folderId&&wvIsDescendant(V,id,folderId))return;
+  const src=wvFind(V,id);if(!src)return;const node=src.node;
+  src.list.splice(src.list.indexOf(node),1);
+  const dest=folderId?wvFind(V,folderId).node:null;
+  const list=dest?(dest.children=dest.children||[]):V.nodes;
+  node.name=wvUniqueName(list,node.name);list.push(node);
+  if(dest)V.open[dest.id]=true;save();renderWork();
+}
+function wvMd(src,V){
+  src=String(src||'').replace(/\r\n/g,'\n');
+  const codes=[];
+  src=src.replace(/```([\s\S]*?)```/g,(m,c)=>{codes.push(c.replace(/^\n/,'').replace(/\n$/,''));return ' C'+(codes.length-1)+' ';});
+  function inline(t){
+    t=esc(t);
+    t=t.replace(/!\[([^\]]*)\]\(([^)]+)\)/g,'<img alt="$1" src="$2">');
+    t=t.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,(m,name,alias)=>{
+      name=name.trim();const exists=wvFileByName(V,name);const label=alias?alias.trim():name;
+      return `<a class="wv-wl${exists?'':' miss'}" onclick="wvOpenByName('${wvA(name)}')">${label}</a>`;});
+    t=t.replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+    t=t.replace(/`([^`]+)`/g,'<code>$1</code>');
+    t=t.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+    t=t.replace(/__([^_]+)__/g,'<strong>$1</strong>');
+    t=t.replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
+    t=t.replace(/~~([^~]+)~~/g,'<del>$1</del>');
+    t=t.replace(/(^|\s)#([A-Za-z0-9가-힣/_-]+)/g,(m,pre,tag)=>`${pre}<span class="wv-tg" onclick="wvFilterTag('${wvA(tag)}')">#${esc(tag)}</span>`);
+    return t;
+  }
+  const lines=src.split('\n');let html='',i=0;
+  while(i<lines.length){
+    let ln=lines[i];
+    const cm=ln.match(/^ C(\d+) $/);
+    if(cm){html+=`<pre class="wv-code"><code>${esc(codes[+cm[1]])}</code></pre>`;i++;continue;}
+    if(/^\s*$/.test(ln)){i++;continue;}
+    let h=ln.match(/^(#{1,6})\s+(.*)$/);
+    if(h){const lv=h[1].length;html+=`<h${lv}>${inline(h[2])}</h${lv}>`;i++;continue;}
+    if(/^\s*(---|\*\*\*|___)\s*$/.test(ln)){html+='<hr>';i++;continue;}
+    if(/^\s*>\s?/.test(ln)){let buf=[];while(i<lines.length&&/^\s*>\s?/.test(lines[i])){buf.push(lines[i].replace(/^\s*>\s?/,''));i++;}html+=`<blockquote>${buf.map(inline).join('<br>')}</blockquote>`;continue;}
+    if(/^\s*\|.*\|\s*$/.test(ln)&&i+1<lines.length&&/^\s*\|?[\s:|-]+\|?\s*$/.test(lines[i+1])&&lines[i+1].includes('-')){
+      const cut=s=>s.trim().replace(/^\||\|$/g,'').split('|').map(x=>x.trim());
+      const header=cut(ln);i+=2;const body=[];
+      while(i<lines.length&&/^\s*\|.*\|\s*$/.test(lines[i])){body.push(cut(lines[i]));i++;}
+      const th='<tr>'+header.map(c=>`<th>${inline(c)}</th>`).join('')+'</tr>';
+      const tb=body.map(r=>'<tr>'+r.map(c=>`<td>${inline(c)}</td>`).join('')+'</tr>').join('');
+      html+=`<table class="wv-tbl"><thead>${th}</thead><tbody>${tb}</tbody></table>`;continue;
+    }
+    if(/^\s*[-*+]\s+/.test(ln)){let buf='';while(i<lines.length&&/^\s*[-*+]\s+/.test(lines[i])){let it=lines[i].replace(/^\s*[-*+]\s+/,'');let cb=it.match(/^\[([ xX])\]\s+(.*)$/);if(cb)buf+=`<li class="wv-task"><input type="checkbox" disabled ${cb[1].toLowerCase()==='x'?'checked':''}> ${inline(cb[2])}</li>`;else buf+=`<li>${inline(it)}</li>`;i++;}html+=`<ul>${buf}</ul>`;continue;}
+    if(/^\s*\d+\.\s+/.test(ln)){let buf='';while(i<lines.length&&/^\s*\d+\.\s+/.test(lines[i])){buf+=`<li>${inline(lines[i].replace(/^\s*\d+\.\s+/,''))}</li>`;i++;}html+=`<ol>${buf}</ol>`;continue;}
+    let buf=[ln];i++;
+    while(i<lines.length&&!/^\s*$/.test(lines[i])&&!/^(#{1,6}\s|\s*>|\s*[-*+]\s|\s*\d+\.\s)/.test(lines[i])&&!/^ C\d+ $/.test(lines[i])){buf.push(lines[i]);i++;}
+    html+=`<p>${buf.map(inline).join('<br>')}</p>`;
+  }
+  return html||'<p style="color:var(--muted)">빈 노트입니다. 편집 탭에서 내용을 작성해 보세요.</p>';
+}
+function wvGraph(){
+  const V=db.workVault[detailWorkTab];const files=wvAllFiles(V);
+  if(!files.length){alert('노트가 없습니다.');return;}
+  const idx={};files.forEach((f,k)=>idx[f.name.toLowerCase()]=k);
+  const N=files.length;
+  const nodes=files.map((f,k)=>({id:f.id,name:f.name,x:320+180*Math.cos(2*Math.PI*k/N),y:280+180*Math.sin(2*Math.PI*k/N),vx:0,vy:0}));
+  const edges=[];
+  files.forEach((f,k)=>{const re=/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g;let m;while(m=re.exec(f.content||'')){const t=idx[m[1].trim().toLowerCase()];if(t!=null&&t!==k)edges.push([k,t]);}});
+  for(let it=0;it<200;it++){
+    for(let a=0;a<N;a++)for(let b=a+1;b<N;b++){let dx=nodes[a].x-nodes[b].x,dy=nodes[a].y-nodes[b].y,d=Math.sqrt(dx*dx+dy*dy)||1;let f=2200/(d*d);nodes[a].vx+=dx/d*f;nodes[a].vy+=dy/d*f;nodes[b].vx-=dx/d*f;nodes[b].vy-=dy/d*f;}
+    edges.forEach(([a,b])=>{let dx=nodes[b].x-nodes[a].x,dy=nodes[b].y-nodes[a].y,d=Math.sqrt(dx*dx+dy*dy)||1;let f=(d-100)*0.012;nodes[a].vx+=dx/d*f;nodes[a].vy+=dy/d*f;nodes[b].vx-=dx/d*f;nodes[b].vy-=dy/d*f;});
+    nodes.forEach(n=>{n.x+=n.vx*0.85;n.y+=n.vy*0.85;n.vx*=0.55;n.vy*=0.55;});
+  }
+  let minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
+  nodes.forEach(n=>{minX=Math.min(minX,n.x);maxX=Math.max(maxX,n.x);minY=Math.min(minY,n.y);maxY=Math.max(maxY,n.y);});
+  const s=Math.min(560/((maxX-minX)||1),460/((maxY-minY)||1));
+  nodes.forEach(n=>{n.x=40+(n.x-minX)*s+((560-(maxX-minX)*s)/2);n.y=50+(n.y-minY)*s+((460-(maxY-minY)*s)/2);});
+  const svgEdges=edges.map(([a,b])=>`<line x1="${nodes[a].x.toFixed(1)}" y1="${nodes[a].y.toFixed(1)}" x2="${nodes[b].x.toFixed(1)}" y2="${nodes[b].y.toFixed(1)}" stroke="#cdd8d2" stroke-width="1.3"/>`).join('');
+  const svgNodes=nodes.map(n=>`<g class="wv-gn" onclick="wvGraphOpen('${n.id}')"><circle cx="${n.x.toFixed(1)}" cy="${n.y.toFixed(1)}" r="7" fill="#f4b740" stroke="#b98a1f"/><text x="${n.x.toFixed(1)}" y="${(n.y-11).toFixed(1)}" text-anchor="middle" font-size="11" fill="#3a4a44">${esc(n.name)}</text></g>`).join('');
+  const ov=document.createElement('div');ov.className='wv-graph-ov';ov.id='wvGraphOv';
+  ov.onclick=e=>{if(e.target===ov)wvCloseGraph();};
+  ov.innerHTML=`<div class="wv-graph-box"><div class="wv-graph-top"><b>🕸 ${esc(detailWorkTab)} · 노트 연결 그래프</b><span class="wv-gx" onclick="wvCloseGraph()">✕</span></div><svg viewBox="0 0 640 560" class="wv-graph-svg">${svgEdges}${svgNodes}</svg></div>`;
+  document.body.appendChild(ov);
+}
+function wvGraphOpen(id){wvCloseGraph();wvOpen(id);go('work');}
+function wvCloseGraph(){const e=document.getElementById('wvGraphOv');if(e)e.remove();}
 
 /* ---------- reading (books + chapters + excerpts) ---------- */
 let readOpenId=null, editBookMode=false;
@@ -1123,10 +1579,24 @@ function memRow(x){
     <button class="btn y" style="flex:none" onclick="saveEditMem(${x.id})">저장</button>
     <span class="del" onclick="cancelEditMem()">×</span></div>`;
   return `<div class="memrow">
+    <span class="zoom-ic" title="크게 보기" onclick="zoomWord(${x.id})">🔍</span>
     <span class="mask" style="flex:1" onclick="this.classList.toggle('on')">${esc(x.term||'')}</span>
     <span class="mask on" style="flex:1.3" onclick="this.classList.toggle('on')">${esc(x.meaning||'')}</span>
     <span class="edit-ic" title="수정" onclick="startEditMem(${x.id})">수정</span>
     <span class="del" onclick="delEntry('study',${x.id},renderStudyAll)">×</span></div>`;}
+function zoomWord(id){
+  const x=db.study.find(s=>s.id===id);if(!x)return;
+  const ov=document.createElement('div');ov.className='word-ov';ov.id='wordOv';
+  ov.onclick=e=>{if(e.target===ov)closeWord();};
+  ov.innerHTML=`<div class="word-box"><span class="word-close" onclick="closeWord()">✕</span>
+    <div class="word-term">${esc(x.term||'')}</div>
+    <div class="word-mean masked" onclick="this.classList.remove('masked');var h=this.nextElementSibling;if(h)h.style.display='none'">${esc(x.meaning||'')}</div>
+    <div class="word-hint">뜻을 보려면 위 영역을 탭하세요</div></div>`;
+  document.body.appendChild(ov);
+  document.addEventListener('keydown',wordEsc);
+}
+function wordEsc(e){if(e.key==='Escape')closeWord();}
+function closeWord(){const e=document.getElementById('wordOv');if(e)e.remove();document.removeEventListener('keydown',wordEsc);}
 
 /* 대시보드 */
 function setDashStudyTab(t){dashStudyTab=t;renderDashStudy();}
@@ -1281,6 +1751,7 @@ function renderDashAsset(){
 /* 세부: 탭별 페이지 */
 function setDetailAssetTab(t){detailAssetTab=t;renderAssets();}
 function editAsset(id,field,val){const a=db.assets.find(x=>x.id===id);if(!a)return;
+  if(field==='date'&&!String(val).trim())return;
   if(field==='amount')a.amount=Number(String(val).replace(/[^0-9]/g,''))||0;else a[field]=String(val).trim();
   save();renderAssetsAll();renderCal();}
 function catSelect(a,type){return `<select class="rowsel" onchange="editAsset(${a.id},'category',this.value)">${ASSET_CATS[type].map(c=>`<option${c===a.category?' selected':''}>${esc(c)}</option>`).join('')}</select>`;}
@@ -1288,7 +1759,7 @@ function assetLedger(type){
   const rows=db.assets.filter(a=>a.type===type).sort((a,b)=>b.date.localeCompare(a.date));
   if(!rows.length)return '<tr><td colspan="6" class="empty">내역이 없습니다. 위 입력창에서 추가하세요.</td></tr>';
   return rows.map(a=>`<tr>
-    <td style="white-space:nowrap">${a.date}</td>
+    <td><input type="date" class="rowdate" value="${a.date}" onchange="editAsset(${a.id},'date',this.value)"></td>
     <td>${catSelect(a,type)}</td>
     <td contenteditable onblur="editAsset(${a.id},'item',this.innerText)">${esc(a.item||'')}</td>
     <td class="amt" contenteditable onblur="editAsset(${a.id},'amount',this.innerText)">${Number(a.amount||0).toLocaleString()}</td>
@@ -1299,7 +1770,7 @@ function assetLedgerSlim(type){
   const rows=db.assets.filter(a=>a.type===type).sort((a,b)=>b.date.localeCompare(a.date));
   if(!rows.length)return '<tr><td colspan="5" class="empty">내역이 없습니다. 위 입력창에서 추가하세요.</td></tr>';
   return rows.map(a=>`<tr>
-    <td style="white-space:nowrap">${a.date.slice(5)}</td>
+    <td><input type="date" class="rowdate" value="${a.date}" onchange="editAsset(${a.id},'date',this.value)"></td>
     <td>${catSelect(a,type)}</td>
     <td contenteditable onblur="editAsset(${a.id},'item',this.innerText)">${esc(a.item||'')}</td>
     <td class="amt" contenteditable onblur="editAsset(${a.id},'amount',this.innerText)">${Number(a.amount||0).toLocaleString()}</td>
@@ -1309,9 +1780,9 @@ function assetInputRow(type){
   return `<div class="inrow">
     <input type="date" id="eDate" class="in" style="flex:none;width:148px" value="${today()}">
     <select id="eCat" class="in" style="flex:1">${ASSET_CATS[type].map(c=>`<option>${esc(c)}</option>`).join('')}</select>
-    <input id="eItem" class="in" style="flex:1.6" placeholder="내역">
-    <input id="eAmt" class="in" inputmode="numeric" style="flex:1" placeholder="금액" oninput="fmtNum(this)">
-    <input id="eNote" class="in" style="flex:1" placeholder="비고">
+    <input id="eItem" class="in" style="flex:1.6" placeholder="내역" onkeydown="if(event.key==='Enter')addAssetDetail('${type}')">
+    <input id="eAmt" class="in" inputmode="numeric" style="flex:1" placeholder="금액" oninput="fmtNum(this)" onkeydown="if(event.key==='Enter')addAssetDetail('${type}')">
+    <input id="eNote" class="in" style="flex:1" placeholder="비고" onkeydown="if(event.key==='Enter')addAssetDetail('${type}')">
     <button class="btn y" style="flex:none" onclick="addAssetDetail('${type}')">추가</button>
   </div>`;
 }
