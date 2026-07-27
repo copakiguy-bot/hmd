@@ -387,6 +387,8 @@
   .ex-timer{margin-top:26px;font-size:46px;font-weight:800;letter-spacing:1px;color:var(--green);font-variant-numeric:tabular-nums;line-height:1}
   .ex-timer.done{color:var(--red)}
   .ex-timer-label{font-size:12px;color:var(--muted);margin-top:6px}
+  .mv-btn{cursor:pointer;flex-shrink:0;font-size:15px;font-weight:800;color:var(--green);padding:0 4px}
+  .mv-btn:hover{color:var(--dark)}
 </style>
 </head>
 <body>
@@ -614,8 +616,11 @@
         <button class="btn" onclick="addInbox('inboxInput2')">추가</button>
       </div>
     </div>
-    <div class="card"><h3><span class="dot"></span> 누적 <span class="more" id="inboxPageCount"></span></h3><div id="inboxPage"></div></div>
-      <div class="card" id="ideaCard"><h3><span class="dot" style="background:#6a8fd8"></span> 아이디어 구체화 <span class="more" id="ideaLabel">🧠 를 눌러 시작</span></h3>
+    <div class="g2" style="align-items:start">
+      <div class="card"><h3><span class="dot"></span> 단기 프로젝트 <span class="more" id="inboxPageCount"></span></h3><div id="inboxPage"></div></div>
+      <div class="card"><h3><span class="dot" style="background:var(--green)"></span> 장기 프로젝트 <span class="more" id="longCount"></span></h3><div id="longPage"></div></div>
+    </div>
+      <div class="card" id="ideaCard"><h3><span class="dot" style="background:#6a8fd8"></span> 아이디어 구체화 <span class="more" id="ideaLabel"></span></h3>
         <div id="mindToolbar" style="display:none;margin-bottom:8px"><button class="btn y" onclick="mindAddFocus(mindRoot())">＋ 생각 추가</button> <span style="font-size:11.5px;color:var(--muted)"><b>Tab</b>=하위 · <b>Enter</b>=대등 · <b>Shift+Enter</b>=줄바꿈 · 칸을 끌어 이동 · ○ 눌러 가지접기</span></div>
         <div id="mindCanvas"></div>
       </div>
@@ -824,7 +829,7 @@ function setSyncCode(){var el=document.getElementById('syncInput');var v=el.valu
 function clearSyncCode(){localStorage.removeItem(SYNC_KEY);var inp=document.getElementById('syncInput');if(inp)inp.value='';setSyncStatus('연결 해제됨 (이 기기)');}
 let curIdea=null;
 var editInboxId=null;
-function inboxPageItemHTML(x){var editing=editInboxId===x.id;var title=editing?'<span class="txt" id="inbEditField" contenteditable onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}" onblur="saveEditInbox('+x.id+',this.innerText)">'+esc(x.t)+'</span>':'<span class="txt link" title="마인드맵 열기" onclick="openMind('+x.id+')">'+esc(x.t)+'</span>';return '<li class="'+(x.done?"done":"")+'">'+'<div class="chk '+(x.done?"done":"")+'" onclick="toggleInbox('+x.id+')">'+(x.done?"✓":"")+'</div>'+title+'<span class="idea-edit" title="제목 수정" onclick="startEditInbox('+x.id+')">제목 수정</span>'+'<span class="del" onclick="delInbox('+x.id+')">×</span></li>';}
+function inboxPageItemHTML(x){var editing=editInboxId===x.id;var title=editing?'<span class="txt" id="inbEditField" contenteditable onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}" onblur="saveEditInbox('+x.id+',this.innerText)">'+esc(x.t)+'</span>':'<span class="txt link" title="마인드맵 열기" onclick="openMind('+x.id+')">'+esc(x.t)+'</span>';return '<li class="'+(x.done?"done":"")+'">'+'<div class="chk '+(x.done?"done":"")+'" onclick="toggleInbox('+x.id+')">'+(x.done?"✓":"")+'</div>'+title+'<span class="idea-edit" title="제목 수정" onclick="startEditInbox('+x.id+')">제목 수정</span>'+(x.long?'<span class="mv-btn" title="단기로" onclick="moveShort('+x.id+')">←</span>':'<span class="mv-btn" title="장기 프로젝트로" onclick="moveLong('+x.id+')">→</span>')+'<span class="del" onclick="delInbox('+x.id+')">×</span></li>';}
 function startEditInbox(id){editInboxId=id;renderInboxPage();setTimeout(function(){var el=document.getElementById("inbEditField");if(el){el.focus();var r=document.createRange();r.selectNodeContents(el);var sl=window.getSelection();sl.removeAllRanges();sl.addRange(r);}},0);}
 function saveEditInbox(id,val){var x=db.inbox.find(function(a){return a.id===id;});if(x){var v=String(val).trim();if(v)x.t=v;}editInboxId=null;save();renderInbox();renderInboxPage();}
 function openMind(id){openIdea(id);var c=document.getElementById("ideaCard");if(c)c.scrollIntoView({behavior:"smooth",block:"start"});}
@@ -838,8 +843,8 @@ function mindSibParent(id){var x=curIdeaObj();var n=x.mind.find(function(a){retu
 function mindAddSiblingFocus(id){mindAddFocus(mindSibParent(id));}
 function mindKey(e,id){if(e.key==='Tab'){e.preventDefault();e.target.blur();mindAddFocus(id);}else if(e.key==='Enter'){if(e.shiftKey){e.preventDefault();document.execCommand('insertLineBreak');}else{e.preventDefault();e.target.blur();mindAddSiblingFocus(id);}}}
 function mindDepth(x,n){var d=0,c=n;while(c&&c.p){var pn=x.mind.find(function(a){return a.id===c.p;});if(!pn)break;d++;c=pn;}return d;}
-var MB=["#2f6f5e","#c99a2e","#d0574f","#4a76c4","#9c6ade","#3a9e93"];
-var MBG=["#dbeee6","#fbe6b8","#f7d3d1","#dde7f8","#ece0fb","#d6f0ec"];
+var MB=["#2f6f5e","#c99a2e","#d0574f","#4a76c4","#9c6ade","#3a9e93","#e07b39","#5aa469","#b8477e","#3aa0c9","#7a6cd6","#c25e8a"];
+var MBG=["#dbeee6","#fbe6b8","#f7d3d1","#dde7f8","#ece0fb","#d6f0ec","#fce3d1","#dff0e2","#f9d9e7","#d5eef7","#e6e1fb","#f7dde8"];
 function mindEdit(id,t){var x=curIdeaObj();if(!x)return;var n=x.mind.find(function(a){return a.id===id;});if(n){n.t=String(t).trim();save();}}
 function mindDel(id){var x=curIdeaObj();if(!x||id===x.mind[0].id)return;var rm=[id],ch=true;while(ch){ch=false;x.mind.forEach(function(n){if(rm.indexOf(n.p)>=0&&rm.indexOf(n.id)<0){rm.push(n.id);ch=true;}});}x.mind=x.mind.filter(function(n){return rm.indexOf(n.id)<0;});save();renderMind();}
 function mindNodeById(x,id){return x.mind.find(function(a){return a.id===id;});}
@@ -854,7 +859,7 @@ function mindLayout(x){
   function visch(n){return n.collapsed?[]:childrenAll(n.id);}
   var col={},soft={};
   function assignBranch(n,c,s){col[n.id]=c;soft[n.id]=s;childrenAll(n.id).forEach(function(ch){assignBranch(ch,c,s);});}
-  childrenAll(root.id).forEach(function(n,i){var k=i%6;assignBranch(n,MB[k],MBG[k]);});
+  childrenAll(root.id).forEach(function(n,i){var k=i%MB.length;assignBranch(n,MB[k],MBG[k]);});
   var ROW=34, GAP=50, pos={}, cursor=0;
   function rec(n,depth,xLeft){
     var vch=visch(n), y;
@@ -884,7 +889,7 @@ function mindConnectors(x,pos,offX,offY){
 function renderMind(){
   var el=document.getElementById("mindCanvas");if(!el)return;
   var x=curIdeaObj();
-  if(!x||!x.mind||!x.mind.length){el.innerHTML='<div class="empty">왼쪽 목록에서 🧠 를 눌러 아이디어를 펼쳐보세요.</div>';return;}
+  if(!x||!x.mind||!x.mind.length){el.innerHTML='<div class="empty"></div>';return;}
   var pos=mindLayout(x);
   var minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
   x.mind.forEach(function(n){var p=pos[n.id];if(!p)return;minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x+p.w);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);});
@@ -900,7 +905,7 @@ function renderMind(){
   el.innerHTML='<div class="mind-canvas" style="width:'+W+'px;height:'+H+'px"><svg class="mind-svg" width="'+W+'" height="'+H+'">'+mindConnectors(x,pos,offX,offY)+'</svg>'+nodesHTML+'</div>';
   var rp=pos[x.mind[0].id];if(rp){el.scrollLeft=Math.max(0,offX+rp.x-el.clientWidth/2);el.scrollTop=Math.max(0,offY+rp.y-el.clientHeight/2);}
 }
-function updateMindPanel(){var mc=document.getElementById("mindCanvas");if(!mc)return;if(curIdea){renderMind();}else{mc.innerHTML='<div class="empty">왼쪽 목록에서 🧠 를 눌러 아이디어를 펼쳐보세요.</div>';}}
+function updateMindPanel(){var mc=document.getElementById("mindCanvas");if(!mc)return;if(curIdea){renderMind();}else{mc.innerHTML='<div class="empty"></div>';}}
 function mindToggle(e,id){e.stopPropagation();var x=curIdeaObj();if(!x)return;var n=x.mind.find(function(a){return a.id===id;});if(!n)return;n.collapsed=!n.collapsed;save();renderMind();}
 var mDrag=null;
 function mindDown(e,id){if(e.button!==0)return;var t=e.target;if(t.classList.contains("mtog")||t.classList.contains("mdel"))return;var x=curIdeaObj();if(!x)return;mDrag={id:id,sx:e.clientX,sy:e.clientY,moved:false,root:(id===x.mind[0].id)};document.addEventListener("mousemove",mindMove);document.addEventListener("mouseup",mindUp);}
@@ -1013,18 +1018,23 @@ function inboxItemHTML(x){return `<li class="${x.done?'done':''}">
   <span class="del" onclick="delInbox(${x.id})">×</span></li>`;}
 function renderInbox(){
   const ul=document.getElementById('inboxList');if(!ul)return;
-  const open=db.inbox.filter(x=>!x.done);
-  ul.innerHTML=db.inbox.length?db.inbox.slice().reverse().map(inboxItemHTML).join('')
+  const items=db.inbox.filter(x=>!x.long);const open=items.filter(x=>!x.done);
+  ul.innerHTML=items.length?items.slice().reverse().map(inboxItemHTML).join('')
     :'<div class="empty">담아둔 항목이 없습니다.</div>';
-  document.getElementById('inboxCount').textContent=`${open.length} / ${db.inbox.length}`;
+  document.getElementById('inboxCount').textContent=`${open.length} / ${items.length}`;
 }
+function moveLong(id){var x=db.inbox.find(function(a){return a.id===id;});if(x){x.long=true;save();renderInbox();renderInboxPage();}}
+function moveShort(id){var x=db.inbox.find(function(a){return a.id===id;});if(x){x.long=false;save();renderInbox();renderInboxPage();}}
+function inboxGroupHTML(list){var g={};list.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));}).forEach(function(x){(g[x.date]=g[x.date]||[]).push(x);});return Object.keys(g).map(function(d){return '<div class="datehdr">'+d+'</div><ul class="todo">'+g[d].map(inboxPageItemHTML).join('')+'</ul>';}).join('');}
 function renderInboxPage(){
-  const el=document.getElementById('inboxPage');if(!el)return;
-  document.getElementById('inboxPageCount').textContent=db.inbox.length+'건';
-  if(!db.inbox.length){el.innerHTML='<div class="empty">담아둔 항목이 없습니다.</div>';return;}
-  const g={};db.inbox.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)))
-    .forEach(x=>{(g[x.date]=g[x.date]||[]).push(x);});
-  el.innerHTML=Object.keys(g).map(d=>`<div class="datehdr">${d}</div><ul class="todo">${g[d].map(inboxPageItemHTML).join('')}</ul>`).join('');updateMindPanel();
+  var el=document.getElementById('inboxPage');if(!el)return;
+  var shortL=db.inbox.filter(function(z){return !z.long;});
+  var longL=db.inbox.filter(function(z){return z.long;});
+  document.getElementById('inboxPageCount').textContent=shortL.length+'건';
+  var lc=document.getElementById('longCount');if(lc)lc.textContent=longL.length+'건';
+  var lEl=document.getElementById('longPage');if(lEl)lEl.innerHTML=longL.length?inboxGroupHTML(longL):'<div class="empty">장기 프로젝트가 없습니다.</div>';
+  el.innerHTML=shortL.length?inboxGroupHTML(shortL):'<div class="empty">단기 항목이 없습니다.</div>';
+  updateMindPanel();
 }
 
 /* ---------- todos (daily) ---------- */
