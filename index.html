@@ -389,6 +389,16 @@
   .ex-timer-label{font-size:12px;color:var(--muted);margin-top:6px}
   .mv-btn{cursor:pointer;flex-shrink:0;font-size:15px;font-weight:800;color:var(--green);padding:0 4px}
   .mv-btn:hover{color:var(--dark)}
+  .rt-row{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line)}
+  .rt-row:last-child{border-bottom:none}
+  .rt-row.active{background:#fffdf5;border-radius:8px}
+  .rt-play{border:none;background:var(--cream);color:var(--dark);width:30px;height:30px;border-radius:8px;cursor:pointer;flex-shrink:0;font-size:12px}
+  .rt-row.active .rt-play{background:var(--yellow)}
+  .rt-name{flex:1;min-width:70px;font-size:14px;font-weight:600;outline:none}
+  .rt-bar{flex:2;height:12px;background:var(--line);border-radius:6px;overflow:hidden;min-width:70px}
+  .rt-fill{height:100%;background:linear-gradient(90deg,var(--yellow),var(--red));width:100%;transition:width .95s linear}
+  .rt-time{font-size:14px;font-weight:800;color:var(--dark);min-width:52px;text-align:right;white-space:nowrap;outline:none}
+  .rt-row.active .rt-time{color:var(--red)}
 </style>
 </head>
 <body>
@@ -402,6 +412,7 @@
   <div class="nav" data-v="study">Study</div>
   <div class="nav" data-v="assets">Assets</div>
   <div class="nav" data-v="inbox">Inbox</div>
+  <div class="nav" data-v="routiner">Rutimer</div>
   <div class="nav" data-v="diary">Diary</div>
   <div class="nav" data-v="settings">Settings</div>
 </aside>
@@ -421,7 +432,7 @@
     <div class="grid">
       <div class="card" id="calCard" style="grid-column:1/-1">
         <h3><span class="dot"></span> SCHEDULE</h3>
-        <div class="cal-head"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><b id="calTitle"></b><button id="calToggleBtn" class="lunar-toggle on" onclick="toggleCalendar()">달력</button><button id="schedToggleBtn" class="lunar-toggle on" onclick="toggleSchedPanel()">스케줄</button><button id="lunarBtn" class="lunar-toggle" onclick="toggleLunar()">음력</button><button id="weatherBtn" class="lunar-toggle" onclick="toggleWeather()">날씨</button><button id="workSecBtn" class="lunar-toggle" onclick="toggleSection('work')">업무</button><button id="studySecBtn" class="lunar-toggle" onclick="toggleSection('study')">매일매일</button><button id="readSecBtn" class="lunar-toggle" onclick="toggleSection('read')">독서</button><button id="assetSecBtn" class="lunar-toggle" onclick="toggleSection('asset')">자산</button><button id="diarySecBtn" class="lunar-toggle" onclick="toggleSection('diary')">일기</button><button id="inboxToggleBtn" class="lunar-toggle on" onclick="toggleInboxPanel()">인박스</button></div>
+        <div class="cal-head"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><b id="calTitle"></b><button id="calToggleBtn" class="lunar-toggle on" onclick="toggleCalendar()">달력</button><button id="schedToggleBtn" class="lunar-toggle on" onclick="toggleSchedPanel()">스케줄</button><button id="lunarBtn" class="lunar-toggle" onclick="toggleLunar()">음력</button><button id="weatherBtn" class="lunar-toggle" onclick="toggleWeather()">날씨</button><button id="workSecBtn" class="lunar-toggle" onclick="toggleSection('work')">업무</button><button id="studySecBtn" class="lunar-toggle" onclick="toggleSection('study')">매일매일</button><button id="readSecBtn" class="lunar-toggle" onclick="toggleSection('read')">독서</button><button id="assetSecBtn" class="lunar-toggle" onclick="toggleSection('asset')">자산</button><button id="diarySecBtn" class="lunar-toggle" onclick="toggleSection('diary')">일기</button><button id="inboxToggleBtn" class="lunar-toggle on" onclick="toggleInboxPanel()">인박스</button><button id="rtNavBtn" class="lunar-toggle" onclick="go('routiner')">루티머</button></div>
           <div class="cal-nav"><button onclick="shiftMonth(-1)">‹</button> <button onclick="goToday()" style="width:auto;padding:0 10px;font-size:12px">오늘</button> <button onclick="shiftMonth(1)">›</button></div>
         </div>
         <table class="cal"><thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead>
@@ -636,6 +647,24 @@
     </div>
     <div class="card"><h3><span class="dot"></span> 누적 <span class="more" id="diaryCount"></span></h3><div id="diaryPage"></div></div>
   </section>
+  <!-- ===== 루티머 ===== -->
+  <section class="view" id="view-routiner">
+    <div class="page-head"><h1>루티머</h1></div>
+    <div class="card">
+      <h3><span class="dot" style="background:#e0a83a"></span> 루틴 타이머
+        <span style="margin-left:auto;display:flex;gap:8px">
+          <button class="btn y" id="rtAllBtn" onclick="rtStartAll()">▶ 전체 시작</button>
+          <button class="btn ghost" id="rtPauseBtn" onclick="rtPause()">⏸ 일시정지</button>
+          <button class="btn ghost" onclick="rtStop()">■ 정지</button>
+        </span></h3>
+      <div id="rtList"></div>
+      <div class="inrow" style="margin-top:14px">
+        <input id="rtName" class="in" style="flex:1" placeholder="루틴명" onkeydown="if(event.key==='Enter')addRoutine()">
+        <input id="rtMin" class="in" style="flex:none;width:96px" inputmode="decimal" placeholder="분" onkeydown="if(event.key==='Enter')addRoutine()">
+        <button class="btn y" style="flex:none" onclick="addRoutine()">＋ 추가</button>
+      </div>
+    </div>
+  </section>
   <!-- ===== 설정 ===== -->
   <section class="view" id="view-settings">
     <div class="page-head"><h1>설정</h1></div>
@@ -669,7 +698,7 @@ const dstr=(off=0)=>{const t=new Date();t.setDate(t.getDate()-off);
   return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');};
 const today=()=>dstr(0);
 let db=load();
-function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];}
+function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.routines)db.routines=[];}
 ensureFields();
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.work)return s;}catch(e){}return seed();}
 function save(){localStorage.setItem(KEY,JSON.stringify(db));cloudPushDebounced();}
@@ -2044,10 +2073,25 @@ function exEsc(e){if(e.key==='Escape')closeExcerpt();}
 function closeExcerpt(){if(exTimer){clearInterval(exTimer);exTimer=null;}var e=document.getElementById('exOv');if(e)e.remove();document.removeEventListener('keydown',exEsc);}
 
 /* ---------- render all ---------- */
+var rtIdx=-1,rtRemain=0,rtTimer=null,rtPaused=false;
+function rtRoutines(){return db.routines||[];}
+function fmtSec(s){s=Math.max(0,Math.round(s));var m=Math.floor(s/60),ss=s%60;return m+':'+String(ss).padStart(2,'0');}
+function addRoutine(){var n=document.getElementById('rtName'),t=document.getElementById('rtMin');var name=n.value.trim();if(!name){alert('\ub8e8\ud2f4\uba85\uc744 \uc785\ub825\ud558\uc138\uc694.');return;}var mins=parseFloat(t.value);var sec=Math.round((isNaN(mins)?0:mins)*60);if(sec<=0)sec=60;db.routines.push({id:uid(),name:name,sec:sec});save();n.value='';t.value='';renderRoutiner();}
+function editRoutine(id,val){var r=rtRoutines().find(function(a){return a.id===id;});if(!r)return;var v=String(val).trim();if(v)r.name=v;save();}
+function editRtTime(id,val){var r=rtRoutines().find(function(a){return a.id===id;});if(!r)return;val=String(val).trim();var sec;if(val.indexOf(':')>=0){var pp=val.split(':');sec=(parseInt(pp[0],10)||0)*60+(parseInt(pp[1],10)||0);}else{var f=parseFloat(val);sec=Math.round((isNaN(f)?0:f)*60);}if(sec>0){r.sec=sec;save();renderRoutiner();}}
+function delRoutine(id){db.routines=rtRoutines().filter(function(a){return a.id!==id;});save();rtStop();renderRoutiner();}
+function rtStart(i){var rs=rtRoutines();if(!rs.length||i<0||i>=rs.length)return;rtIdx=i;rtRemain=rs[i].sec;rtPaused=false;if(rtTimer)clearInterval(rtTimer);rtTimer=setInterval(rtTick,1000);renderRoutiner();rtSetButtons();}
+function rtStartAll(){rtStart(0);}
+function rtTick(){if(rtPaused)return;rtRemain--;if(rtRemain<=0){var rs=rtRoutines();if(rtIdx+1<rs.length){rtIdx++;rtRemain=rs[rtIdx].sec;renderRoutiner();}else{rtStop();renderRoutiner();}}else{rtUpdateActive();}}
+function rtUpdateActive(){var rs=rtRoutines();if(rtIdx<0||rtIdx>=rs.length)return;var r=rs[rtIdx];var g=document.getElementById('rt-g-'+r.id);if(g)g.style.width=(Math.max(0,rtRemain)/r.sec*100)+'%';var t=document.getElementById('rt-t-'+r.id);if(t)t.textContent=fmtSec(rtRemain);}
+function rtPause(){if(rtIdx<0)return;rtPaused=!rtPaused;rtSetButtons();}
+function rtStop(){if(rtTimer)clearInterval(rtTimer);rtTimer=null;rtIdx=-1;rtPaused=false;rtSetButtons();}
+function rtSetButtons(){var pb=document.getElementById('rtPauseBtn');if(pb)pb.textContent=rtPaused?'\u25b6 \uc7ac\uac1c':'\u23f8 \uc77c\uc2dc\uc815\uc9c0';}
+function renderRoutiner(){var el=document.getElementById('rtList');if(!el)return;var rs=rtRoutines();if(!rs.length){el.innerHTML='<div class="empty">\ub8e8\ud2f4\uc744 \ucd94\uac00\ud574\ubcf4\uc138\uc694. (\ub8e8\ud2f4\uba85 + \ubd84)</div>';return;}el.innerHTML=rs.map(function(r,i){var active=i===rtIdx;var pct=active?(Math.max(0,rtRemain)/r.sec*100):100;var timeHTML=active?'<span class="rt-time" id="rt-t-'+r.id+'">'+fmtSec(rtRemain)+'</span>':'<span class="rt-time" contenteditable onblur="editRtTime('+r.id+',this.innerText)">'+fmtSec(r.sec)+'</span>';return '<div class="rt-row'+(active?' active':'')+'"><button class="rt-play" title="\uc2dc\uc791" onclick="rtStart('+i+')">\u25b6</button><span class="rt-name" contenteditable onblur="editRoutine('+r.id+',this.innerText)">'+esc(r.name)+'</span><div class="rt-bar"><div class="rt-fill" id="rt-g-'+r.id+'" style="width:'+pct+'%"></div></div>'+timeHTML+'<span class="del" onclick="delRoutine('+r.id+')">\u00d7</span></div>';}).join('');}
 function renderAll(){
   renderTop();renderCal();renderSchedule();renderTodos();renderInbox();renderInboxPage();
   renderWork();renderDashWork();renderReading();renderStudy();renderDashStudy();
-  renderAssets();renderDashAsset();renderDiary();renderDiaryPage();renderDash();
+  renderAssets();renderDashAsset();renderDiary();renderDiaryPage();renderRoutiner();renderDash();
 }
 renderAll();renderSyncUI();if(syncCode())cloudPull(false);
 
