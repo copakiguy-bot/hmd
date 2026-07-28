@@ -77,7 +77,8 @@
   .card h3 .more{margin-left:auto;color:var(--muted);font-size:13px;font-weight:600}
 
   /* Calendar */
-  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+  .cal-nav{display:flex;align-items:center;gap:4px;flex-shrink:0}
   .cal-head b{font-size:15px}
   .cal-nav button{border:none;background:var(--cream);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:15px;color:var(--dark)}
   .cal{width:100%;border-collapse:collapse;table-layout:fixed}
@@ -399,6 +400,29 @@
   .rt-fill{height:100%;background:linear-gradient(90deg,var(--yellow),var(--red));width:100%;transition:width .95s linear}
   .rt-time{font-size:14px;font-weight:800;color:var(--dark);min-width:52px;text-align:right;white-space:nowrap;outline:none}
   .rt-row.active .rt-time{color:var(--red)}
+  .rt-active{text-align:center;padding:6px 0 16px}
+  .rt-circle{position:relative;width:200px;height:200px;margin:0 auto}
+  .rt-circle-in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .rt-bigname{font-size:16px;font-weight:700;color:var(--dark);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 6px}
+  .rt-bigtime{font-size:36px;font-weight:800;color:var(--dark);letter-spacing:1px}
+  .rt-uplabel{font-size:12px;font-weight:800;color:var(--muted);margin:8px 0 6px;letter-spacing:.3px;text-align:left}
+  .rt-uprow{display:flex;align-items:center;gap:10px;padding:9px 6px;border-bottom:1px solid var(--line)}
+  .rt-uprow:last-child{border-bottom:none}
+  .rt-idle{text-align:center;color:var(--muted);font-size:14px;line-height:1.7;padding:56px 10px;border:1.5px dashed var(--line);border-radius:14px}
+  .rt-listname{font-size:15px;font-weight:800;color:var(--dark);outline:none;padding:2px 4px;margin-bottom:8px;display:block;border-bottom:2px solid var(--yellow-soft)}
+  .rt-list-card{border:1px solid var(--line);border-radius:12px;margin-bottom:8px;overflow:hidden}
+  .rt-list-head{display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--cream)}
+  .rt-list-title{flex:1;cursor:pointer;font-weight:700;font-size:14px;user-select:none}
+  .rt-listbody{padding:4px 12px 8px}
+  .rt-listcard{padding:14px}
+  .rt-listcard.running{border:2px solid var(--yellow);box-shadow:0 0 0 3px var(--yellow-soft)}
+  .rt-listcard .rt-list-head{background:transparent;padding:0 0 8px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .rt-listcard.selected{border:2px solid var(--yellow);box-shadow:0 0 0 3px var(--yellow-soft)}
+  .rt-selectable{cursor:pointer;transition:border-color .12s}
+  .rt-selectable:hover{border-color:var(--yellow)}
+  .tblx{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+  @media(max-width:1000px){.tblx .ledger{min-width:460px}}
+  @media(max-width:640px){.inrow{gap:6px}.inrow>.in{flex:1 1 88px !important;width:auto !important;min-width:0}}
 </style>
 </head>
 <body>
@@ -583,10 +607,10 @@
             <div><button class="btn y" onclick="addBookFromList()">책 등록</button></div>
           </div>
         </div>
-        <table class="ledger">
+        <div class="tblx"><table class="ledger">
           <thead><tr><th>도서명</th><th>저자/역자</th><th>출판사</th><th class="amt">총p</th><th>기간</th><th>카테고리</th><th></th></tr></thead>
           <tbody id="bookBody"></tbody>
-        </table>
+        </table></div>
       </div>
     </div>
 
@@ -657,12 +681,8 @@
           <button class="btn ghost" id="rtPauseBtn" onclick="rtPause()">⏸ 일시정지</button>
           <button class="btn ghost" onclick="rtStop()">■ 정지</button>
         </span></h3>
-      <div id="rtList"></div>
-      <div class="inrow" style="margin-top:14px">
-        <input id="rtName" class="in" style="flex:1" placeholder="루틴명" onkeydown="if(event.key==='Enter')addRoutine()">
-        <input id="rtMin" class="in" style="flex:none;width:96px" inputmode="decimal" placeholder="분" onkeydown="if(event.key==='Enter')addRoutine()">
-        <button class="btn y" style="flex:none" onclick="addRoutine()">＋ 추가</button>
-      </div>
+      <div id="rtMain"></div>
+      <div id="rtLists"></div>
     </div>
   </section>
   <!-- ===== 설정 ===== -->
@@ -698,7 +718,7 @@ const dstr=(off=0)=>{const t=new Date();t.setDate(t.getDate()-off);
   return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');};
 const today=()=>dstr(0);
 let db=load();
-function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.routines)db.routines=[];}
+function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.routines)db.routines=[];if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}}
 ensureFields();
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.work)return s;}catch(e){}return seed();}
 function save(){localStorage.setItem(KEY,JSON.stringify(db));cloudPushDebounced();}
@@ -1985,17 +2005,17 @@ function paneExpense(){
   <div class="g2">
     <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 가계부 <span class="more">이번달 ${won(spentSum)}</span></h3>
       <div class="inrow" style="margin-bottom:8px"><input id="expSearch" class="in" style="flex:1" placeholder="내역·카테고리 검색" value="${escA(expSearch)}" oninput="expSearchInput(this.value)"></div>
-      <table class="ledger"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th>비고</th><th></th></tr></thead>
-      <tbody id="expLedgerBody">${assetLedger('지출')}</tbody></table><div id="expPager">${expPagerHTML()}</div></div>
+      <div class="tblx"><table class="ledger"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th>비고</th><th></th></tr></thead>
+      <tbody id="expLedgerBody">${assetLedger('지출')}</tbody></table></div><div id="expPager">${expPagerHTML()}</div></div>
     <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 이번달 지출</h3>${donutFromMap(pieMap,300,true)}</div>
   </div>
   <div class="g2">
     <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 카테고리별 월 설정액</h3>
-      <table class="ledger"><thead><tr><th>카테고리</th><th class="amt">설정</th><th class="amt">잔액</th><th class="amt">지난달</th></tr></thead>
-      <tbody>${brows}</tbody></table></div>
+      <div class="tblx"><table class="ledger"><thead><tr><th>카테고리</th><th class="amt">설정</th><th class="amt">잔액</th><th class="amt">지난달</th></tr></thead>
+      <tbody>${brows}</tbody></table></div></div>
     <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 고정지출 <span class="more">합계 ${won(fixedSum)}</span></h3>
-      <table class="ledger"><thead><tr><th>내용</th><th class="amt">금액</th><th>비고</th><th></th></tr></thead>
-      <tbody>${frows||'<tr><td colspan="4" class="empty">항목이 없습니다.</td></tr>'}</tbody></table>
+      <div class="tblx"><table class="ledger"><thead><tr><th>내용</th><th class="amt">금액</th><th>비고</th><th></th></tr></thead>
+      <tbody>${frows||'<tr><td colspan="4" class="empty">항목이 없습니다.</td></tr>'}</tbody></table></div>
       <div class="inrow" style="margin-top:10px"><input id="fName" class="in" style="flex:2" placeholder="내용">
         <input id="fAmount" class="in" inputmode="numeric" style="flex:1" placeholder="금액" oninput="fmtNum(this)">
         <input id="fNote" class="in" style="flex:1" placeholder="비고"><button class="btn" style="flex:none" onclick="addFixed()">추가</button></div></div>
@@ -2009,8 +2029,8 @@ function paneInvest(){
   <div class="card"><h3><span class="dot" style="background:#e0a83a"></span> 투자 입력</h3>${assetInputRow('투자')}</div>
   <div class="g3">
     <div class="card"><h3><span class="dot" style="background:#e0a83a"></span> 투자 내역 <span class="more">총 ${won(total)}</span></h3>
-      <table class="ledger"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th></th></tr></thead>
-      <tbody>${assetLedgerSlim('투자')}</tbody></table></div>
+      <div class="tblx"><table class="ledger"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th></th></tr></thead>
+      <tbody>${assetLedgerSlim('투자')}</tbody></table></div></div>
     <div class="card"><h3><span class="dot" style="background:#e0a83a"></span> 자산 포트폴리오</h3>${donutFromMap(port,240,true)}</div>
     <div class="card"><h3><span class="dot" style="background:#e0a83a"></span> 주식별 투자 현황</h3>${donutFromMap(stock,240,true)}</div>
   </div>`;
@@ -2021,8 +2041,8 @@ function paneIncome(){
   <div class="card"><h3><span class="dot" style="background:var(--green)"></span> 수입 입력</h3>${assetInputRow('수입')}</div>
   <div class="g2">
     <div class="card"><h3><span class="dot" style="background:var(--green)"></span> 수입 내역 <span class="more">총 ${won(total)}</span></h3>
-      <table class="ledger"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th></th></tr></thead>
-      <tbody>${assetLedgerSlim('수입')}</tbody></table></div>
+      <div class="tblx"><table class="ledger"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th></th></tr></thead>
+      <tbody>${assetLedgerSlim('수입')}</tbody></table></div></div>
     <div class="card"><h3><span class="dot" style="background:var(--green)"></span> 월별 수입 추이 <span class="more">최근 6개월</span></h3>${incomeTrendSVG()}</div>
   </div>`;
 }
@@ -2074,20 +2094,39 @@ function closeExcerpt(){if(exTimer){clearInterval(exTimer);exTimer=null;}var e=d
 
 /* ---------- render all ---------- */
 var rtIdx=-1,rtRemain=0,rtTimer=null,rtPaused=false;
-function rtRoutines(){return db.routines||[];}
+var curList=null;
+function ensureCurList(){var ls=db.routineLists||[];if(!ls.length)return;if(!curList||!ls.find(function(a){return a.id===curList;}))curList=ls[0].id;}
+function curListObj(){ensureCurList();return (db.routineLists||[]).find(function(a){return a.id===curList;})||null;}
+function rtRoutines(){var l=curListObj();return l?l.items:[];}
+function addRoutineList(){if(!db.routineLists)db.routineLists=[];var l={id:uid(),name:'새 목록',items:[],collapsed:false};db.routineLists.push(l);curList=l.id;save();rtStop();renderRoutiner();}
+function selectList(id){curList=id;rtStop();renderRoutiner();}
+function toggleListCollapse(id){var l=(db.routineLists||[]).find(function(a){return a.id===id;});if(l){l.collapsed=!l.collapsed;save();renderRtOthers();}}
+function editListName(id,val){var l=(db.routineLists||[]).find(function(a){return a.id===id;});if(l){var v=String(val).trim();if(v){l.name=v;save();}}}
+function delRoutineList(id){db.routineLists=(db.routineLists||[]).filter(function(a){return a.id!==id;});if(curList===id){curList=null;rtStop();}save();renderRoutiner();}
+function listCardEditHTML(l){var rows=l.items.length?l.items.map(function(r,i){var active=(l.id===curList&&i===rtIdx);return '<div class="rt-row'+(active?' active':'')+'"><button class="rt-play" title="시작" onclick="rtPlay('+l.id+','+i+')">\u25b6</button><span class="rt-name" contenteditable onblur="editRoutineIn('+l.id+','+r.id+',this.innerText)">'+esc(r.name)+'</span><span class="rt-time" contenteditable onblur="editRtTimeIn('+l.id+','+r.id+',this.innerText)">'+fmtSec(r.sec)+'</span><span class="del" onclick="delRoutineIn('+l.id+','+r.id+')">\u00d7</span></div>';}).join(''):'<div class="empty" style="padding:10px 0">\ub8e8\ud2f4\uc744 \ucd94\uac00\ud558\uc138\uc694</div>';var addrow='<div class="inrow" style="margin-top:8px"><input class="in rtNameIn" data-l="'+l.id+'" style="flex:1;min-width:0" placeholder="\ub8e8\ud2f4\uba85"><input class="in rtMinIn" data-l="'+l.id+'" style="flex:none;width:56px" inputmode="decimal" placeholder="\ubd84"><button class="btn y" style="flex:none;padding:8px 10px" onclick="addRoutineIn('+l.id+')">\uff0b</button></div>';return '<div class="card rt-listcard selected"><div class="rt-list-head"><span class="rt-listname" contenteditable onblur="editListName('+l.id+',this.innerText)">'+esc(l.name)+'</span><span class="del" onclick="delRoutineList('+l.id+')">\u00d7</span></div>'+rows+addrow+'</div>';}
+function renderRtMain(){var el=document.getElementById('rtMain');if(!el)return;var l=curListObj();var rs=l?l.items:[];var circle;if(rtIdx>=0&&rtIdx<rs.length){var r=rs[rtIdx];var C=2*Math.PI*70;var frac=Math.max(0,rtRemain)/r.sec;var off=C*(1-frac);var col=frac<0.2?'#e8615a':'#f4b740';circle='<div class="rt-active"><div class="rt-circle"><svg width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="70" fill="none" stroke="var(--line)" stroke-width="14"/><circle id="rt-ring" cx="100" cy="100" r="70" fill="none" stroke="'+col+'" stroke-width="14" stroke-linecap="round" transform="rotate(-90 100 100)" style="stroke-dasharray:'+C+';stroke-dashoffset:'+off+';transition:stroke-dashoffset .95s linear,stroke .3s"/></svg><div class="rt-circle-in"><div class="rt-bigname">'+esc(r.name)+'</div><div class="rt-bigtime" id="rt-bigtime">'+fmtSec(rtRemain)+'</div></div></div></div>';}else{circle='<div class="rt-idle"><b>\u25b6</b> 를 눌러<br>루틴을 시작하세요</div>';}var sel=l?listCardEditHTML(l):'<div class="empty" style="padding:20px">아래에서 목록을 선택하거나 추가하세요.</div>';el.innerHTML='<div class="g2" style="align-items:start"><div>'+circle+'</div><div>'+sel+'</div></div>';}
+function renderRtSel(){var el=document.getElementById('rtSelList');if(!el)return;var l=curListObj();if(!l){el.innerHTML='<div class="empty">목록이 없습니다.</div>';return;}var rows=l.items.length?l.items.map(function(r,i){var active=(i===rtIdx);return '<div class="rt-row'+(active?' active':'')+'"><button class="rt-play" title="시작" onclick="rtStart('+i+')">▶</button><span class="rt-name" contenteditable onblur="editRoutine('+r.id+',this.innerText)">'+esc(r.name)+'</span><span class="rt-time" contenteditable onblur="editRtTime('+r.id+',this.innerText)">'+fmtSec(r.sec)+'</span><span class="del" onclick="delRoutine('+r.id+')">×</span></div>';}).join(''):'<div class="empty" style="padding:14px 0">루틴을 추가하세요.</div>';el.innerHTML='<div class="rt-listname" contenteditable onblur="editListName(\''+l.id+'\',this.innerText)">'+esc(l.name)+'</div>'+rows+'<div class="inrow" style="margin-top:10px"><input id="rtName" class="in" style="flex:1" placeholder="루틴명" onkeydown="if(event.key===\'Enter\')addRoutine()"><input id="rtMin" class="in" style="flex:none;width:70px" inputmode="decimal" placeholder="분" onkeydown="if(event.key===\'Enter\')addRoutine()"><button class="btn y" style="flex:none" onclick="addRoutine()">＋</button></div>';}
+function renderRtOthers(){var el=document.getElementById('rtOtherLists');if(!el)return;var ls=db.routineLists||[];var others=ls.filter(function(a){return a.id!==curList;});var html='<div class="rt-uplabel" style="margin-top:18px">다른 루틴 목록</div>';html+=others.map(function(l){var body=l.collapsed?'':'<div class="rt-listbody">'+(l.items.length?l.items.map(function(r){return '<div class="rt-uprow"><span class="rt-name">'+esc(r.name)+'</span><span class="rt-time">'+fmtSec(r.sec)+'</span></div>';}).join(''):'<div class="empty" style="padding:8px">비어 있음</div>')+'</div>';return '<div class="rt-list-card"><div class="rt-list-head"><span class="rt-list-title" onclick="toggleListCollapse(\''+l.id+'\')">'+(l.collapsed?'▸':'▾')+' '+esc(l.name)+' <span style="color:var(--muted);font-weight:600;font-size:12px">('+l.items.length+')</span></span><button class="btn ghost" style="flex:none;padding:5px 12px;font-size:12px" onclick="selectList(\''+l.id+'\')">선택</button><span class="del" onclick="delRoutineList(\''+l.id+'\')">×</span></div>'+body+'</div>';}).join('');if(!others.length)html+='<div class="empty" style="padding:8px 0">다른 목록이 없어요.</div>';html+='<div style="margin-top:10px"><button class="btn ghost" onclick="addRoutineList()">＋ 목록 추가</button></div>';el.innerHTML=html;}
+function rtRoutines_ORIG(){}
 function fmtSec(s){s=Math.max(0,Math.round(s));var m=Math.floor(s/60),ss=s%60;return m+':'+String(ss).padStart(2,'0');}
-function addRoutine(){var n=document.getElementById('rtName'),t=document.getElementById('rtMin');var name=n.value.trim();if(!name){alert('\ub8e8\ud2f4\uba85\uc744 \uc785\ub825\ud558\uc138\uc694.');return;}var mins=parseFloat(t.value);var sec=Math.round((isNaN(mins)?0:mins)*60);if(sec<=0)sec=60;db.routines.push({id:uid(),name:name,sec:sec});save();n.value='';t.value='';renderRoutiner();}
+function addRoutine(){var n=document.getElementById('rtName'),t=document.getElementById('rtMin');var name=n.value.trim();if(!name){alert('루틴명을 입력하세요.');return;}var mins=parseFloat(t.value);var sec=Math.round((isNaN(mins)?0:mins)*60);if(sec<=0)sec=60;var l=curListObj();if(!l)return;l.items.push({id:uid(),name:name,sec:sec});save();n.value='';t.value='';renderRtSel();}
 function editRoutine(id,val){var r=rtRoutines().find(function(a){return a.id===id;});if(!r)return;var v=String(val).trim();if(v)r.name=v;save();}
 function editRtTime(id,val){var r=rtRoutines().find(function(a){return a.id===id;});if(!r)return;val=String(val).trim();var sec;if(val.indexOf(':')>=0){var pp=val.split(':');sec=(parseInt(pp[0],10)||0)*60+(parseInt(pp[1],10)||0);}else{var f=parseFloat(val);sec=Math.round((isNaN(f)?0:f)*60);}if(sec>0){r.sec=sec;save();renderRoutiner();}}
-function delRoutine(id){db.routines=rtRoutines().filter(function(a){return a.id!==id;});save();rtStop();renderRoutiner();}
+function delRoutine(id){var l=curListObj();if(!l)return;l.items=l.items.filter(function(a){return a.id!==id;});save();rtStop();renderRoutiner();}
 function rtStart(i){var rs=rtRoutines();if(!rs.length||i<0||i>=rs.length)return;rtIdx=i;rtRemain=rs[i].sec;rtPaused=false;if(rtTimer)clearInterval(rtTimer);rtTimer=setInterval(rtTick,1000);renderRoutiner();rtSetButtons();}
 function rtStartAll(){rtStart(0);}
 function rtTick(){if(rtPaused)return;rtRemain--;if(rtRemain<=0){var rs=rtRoutines();if(rtIdx+1<rs.length){rtIdx++;rtRemain=rs[rtIdx].sec;renderRoutiner();}else{rtStop();renderRoutiner();}}else{rtUpdateActive();}}
-function rtUpdateActive(){var rs=rtRoutines();if(rtIdx<0||rtIdx>=rs.length)return;var r=rs[rtIdx];var g=document.getElementById('rt-g-'+r.id);if(g)g.style.width=(Math.max(0,rtRemain)/r.sec*100)+'%';var t=document.getElementById('rt-t-'+r.id);if(t)t.textContent=fmtSec(rtRemain);}
+function rtUpdateActive(){var rs=rtRoutines();if(rtIdx<0||rtIdx>=rs.length)return;var r=rs[rtIdx];var frac=Math.max(0,rtRemain)/r.sec;var ring=document.getElementById('rt-ring');if(ring){var C=2*Math.PI*70;ring.style.strokeDashoffset=C*(1-frac);ring.setAttribute('stroke',frac<0.2?'#e8615a':'#f4b740');}var t=document.getElementById('rt-bigtime');if(t)t.textContent=fmtSec(rtRemain);}
 function rtPause(){if(rtIdx<0)return;rtPaused=!rtPaused;rtSetButtons();}
 function rtStop(){if(rtTimer)clearInterval(rtTimer);rtTimer=null;rtIdx=-1;rtPaused=false;rtSetButtons();}
 function rtSetButtons(){var pb=document.getElementById('rtPauseBtn');if(pb)pb.textContent=rtPaused?'\u25b6 \uc7ac\uac1c':'\u23f8 \uc77c\uc2dc\uc815\uc9c0';}
-function renderRoutiner(){var el=document.getElementById('rtList');if(!el)return;var rs=rtRoutines();if(!rs.length){el.innerHTML='<div class="empty">\ub8e8\ud2f4\uc744 \ucd94\uac00\ud574\ubcf4\uc138\uc694. (\ub8e8\ud2f4\uba85 + \ubd84)</div>';return;}el.innerHTML=rs.map(function(r,i){var active=i===rtIdx;var pct=active?(Math.max(0,rtRemain)/r.sec*100):100;var timeHTML=active?'<span class="rt-time" id="rt-t-'+r.id+'">'+fmtSec(rtRemain)+'</span>':'<span class="rt-time" contenteditable onblur="editRtTime('+r.id+',this.innerText)">'+fmtSec(r.sec)+'</span>';return '<div class="rt-row'+(active?' active':'')+'"><button class="rt-play" title="\uc2dc\uc791" onclick="rtStart('+i+')">\u25b6</button><span class="rt-name" contenteditable onblur="editRoutine('+r.id+',this.innerText)">'+esc(r.name)+'</span><div class="rt-bar"><div class="rt-fill" id="rt-g-'+r.id+'" style="width:'+pct+'%"></div></div>'+timeHTML+'<span class="del" onclick="delRoutine('+r.id+')">\u00d7</span></div>';}).join('');}
+function rtPlay(l,i){curList=l;rtStart(i);}
+function addRoutineIn(listId){var nm=document.querySelector('.rtNameIn[data-l="'+listId+'"]');var mn=document.querySelector('.rtMinIn[data-l="'+listId+'"]');if(!nm)return;var name=nm.value.trim();if(!name)return;var mins=parseFloat(mn.value);var sec=Math.round((isNaN(mins)?0:mins)*60);if(sec<=0)sec=60;var l=(db.routineLists||[]).find(function(a){return a.id===listId;});if(!l)return;l.items.push({id:uid(),name:name,sec:sec});save();renderRtLists();}
+function editRoutineIn(listId,id,val){var l=(db.routineLists||[]).find(function(a){return a.id===listId;});if(!l)return;var r=l.items.find(function(a){return a.id===id;});if(r){var v=String(val).trim();if(v)r.name=v;save();}}
+function editRtTimeIn(listId,id,val){var l=(db.routineLists||[]).find(function(a){return a.id===listId;});if(!l)return;var r=l.items.find(function(a){return a.id===id;});if(!r)return;val=String(val).trim();var sec;if(val.indexOf(':')>=0){var pp=val.split(':');sec=(parseInt(pp[0],10)||0)*60+(parseInt(pp[1],10)||0);}else{var f=parseFloat(val);sec=Math.round((isNaN(f)?0:f)*60);}if(sec>0){r.sec=sec;save();renderRtLists();}}
+function delRoutineIn(listId,id){var l=(db.routineLists||[]).find(function(a){return a.id===listId;});if(!l)return;l.items=l.items.filter(function(a){return a.id!==id;});save();if(curList===listId)rtStop();renderRtLists();}
+function renderRtLists(){var el=document.getElementById('rtLists');if(!el)return;var ls=db.routineLists||[];var others=ls.filter(function(a){return a.id!==curList;});var cards=others.map(function(l){var rows=l.items.length?l.items.map(function(r){return '<div class="rt-uprow"><span class="rt-name">'+esc(r.name)+'</span><span class="rt-time">'+fmtSec(r.sec)+'</span></div>';}).join(''):'<div class="empty" style="padding:8px">비어 있음</div>';return '<div class="card rt-listcard rt-selectable" onclick="selectList('+l.id+')"><div class="rt-list-head"><span class="rt-list-title">'+esc(l.name)+' <span style="color:var(--muted);font-size:12px;font-weight:600">('+l.items.length+')</span></span><span class="del" onclick="event.stopPropagation();delRoutineList('+l.id+')">\u00d7</span></div>'+rows+'</div>';}).join('');var body=others.length?('<div class="g3">'+cards+'</div>'):'<div class="empty" style="padding:8px 0">다른 목록이 없어요.</div>';el.innerHTML='<div class="rt-uplabel" style="margin-top:18px">다른 루틴 목록 (클릭해서 선택)</div>'+body+'<div style="margin-top:12px"><button class="btn ghost" onclick="addRoutineList()">\uff0b 목록 추가</button></div>';}
+function renderRoutiner(){renderRtMain();renderRtLists();}
 function renderAll(){
   renderTop();renderCal();renderSchedule();renderTodos();renderInbox();renderInboxPage();
   renderWork();renderDashWork();renderReading();renderStudy();renderDashStudy();
