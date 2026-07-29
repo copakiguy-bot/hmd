@@ -11,10 +11,9 @@
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" href="icon.png">
 <title>데일리 페이지</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -24,7 +23,7 @@
     --shadow:0 8px 24px rgba(18,49,43,.06);
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Pretendard','Gowun Dodum','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
     background:var(--cream);color:var(--text);display:flex;min-height:100vh;-webkit-font-smoothing:antialiased;
     letter-spacing:-.1px;font-weight:400}
   h1,h2,h3,b,strong{letter-spacing:-.3px}
@@ -251,13 +250,19 @@
   .cm-sent{flex:1;min-width:170px;font-family:'Nanum Myeongjo',serif;font-size:14.5px;outline:none;
     border-bottom:1px dashed var(--line);padding:2px 2px;line-height:1.6}
   .cm-sent:focus{border-bottom-color:var(--yellow)}
-  .cm-sent:empty::before{content:'English sentence';color:#c3cbc7}
-  .cm-md{cursor:text;border-radius:9px;padding:9px 12px;background:#fbfbf8;font-size:14px;line-height:1.7;min-height:22px}
+  .cm-sent:empty::before{content:'Sentence';color:#c3cbc7}
+  .cm-live{margin-top:8px;border:1px solid var(--line);border-radius:9px;background:#fbfbf8;padding:9px 12px;font-size:14px;line-height:1.7}
+  .cm-live-h{font-size:10.5px;font-weight:800;color:var(--muted);letter-spacing:.4px;margin-bottom:4px}
+  .cm-md{cursor:text;border-radius:9px;background:#fbfbf8;min-height:22px}
   .cm-md:hover{outline:1px dashed var(--line)}
-  .cm-md.wv-preview{padding:9px 12px;font-size:14px;line-height:1.7}
-  .cm-md.wv-preview h1{font-size:19px}.cm-md.wv-preview h2{font-size:17px}.cm-md.wv-preview h3{font-size:15.5px}
-  .cm-md.wv-preview p{margin:5px 0}
-  .cm-md.wv-preview ul,.cm-md.wv-preview ol{margin:5px 0 5px 20px}
+  .cm-md.wv-preview,.cm-live.wv-preview{padding:9px 12px;font-size:14px;line-height:1.7}
+  .cm-md.wv-preview h1,.cm-live.wv-preview h1{font-size:19px;margin:10px 0 6px}
+  .cm-md.wv-preview h2,.cm-live.wv-preview h2{font-size:17px;margin:10px 0 6px}
+  .cm-md.wv-preview h3,.cm-live.wv-preview h3{font-size:15.5px;margin:9px 0 5px}
+  .cm-md.wv-preview h4,.cm-live.wv-preview h4{font-size:14.5px;margin:9px 0 5px}
+  .cm-md.wv-preview p,.cm-live.wv-preview p{margin:5px 0}
+  .cm-md.wv-preview ul,.cm-md.wv-preview ol,.cm-live.wv-preview ul,.cm-live.wv-preview ol{margin:5px 0 5px 20px}
+  .cm-md.wv-preview blockquote,.cm-live.wv-preview blockquote{margin:7px 0;padding:6px 12px}
   .cm-empty-md{color:var(--muted)}
   .cm-mdedit{width:100%;min-height:110px;resize:vertical;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.7}
   .cm-hint{font-size:11px;color:var(--muted);margin-top:5px}
@@ -1958,13 +1963,21 @@ function cheonilChapterAdd(){const el=document.getElementById('ccIn');if(!el)ret
 /* 설명 마크다운 렌더 (Work Vault 파서 재사용) */
 function cheonilMd(src){
   src=String(src||'').trim();
-  if(!src)return '<span class="cm-empty-md">Description — 눌러서 마크다운으로 작성하세요.</span>';
+  if(!src)return '<span class="cm-empty-md">눌러서 마크다운으로 작성하세요.</span>';
   try{return wvMd(src,{nodes:[]});}catch(e){return esc(src).replace(/\n/g,'<br>');}
+}
+/* 입력 중 실시간 마크다운 미리보기 */
+function cheonilLivePreview(srcId,outId){
+  const s=document.getElementById(srcId),o=document.getElementById(outId);if(!s||!o)return;
+  const v=String(s.value||'').trim();
+  o.innerHTML=v?cheonilMd(v):'<span class="cm-empty-md">여기에 마크다운 결과가 표시됩니다.</span>';
 }
 let cheonilEditKey=null;
 function startEditCheonilDesc(chapterId,unitId){
   cheonilEditKey=chapterId+'_'+unitId;renderStudy();
-  setTimeout(function(){const el=document.getElementById('cmDescEdit');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}},0);
+  setTimeout(function(){const el=document.getElementById('cmDescEdit');
+    if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}
+    cheonilLivePreview('cmDescEdit','cmDescLive');},0);
 }
 function saveCheonilDesc(chapterId,unitId){
   const el=document.getElementById('cmDescEdit');if(!el)return;
@@ -1982,8 +1995,9 @@ function cheonilContentHTML(){
     const rows=(c.units||[]).map(u=>{
       const editing=cheonilEditKey===(c.id+'_'+u.id);
       const descBlock=editing
-        ? `<textarea id="cmDescEdit" class="in cm-mdedit" placeholder="Description (마크다운)">${esc(u.desc||'')}</textarea>
+        ? `<textarea id="cmDescEdit" class="in cm-mdedit" placeholder="마크다운으로 작성하세요" oninput="cheonilLivePreview('cmDescEdit','cmDescLive')">${esc(u.desc||'')}</textarea>
            <div class="cm-hint"># 제목 · **굵게** · *기울임* · - 목록 · 1. 번호 · &gt; 인용 · \`코드\` · | 표 |</div>
+           <div class="cm-live wv-preview"><div class="cm-live-h">미리보기</div><div id="cmDescLive"></div></div>
            <div style="margin-top:8px;display:flex;gap:8px">
              <button class="btn y" onclick="saveCheonilDesc(${c.id},${u.id})">저장</button>
              <button class="btn ghost" onclick="cancelEditCheonilDesc()">취소</button></div>`
@@ -2037,6 +2051,7 @@ function fillCheonilDashUnitFields(){
   const u=cheonilUnitById(Number(cs.value),Number(us.value));
   const de=document.getElementById('cdDesc'),se=document.getElementById('cdSentence');
   if(de)de.value=(u&&u.desc)||'';if(se)se.value=(u&&u.sentence)||'';
+  cheonilLivePreview('cdDesc','cdDescLive');
 }
 function saveCheonilDash(){
   const cs=document.getElementById('cdChapter'),us=document.getElementById('cdUnit');
@@ -2083,9 +2098,10 @@ function cheonilDashHTML(){
     <div class="inrow">
       <select id="cdChapter" class="in" style="flex:1" onchange="fillCheonilDashUnits()"></select>
       <select id="cdUnit" class="in" style="flex:1" onchange="fillCheonilDashUnitFields()"></select>
-      <input id="cdSentence" class="in" style="flex:1.7;font-family:'Nanum Myeongjo',serif" placeholder="English sentence">
+      <input id="cdSentence" class="in" style="flex:1.7;font-family:'Nanum Myeongjo',serif" placeholder="Sentence">
     </div>
-    <textarea id="cdDesc" class="in cm-mdedit" style="margin-top:8px;min-height:84px" placeholder="Description (마크다운: # 제목, **굵게**, - 목록, &gt; 인용, \`코드\`)"></textarea>
+    <textarea id="cdDesc" class="in cm-mdedit" style="margin-top:8px;min-height:84px" placeholder="마크다운으로 작성하세요 (# 제목, **굵게**, - 목록, &gt; 인용, \`코드\`)" oninput="cheonilLivePreview('cdDesc','cdDescLive')"></textarea>
+    <div class="cm-live wv-preview"><div class="cm-live-h">미리보기</div><div id="cdDescLive"></div></div>
     <div style="margin-top:10px;display:flex;gap:8px">
       <button class="btn y" onclick="saveCheonilDash()">저장</button>
       <button class="btn ghost" onclick="toggleCheonilChapterForm()">＋ CHAPTER/UNIT 추가</button>
