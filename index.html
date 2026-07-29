@@ -264,6 +264,18 @@
   .cm-md.wv-preview ul,.cm-md.wv-preview ol,.cm-live.wv-preview ul,.cm-live.wv-preview ol{margin:5px 0 5px 20px}
   .cm-md.wv-preview blockquote,.cm-live.wv-preview blockquote{margin:7px 0;padding:6px 12px}
   .cm-empty-md{color:var(--muted)}
+  /* 천일문 내용 아코디언 */
+  .cm-chap{border:1px solid var(--line);border-radius:12px;margin-bottom:8px;overflow:hidden}
+  .cm-chead{display:flex;align-items:center;gap:9px;padding:12px 14px;cursor:pointer;background:var(--cream);user-select:none}
+  .cm-chead:hover{background:#efeee7}
+  .cm-cname{flex:1;font-size:14.5px;font-weight:800;color:var(--red)}
+  .cm-ccount{font-size:11.5px;color:var(--muted);font-weight:700}
+  .cm-ca{font-size:10px;color:var(--muted);width:11px;flex-shrink:0;text-align:center}
+  .cm-unit{border-top:1px solid var(--line)}
+  .cm-uhead{display:flex;align-items:center;gap:9px;padding:11px 14px 11px 28px;cursor:pointer;user-select:none}
+  .cm-uhead:hover{background:#fbfbf8}
+  .cm-uname{flex:1;font-size:13.5px;font-weight:700}
+  .cm-ubody{padding:2px 14px 14px 28px}
   .cm-mdedit{width:100%;min-height:110px;resize:vertical;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.7}
   .cm-hint{font-size:11px;color:var(--muted);margin-top:5px}
   .mind-canvas{position:relative;min-width:100%;min-height:100%}
@@ -1963,7 +1975,7 @@ function cheonilChapterAdd(){const el=document.getElementById('ccIn');if(!el)ret
 /* 설명 마크다운 렌더 (Work Vault 파서 재사용) */
 function cheonilMd(src){
   src=String(src||'').trim();
-  if(!src)return '<span class="cm-empty-md">눌러서 마크다운으로 작성하세요.</span>';
+  if(!src)return '';
   try{return wvMd(src,{nodes:[]});}catch(e){return esc(src).replace(/\n/g,'<br>');}
 }
 /* 입력 중 실시간 마크다운 미리보기 */
@@ -1987,32 +1999,51 @@ function saveCheonilDesc(chapterId,unitId){
 }
 function cancelEditCheonilDesc(){cheonilEditKey=null;renderStudy();}
 
-/* 목차별 유닛: CHAPTER · UNIT · SENTENCE 한 줄 + 아래 마크다운 설명 */
+/* 목차별 유닛: CHAPTER 접기 → UNIT 접기 → 내용(SENTENCE + 마크다운) */
+var cheonilOpenCh={},cheonilOpenU={};
+function toggleCheonilCh(id){cheonilOpenCh[id]=!cheonilOpenCh[id];renderStudy();}
+function toggleCheonilU(id){cheonilOpenU[id]=!cheonilOpenU[id];renderStudy();}
 function cheonilContentHTML(){
-  const chapters=cheonilChapters().filter(c=>(c.units||[]).length);
-  if(!chapters.length)return '<div class="empty">등록된 유닛이 없습니다. 위 목차 관리에서 CHAPTER·UNIT을 먼저 추가하세요.</div>';
+  const chapters=cheonilChapters();
+  if(!chapters.length)return '<div class="empty">등록된 CHAPTER가 없습니다. 위 목차 관리에서 CHAPTER·UNIT을 먼저 추가하세요.</div>';
   return chapters.map(c=>{
-    const rows=(c.units||[]).map(u=>{
-      const editing=cheonilEditKey===(c.id+'_'+u.id);
-      const descBlock=editing
-        ? `<textarea id="cmDescEdit" class="in cm-mdedit" placeholder="마크다운으로 작성하세요" oninput="cheonilLivePreview('cmDescEdit','cmDescLive')">${esc(u.desc||'')}</textarea>
-           <div class="cm-hint"># 제목 · **굵게** · *기울임* · - 목록 · 1. 번호 · &gt; 인용 · \`코드\` · | 표 |</div>
-           <div class="cm-live wv-preview"><div class="cm-live-h">미리보기</div><div id="cmDescLive"></div></div>
-           <div style="margin-top:8px;display:flex;gap:8px">
-             <button class="btn y" onclick="saveCheonilDesc(${c.id},${u.id})">저장</button>
-             <button class="btn ghost" onclick="cancelEditCheonilDesc()">취소</button></div>`
-        : `<div class="cm-md wv-preview" title="눌러서 편집" onclick="startEditCheonilDesc(${c.id},${u.id})">${cheonilMd(u.desc)}</div>`;
-      return `<div class="entry">
-        <div class="cm-row">
-          <span class="cm-tag">${esc(c.name)}</span>
-          <span class="cm-tag unit">${esc(u.name||'UNIT')}</span>
-          <span class="cm-sent" contenteditable onblur="editCheonilUnitField(${c.id},${u.id},'sentence',this.innerText)">${esc(u.sentence||'')}</span>
-          <span class="day">${esc(u.date||'')}</span>
-        </div>
-        ${descBlock}
-      </div>`;
-    }).join('');
-    return `<div class="datehdr" style="font-size:13px;color:var(--red)">${esc(c.name)} <span style="color:var(--muted);font-weight:600">(${(c.units||[]).length})</span></div>${rows}`;
+    const units=c.units||[];
+    const chOpen=!!cheonilOpenCh[c.id];
+    let unitsHTML='';
+    if(chOpen&&!units.length)unitsHTML='<div class="cm-unit"><div class="cm-ubody" style="padding-top:10px"><span class="cm-empty-md" style="font-size:13px">등록된 UNIT이 없습니다.</span></div></div>';
+    if(chOpen){
+      unitsHTML=units.length?units.map(u=>{
+        const uOpen=!!cheonilOpenU[u.id];
+        let body='';
+        if(uOpen){
+          const editing=cheonilEditKey===(c.id+'_'+u.id);
+          const descBlock=editing
+            ? `<textarea id="cmDescEdit" class="in cm-mdedit" placeholder="마크다운으로 작성하세요" oninput="cheonilLivePreview('cmDescEdit','cmDescLive')">${esc(u.desc||'')}</textarea>
+               <div class="cm-hint"># 제목 · **굵게** · *기울임* · - 목록 · 1. 번호 · &gt; 인용 · \`코드\` · | 표 |</div>
+               <div class="cm-live wv-preview"><div class="cm-live-h">미리보기</div><div id="cmDescLive"></div></div>
+               <div style="margin-top:8px;display:flex;gap:8px">
+                 <button class="btn y" onclick="saveCheonilDesc(${c.id},${u.id})">저장</button>
+                 <button class="btn ghost" onclick="cancelEditCheonilDesc()">취소</button></div>`
+            : `<div class="cm-md wv-preview" title="눌러서 편집" onclick="startEditCheonilDesc(${c.id},${u.id})">${cheonilMd(u.desc)}</div>`;
+          body=`<div class="cm-ubody">
+            <div class="cm-row">
+              <span class="cm-sent" contenteditable onblur="editCheonilUnitField(${c.id},${u.id},'sentence',this.innerText)">${esc(u.sentence||'')}</span>
+              <span class="day">${esc(u.date||'')}</span>
+            </div>
+            ${descBlock}
+          </div>`;
+        }
+        return `<div class="cm-unit">
+          <div class="cm-uhead" onclick="toggleCheonilU(${u.id})">
+            <span class="cm-ca">${uOpen?'▾':'▸'}</span><span class="cm-uname">${esc(u.name||'UNIT')}</span></div>
+          ${body}</div>`;
+      }).join(''):unitsHTML;
+    }
+    return `<div class="cm-chap">
+      <div class="cm-chead" onclick="toggleCheonilCh(${c.id})">
+        <span class="cm-ca">${chOpen?'▾':'▸'}</span><span class="cm-cname">${esc(c.name)}</span>
+        <span class="cm-ccount">${units.length}</span></div>
+      ${unitsHTML}</div>`;
   }).join('');
 }
 function cheonilmunPaneHTML(){
