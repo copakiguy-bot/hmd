@@ -231,6 +231,10 @@
   #bookDetail .body,#dashReadFeed .body,
   #dashDiaryFeed .body,#diaryPage .body,
   #schedList .sub{font-family:'Nanum Myeongjo',serif}
+  /* 일기: 폰트 크게 + 칸(가로 폭) 넓게 + 가운데 정렬. 아래 700px(칸 너비)와 17px(폰트) 숫자만 바꾸면 조절됨 */
+  #diaryPage,#dashDiaryFeed{max-width:700px;margin-left:auto;margin-right:auto}
+  #diaryPage .body,#dashDiaryFeed .body{font-size:17px;line-height:1.8;overflow-wrap:break-word}
+  #diaryInput,#diaryInput2{font-size:17px;line-height:1.8;max-width:700px;margin-left:auto;margin-right:auto;display:block}
   #schedList .sub{font-size:13.5px;margin-left:28px;white-space:pre-wrap;line-height:1.6;color:var(--muted)}
   #ideaCard{min-height:200px}
   #mindCanvas{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fbfbf8;min-height:460px;margin-top:4px}
@@ -560,7 +564,7 @@
     <div class="card" id="diarySecCard" style="display:none">
       <h3><span class="dot" style="background:#6a8fd8"></span> 일기 <span class="more" onclick="go('diary')">전체 →</span></h3>
       <textarea id="diaryInput" class="in" style="width:100%;min-height:110px;resize:vertical" placeholder="오늘의 일기를 남겨보세요"></textarea>
-      <div style="margin-top:10px"><button class="btn y" onclick="addDiary()">＋ 저장</button></div>
+      <div style="margin-top:10px;text-align:center"><button class="btn y" onclick="addDiary()">＋ 저장</button></div>
       <div id="dashDiaryFeed" style="margin-top:12px"></div>
     </div>
 
@@ -667,7 +671,7 @@
     <div class="card">
       <h3><span class="dot" style="background:#6a8fd8"></span> 새 일기</h3>
       <textarea id="diaryInput2" class="in" style="width:100%;min-height:120px;resize:vertical" placeholder="오늘의 일기"></textarea>
-      <div style="margin-top:10px"><button class="btn y" onclick="addDiary('diaryInput2')">＋ 저장</button></div>
+      <div style="margin-top:10px;text-align:center"><button class="btn y" onclick="addDiary('diaryInput2')">＋ 저장</button></div>
     </div>
     <div class="card"><h3><span class="dot"></span> 누적 <span class="more" id="diaryCount"></span></h3><div id="diaryPage"></div></div>
   </section>
