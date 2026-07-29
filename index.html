@@ -194,6 +194,7 @@
   .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
   .g2 .card,.g3 .card{margin:0}
   .g2+.g2,.g3+.g2,.card+.g2,.card+.g3{margin-top:20px}
+  .g2+.card,.g3+.card{margin-top:20px}
 
   /* one-line inline input row */
   .inrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -238,6 +239,28 @@
   #schedList .sub{font-size:13.5px;margin-left:28px;white-space:pre-wrap;line-height:1.6;color:var(--muted)}
   #ideaCard{min-height:200px}
   #mindCanvas{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fbfbf8;min-height:460px;margin-top:4px}
+  .mind-expand-btn{cursor:pointer;flex-shrink:0;margin-left:8px}
+  .mind-backdrop{display:none;position:fixed;inset:0;background:rgba(18,49,43,.45);z-index:94}
+  #ideaCard.mind-expanded{position:fixed;top:20px;left:20px;right:20px;bottom:20px;z-index:95;display:flex;flex-direction:column;box-shadow:0 24px 70px rgba(0,0,0,.35);overflow:hidden}
+  #ideaCard.mind-expanded #mindCanvas{flex:1;min-height:0}
+  body.mind-lock{overflow:hidden}
+  /* 천일문 */
+  .cm-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .cm-tag{font-size:11px;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap;background:var(--yellow-soft);color:#a9721a}
+  .cm-tag.unit{background:var(--red-soft);color:#b23c37}
+  .cm-sent{flex:1;min-width:170px;font-family:'Nanum Myeongjo',serif;font-size:14.5px;outline:none;
+    border-bottom:1px dashed var(--line);padding:2px 2px;line-height:1.6}
+  .cm-sent:focus{border-bottom-color:var(--yellow)}
+  .cm-sent:empty::before{content:'English sentence';color:#c3cbc7}
+  .cm-md{cursor:text;border-radius:9px;padding:9px 12px;background:#fbfbf8;font-size:14px;line-height:1.7;min-height:22px}
+  .cm-md:hover{outline:1px dashed var(--line)}
+  .cm-md.wv-preview{padding:9px 12px;font-size:14px;line-height:1.7}
+  .cm-md.wv-preview h1{font-size:19px}.cm-md.wv-preview h2{font-size:17px}.cm-md.wv-preview h3{font-size:15.5px}
+  .cm-md.wv-preview p{margin:5px 0}
+  .cm-md.wv-preview ul,.cm-md.wv-preview ol{margin:5px 0 5px 20px}
+  .cm-empty-md{color:var(--muted)}
+  .cm-mdedit{width:100%;min-height:110px;resize:vertical;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.7}
+  .cm-hint{font-size:11px;color:var(--muted);margin-top:5px}
   .mind-canvas{position:relative;min-width:100%;min-height:100%}
   .mind-svg{position:absolute;left:0;top:0;pointer-events:none}
   .mnode{position:absolute;max-width:240px;background:none;border:none;box-shadow:none;padding:0;cursor:grab;display:inline-flex;align-items:flex-end;gap:5px;font-size:13.5px;z-index:1;transition:opacity .1s}
@@ -655,15 +678,17 @@
         <button class="btn" onclick="addInbox('inboxInput2')">추가</button>
       </div>
     </div>
-    <div class="g2" style="align-items:start">
+    <div class="g3" style="align-items:start">
+      <div class="card"><h3><span class="dot" style="background:#6a8fd8"></span> 아이디어 <span class="more" id="ideaPageCount"></span></h3><div id="ideaPage"></div></div>
       <div class="card"><h3><span class="dot"></span> 단기 프로젝트 <span class="more" id="inboxPageCount"></span></h3><div id="inboxPage"></div></div>
       <div class="card"><h3><span class="dot" style="background:var(--green)"></span> 장기 프로젝트 <span class="more" id="longCount"></span></h3><div id="longPage"></div></div>
     </div>
-      <div class="card" id="ideaCard"><h3><span class="dot" style="background:#6a8fd8"></span> 아이디어 구체화 <span class="more" id="ideaLabel"></span></h3>
+      <div class="card" id="ideaCard"><h3><span class="dot" style="background:#6a8fd8"></span> 아이디어 구체화 <span class="more" id="ideaLabel"></span><span class="idea-edit mind-expand-btn" id="mindExpandBtn" onclick="toggleMindExpand()">⤢ 확장</span></h3>
         <div id="mindToolbar" style="display:none;margin-bottom:8px"><button class="btn y" onclick="mindAddFocus(mindRoot())">＋ 생각 추가</button> <span style="font-size:11.5px;color:var(--muted)"><b>Tab</b>=하위 · <b>Enter</b>=대등 · <b>Shift+Enter</b>=줄바꿈 · 칸을 끌어 이동 · ○ 눌러 가지접기</span></div>
         <div id="mindCanvas"></div>
       </div>
   </section>
+  <div class="mind-backdrop" id="mindBackdrop" onclick="toggleMindExpand()"></div>
 
   <!-- ===== 일기 ===== -->
   <section class="view" id="view-diary">
@@ -722,7 +747,15 @@ const dstr=(off=0)=>{const t=new Date();t.setDate(t.getDate()-off);
   return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');};
 const today=()=>dstr(0);
 let db=load();
-function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.routines)db.routines=[];if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}}
+function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.routines)db.routines=[];if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
+  if(!db.cheonildu||Array.isArray(db.cheonildu)){
+    var __oldCd=Array.isArray(db.cheonildu)?db.cheonildu:[];var __chapMap={};var __chapOrder=[];
+    __oldCd.forEach(function(x){var cn=x.chapter||'(챕터 미입력)';if(!__chapMap[cn]){__chapMap[cn]={id:uid(),name:cn,units:[]};__chapOrder.push(cn);}
+      __chapMap[cn].units.push({id:x.id||uid(),name:x.unit||'',desc:x.summary||'',sentence:x.sentence||'',date:x.date||''});});
+    db.cheonildu={chapters:__chapOrder.map(function(k){return __chapMap[k];})};
+  }
+  if(!db.cheonildu.chapters)db.cheonildu.chapters=[];
+  (db.inbox||[]).forEach(function(x){if(!x.grp)x.grp=x.long?'long':'short';});}
 ensureFields();
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.work)return s;}catch(e){}return seed();}
 function save(){localStorage.setItem(KEY,JSON.stringify(db));cloudPushDebounced();}
@@ -758,6 +791,7 @@ function seed(){
       {id:36,date:dstr(4),tab:'문화',category:'',title:'전시 관람',content:'국립현대미술관 상설전. 단색화 계열 작품 인상적.'}
     ],
     studyCats:{지식:[],문화:[]},
+    cheonildu:{chapters:[]},
     assets:[
       {id:41,date:dstr(1),type:'수입',category:'월급',item:'7월 급여',amount:2500000,note:''},
       {id:42,date:dstr(1),type:'지출',category:'식비',item:'점심',amount:12000,note:'회사 근처'},
@@ -882,10 +916,18 @@ function setSyncCode(){var el=document.getElementById('syncInput');var v=el.valu
 function clearSyncCode(){localStorage.removeItem(SYNC_KEY);var inp=document.getElementById('syncInput');if(inp)inp.value='';setSyncStatus('연결 해제됨 (이 기기)');}
 let curIdea=null;
 var editInboxId=null;
-function inboxPageItemHTML(x){var editing=editInboxId===x.id;var title=editing?'<span class="txt" id="inbEditField" contenteditable onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}" onblur="saveEditInbox('+x.id+',this.innerText)">'+esc(x.t)+'</span>':'<span class="txt link" title="마인드맵 열기" onclick="openMind('+x.id+')">'+esc(x.t)+'</span>';return '<li class="'+(x.done?"done":"")+'">'+'<div class="chk '+(x.done?"done":"")+'" onclick="toggleInbox('+x.id+')">'+(x.done?"✓":"")+'</div>'+title+'<span class="idea-edit" title="제목 수정" onclick="startEditInbox('+x.id+')">제목 수정</span>'+(x.long?'<span class="mv-btn" title="단기로" onclick="moveShort('+x.id+')">←</span>':'<span class="mv-btn" title="장기 프로젝트로" onclick="moveLong('+x.id+')">→</span>')+'<span class="del" onclick="delInbox('+x.id+')">×</span></li>';}
+function inboxPageItemHTML(x){var editing=editInboxId===x.id;var title=editing?'<span class="txt" id="inbEditField" contenteditable onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}" onblur="saveEditInbox('+x.id+',this.innerText)">'+esc(x.t)+'</span>':'<span class="txt link" title="마인드맵 열기" onclick="openMind('+x.id+')">'+esc(x.t)+'</span>';var ng=nextGrp(grpOf(x));return '<li class="'+(x.done?"done":"")+'">'+'<div class="chk '+(x.done?"done":"")+'" onclick="toggleInbox('+x.id+')">'+(x.done?"✓":"")+'</div>'+title+'<span class="idea-edit" title="제목 수정" onclick="startEditInbox('+x.id+')">제목 수정</span>'+'<span class="mv-btn" title="'+grpLabel(ng)+'으로 이동" onclick="moveNextGrp('+x.id+')">→</span>'+'<span class="del" onclick="delInbox('+x.id+')">×</span></li>';}
 function startEditInbox(id){editInboxId=id;renderInboxPage();setTimeout(function(){var el=document.getElementById("inbEditField");if(el){el.focus();var r=document.createRange();r.selectNodeContents(el);var sl=window.getSelection();sl.removeAllRanges();sl.addRange(r);}},0);}
 function saveEditInbox(id,val){var x=db.inbox.find(function(a){return a.id===id;});if(x){var v=String(val).trim();if(v)x.t=v;}editInboxId=null;save();renderInbox();renderInboxPage();}
 function openMind(id){openIdea(id);var c=document.getElementById("ideaCard");if(c)c.scrollIntoView({behavior:"smooth",block:"start"});}
+function toggleMindExpand(){
+  var c=document.getElementById("ideaCard");if(!c)return;
+  var on=c.classList.toggle("mind-expanded");
+  var bd=document.getElementById("mindBackdrop");if(bd)bd.style.display=on?"block":"none";
+  document.body.classList.toggle("mind-lock",on);
+  var btn=document.getElementById("mindExpandBtn");if(btn)btn.textContent=on?"⤡ 축소":"⤢ 확장";
+  renderMind();
+}
 function curIdeaObj(){return db.inbox.find(function(a){return a.id===curIdea;});}
 function openIdea(id){var x=db.inbox.find(function(a){return a.id===id;});if(!x)return;curIdea=id;if(!x.mind||!x.mind.length){x.mind=[{id:1,t:x.t,x:30,y:30,p:0}];save();}var lbl=document.getElementById("ideaLabel");if(lbl)lbl.textContent=x.t.slice(0,24);var tb=document.getElementById("mindToolbar");if(tb)tb.style.display="";renderMind();}
 function mindRoot(){var x=curIdeaObj();return (x&&x.mind&&x.mind.length)?x.mind[0].id:1;}
@@ -948,6 +990,9 @@ function renderMind(){
   x.mind.forEach(function(n){var p=pos[n.id];if(!p)return;minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x+p.w);minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);});
   var padX=100,padY=80, offX=padX-minX, offY=padY-minY;
   var W=Math.max(560,(maxX-minX)+padX*2), H=Math.max(340,(maxY-minY)+padY*2);
+  var cw=el.clientWidth||0, ch=el.clientHeight||0;
+  if(cw>W){offX+=(cw-W)/2;W=cw;}
+  if(ch>H){offY+=(ch-H)/2;H=ch;}
   var nodesHTML=x.mind.map(function(n){
     var p=pos[n.id]; if(!p)return '';
     var root=!n.p||n.p===0;
@@ -1058,7 +1103,7 @@ function renderSchedule(){
 function addInbox(inputId){
   const el=document.getElementById(inputId||'inboxInput');
   const v=el.value.trim();if(!v)return;
-  db.inbox.push({id:uid(),date:today(),t:v,done:false});save();el.value='';
+  db.inbox.push({id:uid(),date:today(),t:v,done:false,grp:'idea'});save();el.value='';
   renderInbox();renderInboxPage();
 }
 function toggleInbox(id){const x=db.inbox.find(a=>a.id===id);if(x){x.done=!x.done;save();renderInbox();renderInboxPage();}}
@@ -1071,22 +1116,27 @@ function inboxItemHTML(x){return `<li class="${x.done?'done':''}">
   <span class="del" onclick="delInbox(${x.id})">×</span></li>`;}
 function renderInbox(){
   const ul=document.getElementById('inboxList');if(!ul)return;
-  const items=db.inbox.filter(x=>!x.long);const open=items.filter(x=>!x.done);
+  const items=db.inbox.filter(x=>grpOf(x)!=='long');const open=items.filter(x=>!x.done);
   ul.innerHTML=items.length?items.slice().reverse().map(inboxItemHTML).join('')
     :'<div class="empty">담아둔 항목이 없습니다.</div>';
   document.getElementById('inboxCount').textContent=`${open.length} / ${items.length}`;
 }
-function moveLong(id){var x=db.inbox.find(function(a){return a.id===id;});if(x){x.long=true;save();renderInbox();renderInboxPage();}}
-function moveShort(id){var x=db.inbox.find(function(a){return a.id===id;});if(x){x.long=false;save();renderInbox();renderInboxPage();}}
-function inboxGroupHTML(list){var g={};list.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));}).forEach(function(x){(g[x.date]=g[x.date]||[]).push(x);});return Object.keys(g).map(function(d){return '<div class="datehdr">'+d+'</div><ul class="todo">'+g[d].map(inboxPageItemHTML).join('')+'</ul>';}).join('');}
+function grpOf(x){return x.grp||(x.long?'long':'short');}
+function grpLabel(g){return g==='idea'?'아이디어':g==='long'?'장기':'단기';}
+function nextGrp(g){return g==='short'?'long':g==='long'?'idea':'short';}
+function moveNextGrp(id){var x=db.inbox.find(function(a){return a.id===id;});if(x){x.grp=nextGrp(grpOf(x));save();renderInbox();renderInboxPage();}}
+function inboxFlatHTML(list){return '<ul class="todo">'+list.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));}).map(inboxPageItemHTML).join('')+'</ul>';}
 function renderInboxPage(){
   var el=document.getElementById('inboxPage');if(!el)return;
-  var shortL=db.inbox.filter(function(z){return !z.long;});
-  var longL=db.inbox.filter(function(z){return z.long;});
+  var shortL=db.inbox.filter(function(z){return grpOf(z)==='short';});
+  var longL=db.inbox.filter(function(z){return grpOf(z)==='long';});
+  var ideaL=db.inbox.filter(function(z){return grpOf(z)==='idea';});
   document.getElementById('inboxPageCount').textContent=shortL.length+'건';
   var lc=document.getElementById('longCount');if(lc)lc.textContent=longL.length+'건';
-  var lEl=document.getElementById('longPage');if(lEl)lEl.innerHTML=longL.length?inboxGroupHTML(longL):'<div class="empty">장기 프로젝트가 없습니다.</div>';
-  el.innerHTML=shortL.length?inboxGroupHTML(shortL):'<div class="empty">단기 항목이 없습니다.</div>';
+  var ic=document.getElementById('ideaPageCount');if(ic)ic.textContent=ideaL.length+'건';
+  var lEl=document.getElementById('longPage');if(lEl)lEl.innerHTML=longL.length?inboxFlatHTML(longL):'<div class="empty">장기 프로젝트가 없습니다.</div>';
+  var iEl=document.getElementById('ideaPage');if(iEl)iEl.innerHTML=ideaL.length?inboxFlatHTML(ideaL):'<div class="empty">아이디어가 없습니다.</div>';
+  el.innerHTML=shortL.length?inboxFlatHTML(shortL):'<div class="empty">단기 항목이 없습니다.</div>';
   updateMindPanel();
 }
 
@@ -1793,6 +1843,7 @@ function renderDashStudy(){
       <input id="sTitle" class="in" style="flex:2" placeholder="제목"></div>
       <textarea id="sContent" class="in" style="width:100%;min-height:90px;margin-top:8px;resize:vertical" placeholder="내용"></textarea>
       <div style="margin-top:10px"><button class="btn y" onclick="addStudyDash()">＋ 추가</button></div>`;
+  if(t==='영어'){form.innerHTML+=cheonilDashHTML();fillCheonilDashSelectors();fillCheonilChapterFormSelectors();}
   const list=db.study.filter(x=>x.tab===t&&x.date===today());
   feed.innerHTML=list.length?(`<div class="datehdr">오늘 ${t}${isMemTab(t)?' (뜻을 눌러 확인)':''}</div>`+
     (isMemTab(t)?list.map(memRow).join(''):list.map(x=>
@@ -1855,7 +1906,203 @@ function renderStudy(){
   pane.innerHTML=`${studyCatDatalist(t)}
   <div class="card"><h3><span class="dot" style="background:var(--red)"></span> ${t} 입력</h3>${form}</div>
   <div class="card"><h3><span class="dot" style="background:var(--red)"></span> ${t} 누적 <span class="more">${rows.length}건</span></h3>
-    ${list||'<div class="empty">기록이 없습니다.</div>'}</div>`;
+    ${list||'<div class="empty">기록이 없습니다.</div>'}</div>
+  ${t==='영어'?cheonilmunPaneHTML():''}`;
+}
+
+/* ---------- 천일문 (CHAPTER → UNIT 목차 + 유닛별 설명·영문장) ---------- */
+function cheonilChapters(){return db.cheonildu.chapters||(db.cheonildu.chapters=[]);}
+function cheonilChapterById(id){return cheonilChapters().find(c=>c.id===id);}
+function cheonilUnitById(chapterId,unitId){const c=cheonilChapterById(chapterId);if(!c)return null;return (c.units||[]).find(u=>u.id===unitId);}
+function cheonilUnitCount(){return cheonilChapters().reduce((s,c)=>s+((c.units||[]).length),0);}
+
+function addCheonilChapter(name){name=String(name||'').trim();if(!name)return;cheonilChapters().push({id:uid(),name,units:[]});save();}
+function editCheonilChapterName(id,val){const c=cheonilChapterById(id);if(!c)return;const v=String(val).trim();if(v)c.name=v;save();}
+function delCheonilChapter(id){if(!confirm('이 챕터와 하위 유닛을 모두 삭제할까요?'))return;
+  db.cheonildu.chapters=cheonilChapters().filter(c=>c.id!==id);save();renderStudy();renderDashStudy();}
+
+function addCheonilUnit(chapterId,name){const c=cheonilChapterById(chapterId);if(!c)return;
+  name=String(name||'').trim();if(!name)return;
+  c.units=c.units||[];c.units.push({id:uid(),name,desc:'',sentence:'',date:''});save();}
+function editCheonilUnitName(chapterId,unitId,val){const u=cheonilUnitById(chapterId,unitId);if(!u)return;const v=String(val).trim();if(v)u.name=v;save();}
+function delCheonilUnit(chapterId,unitId){const c=cheonilChapterById(chapterId);if(!c)return;
+  c.units=(c.units||[]).filter(u=>u.id!==unitId);save();renderStudy();renderDashStudy();}
+function editCheonilUnitField(chapterId,unitId,field,val){const u=cheonilUnitById(chapterId,unitId);if(!u)return;
+  u[field]=String(val).trim();if(u.desc||u.sentence)u.date=u.date||today();
+  save();renderStudy();renderDashStudy();renderCal();}
+
+/* 목차 관리(챕터→유닛) 카드 */
+function cheonilOutlineHTML(){
+  const chapters=cheonilChapters();
+  if(!chapters.length)return '<div class="empty">등록된 CHAPTER가 없습니다. 아래에서 CHAPTER를 추가하세요.</div>';
+  return chapters.map((c,i)=>{
+    const units=c.units||[];
+    const unitRows=units.map(u=>`<div class="memrow" style="align-items:center">
+        <span style="flex:1;font-size:13px;padding-left:16px" contenteditable onblur="editCheonilUnitName(${c.id},${u.id},this.innerText)">${esc(u.name)}</span>
+        <span class="del" style="margin-top:0" onclick="delCheonilUnit(${c.id},${u.id})">×</span></div>`).join('');
+    return `<div class="memrow" style="align-items:center;${i?'border-top:1px solid var(--line);padding-top:12px;':''}">
+        <span style="flex:1;font-size:14.5px;font-weight:800;color:var(--red)" contenteditable onblur="editCheonilChapterName(${c.id},this.innerText)">${esc(c.name)}</span>
+        <span class="del" onclick="delCheonilChapter(${c.id})">×</span></div>
+      ${unitRows}
+      <div class="addrow" style="margin:6px 0 12px 16px">
+        <input id="cuIn${c.id}" placeholder="새 UNIT 추가 후 Enter" onkeydown="if(event.key==='Enter')cheonilUnitAdd(${c.id})">
+        <button class="btn ghost" onclick="cheonilUnitAdd(${c.id})">추가</button>
+      </div>`;
+  }).join('');
+}
+function cheonilUnitAdd(chapterId){const el=document.getElementById('cuIn'+chapterId);if(!el)return;
+  addCheonilUnit(chapterId,el.value);el.value='';renderStudy();renderDashStudy();}
+function cheonilChapterAdd(){const el=document.getElementById('ccIn');if(!el)return;
+  addCheonilChapter(el.value);el.value='';renderStudy();renderDashStudy();}
+
+/* 설명 마크다운 렌더 (Work Vault 파서 재사용) */
+function cheonilMd(src){
+  src=String(src||'').trim();
+  if(!src)return '<span class="cm-empty-md">Description — 눌러서 마크다운으로 작성하세요.</span>';
+  try{return wvMd(src,{nodes:[]});}catch(e){return esc(src).replace(/\n/g,'<br>');}
+}
+let cheonilEditKey=null;
+function startEditCheonilDesc(chapterId,unitId){
+  cheonilEditKey=chapterId+'_'+unitId;renderStudy();
+  setTimeout(function(){const el=document.getElementById('cmDescEdit');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}},0);
+}
+function saveCheonilDesc(chapterId,unitId){
+  const el=document.getElementById('cmDescEdit');if(!el)return;
+  const u=cheonilUnitById(chapterId,unitId);
+  if(u){u.desc=el.value;if(u.desc||u.sentence)u.date=today();save();}
+  cheonilEditKey=null;renderStudy();renderDashStudy();renderCal();
+}
+function cancelEditCheonilDesc(){cheonilEditKey=null;renderStudy();}
+
+/* 목차별 유닛: CHAPTER · UNIT · SENTENCE 한 줄 + 아래 마크다운 설명 */
+function cheonilContentHTML(){
+  const chapters=cheonilChapters().filter(c=>(c.units||[]).length);
+  if(!chapters.length)return '<div class="empty">등록된 유닛이 없습니다. 위 목차 관리에서 CHAPTER·UNIT을 먼저 추가하세요.</div>';
+  return chapters.map(c=>{
+    const rows=(c.units||[]).map(u=>{
+      const editing=cheonilEditKey===(c.id+'_'+u.id);
+      const descBlock=editing
+        ? `<textarea id="cmDescEdit" class="in cm-mdedit" placeholder="Description (마크다운)">${esc(u.desc||'')}</textarea>
+           <div class="cm-hint"># 제목 · **굵게** · *기울임* · - 목록 · 1. 번호 · &gt; 인용 · \`코드\` · | 표 |</div>
+           <div style="margin-top:8px;display:flex;gap:8px">
+             <button class="btn y" onclick="saveCheonilDesc(${c.id},${u.id})">저장</button>
+             <button class="btn ghost" onclick="cancelEditCheonilDesc()">취소</button></div>`
+        : `<div class="cm-md wv-preview" title="눌러서 편집" onclick="startEditCheonilDesc(${c.id},${u.id})">${cheonilMd(u.desc)}</div>`;
+      return `<div class="entry">
+        <div class="cm-row">
+          <span class="cm-tag">${esc(c.name)}</span>
+          <span class="cm-tag unit">${esc(u.name||'UNIT')}</span>
+          <span class="cm-sent" contenteditable onblur="editCheonilUnitField(${c.id},${u.id},'sentence',this.innerText)">${esc(u.sentence||'')}</span>
+          <span class="day">${esc(u.date||'')}</span>
+        </div>
+        ${descBlock}
+      </div>`;
+    }).join('');
+    return `<div class="datehdr" style="font-size:13px;color:var(--red)">${esc(c.name)} <span style="color:var(--muted);font-weight:600">(${(c.units||[]).length})</span></div>${rows}`;
+  }).join('');
+}
+function cheonilmunPaneHTML(){
+  return `<div class="card">
+    <h3><span class="dot" style="background:var(--red)"></span> 천일문 목차 관리</h3>
+    ${cheonilOutlineHTML()}
+    <div class="addrow" style="margin-top:10px">
+      <input id="ccIn" placeholder="새 CHAPTER 추가 후 Enter" onkeydown="if(event.key==='Enter')cheonilChapterAdd()">
+      <button class="btn" onclick="cheonilChapterAdd()">추가</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3><span class="dot" style="background:var(--red)"></span> 천일문 내용 <span class="more">${cheonilUnitCount()}건</span></h3>
+    ${cheonilContentHTML()}
+  </div>`;
+}
+
+/* 대시보드 빠른 입력(챕터·유닛 선택 후 설명·영문장 저장) */
+function fillCheonilDashSelectors(){
+  const cs=document.getElementById('cdChapter');if(!cs)return;
+  const chapters=cheonilChapters();const prevC=cs.value;
+  cs.innerHTML=chapters.length?chapters.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join(''):'<option value="">No CHAPTER</option>';
+  if(prevC&&chapters.some(c=>String(c.id)===prevC))cs.value=prevC;
+  fillCheonilDashUnits();
+}
+function fillCheonilDashUnits(){
+  const cs=document.getElementById('cdChapter'),us=document.getElementById('cdUnit');if(!cs||!us)return;
+  const c=cheonilChapterById(Number(cs.value));const units=(c&&c.units)||[];
+  const prevU=us.value;
+  us.innerHTML=units.length?units.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join(''):'<option value="">No UNIT</option>';
+  if(prevU&&units.some(u=>String(u.id)===prevU))us.value=prevU;
+  fillCheonilDashUnitFields();
+}
+function fillCheonilDashUnitFields(){
+  const cs=document.getElementById('cdChapter'),us=document.getElementById('cdUnit');if(!cs||!us)return;
+  const u=cheonilUnitById(Number(cs.value),Number(us.value));
+  const de=document.getElementById('cdDesc'),se=document.getElementById('cdSentence');
+  if(de)de.value=(u&&u.desc)||'';if(se)se.value=(u&&u.sentence)||'';
+}
+function saveCheonilDash(){
+  const cs=document.getElementById('cdChapter'),us=document.getElementById('cdUnit');
+  if(!cs||!us||!cs.value||!us.value){alert('먼저 「＋ CHAPTER/UNIT 추가」로 CHAPTER와 UNIT을 등록하세요.');return;}
+  const u=cheonilUnitById(Number(cs.value),Number(us.value));if(!u)return;
+  u.desc=document.getElementById('cdDesc').value;
+  u.sentence=document.getElementById('cdSentence').value.trim();
+  if(u.desc||u.sentence)u.date=today();
+  save();renderDashStudy();renderStudy();renderCal();
+}
+function toggleCheonilChapterForm(){const f=document.getElementById('cheonilChapterForm');if(!f)return;
+  f.style.display=f.style.display==='none'?'block':'none';fillCheonilChapterFormSelectors();}
+function fillCheonilChapterFormSelectors(){
+  const sel=document.getElementById('ccdChapterSel');if(!sel)return;
+  const chapters=cheonilChapters();
+  sel.innerHTML=chapters.length?chapters.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join(''):'<option value="">No CHAPTER</option>';
+}
+function cheonilChapterAddDash(){
+  const el=document.getElementById('ccdChapter');if(!el)return;
+  addCheonilChapter(el.value);el.value='';
+  fillCheonilChapterFormSelectors();fillCheonilDashSelectors();renderStudy();
+}
+function cheonilUnitAddDash(){
+  const sel=document.getElementById('ccdChapterSel'),el=document.getElementById('ccdUnit');
+  if(!sel||!sel.value){alert('CHAPTER를 먼저 추가하거나 선택하세요.');return;}
+  addCheonilUnit(Number(sel.value),el.value);el.value='';
+  fillCheonilDashSelectors();renderStudy();
+}
+function cheonilDashFeedHTML(){
+  const td=today();const items=[];
+  cheonilChapters().forEach(c=>(c.units||[]).forEach(u=>{if(u.date===td&&(u.desc||u.sentence))items.push({c,u});}));
+  if(!items.length)return '<div class="empty">오늘 작성한 천일문이 없습니다.</div>';
+  return '<div class="datehdr">오늘 작성한 천일문</div>'+items.map(({c,u})=>`<div class="entry">
+      <div class="cm-row">
+        <span class="cm-tag">${esc(c.name)}</span>
+        <span class="cm-tag unit">${esc(u.name||'UNIT')}</span>
+        <span class="cm-sent" style="border-bottom:none">${esc(u.sentence||'')}</span>
+      </div>
+      <div class="cm-md wv-preview">${cheonilMd(u.desc)}</div></div>`).join('');
+}
+function cheonilDashHTML(){
+  return `<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">
+    <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:8px;letter-spacing:.3px">천일문</div>
+    <div class="inrow">
+      <select id="cdChapter" class="in" style="flex:1" onchange="fillCheonilDashUnits()"></select>
+      <select id="cdUnit" class="in" style="flex:1" onchange="fillCheonilDashUnitFields()"></select>
+      <input id="cdSentence" class="in" style="flex:1.7;font-family:'Nanum Myeongjo',serif" placeholder="English sentence">
+    </div>
+    <textarea id="cdDesc" class="in cm-mdedit" style="margin-top:8px;min-height:84px" placeholder="Description (마크다운: # 제목, **굵게**, - 목록, &gt; 인용, \`코드\`)"></textarea>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button class="btn y" onclick="saveCheonilDash()">저장</button>
+      <button class="btn ghost" onclick="toggleCheonilChapterForm()">＋ CHAPTER/UNIT 추가</button>
+    </div>
+    <div id="cheonilChapterForm" style="display:none;margin-top:12px;border-top:1px dashed var(--line);padding-top:12px">
+      <div class="inrow">
+        <input id="ccdChapter" class="in" style="flex:1" placeholder="New CHAPTER">
+        <button class="btn ghost" style="flex:none" onclick="cheonilChapterAddDash()">CHAPTER 추가</button>
+      </div>
+      <div class="inrow" style="margin-top:8px">
+        <select id="ccdChapterSel" class="in" style="flex:1"></select>
+        <input id="ccdUnit" class="in" style="flex:1" placeholder="New UNIT">
+        <button class="btn ghost" style="flex:none" onclick="cheonilUnitAddDash()">UNIT 추가</button>
+      </div>
+    </div>
+    <div id="cheonilDashFeed" style="margin-top:12px">${cheonilDashFeedHTML()}</div>
+  </div>`;
 }
 
 /* ---------- assets (지출·투자·수입 탭) ---------- */
