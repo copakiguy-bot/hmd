@@ -39,6 +39,11 @@
   .nav:hover{background:rgba(255,255,255,.06);color:#fff}
   .nav.active{background:#fff;color:var(--dark)}
   .nav .ic{width:20px;text-align:center}
+  .nav .ca{margin-left:auto;font-size:12px;opacity:.65;transition:transform .15s}
+  .nav.open .ca{transform:rotate(90deg)}
+  .subnav{display:flex;flex-direction:column;gap:3px;margin:1px 0 4px}
+  .nav.sub{padding:8px 14px 8px 28px;font-size:13.5px;font-weight:600;color:#9fb0aa}
+  .nav.sub.active{background:rgba(255,255,255,.15);color:#fff}
   .nav .badge{margin-left:auto;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:1px 8px;border-radius:20px}
   .side-cta{margin-top:auto;background:var(--dark-2);border-radius:16px;padding:16px;text-align:center}
   .side-cta b{color:#fff;display:block;font-size:14px;margin-bottom:3px}
@@ -86,6 +91,9 @@
   .cal td .d{min-height:104px;border-radius:10px;padding:6px;font-size:13px;cursor:pointer;transition:.12s;
     border:1.5px solid transparent;display:flex;flex-direction:column;gap:3px;overflow:hidden}
   .cal td .d:hover{background:var(--cream)}
+  .cal td .d.sess{background:rgba(106,143,216,.09)}
+  .cal td .d.sess:hover{background:rgba(106,143,216,.15)}
+  .sess-tag{font-size:9.5px;font-weight:700;color:#54739f;background:rgba(106,143,216,.16);border-radius:4px;padding:1px 4px;line-height:1.4;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .cal td .d.sel{border-color:var(--yellow);background:#fffdf5}
   .cal td .d.muted .dnum{color:#cfd6d2}
   .dnum{font-size:15px;font-weight:700;display:flex;align-items:center;gap:4px}
@@ -128,6 +136,16 @@
   .chk.done{background:var(--green);border-color:var(--green)}
   .todo .txt{font-size:14px;flex:1}
   .todo .done .txt{text-decoration:line-through;color:var(--muted)}
+  table.sess-tbl{font-size:14.5px}
+  table.sess-tbl th{font-size:13.5px;font-weight:700;color:var(--muted);padding:9px 8px}
+  table.sess-tbl td{padding:11px 8px}
+  table.sess-tbl th,table.sess-tbl td{text-align:center;vertical-align:middle}
+  .sess-tbl .nw{white-space:nowrap}
+  .sess-tbl .per{white-space:nowrap;font-size:13.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .sess-tbl .edit-ic,.sess-tbl .del{margin-top:0}
+  .pen-ic{cursor:pointer;color:#c3cbc7;font-size:13px;padding:0 3px;line-height:1;user-select:none}
+  .pen-ic:hover{color:var(--dark)}
+  .sess-tbl td .in{text-align:center}
   .del{color:#cfd6d2;cursor:pointer;font-size:16px;padding:0 4px;line-height:1}
   .del:hover{color:var(--red)}
   .post{color:#8a6412;background:var(--yellow-soft);cursor:pointer;font-size:11px;font-weight:700;border-radius:5px;padding:2px 6px;white-space:nowrap}
@@ -158,6 +176,20 @@
   /* lists */
   .entry{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
   .entry .meta{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .stars{display:inline-flex;gap:1px;flex:none;align-items:center}
+  .star{position:relative;display:inline-block;width:17px;height:20px;font-size:17px;line-height:20px;user-select:none}
+  .star .s-bg{color:#e2e6e3}
+  .star .s-fg{position:absolute;left:0;top:0;height:100%;overflow:hidden;color:var(--yellow);white-space:nowrap}
+  .star .s-h{position:absolute;top:0;height:100%;width:50%;cursor:pointer;z-index:2}
+  .star .s-h.l{left:0}
+  .star .s-h.r{right:0}
+  .star-num{font-size:11.5px;font-weight:700;color:#b08a2a;margin-left:5px}
+  .entry.cult .cult-one{font-family:'Nanum Myeongjo',serif;font-size:15px;color:var(--dark);margin:6px 0 2px;line-height:1.6;outline:none}
+  .entry.cult [data-ph]:empty::before{content:attr(data-ph);color:#c3cbc7}
+  .cult-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .tagchip{font-size:11px;font-weight:700;color:#54739f;background:rgba(106,143,216,.14);border-radius:20px;padding:2px 9px}
+  .cult-foot{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .cult-foot .lbl{font-size:11px;font-weight:700;color:var(--muted)}
   .cat-badge{font-size:11px;font-weight:800;padding:2px 10px;border-radius:20px}
   .b-work{background:var(--yellow-soft);color:#a9721a}
   .b-read{background:var(--green-soft);color:var(--green)}
@@ -238,7 +270,7 @@
   #schedList .sub{font-size:13.5px;margin-left:28px;white-space:pre-wrap;line-height:1.6;color:var(--muted)}
   #ideaCard{min-height:200px}
   #mindCanvas{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fbfbf8;min-height:460px;margin-top:4px}
-  .mind-expand-btn{cursor:pointer;flex-shrink:0;margin-left:8px}
+  .mind-expand-btn{cursor:pointer;flex-shrink:0;margin-left:8px;font-size:14px;line-height:1;padding:5px 9px}
   .mind-backdrop{display:none;position:fixed;inset:0;background:rgba(18,49,43,.45);z-index:94}
   #ideaCard.mind-expanded{position:fixed;top:20px;left:20px;right:20px;bottom:20px;z-index:95;display:flex;flex-direction:column;box-shadow:0 24px 70px rgba(0,0,0,.35);overflow:hidden}
   #ideaCard.mind-expanded #mindCanvas{flex:1;min-height:0}
@@ -281,6 +313,7 @@
   .mind-canvas{position:relative;min-width:100%;min-height:100%}
   .mind-svg{position:absolute;left:0;top:0;pointer-events:none}
   .mnode{position:absolute;max-width:240px;background:none;border:none;box-shadow:none;padding:0;cursor:grab;display:inline-flex;align-items:flex-end;gap:5px;font-size:13.5px;z-index:1;transition:opacity .1s}
+  .mnode.left{flex-direction:row-reverse;text-align:right}
   .mnode.dragging{opacity:.4;cursor:grabbing;z-index:5}
   .mnode.drop .mtext{background:var(--yellow-soft);border-radius:6px;box-shadow:0 0 0 2px var(--yellow)}
   .mnode .mtog{cursor:pointer;font-size:9px;min-width:15px;height:15px;line-height:13px;text-align:center;border:1.4px solid currentColor;border-radius:50%;background:#fff;font-weight:800;flex-shrink:0;margin-bottom:2px;user-select:none;padding:0 2px}
@@ -411,15 +444,16 @@
 
 
   /* 단어 확대 팝업 */
-  .zoom-ic{cursor:pointer;font-size:14px;color:#c3cbc7;margin-top:6px;flex:none;user-select:none}
+  .zoom-ic{cursor:pointer;font-size:15px;color:#c3cbc7;margin-top:6px;flex:none;user-select:none}
   .zoom-ic:hover{color:var(--dark)}
   .word-ov{position:fixed;inset:0;background:rgba(18,49,43,.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
   .word-box{background:var(--card);border-radius:22px;padding:46px 40px;max-width:660px;width:100%;text-align:center;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.3)}
   .word-close{position:absolute;top:14px;right:20px;cursor:pointer;font-size:20px;color:var(--muted);line-height:1}
   .word-close:hover{color:var(--dark)}
-  .word-term{font-size:clamp(36px,7vw,66px);font-weight:800;letter-spacing:-1px;color:var(--dark);line-height:1.25;word-break:keep-all}
-  .word-mean{margin-top:24px;font-size:clamp(17px,2.6vw,25px);color:#4a5751;line-height:1.6;cursor:pointer;display:inline-block;padding:6px 14px;border-radius:12px}
-  .word-mean.masked{background:var(--line);color:transparent;user-select:none;min-width:160px}
+  .word-term{font-family:'Nanum Myeongjo',serif;font-size:clamp(36px,7vw,66px);font-weight:700;letter-spacing:-1px;color:var(--dark);line-height:1.3;word-break:keep-all;display:inline-block;padding:4px 20px;border-radius:16px;cursor:pointer}
+  .word-term.masked{background:var(--line);color:transparent;user-select:none;min-width:210px}
+  .word-mean{font-family:'Nanum Myeongjo',serif;margin-top:24px;font-size:clamp(17px,2.6vw,25px);color:#4a5751;line-height:1.7;display:inline-block;padding:6px 14px;border-radius:12px;word-break:keep-all}
+  .word-mean.masked{background:var(--line);color:transparent;user-select:none;cursor:pointer;min-width:160px}
   .word-hint{margin-top:14px;font-size:13px;color:var(--muted)}
 
   /* 독서 발췌 랜덤 + 타이머 */
@@ -477,7 +511,13 @@
   <div class="nav active" data-v="dashboard">Dashboard</div>
   <div class="nav" data-v="work">Work</div>
   <div class="nav" data-v="reading">Reading</div>
-  <div class="nav" data-v="study">Study</div>
+  <div class="nav" data-v="study">Study<span class="ca">›</span></div>
+  <div class="subnav" id="studySub" style="display:none">
+    <div class="nav sub" data-v="study:단어">Words</div>
+    <div class="nav sub" data-v="study:영어">English</div>
+    <div class="nav sub" data-v="study:지식">Knowledge</div>
+    <div class="nav sub" data-v="study:문화">Culture</div>
+  </div>
   <div class="nav" data-v="assets">Assets</div>
   <div class="nav" data-v="inbox">Inbox</div>
   <div class="nav" data-v="routiner">Rutimer</div>
@@ -500,7 +540,7 @@
     <div class="grid">
       <div class="card" id="calCard" style="grid-column:1/-1">
         <h3><span class="dot"></span> SCHEDULE</h3>
-        <div class="cal-head"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><b id="calTitle"></b><button id="calToggleBtn" class="lunar-toggle on" onclick="toggleCalendar()">달력</button><button id="schedToggleBtn" class="lunar-toggle on" onclick="toggleSchedPanel()">스케줄</button><button id="lunarBtn" class="lunar-toggle" onclick="toggleLunar()">음력</button><button id="weatherBtn" class="lunar-toggle" onclick="toggleWeather()">날씨</button><button id="workSecBtn" class="lunar-toggle" onclick="toggleSection('work')">업무</button><button id="studySecBtn" class="lunar-toggle" onclick="toggleSection('study')">매일매일</button><button id="readSecBtn" class="lunar-toggle" onclick="toggleSection('read')">독서</button><button id="assetSecBtn" class="lunar-toggle" onclick="toggleSection('asset')">자산</button><button id="diarySecBtn" class="lunar-toggle" onclick="toggleSection('diary')">일기</button><button id="inboxToggleBtn" class="lunar-toggle on" onclick="toggleInboxPanel()">인박스</button><button id="rtNavBtn" class="lunar-toggle" onclick="go('routiner')">루티머</button></div>
+        <div class="cal-head"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><b id="calTitle"></b><button id="calToggleBtn" class="lunar-toggle on" onclick="toggleCalendar()">달력</button><button id="schedToggleBtn" class="lunar-toggle on" onclick="toggleSchedPanel()">스케줄</button><button id="studySecBtn" class="lunar-toggle" onclick="toggleSection('study')">매일매일</button><button id="workSecBtn" class="lunar-toggle" onclick="toggleSection('work')">업무</button><button id="readSecBtn" class="lunar-toggle" onclick="toggleSection('read')">독서</button><button id="assetSecBtn" class="lunar-toggle" onclick="toggleSection('asset')">자산</button><button id="diarySecBtn" class="lunar-toggle" onclick="toggleSection('diary')">일기</button><button id="rtNavBtn" class="lunar-toggle" onclick="go('routiner')">루티머</button><button id="weatherBtn" class="lunar-toggle" onclick="toggleWeather()">날씨</button><button id="lunarBtn" class="lunar-toggle" onclick="toggleLunar()">음력</button><button id="inboxToggleBtn" class="lunar-toggle on" onclick="toggleInboxPanel()">인박스</button><button id="sessionSecBtn" class="lunar-toggle" onclick="toggleSection('session')">회기일정</button></div>
           <div class="cal-nav"><button onclick="shiftMonth(-1)">‹</button> <button onclick="goToday()" style="width:auto;padding:0 10px;font-size:12px">오늘</button> <button onclick="shiftMonth(1)">›</button></div>
         </div>
         <table class="cal"><thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead>
@@ -511,7 +551,7 @@
         <div id="schedList" class="fill"></div><div style="margin-top:12px"><button class="btn y" id="schedAddToggle" onclick="toggleSchedForm()">＋ 일정 추가</button></div><div id="schedAddForm" style="display:none">
         <div class="inrow" style="margin-top:12px">
           <input id="schTime" class="in" style="flex:none;width:96px" placeholder="시간 예:1300" onblur="this.value=normTime(this.value)">
-          <input id="schTitle" class="in" style="flex:1" placeholder="일정 제목" onkeydown="if(event.key==='Enter')addSchedule()">
+          <input id="schTitle" class="in" style="flex:1" placeholder="일정 제목">
         </div>
         <textarea id="schDetail" class="in" style="width:100%;min-height:70px;margin-top:8px;resize:vertical" placeholder="세부 내용"></textarea>
         <div style="margin-top:10px"><button class="btn y" onclick="addSchedule()">저장</button></div></div>
@@ -520,10 +560,27 @@
         <h3><span class="dot"></span> INBOX <span class="more" onclick="go('inbox')" style="cursor:pointer"><span id="inboxCount"></span> 전체 →</span></h3>
         <ul class="todo fill" id="inboxList"></ul>
         <div class="addrow">
-          <input id="inboxInput" placeholder="" onkeydown="if(event.key==='Enter')addInbox()">
+          <input id="inboxInput" placeholder="입력 후 Enter">
           <button class="btn" onclick="addInbox()">추가</button>
         </div>
       </div>
+    </div>
+
+    <div class="card" id="sessionSecCard" style="display:none">
+      <h3><span class="dot" style="background:#6a8fd8"></span> 회기일정 <span class="more" id="sessionCount"></span></h3>
+      <div class="tblx"><table class="ledger sess-tbl">
+        <thead><tr><th style="width:19%">회기</th><th style="width:23%">기간</th><th style="width:26%">주요안건</th><th style="width:14%">비고</th><th style="width:74px"></th></tr></thead>
+        <tbody id="sessionBody"></tbody>
+      </table></div>
+      <div class="inrow" style="margin-top:12px;flex-wrap:wrap">
+        <input id="seName" class="in" style="flex:1;min-width:130px" placeholder="회기 (예: 제312회 정기회)">
+        <input id="seStart" type="date" class="in" style="flex:none;width:146px">
+        <input id="seEnd" type="date" class="in" style="flex:none;width:146px">
+        <input id="seAgenda" class="in" style="flex:1.6;min-width:140px" placeholder="주요안건">
+        <input id="seNote" class="in" style="flex:1;min-width:100px" placeholder="비고">
+        <button class="btn y" style="flex:none" onclick="addSession()">추가</button>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:var(--muted)">기간을 넣으면 달력에 해당 기간이 옅게 음영으로 표시됩니다.</div>
     </div>
 
     <div class="card" id="workSecCard" style="display:none">
@@ -541,7 +598,7 @@
       <div id="dashWorkFeed" style="margin-top:12px"></div>
     </div>
     <div class="card" id="studySecCard" style="display:none">
-      <h3><span class="dot" style="background:var(--red)"></span> 우리는 매일매일 <span class="more" onclick="go('study')">전체 →</span></h3>
+      <h3><span class="dot" style="background:var(--red)"></span> 우리는 매일매일 <span class="more" style="cursor:pointer" onclick="goStudy(dashStudyTab)">전체 →</span></h3>
       <div class="tabs" id="dashStudyTabs">
         <button class="tab st" data-t="단어" onclick="setDashStudyTab('단어')">단어</button>
         <button class="tab st" data-t="영어" onclick="setDashStudyTab('영어')">영어</button>
@@ -664,12 +721,12 @@
 
   <!-- ===== 학습 ===== -->
   <section class="view" id="view-study">
-    <div class="page-head"><h1>우리는 매일매일</h1></div>
+    <div class="page-head"><h1 id="studyH1">Words</h1><p id="studyH1Sub">우리는 매일매일 · 단어</p></div>
     <div class="tabs" id="studyTabs">
-      <button class="tab st" data-t="단어" onclick="setDetailStudyTab('단어')">단어</button>
-      <button class="tab st" data-t="영어" onclick="setDetailStudyTab('영어')">영어</button>
-      <button class="tab st" data-t="지식" onclick="setDetailStudyTab('지식')">지식</button>
-      <button class="tab st" data-t="문화" onclick="setDetailStudyTab('문화')">문화</button>
+      <button class="tab st" data-t="단어" onclick="setDetailStudyTab('단어')">Words</button>
+      <button class="tab st" data-t="영어" onclick="setDetailStudyTab('영어')">English</button>
+      <button class="tab st" data-t="지식" onclick="setDetailStudyTab('지식')">Knowledge</button>
+      <button class="tab st" data-t="문화" onclick="setDetailStudyTab('문화')">Culture</button>
     </div>
     <div id="studyPane" style="margin-top:16px"></div>
   </section>
@@ -691,7 +748,7 @@
     <div class="card">
       <h3><span class="dot"></span> 새 항목</h3>
       <div class="addrow">
-        <input id="inboxInput2" placeholder="담아둘 내용 입력 후 Enter" onkeydown="if(event.key==='Enter')addInbox('inboxInput2')">
+        <input id="inboxInput2" placeholder="담아둘 내용 입력 후 Enter">
         <button class="btn" onclick="addInbox('inboxInput2')">추가</button>
       </div>
     </div>
@@ -700,7 +757,7 @@
       <div class="card"><h3><span class="dot"></span> 단기 프로젝트 <span class="more" id="inboxPageCount"></span></h3><div id="inboxPage"></div></div>
       <div class="card"><h3><span class="dot" style="background:var(--green)"></span> 장기 프로젝트 <span class="more" id="longCount"></span></h3><div id="longPage"></div></div>
     </div>
-      <div class="card" id="ideaCard"><h3><span class="dot" style="background:#6a8fd8"></span> 아이디어 구체화 <span class="more" id="ideaLabel"></span><span class="idea-edit mind-expand-btn" id="mindExpandBtn" onclick="toggleMindExpand()">⤢ 확장</span></h3>
+      <div class="card" id="ideaCard"><h3><span class="dot" style="background:#6a8fd8"></span> 아이디어 구체화 <span class="more" id="ideaLabel"></span><span class="idea-edit mind-expand-btn" id="mindExpandBtn" title="크게 보기" onclick="toggleMindExpand()">⤢</span></h3>
         <div id="mindToolbar" style="display:none;margin-bottom:8px"><button class="btn y" onclick="mindAddFocus(mindRoot())">＋ 생각 추가</button> <span style="font-size:11.5px;color:var(--muted)"><b>Tab</b>=하위 · <b>Enter</b>=대등 · <b>Shift+Enter</b>=줄바꿈 · 칸을 끌어 이동 · ○ 눌러 가지접기</span></div>
         <div id="mindCanvas"></div>
       </div>
@@ -764,7 +821,7 @@ const dstr=(off=0)=>{const t=new Date();t.setDate(t.getDate()-off);
   return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');};
 const today=()=>dstr(0);
 let db=load();
-function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.routines)db.routines=[];if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
+function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.routines)db.routines=[];if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
   if(!db.cheonildu||Array.isArray(db.cheonildu)){
     var __oldCd=Array.isArray(db.cheonildu)?db.cheonildu:[];var __chapMap={};var __chapOrder=[];
     __oldCd.forEach(function(x){var cn=x.chapter||'(챕터 미입력)';if(!__chapMap[cn]){__chapMap[cn]={id:uid(),name:cn,units:[]};__chapOrder.push(cn);}
@@ -857,10 +914,25 @@ function fmtK(d){if(!d)return'';const[y,m,dd]=d.split('-');return `${m}/${dd}`;}
 /* ---------- routing ---------- */
 function toggleMenu(){var sb=document.querySelector('.sidebar');if(sb)sb.classList.toggle('open');}
 function go(v){
-  document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('active',n.dataset.v===v));
+  var stab=null;
+  if(v&&v.indexOf('study:')===0){stab=v.slice(6);v='study';}
+  if(v==='study'&&stab)detailStudyTab=stab;
   document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='view-'+v));
+  syncNav(v);
   var __sb=document.querySelector('.sidebar');if(__sb)__sb.classList.remove('open');renderAll();window.scrollTo(0,0);
 }
+function curView(){var el=document.querySelector('.view.on');return el?el.id.replace('view-',''):'dashboard';}
+function syncNav(v){
+  v=v||curView();
+  document.querySelectorAll('.nav').forEach(function(n){
+    var dv=n.dataset.v||'';
+    var act=(dv.indexOf('study:')===0)?(v==='study'&&dv.slice(6)===detailStudyTab):(dv===v);
+    n.classList.toggle('active',act);
+  });
+  var hd=document.querySelector('.nav[data-v="study"]');if(hd)hd.classList.toggle('open',v==='study');
+  var sub=document.getElementById('studySub');if(sub)sub.style.display=(v==='study')?'flex':'none';
+}
+function goStudy(t){go('study:'+t);}
 document.querySelectorAll('.nav').forEach(n=>n.onclick=()=>go(n.dataset.v));
 
 /* ---------- date header ---------- */
@@ -918,7 +990,7 @@ function toggleWeather(){showWeather=!showWeather;var b=document.getElementById(
 function addDiary(inputId){var el=document.getElementById(inputId||'diaryInput');if(!el)return;var v=el.value.trim();if(!v)return;db.diary.push({id:uid(),date:today(),text:v});save();el.value='';renderDiary();renderDiaryPage();renderCal();}
 function editDiary(id,val){var x=db.diary.find(function(a){return a.id===id;});if(!x)return;var v=String(val).trim();if(v)x.text=v;save();}
 function delDiary(id){db.diary=db.diary.filter(function(a){return a.id!==id;});save();renderDiary();renderDiaryPage();}
-function diaryItem(x){return '<div class="entry"><div class="body" contenteditable onblur="editDiary('+x.id+',this.innerText)">'+esc(x.text)+'</div><div style="text-align:right;margin-top:4px"><span class="del" onclick="delDiary('+x.id+')">×</span></div></div>';}
+function diaryItem(x){return '<div class="entry"><div class="body" data-noenter="1" contenteditable onblur="editDiary('+x.id+',this.innerText)">'+esc(x.text)+'</div><div style="text-align:right;margin-top:4px"><span class="del" onclick="delDiary('+x.id+')">×</span></div></div>';}
 function renderDiary(){var el=document.getElementById('dashDiaryFeed');if(!el)return;var td=today();var list=db.diary.filter(function(x){return x.date===td;});el.innerHTML=list.length?('<div class="datehdr">오늘</div>'+list.map(diaryItem).join('')):'<div class="empty">오늘 일기가 없습니다.</div>';}
 function renderDiaryPage(){var el=document.getElementById('diaryPage');if(!el)return;var cnt=document.getElementById('diaryCount');if(cnt)cnt.textContent=db.diary.length+'건';if(!db.diary.length){el.innerHTML='<div class="empty">작성한 일기가 없습니다.</div>';return;}var g={};db.diary.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));}).forEach(function(x){(g[x.date]=g[x.date]||[]).push(x);});el.innerHTML=Object.keys(g).map(function(d){return '<div class="datehdr">'+d+'</div>'+g[d].map(diaryItem).join('');}).join('');}
 let __pushT=null;
@@ -933,7 +1005,7 @@ function setSyncCode(){var el=document.getElementById('syncInput');var v=el.valu
 function clearSyncCode(){localStorage.removeItem(SYNC_KEY);var inp=document.getElementById('syncInput');if(inp)inp.value='';setSyncStatus('연결 해제됨 (이 기기)');}
 let curIdea=null;
 var editInboxId=null;
-function inboxPageItemHTML(x){var editing=editInboxId===x.id;var title=editing?'<span class="txt" id="inbEditField" contenteditable onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}" onblur="saveEditInbox('+x.id+',this.innerText)">'+esc(x.t)+'</span>':'<span class="txt link" title="마인드맵 열기" onclick="openMind('+x.id+')">'+esc(x.t)+'</span>';var ng=nextGrp(grpOf(x));return '<li class="'+(x.done?"done":"")+'">'+'<div class="chk '+(x.done?"done":"")+'" onclick="toggleInbox('+x.id+')">'+(x.done?"✓":"")+'</div>'+title+'<span class="idea-edit" title="제목 수정" onclick="startEditInbox('+x.id+')">제목 수정</span>'+'<span class="mv-btn" title="'+grpLabel(ng)+'으로 이동" onclick="moveNextGrp('+x.id+')">→</span>'+'<span class="del" onclick="delInbox('+x.id+')">×</span></li>';}
+function inboxPageItemHTML(x){var editing=editInboxId===x.id;var title=editing?'<span class="txt" id="inbEditField" contenteditable onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();this.blur();}" onblur="saveEditInbox('+x.id+',this.innerText)">'+esc(x.t)+'</span>':'<span class="txt link" title="마인드맵 열기" onclick="openMind('+x.id+')">'+esc(x.t)+'</span>';var ng=nextGrp(grpOf(x));return '<li class="'+(x.done?"done":"")+'">'+'<div class="chk '+(x.done?"done":"")+'" onclick="toggleInbox('+x.id+')">'+(x.done?"✓":"")+'</div>'+title+'<span class="idea-edit" title="제목 수정" onclick="startEditInbox('+x.id+')">제목 수정</span>'+'<span class="mv-btn" title="'+grpLabel(ng)+'으로 이동" onclick="moveNextGrp('+x.id+')">→</span>'+'<span class="del" onclick="delInbox('+x.id+')">×</span></li>';}
 function startEditInbox(id){editInboxId=id;renderInboxPage();setTimeout(function(){var el=document.getElementById("inbEditField");if(el){el.focus();var r=document.createRange();r.selectNodeContents(el);var sl=window.getSelection();sl.removeAllRanges();sl.addRange(r);}},0);}
 function saveEditInbox(id,val){var x=db.inbox.find(function(a){return a.id===id;});if(x){var v=String(val).trim();if(v)x.t=v;}editInboxId=null;save();renderInbox();renderInboxPage();}
 function openMind(id){openIdea(id);var c=document.getElementById("ideaCard");if(c)c.scrollIntoView({behavior:"smooth",block:"start"});}
@@ -942,7 +1014,7 @@ function toggleMindExpand(){
   var on=c.classList.toggle("mind-expanded");
   var bd=document.getElementById("mindBackdrop");if(bd)bd.style.display=on?"block":"none";
   document.body.classList.toggle("mind-lock",on);
-  var btn=document.getElementById("mindExpandBtn");if(btn)btn.textContent=on?"⤡ 축소":"⤢ 확장";
+  var btn=document.getElementById("mindExpandBtn");if(btn){btn.textContent=on?"⤡":"⤢";btn.title=on?"원래 크기로":"크게 보기";}
   renderMind();
 }
 function curIdeaObj(){return db.inbox.find(function(a){return a.id===curIdea;});}
@@ -965,25 +1037,36 @@ function mindLines2(n){var t=String((n&&n.t)||"");var br=t.split("\n").length;va
 function mindChildrenAll(x,id){return x.mind.filter(function(n){return n.p===id;});}
 function mindDescCount(x,id){var c=0;mindChildrenAll(x,id).forEach(function(ch){c+=1+mindDescCount(x,ch.id);});return c;}
 function mindFullW(x,n){var root=(!n.p||n.p===0);var w=mindEstW(n)+(root?28:0);if(mindChildrenAll(x,n.id).length>0&&!n.collapsed)w+=18;return w;}
+var MIND_RIGHT_MAX=5;   /* 주제에서 오른쪽으로 뻗는 가지 수, 나머지는 왼쪽 */
 function mindLayout(x){
   var nodes=x.mind, root=nodes[0];
   function childrenAll(id){return nodes.filter(function(n){return n.p===id;});}
   function visch(n){return n.collapsed?[]:childrenAll(n.id);}
-  var col={},soft={};
-  function assignBranch(n,c,s){col[n.id]=c;soft[n.id]=s;childrenAll(n.id).forEach(function(ch){assignBranch(ch,c,s);});}
-  childrenAll(root.id).forEach(function(n,i){var k=i%MB.length;assignBranch(n,MB[k],MBG[k]);});
+  var col={},soft={},dirs={};
+  function assignBranch(n,c,s,d){col[n.id]=c;soft[n.id]=s;dirs[n.id]=d;childrenAll(n.id).forEach(function(ch){assignBranch(ch,c,s,d);});}
+  childrenAll(root.id).forEach(function(n,i){var k=i%MB.length;assignBranch(n,MB[k],MBG[k],i<MIND_RIGHT_MAX?1:-1);});
   var ROW=34, GAP=50, pos={}, cursor=0;
-  function rec(n,depth,xLeft){
-    var vch=visch(n), y;
+  var rootW=mindFullW(x,root), rootL=-rootW/2;
+  /* edge: 오른쪽 가지는 왼쪽 시작 x, 왼쪽 가지는 오른쪽 끝 x */
+  function rec(n,depth,edge,d){
+    var vch=visch(n), y, w=mindFullW(x,n);
+    var xLeft=d>0?edge:edge-w;
     if(!vch.length){var ln=mindLines2(n);y=(cursor+(ln-1)/2)*ROW;cursor+=ln;}
-    else{var cx=xLeft+mindFullW(x,n)+GAP;var cys=vch.map(function(c){return rec(c,depth+1,cx);});y=(cys[0]+cys[cys.length-1])/2;}
-    pos[n.id]={x:xLeft,y:y,depth:depth,dir:depth?1:0,col:col[n.id]||'#12312b',soft:soft[n.id]||'#12312b',w:mindFullW(x,n),hasCh:childrenAll(n.id).length>0,collapsed:!!n.collapsed};
+    else{var ce=d>0?(xLeft+w+GAP):(xLeft-GAP);var cys=vch.map(function(c){return rec(c,depth+1,ce,d);});y=(cys[0]+cys[cys.length-1])/2;}
+    pos[n.id]={x:xLeft,y:y,depth:depth,dir:d,col:col[n.id]||'#12312b',soft:soft[n.id]||'#12312b',w:w,hasCh:childrenAll(n.id).length>0,collapsed:!!n.collapsed};
     return y;
   }
-  var vroot=visch(root), rootY;
-  if(vroot.length){var cx=mindFullW(x,root)+GAP;var cys=[];vroot.forEach(function(c){cys.push(rec(c,1,cx));cursor++;});rootY=(cys[0]+cys[cys.length-1])/2;}
-  else rootY=0;
-  pos[root.id]={x:0,y:rootY,depth:0,dir:0,col:'#12312b',soft:'#12312b',w:mindFullW(x,root),hasCh:childrenAll(root.id).length>0,collapsed:!!root.collapsed};
+  var vroot=visch(root), rights=[], lefts=[], mids=[];
+  vroot.forEach(function(c){(dirs[c.id]>0?rights:lefts).push(c);});
+  [[1,rights],[-1,lefts]].forEach(function(pair){
+    var d=pair[0], list=pair[1]; if(!list.length)return;
+    cursor=0;
+    var edge=d>0?(rootL+rootW+GAP):(rootL-GAP), cys=[];
+    list.forEach(function(c){cys.push(rec(c,1,edge,d));cursor++;});
+    mids.push((cys[0]+cys[cys.length-1])/2);
+  });
+  var rootY=mids.length?(mids.reduce(function(a,b){return a+b;},0)/mids.length):0;
+  pos[root.id]={x:rootL,y:rootY,depth:0,dir:0,col:'#12312b',soft:'#12312b',w:rootW,hasCh:childrenAll(root.id).length>0,collapsed:!!root.collapsed};
   return pos;
 }
 function mindConnectors(x,pos,offX,offY){
@@ -991,7 +1074,8 @@ function mindConnectors(x,pos,offX,offY){
   x.mind.forEach(function(n){
     if(!n.p||n.p===0)return;
     var c=pos[n.id], p=pos[n.p]; if(!c||!p)return;
-    var x1=offX+p.x+p.w, y1=offY+p.y, x2=offX+c.x, y2=offY+c.y;
+    var d=c.dir||1;
+    var x1=offX+(d>0?p.x+p.w:p.x), y1=offY+p.y, x2=offX+(d>0?c.x:c.x+c.w), y2=offY+c.y;
     var dx=(x2-x1), c1=x1+dx*0.5, c2=x2-dx*0.5;
     var sw=Math.max(0.8,1.7-c.depth*0.3);
     s+='<path d="M'+x1.toFixed(1)+' '+y1.toFixed(1)+' C'+c1.toFixed(1)+' '+y1.toFixed(1)+' '+c2.toFixed(1)+' '+y2.toFixed(1)+' '+x2.toFixed(1)+' '+y2.toFixed(1)+'" stroke="'+(c.col||'#c3cbc7')+'" stroke-width="'+sw.toFixed(1)+'" fill="none" stroke-linecap="round"/>';
@@ -1015,7 +1099,9 @@ function renderMind(){
     var root=!n.p||n.p===0;
     var col=root?'#12312b':(p.col||'#2f6f5e');
     var tog=p.hasCh?'<span class="mtog'+(p.collapsed?' col':'')+'" onclick="mindToggle(event,'+n.id+')" title="가지 접기/펼치기">'+(p.collapsed?mindDescCount(x,n.id):'')+'</span>':'';
-    return '<div class="mnode'+(root?' root':'')+'" data-id="'+n.id+'" draggable="false" onmousedown="mindDown(event,'+n.id+')" style="left:'+(offX+p.x)+'px;top:'+(offY+p.y)+'px;transform:'+(root?'translate(0,-50%)':'translate(0,-100%)')+';color:'+col+'"><span class="mtext" contenteditable onkeydown="mindKey(event,'+n.id+')" onblur="mindEdit('+n.id+',this.innerText)">'+esc(n.t)+'</span>'+tog+(root?'':'<span class="mdel" onclick="mindDel('+n.id+')" title="삭제">×</span>')+'</div>';
+    var lf=p.dir<0;
+    var place=lf?('right:'+(W-(offX+p.x+p.w))+'px;'):('left:'+(offX+p.x)+'px;');
+    return '<div class="mnode'+(root?' root':'')+(lf?' left':'')+'" data-id="'+n.id+'" draggable="false" onmousedown="mindDown(event,'+n.id+')" style="'+place+'top:'+(offY+p.y)+'px;transform:'+(root?'translate(0,-50%)':'translate(0,-100%)')+';color:'+col+'"><span class="mtext" contenteditable onkeydown="mindKey(event,'+n.id+')" onblur="mindEdit('+n.id+',this.innerText)">'+esc(n.t)+'</span>'+tog+(root?'':'<span class="mdel" onclick="mindDel('+n.id+')" title="삭제">×</span>')+'</div>';
   }).join("");
   el.innerHTML='<div class="mind-canvas" style="width:'+W+'px;height:'+H+'px"><svg class="mind-svg" width="'+W+'" height="'+H+'">'+mindConnectors(x,pos,offX,offY)+'</svg>'+nodesHTML+'</div>';
   var rp=pos[x.mind[0].id];if(rp){el.scrollLeft=Math.max(0,offX+rp.x-el.clientWidth/2);el.scrollTop=Math.max(0,offY+rp.y-el.clientHeight/2);}
@@ -1062,14 +1148,16 @@ function renderCal(){
       if(i<first)html+=`<td><div class="d muted"><div class="dnum"><span class="n">${prev-first+i+1}</span></div></div></td>`;
       else if(day>dim)html+=`<td><div class="d muted"><div class="dnum"><span class="n">${nx++}</span></div></div></td>`;
       else{const key=`${viewY}-${String(viewM+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-        const sc=schedOf(key);
+        const sc=schedOf(key).filter(s=>!s.done);
+        const ses=sessionsOn(key);
+        const sesTag=ses.length&&(ses[0].start===key||day===1)?`<span class="sess-tag" title="${escA(ses.map(z=>z.name||'회기').join(', '))}">${esc(ses[0].name||'회기')}</span>`:'';
         const hn=HOLIDAYS[key];
         const isSun=new Date(viewY,viewM,day).getDay()===0;
         const st=SOLARTERM[key];
         const chips=sc.slice(0,2).map(s=>`<span class="schip" draggable="true" ondragstart="schedDragStart(event,${s.id})">${s.time?esc(s.time)+' ':''}${esc(s.title)}</span>`).join('')
           +(sc.length>2?`<span class="smore">+${sc.length-2}</span>`:'');
-        html+=`<td><div class="d ${key===tk?'today':''} ${key===selDate?'sel':''} ${hn?'hol':''} ${isSun?'sun':''}" onclick="selectDate('${key}')" ondragover="event.preventDefault()" ondrop="schedDrop(event,'${key}')">
-          <div class="dnum"><span class="n">${day}</span>${showLunar?`<span class="lun">(${lunarOf(key)})</span>`:''}${hn?`<span class="holname">${esc(hn)}</span>`:''}${st?`<span class="term">${st}</span>`:''}${set.has(key)?'<span class="rec"></span>':''}</div>${showWeather?weatherCellHTML(key):chips}</div></td>`;day++;}
+        html+=`<td><div class="d ${key===tk?'today':''} ${key===selDate?'sel':''} ${hn?'hol':''} ${isSun?'sun':''} ${ses.length?'sess':''}"${ses.length?` title="${escA(ses.map(z=>(z.name||'회기')+(z.agenda?' · '+z.agenda:'')).join(' / '))}"`:''} onclick="selectDate('${key}')" ondragover="event.preventDefault()" ondrop="schedDrop(event,'${key}')">
+          <div class="dnum"><span class="n">${day}</span>${showLunar?`<span class="lun">(${lunarOf(key)})</span>`:''}${hn?`<span class="holname">${esc(hn)}</span>`:''}${st?`<span class="term">${st}</span>`:''}${set.has(key)?'<span class="rec"></span>':''}${sesTag}</div>${showWeather?weatherCellHTML(key):chips}</div></td>`;day++;}
     }html+='</tr>';if(day>dim&&r>=4)break;}
   document.getElementById('calBody').innerHTML=html;
 }
@@ -1114,6 +1202,65 @@ function renderSchedule(){
       <span class="post" title="내일로 미루기" onclick="postponeSchedule(${s.id})">→내일</span><span class="del" onclick="delSchedule(${s.id})">×</span></div>
     <div class="sub" style="margin-top:6px" contenteditable onfocus="schedDetailFocus(event)" onkeydown="schedDetailKey(event)" onblur="editSchedule(${s.id},'detail',this.innerText)">${esc(s.detail||'')}</div>
   </div>`).join(''):'<div class="empty">등록된 일정이 없습니다.</div>';
+}
+
+/* ---------- 회기일정 ---------- */
+function sessionList(){return (db.sessions||(db.sessions=[]));}
+function sortedSessions(){return sessionList().slice().sort(function(a,b){return String(a.start||'9').localeCompare(String(b.start||'9'));});}
+function sessionsOn(key){return sessionList().filter(function(s){var a=s.start||'';if(!a)return false;var b=s.end||a;if(b<a){var t=a;a=b;b=t;}return key>=a&&key<=b;});}
+function sessPeriodTxt(s){var a=s.start||'',b=s.end||a;if(!a)return '';var f=function(d){return d.slice(0,4)+'.'+d.slice(5,7)+'.'+d.slice(8,10);};return a===b?f(a):(f(a)+' ~ '+(a.slice(0,4)===b.slice(0,4)?b.slice(5,7)+'.'+b.slice(8,10):f(b)));}
+function addSession(){
+  var n=document.getElementById('seName').value.trim();
+  var st=document.getElementById('seStart').value,en=document.getElementById('seEnd').value;
+  if(!n&&!st){alert('회기 또는 기간을 입력하세요.');return;}
+  if(st&&en&&en<st){var t=st;st=en;en=t;}
+  sessionList().push({id:uid(),name:n,start:st,end:en||st,
+    agenda:document.getElementById('seAgenda').value.trim(),note:document.getElementById('seNote').value.trim()});
+  save();['seName','seStart','seEnd','seAgenda','seNote'].forEach(function(i){var e=document.getElementById(i);if(e)e.value='';});
+  renderSessions();renderCal();
+}
+function editSession(id,f,v){var s=sessionList().find(function(a){return a.id===id;});if(!s)return;
+  s[f]=String(v).trim();
+  if(s.start&&s.end&&s.end<s.start){var t=s.start;s.start=s.end;s.end=t;}
+  save();renderSessions();renderCal();}
+function delSession(id){if(!confirm('이 회기를 삭제할까요?'))return;
+  db.sessions=sessionList().filter(function(s){return s.id!==id;});save();renderSessions();renderCal();}
+var editSessionId=null;
+function startEditSession(id){editSessionId=id;renderSessions();
+  setTimeout(function(){var e=document.getElementById('seeName');if(e){e.focus();e.select();}},0);}
+function cancelEditSession(){editSessionId=null;renderSessions();}
+function saveSessionEdit(){
+  var s=sessionList().find(function(a){return a.id===editSessionId;});if(!s){editSessionId=null;renderSessions();return;}
+  var g=function(i){var e=document.getElementById(i);return e?String(e.value||'').trim():'';};
+  s.name=g('seeName');s.start=g('seeStart');s.end=g('seeEnd')||s.start;
+  s.agenda=g('seeAgenda');s.note=g('seeNote');
+  if(s.start&&s.end&&s.end<s.start){var t=s.start;s.start=s.end;s.end=t;}
+  editSessionId=null;save();renderSessions();renderCal();
+}
+function renderSessions(){
+  var tb=document.getElementById('sessionBody');if(!tb)return;
+  var list=sortedSessions();
+  var cnt=document.getElementById('sessionCount');if(cnt)cnt.textContent=list.length?list.length+'건':'';
+  tb.innerHTML=list.length?list.map(function(s){
+    if(editSessionId===s.id)return '<tr>'+
+      '<td><input id="seeName" class="in" style="width:100%" value="'+escA(s.name||'')+'"></td>'+
+      '<td><div style="display:flex;flex-direction:column;gap:4px">'+
+        '<input id="seeStart" type="date" class="in" value="'+escA(s.start||'')+'">'+
+        '<input id="seeEnd" type="date" class="in" value="'+escA(s.end||s.start||'')+'">'+
+      '</div></td>'+
+      '<td><input id="seeAgenda" class="in" style="width:100%" value="'+escA(s.agenda||'')+'"></td>'+
+      '<td><input id="seeNote" class="in" style="width:100%" value="'+escA(s.note||'')+'"></td>'+
+      '<td class="nw"><button class="btn y" style="padding:5px 10px;font-size:12px" onclick="saveSessionEdit()">저장</button>'+
+        '<span class="del" title="취소" onclick="cancelEditSession()">×</span></td></tr>';
+    return '<tr>'+
+      '<td class="nw"><b style="font-weight:700">'+esc(s.name||'')+'</b></td>'+
+      '<td class="per">'+esc(sessPeriodTxt(s))+'</td>'+
+      '<td>'+esc(s.agenda||'')+'</td>'+
+      '<td>'+esc(s.note||'')+'</td>'+
+      '<td class="nw"><span class="pen-ic" title="수정" onclick="startEditSession('+s.id+')">✎</span>'+
+        '<span class="del" onclick="delSession('+s.id+')">×</span></td></tr>';
+  }).join('')
+    :'<tr><td colspan="5"><div class="empty">등록된 회기가 없습니다.</div></td></tr>';
 }
 
 /* ---------- inbox ---------- */
@@ -1772,7 +1919,7 @@ function renderBookDetail(b){
       ${(b.chapters||[]).map((c,i)=>`<div class="memrow" style="align-items:center">
         <span style="flex:1;font-size:13.5px" contenteditable onblur="editChapter(${b.id},${i},this.innerText)">${esc(c)}</span>
         <span class="del" style="margin-top:0" onclick="delChapter(${b.id},${i})">×</span></div>`).join('')}
-      <div class="addrow" style="margin-top:10px"><input id="chapInput" placeholder="새 챕터 추가 후 Enter" onkeydown="if(event.key==='Enter')addChapter(${b.id})">
+      <div class="addrow" style="margin-top:10px"><input id="chapInput" placeholder="새 챕터 추가 후 Enter" onkeydown="esKey(event,function(){addChapter(${b.id})})">
         <button class="btn" onclick="addChapter(${b.id})">추가</button></div>
     </div>
     <div class="card">
@@ -1791,6 +1938,80 @@ function studyCatDatalist(tab){return `<datalist id="studyCatList">${studyCatLis
 function addStudyCat(tab,c){c=String(c||'').trim();if(!c)return;
   db.studyCats=db.studyCats||{};db.studyCats[tab]=db.studyCats[tab]||[];
   if(!db.studyCats[tab].includes(c))db.studyCats[tab].push(c);}
+/* ---------- 문화 (영화·음악·직접입력 / 별점·한줄평·리뷰·태그·비고) ---------- */
+const STUDY_EN={단어:'Words',영어:'English',지식:'Knowledge',문화:'Culture'};
+const CULT_KINDS=['영화','음악'];
+var cultRating={};
+function starTxt(v){v=Number(v)||0;return (v%1)?v.toFixed(1):String(v);}
+/* 별 하나의 왼쪽 절반=반개, 오른쪽 절반=한개. 같은 값을 다시 누르면 0점 */
+function starsMarkup(v,call,attr){
+  v=Number(v)||0;var o='';
+  for(var i=1;i<=5;i++){
+    var f=v>=i?100:(v>=i-0.5?50:0);
+    o+='<span class="star"><span class="s-bg">★</span><span class="s-fg" style="width:'+f+'%">★</span>'+
+       '<span class="s-h l" title="'+(i-0.5)+'점" onclick="'+call(i-0.5)+'"></span>'+
+       '<span class="s-h r" title="'+i+'점" onclick="'+call(i)+'"></span></span>';
+  }
+  return '<span class="stars" '+(attr||'')+' title="별점 · 별의 왼쪽 절반을 누르면 반개">'+o+
+    (v?'<span class="star-num">'+starTxt(v)+'</span>':'')+'</span>';
+}
+function starInputHTML(pfx){
+  return starsMarkup(cultRating[pfx]||0,function(v){return "setStarIn('"+pfx+"',"+v+")";},'id="'+pfx+'Stars"');}
+function setStarIn(pfx,v){cultRating[pfx]=(Number(cultRating[pfx])===v?0:v);
+  var el=document.getElementById(pfx+'Stars');if(el)el.outerHTML=starInputHTML(pfx);}
+function starRowHTML(x){
+  return starsMarkup(x.rating,function(v){return "setStarEntry("+x.id+","+v+")";},'');}
+function setStarEntry(id,v){var x=db.study.find(function(a){return a.id===id;});if(!x)return;
+  x.rating=(Number(x.rating)===v?0:v);save();renderStudyAll();}
+function cultKind(pfx){var sel=document.getElementById(pfx+'Kind'),etc=document.getElementById(pfx+'KindEtc');
+  if(!sel||!etc)return;var on=sel.value==='__etc';etc.style.display=on?'':'none';if(on)etc.focus();}
+function cultureFormHTML(pfx,withDate){
+  return `<div class="inrow" style="flex-wrap:wrap">
+    ${withDate?`<input id="${pfx}Date" type="date" class="in" style="flex:none;width:150px" value="${today()}">`:''}
+    <select id="${pfx}Kind" class="in" style="flex:none;width:110px" onchange="cultKind('${pfx}')">
+      ${CULT_KINDS.map(k=>`<option value="${k}">${k}</option>`).join('')}<option value="__etc">직접입력</option></select>
+    <input id="${pfx}KindEtc" class="in" style="flex:none;width:118px;display:none" placeholder="구분 입력" list="studyCatList">
+    <input id="${pfx}Title" class="in" style="flex:1.6;min-width:140px" placeholder="제목">
+    ${starInputHTML(pfx)}
+  </div>
+  <input id="${pfx}One" class="in" style="width:100%;margin-top:8px" placeholder="한줄평">
+  <textarea id="${pfx}Review" class="in" style="width:100%;min-height:84px;margin-top:8px;resize:vertical" placeholder="리뷰"></textarea>
+  <div class="inrow" style="margin-top:8px">
+    <input id="${pfx}Tags" class="in" style="flex:1.4" placeholder="태그 (쉼표로 구분)">
+    <input id="${pfx}Note" class="in" style="flex:1" placeholder="비고">
+  </div>
+  <div style="margin-top:10px"><button class="btn y" onclick="addCulture('${pfx}')">＋ 추가</button></div>`;
+}
+function cultVal(pfx,k){var el=document.getElementById(pfx+k);return el?String(el.value||'').trim():'';}
+function addCulture(pfx){
+  var sel=document.getElementById(pfx+'Kind');
+  var kind=sel?sel.value:'';if(kind==='__etc')kind=cultVal(pfx,'KindEtc');
+  var title=cultVal(pfx,'Title'),one=cultVal(pfx,'One'),review=cultVal(pfx,'Review');
+  if(!title&&!one&&!review){alert('제목이나 한줄평을 입력하세요.');return;}
+  var dEl=document.getElementById(pfx+'Date');
+  addStudyCat('문화',kind);
+  db.study.push({id:uid(),date:(dEl&&dEl.value)||today(),tab:'문화',category:kind,title:title,
+    rating:cultRating[pfx]||0,oneline:one,content:review,tags:cultVal(pfx,'Tags'),note:cultVal(pfx,'Note')});
+  save();cultRating[pfx]=0;
+  ['Title','One','Review','Tags','Note','KindEtc'].forEach(function(k){var e=document.getElementById(pfx+k);if(e)e.value='';});
+  renderStudyAll();renderCal();
+}
+function cultureRow(x){
+  var tags=String(x.tags||'').split(',').map(function(t){return t.trim();}).filter(Boolean);
+  return '<div class="entry cult">'+
+    '<div class="meta">'+
+      '<input class="rowsel" list="studyCatList" value="'+escA(x.category||'')+'" placeholder="구분" onchange="editStudy('+x.id+',\'category\',this.value)">'+
+      '<b style="flex:1" contenteditable onblur="editStudy('+x.id+',\'title\',this.innerText)">'+esc(x.title||'')+'</b>'+
+      starRowHTML(x)+
+      '<span class="del" onclick="delEntry(\'study\','+x.id+',renderStudyAll)">×</span></div>'+
+    '<div class="cult-one" data-ph="한줄평" contenteditable onblur="editStudy('+x.id+',\'oneline\',this.innerText)">'+esc(x.oneline||'')+'</div>'+
+    '<div class="body" data-ph="리뷰" contenteditable onblur="editStudy('+x.id+',\'content\',this.innerText)">'+esc(x.content||'')+'</div>'+
+    (tags.length?'<div class="cult-tags">'+tags.map(function(t){return '<span class="tagchip">#'+esc(t)+'</span>';}).join('')+'</div>':'')+
+    '<div class="cult-foot">'+
+      '<span class="lbl">태그</span><input class="rowsel" style="max-width:210px" value="'+escA(x.tags||'')+'" placeholder="쉼표로 구분" onchange="editStudy('+x.id+',\'tags\',this.value)">'+
+      '<span class="lbl">비고</span><input class="rowsel" style="max-width:210px" value="'+escA(x.note||'')+'" placeholder="비고" onchange="editStudy('+x.id+',\'note\',this.value)">'+
+    '</div></div>';
+}
 function renderStudyAll(){renderDashStudy();renderStudy();}
 let editMemId=null;
 function startEditMem(id){editMemId=id;renderStudyAll();}
@@ -1806,7 +2027,7 @@ function memRow(x){
     <button class="btn y" style="flex:none" onclick="saveEditMem(${x.id})">저장</button>
     <span class="del" onclick="cancelEditMem()">×</span></div>`;
   return `<div class="memrow">
-    <span class="zoom-ic" title="크게 보기" onclick="zoomWord(${x.id})">🔍</span>
+    <span class="zoom-ic" title="크게 보기" onclick="zoomWord(${x.id})">⤢</span>
     <span class="mask" style="flex:1" onclick="this.classList.toggle('on')">${esc(x.term||'')}</span>
     <span class="mask on" style="flex:1.3" onclick="this.classList.toggle('on')">${esc(x.meaning||'')}</span>
     <span class="edit-ic" title="수정" onclick="startEditMem(${x.id})">수정</span>
@@ -1816,9 +2037,9 @@ function zoomWord(id){
   const ov=document.createElement('div');ov.className='word-ov';ov.id='wordOv';
   ov.onclick=e=>{if(e.target===ov)closeWord();};
   ov.innerHTML=`<div class="word-box"><span class="word-close" onclick="closeWord()">✕</span>
-    <div class="word-term">${esc(x.term||'')}</div>
-    <div class="word-mean masked" onclick="this.classList.remove('masked');var h=this.nextElementSibling;if(h)h.style.display='none'">${esc(x.meaning||'')}</div>
-    <div class="word-hint">뜻을 보려면 위 영역을 탭하세요</div></div>`;
+    <div class="word-term masked" onclick="this.classList.toggle('masked');var h=document.getElementById('wordHint');if(h)h.style.display='none'">${esc(x.term||'')}</div>
+    <div class="word-mean">${esc(x.meaning||'')}</div>
+    <div class="word-hint" id="wordHint">단어를 보려면 위 가려진 영역을 탭하세요</div></div>`;
   document.body.appendChild(ov);
   document.addEventListener('keydown',wordEsc);
 }
@@ -1855,6 +2076,7 @@ function renderDashStudy(){
       <input id="sTerm" class="in" style="flex:1" placeholder="단어">
       <input id="sMean" class="in" style="flex:1.3" placeholder="뜻">
       <button class="btn y" style="flex:none" onclick="addStudyDash()">＋ 추가</button></div>`)
+    :t==='문화'?(studyCatDatalist(t)+cultureFormHTML('cu',false))
     :`${studyCatDatalist(t)}<div class="inrow">
       <input id="sCat" class="in" list="studyCatList" style="flex:1" placeholder="카테고리 (직접 입력하면 목록에 추가)">
       <input id="sTitle" class="in" style="flex:2" placeholder="제목"></div>
@@ -1863,7 +2085,7 @@ function renderDashStudy(){
   if(t==='영어'){form.innerHTML+=cheonilDashHTML();fillCheonilDashSelectors();fillCheonilChapterFormSelectors();}
   const list=db.study.filter(x=>x.tab===t&&x.date===today());
   feed.innerHTML=list.length?(`<div class="datehdr">오늘 ${t}${isMemTab(t)?' (뜻을 눌러 확인)':''}</div>`+
-    (isMemTab(t)?list.map(memRow).join(''):list.map(x=>
+    (isMemTab(t)?list.map(memRow).join(''):t==='문화'?list.map(cultureRow).join(''):list.map(x=>
       `<div class="entry"><div class="meta">${x.category?`<span class="cat-badge b-study">${esc(x.category)}</span>`:''}
         <b contenteditable onblur="editStudy(${x.id},'title',this.innerText)" style="flex:1">${esc(x.title||'')}</b>
         <span class="del" onclick="delEntry('study',${x.id},renderStudyAll)">×</span></div>
@@ -1872,7 +2094,7 @@ function renderDashStudy(){
 }
 
 /* 세부 */
-function setDetailStudyTab(t){detailStudyTab=t;renderStudy();}
+function setDetailStudyTab(t){detailStudyTab=t;renderStudy();syncNav('study');}
 function editStudy(id,field,val){const x=db.study.find(s=>s.id===id);if(!x)return;
   x[field]=String(val).trim();if(field==='category')addStudyCat(x.tab,x.category);
   save();renderStudyAll();renderCal();}
@@ -1896,9 +2118,11 @@ function renderStudy(){
   document.querySelectorAll('#studyTabs .tab').forEach(b=>b.classList.toggle('active',b.dataset.t===detailStudyTab));
   const pane=document.getElementById('studyPane');if(!pane)return;
   const t=detailStudyTab,rows=db.study.filter(x=>x.tab===t),g=groupByDate(rows);
+  const h1=document.getElementById('studyH1');if(h1)h1.textContent=STUDY_EN[t]||t;
+  const h1s=document.getElementById('studyH1Sub');if(h1s)h1s.textContent='우리는 매일매일 · '+t;
   let list='';
   Object.keys(g).forEach(d=>{list+=`<div class="datehdr">${d}</div>`;
-    g[d].forEach(x=>{list+=isMemTab(t)?memRow(x):`<div class="entry">
+    g[d].forEach(x=>{list+=isMemTab(t)?memRow(x):t==='문화'?cultureRow(x):`<div class="entry">
       <div class="meta">
         <input class="rowsel" list="studyCatList" value="${escA(x.category||'')}" placeholder="카테고리" onchange="editStudy(${x.id},'category',this.value)">
         <b contenteditable onblur="editStudy(${x.id},'title',this.innerText)" style="flex:1">${esc(x.title||'')}</b>
@@ -1914,6 +2138,7 @@ function renderStudy(){
       <input id="sdTerm" class="in" style="flex:1" placeholder="단어">
       <input id="sdMean" class="in" style="flex:1.3" placeholder="뜻">
       <button class="btn y" style="flex:none" onclick="addStudyDetail()">＋ 추가</button></div>`)
+    :t==='문화'?cultureFormHTML('ct',true)
     :`<div class="inrow">
       <input id="sdDate" type="date" class="in" style="flex:none;width:150px" value="${today()}">
       <input id="sdCat" class="in" list="studyCatList" style="flex:1" placeholder="카테고리 (직접 입력하면 목록에 추가)">
@@ -1921,8 +2146,8 @@ function renderStudy(){
       <textarea id="sdContent" class="in" style="width:100%;min-height:90px;margin-top:8px;resize:vertical" placeholder="내용"></textarea>
       <div style="margin-top:10px"><button class="btn y" onclick="addStudyDetail()">＋ 추가</button></div>`;
   pane.innerHTML=`${studyCatDatalist(t)}
-  <div class="card"><h3><span class="dot" style="background:var(--red)"></span> ${t} 입력</h3>${form}</div>
-  <div class="card"><h3><span class="dot" style="background:var(--red)"></span> ${t} 누적 <span class="more">${rows.length}건</span></h3>
+  <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 입력</h3>${form}</div>
+  <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 누적 <span class="more">${rows.length}건</span></h3>
     ${list||'<div class="empty">기록이 없습니다.</div>'}</div>
   ${t==='영어'?cheonilmunPaneHTML():''}`;
 }
@@ -1962,7 +2187,7 @@ function cheonilOutlineHTML(){
         <span class="del" onclick="delCheonilChapter(${c.id})">×</span></div>
       ${unitRows}
       <div class="addrow" style="margin:6px 0 12px 16px">
-        <input id="cuIn${c.id}" placeholder="새 UNIT 추가 후 Enter" onkeydown="if(event.key==='Enter')cheonilUnitAdd(${c.id})">
+        <input id="cuIn${c.id}" placeholder="새 UNIT 추가 후 Enter" onkeydown="esKey(event,function(){cheonilUnitAdd(${c.id})})">
         <button class="btn ghost" onclick="cheonilUnitAdd(${c.id})">추가</button>
       </div>`;
   }).join('');
@@ -2051,7 +2276,7 @@ function cheonilmunPaneHTML(){
     <h3><span class="dot" style="background:var(--red)"></span> 천일문 목차 관리</h3>
     ${cheonilOutlineHTML()}
     <div class="addrow" style="margin-top:10px">
-      <input id="ccIn" placeholder="새 CHAPTER 추가 후 Enter" onkeydown="if(event.key==='Enter')cheonilChapterAdd()">
+      <input id="ccIn" placeholder="새 CHAPTER 추가 후 Enter">
       <button class="btn" onclick="cheonilChapterAdd()">추가</button>
     </div>
   </div>
@@ -2240,9 +2465,9 @@ function assetInputRow(type){
   return `<div class="inrow">
     <input type="date" id="eDate" class="in" style="flex:none;width:148px" value="${today()}">
     <select id="eCat" class="in" style="flex:1">${ASSET_CATS[type].map(c=>`<option>${esc(c)}</option>`).join('')}</select>
-    <input id="eItem" class="in" style="flex:1.6" placeholder="내역" onkeydown="if(event.key==='Enter')addAssetDetail('${type}')">
-    <input id="eAmt" class="in" inputmode="numeric" style="flex:1" placeholder="금액" oninput="fmtNum(this)" onkeydown="if(event.key==='Enter')addAssetDetail('${type}')">
-    <input id="eNote" class="in" style="flex:1" placeholder="비고" onkeydown="if(event.key==='Enter')addAssetDetail('${type}')">
+    <input id="eItem" class="in" style="flex:1.6" placeholder="내역">
+    <input id="eAmt" class="in" inputmode="numeric" style="flex:1" placeholder="금액" oninput="fmtNum(this)">
+    <input id="eNote" class="in" style="flex:1" placeholder="비고">
     <button class="btn y" style="flex:none" onclick="addAssetDetail('${type}')">추가</button>
   </div>`;
 }
@@ -2407,7 +2632,7 @@ function editListName(id,val){var l=(db.routineLists||[]).find(function(a){retur
 function delRoutineList(id){db.routineLists=(db.routineLists||[]).filter(function(a){return a.id!==id;});if(curList===id){curList=null;rtStop();}save();renderRoutiner();}
 function listCardEditHTML(l){var rows=l.items.length?l.items.map(function(r,i){var active=(l.id===curList&&i===rtIdx);return '<div class="rt-row'+(active?' active':'')+'"><button class="rt-play" title="시작" onclick="rtPlay('+l.id+','+i+')">\u25b6</button><span class="rt-name" contenteditable onblur="editRoutineIn('+l.id+','+r.id+',this.innerText)">'+esc(r.name)+'</span><span class="rt-time" contenteditable onblur="editRtTimeIn('+l.id+','+r.id+',this.innerText)">'+fmtSec(r.sec)+'</span><span class="del" onclick="delRoutineIn('+l.id+','+r.id+')">\u00d7</span></div>';}).join(''):'<div class="empty" style="padding:10px 0">\ub8e8\ud2f4\uc744 \ucd94\uac00\ud558\uc138\uc694</div>';var addrow='<div class="inrow" style="margin-top:8px"><input class="in rtNameIn" data-l="'+l.id+'" style="flex:1;min-width:0" placeholder="\ub8e8\ud2f4\uba85"><input class="in rtMinIn" data-l="'+l.id+'" style="flex:none;width:56px" inputmode="decimal" placeholder="\ubd84"><button class="btn y" style="flex:none;padding:8px 10px" onclick="addRoutineIn('+l.id+')">\uff0b</button></div>';return '<div class="card rt-listcard selected"><div class="rt-list-head"><span class="rt-listname" contenteditable onblur="editListName('+l.id+',this.innerText)">'+esc(l.name)+'</span><span class="del" onclick="delRoutineList('+l.id+')">\u00d7</span></div>'+rows+addrow+'</div>';}
 function renderRtMain(){var el=document.getElementById('rtMain');if(!el)return;var l=curListObj();var rs=l?l.items:[];var circle;if(rtIdx>=0&&rtIdx<rs.length){var r=rs[rtIdx];var C=2*Math.PI*70;var frac=Math.max(0,rtRemain)/r.sec;var off=C*(1-frac);var col=frac<0.2?'#e8615a':'#f4b740';circle='<div class="rt-active"><div class="rt-circle"><svg width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="70" fill="none" stroke="var(--line)" stroke-width="14"/><circle id="rt-ring" cx="100" cy="100" r="70" fill="none" stroke="'+col+'" stroke-width="14" stroke-linecap="round" transform="rotate(-90 100 100)" style="stroke-dasharray:'+C+';stroke-dashoffset:'+off+';transition:stroke-dashoffset .95s linear,stroke .3s"/></svg><div class="rt-circle-in"><div class="rt-bigname">'+esc(r.name)+'</div><div class="rt-bigtime" id="rt-bigtime">'+fmtSec(rtRemain)+'</div></div></div></div>';}else{circle='<div class="rt-idle"><b>\u25b6</b> 를 눌러<br>루틴을 시작하세요</div>';}var sel=l?listCardEditHTML(l):'<div class="empty" style="padding:20px">아래에서 목록을 선택하거나 추가하세요.</div>';el.innerHTML='<div class="g2" style="align-items:start"><div>'+circle+'</div><div>'+sel+'</div></div>';}
-function renderRtSel(){var el=document.getElementById('rtSelList');if(!el)return;var l=curListObj();if(!l){el.innerHTML='<div class="empty">목록이 없습니다.</div>';return;}var rows=l.items.length?l.items.map(function(r,i){var active=(i===rtIdx);return '<div class="rt-row'+(active?' active':'')+'"><button class="rt-play" title="시작" onclick="rtStart('+i+')">▶</button><span class="rt-name" contenteditable onblur="editRoutine('+r.id+',this.innerText)">'+esc(r.name)+'</span><span class="rt-time" contenteditable onblur="editRtTime('+r.id+',this.innerText)">'+fmtSec(r.sec)+'</span><span class="del" onclick="delRoutine('+r.id+')">×</span></div>';}).join(''):'<div class="empty" style="padding:14px 0">루틴을 추가하세요.</div>';el.innerHTML='<div class="rt-listname" contenteditable onblur="editListName(\''+l.id+'\',this.innerText)">'+esc(l.name)+'</div>'+rows+'<div class="inrow" style="margin-top:10px"><input id="rtName" class="in" style="flex:1" placeholder="루틴명" onkeydown="if(event.key===\'Enter\')addRoutine()"><input id="rtMin" class="in" style="flex:none;width:70px" inputmode="decimal" placeholder="분" onkeydown="if(event.key===\'Enter\')addRoutine()"><button class="btn y" style="flex:none" onclick="addRoutine()">＋</button></div>';}
+function renderRtSel(){var el=document.getElementById('rtSelList');if(!el)return;var l=curListObj();if(!l){el.innerHTML='<div class="empty">목록이 없습니다.</div>';return;}var rows=l.items.length?l.items.map(function(r,i){var active=(i===rtIdx);return '<div class="rt-row'+(active?' active':'')+'"><button class="rt-play" title="시작" onclick="rtStart('+i+')">▶</button><span class="rt-name" contenteditable onblur="editRoutine('+r.id+',this.innerText)">'+esc(r.name)+'</span><span class="rt-time" contenteditable onblur="editRtTime('+r.id+',this.innerText)">'+fmtSec(r.sec)+'</span><span class="del" onclick="delRoutine('+r.id+')">×</span></div>';}).join(''):'<div class="empty" style="padding:14px 0">루틴을 추가하세요.</div>';el.innerHTML='<div class="rt-listname" contenteditable onblur="editListName(\''+l.id+'\',this.innerText)">'+esc(l.name)+'</div>'+rows+'<div class="inrow" style="margin-top:10px"><input id="rtName" class="in" style="flex:1" placeholder="루틴명"><input id="rtMin" class="in" style="flex:none;width:70px" inputmode="decimal" placeholder="분"><button class="btn y" style="flex:none" onclick="addRoutine()">＋</button></div>';}
 function renderRtOthers(){var el=document.getElementById('rtOtherLists');if(!el)return;var ls=db.routineLists||[];var others=ls.filter(function(a){return a.id!==curList;});var html='<div class="rt-uplabel" style="margin-top:18px">다른 루틴 목록</div>';html+=others.map(function(l){var body=l.collapsed?'':'<div class="rt-listbody">'+(l.items.length?l.items.map(function(r){return '<div class="rt-uprow"><span class="rt-name">'+esc(r.name)+'</span><span class="rt-time">'+fmtSec(r.sec)+'</span></div>';}).join(''):'<div class="empty" style="padding:8px">비어 있음</div>')+'</div>';return '<div class="rt-list-card"><div class="rt-list-head"><span class="rt-list-title" onclick="toggleListCollapse(\''+l.id+'\')">'+(l.collapsed?'▸':'▾')+' '+esc(l.name)+' <span style="color:var(--muted);font-weight:600;font-size:12px">('+l.items.length+')</span></span><button class="btn ghost" style="flex:none;padding:5px 12px;font-size:12px" onclick="selectList(\''+l.id+'\')">선택</button><span class="del" onclick="delRoutineList(\''+l.id+'\')">×</span></div>'+body+'</div>';}).join('');if(!others.length)html+='<div class="empty" style="padding:8px 0">다른 목록이 없어요.</div>';html+='<div style="margin-top:10px"><button class="btn ghost" onclick="addRoutineList()">＋ 목록 추가</button></div>';el.innerHTML=html;}
 function rtRoutines_ORIG(){}
 function fmtSec(s){s=Math.max(0,Math.round(s));var m=Math.floor(s/60),ss=s%60;return m+':'+String(ss).padStart(2,'0');}
@@ -2430,11 +2655,72 @@ function delRoutineIn(listId,id){var l=(db.routineLists||[]).find(function(a){re
 function renderRtLists(){var el=document.getElementById('rtLists');if(!el)return;var ls=db.routineLists||[];var others=ls.filter(function(a){return a.id!==curList;});var cards=others.map(function(l){var rows=l.items.length?l.items.map(function(r){return '<div class="rt-uprow"><span class="rt-name">'+esc(r.name)+'</span><span class="rt-time">'+fmtSec(r.sec)+'</span></div>';}).join(''):'<div class="empty" style="padding:8px">비어 있음</div>';return '<div class="card rt-listcard rt-selectable" onclick="selectList('+l.id+')"><div class="rt-list-head"><span class="rt-list-title">'+esc(l.name)+' <span style="color:var(--muted);font-size:12px;font-weight:600">('+l.items.length+')</span></span><span class="del" onclick="event.stopPropagation();delRoutineList('+l.id+')">\u00d7</span></div>'+rows+'</div>';}).join('');var body=others.length?('<div class="g3">'+cards+'</div>'):'<div class="empty" style="padding:8px 0">다른 목록이 없어요.</div>';el.innerHTML='<div class="rt-uplabel" style="margin-top:18px">다른 루틴 목록 (클릭해서 선택)</div>'+body+'<div style="margin-top:12px"><button class="btn ghost" onclick="addRoutineList()">\uff0b 목록 추가</button></div>';}
 function renderRoutiner(){renderRtMain();renderRtLists();}
 function renderAll(){
-  renderTop();renderCal();renderSchedule();renderTodos();renderInbox();renderInboxPage();
+  renderTop();renderCal();renderSchedule();renderTodos();renderInbox();renderInboxPage();renderSessions();
   renderWork();renderDashWork();renderReading();renderStudy();renderDashStudy();
   renderAssets();renderDashAsset();renderDiary();renderDiaryPage();renderRoutiner();renderDash();
 }
 renderAll();renderSyncUI();if(syncCode())cloudPull(false);
+
+/* ---------- Enter = 저장 / Shift+Enter = 줄바꿈 ---------- */
+/* 일기(일기 입력창·일기 본문)와 검색창은 제외 */
+var ES_SKIP={diaryInput:1,diaryInput2:1,wvq:1,expSearch:1};
+var ES_MAP={};
+function esSet(ids,fn){ids.forEach(function(i){ES_MAP[i]=fn;});}
+esSet(['schTime','schTitle','schDetail'],function(){addSchedule();});
+esSet(['inboxInput'],function(){addInbox();});
+esSet(['inboxInput2'],function(){addInbox('inboxInput2');});
+esSet(['wTitle','wContent'],function(){addWorkDash();});
+esSet(['sTerm','sMean','sCat','sTitle','sContent'],function(){addStudyDash();});
+esSet(['sdDate','sdTerm','sdMean','sdCat','sdTitle','sdContent'],function(){addStudyDetail();});
+esSet(['emTerm','emMean'],function(){if(editMemId!=null)saveEditMem(editMemId);});
+esSet(['exBook','exChapter','exText','exPage'],function(){addExcerpt();});
+esSet(['bTitle','bAuthor','bPub','bPages','bStart','bEnd','bCat','bLink','bChapters'],function(){addBook();});
+esSet(['nTitle','nAuthor','nPub','nPages','nStart','nEnd','nCat','nLink','nChapters'],function(){addBookFromList();});
+esSet(['ebTitle','ebAuthor','ebPub','ebPages','ebStart','ebEnd','ebCat','ebLink','ebChapters'],function(){if(readOpenId)saveBookEdit(readOpenId);});
+esSet(['chapInput'],function(){if(readOpenId)addChapter(readOpenId);});
+esSet(['dCat','dItem','dAmount','dNote'],function(){addAssetDash();});
+esSet(['eDate','eCat','eItem','eAmt','eNote'],function(){addAssetDetail(detailAssetTab);});
+esSet(['fName','fAmount','fNote'],function(){addFixed();});
+esSet(['rtName','rtMin'],function(){addRoutine();});
+esSet(['seName','seStart','seEnd','seAgenda','seNote'],function(){addSession();});
+esSet(['seeName','seeStart','seeEnd','seeAgenda','seeNote'],function(){saveSessionEdit();});
+esSet(['cuKind','cuKindEtc','cuTitle','cuOne','cuReview','cuTags','cuNote'],function(){addCulture('cu');});
+esSet(['ctDate','ctKind','ctKindEtc','ctTitle','ctOne','ctReview','ctTags','ctNote'],function(){addCulture('ct');});
+esSet(['syncInput'],function(){setSyncCode();});
+esSet(['cdSentence','cdDesc'],function(){saveCheonilDash();});
+esSet(['ccdChapter'],function(){cheonilChapterAddDash();});
+esSet(['ccdUnit'],function(){cheonilUnitAddDash();});
+esSet(['ccIn'],function(){cheonilChapterAdd();});
+esSet(['cmDescEdit'],function(){if(cheonilEditKey){var q=String(cheonilEditKey).split('_');saveCheonilDesc(Number(q[0]),Number(q[1]));}});
+/* 한글 조합(IME) 확정이 끝난 뒤 저장되도록 한 틱 미룬다 */
+function esDefer(el,fn){
+  var watch=!!(el&&('value' in el));
+  setTimeout(function(){
+    try{fn();}catch(err){console.error(err);}
+    if(watch&&el.isConnected&&el.value===''){setTimeout(function(){if(el.isConnected&&el.value!=='')el.value='';},0);}
+  },0);
+}
+function esKey(e,fn){if(e.key!=='Enter'||e.shiftKey||e.ctrlKey||e.metaKey||e.altKey)return;e.preventDefault();esDefer(e.target,fn);}
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Enter'||e.shiftKey||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.defaultPrevented)return;                 /* 자체 Enter 처리기가 있는 곳(마인드맵·노트 에디터 등) */
+  var el=e.target;if(!el||!el.tagName)return;
+  if(el.closest&&el.closest('[data-noenter]'))return;
+  var tag=el.tagName.toLowerCase();
+  if(tag==='input'||tag==='textarea'||tag==='select'){
+    if(el.id&&ES_SKIP[el.id])return;
+    var t=(el.type||'').toLowerCase();
+    if(t==='checkbox'||t==='radio'||t==='button'||t==='submit')return;
+    var fn=ES_MAP[el.id];
+    if(!fn&&el.id&&el.id.indexOf('cuIn')===0){var uid2=Number(el.id.slice(4));fn=function(){cheonilUnitAdd(uid2);};}
+    if(!fn&&el.classList&&(el.classList.contains('rtNameIn')||el.classList.contains('rtMinIn'))){
+      var lid=Number(el.getAttribute('data-l'));fn=function(){addRoutineIn(lid);};}
+    if(!fn)return;
+    e.preventDefault();esDefer(el,fn);
+  }else if(el.isContentEditable){
+    e.preventDefault();setTimeout(function(){el.blur();},0);   /* blur 시 저장 */
+  }
+},false);
 
 /* ---------- daily rollover check ---------- */
 setInterval(()=>{if(today()!==curKey){curKey=today();const t=new Date();viewY=t.getFullYear();viewM=t.getMonth();selDate=today();renderAll();}},30000);
