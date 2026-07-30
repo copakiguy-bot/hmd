@@ -74,6 +74,7 @@
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:14px}
   .card{background:var(--card);border-radius:18px;padding:20px;box-shadow:var(--shadow)}
   .card+.card{margin-top:20px}
+  .grid+.card{margin-top:20px}
   /* 그리드 내부 카드는 gap이 간격을 담당하므로 마진 제거 (순서상 위 규칙보다 뒤에 와야 함) */
   .grid>.card+.card,.g2>.card+.card,.g3>.card+.card{margin-top:0}
   .card h3{font-size:16px;display:flex;align-items:center;gap:8px;margin-bottom:14px}
@@ -140,8 +141,10 @@
   table.sess-tbl th{font-size:13.5px;font-weight:700;color:var(--muted);padding:9px 8px}
   table.sess-tbl td{padding:11px 8px}
   table.sess-tbl th,table.sess-tbl td{text-align:center;vertical-align:middle}
+  table.sess-tbl td.agenda{text-align:left;white-space:pre-wrap;word-break:break-word}
+  table.sess-tbl td .in.ta-left{text-align:left}
   .sess-tbl .nw{white-space:nowrap}
-  .sess-tbl .per{white-space:nowrap;font-size:13.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .sess-tbl .per{white-space:nowrap;font-variant-numeric:tabular-nums}
   .sess-tbl .edit-ic,.sess-tbl .del{margin-top:0}
   .pen-ic{cursor:pointer;color:#c3cbc7;font-size:13px;padding:0 3px;line-height:1;user-select:none}
   .pen-ic:hover{color:var(--dark)}
@@ -576,7 +579,7 @@
         <input id="seName" class="in" style="flex:1;min-width:130px" placeholder="회기 (예: 제312회 정기회)">
         <input id="seStart" type="date" class="in" style="flex:none;width:146px">
         <input id="seEnd" type="date" class="in" style="flex:none;width:146px">
-        <input id="seAgenda" class="in" style="flex:1.6;min-width:140px" placeholder="주요안건">
+        <textarea id="seAgenda" class="in" rows="1" style="flex:1.6;min-width:140px;min-height:38px;resize:vertical" placeholder="주요안건"></textarea>
         <input id="seNote" class="in" style="flex:1;min-width:100px" placeholder="비고">
         <button class="btn y" style="flex:none" onclick="addSession()">추가</button>
       </div>
@@ -1248,14 +1251,14 @@ function renderSessions(){
         '<input id="seeStart" type="date" class="in" value="'+escA(s.start||'')+'">'+
         '<input id="seeEnd" type="date" class="in" value="'+escA(s.end||s.start||'')+'">'+
       '</div></td>'+
-      '<td><input id="seeAgenda" class="in" style="width:100%" value="'+escA(s.agenda||'')+'"></td>'+
+      '<td><textarea id="seeAgenda" class="in ta-left" rows="1" style="width:100%;min-height:40px;resize:vertical">'+esc(s.agenda||'')+'</textarea></td>'+
       '<td><input id="seeNote" class="in" style="width:100%" value="'+escA(s.note||'')+'"></td>'+
       '<td class="nw"><button class="btn y" style="padding:5px 10px;font-size:12px" onclick="saveSessionEdit()">저장</button>'+
         '<span class="del" title="취소" onclick="cancelEditSession()">×</span></td></tr>';
     return '<tr>'+
       '<td class="nw"><b style="font-weight:700">'+esc(s.name||'')+'</b></td>'+
       '<td class="per">'+esc(sessPeriodTxt(s))+'</td>'+
-      '<td>'+esc(s.agenda||'')+'</td>'+
+      '<td class="agenda">'+esc(s.agenda||'')+'</td>'+
       '<td>'+esc(s.note||'')+'</td>'+
       '<td class="nw"><span class="pen-ic" title="수정" onclick="startEditSession('+s.id+')">✎</span>'+
         '<span class="del" onclick="delSession('+s.id+')">×</span></td></tr>';
