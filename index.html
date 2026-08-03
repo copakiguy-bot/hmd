@@ -971,6 +971,27 @@
       <div id="syncStatus" style="margin-top:8px;font-size:13px;color:var(--muted)"></div>
     </div>
     <div class="card">
+      <h3><span class="dot" style="background:#4285f4"></span> 구글 캘린더 연동</h3>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px">
+        <b>① 파일로 내보내기</b> — 아래 버튼으로 .ics 파일을 받은 뒤, 구글 캘린더 &gt; 설정 &gt; <b>가져오기 및 내보내기</b>에서 가져오면 됩니다.<br>
+        <b>② 자동 전송</b> — 구글 Apps Script 웹앱 주소를 연결해두면, 일정을 추가·수정·삭제할 때마다 자동으로 구글 캘린더에 반영됩니다.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <button class="btn y" onclick="exportICS(false)">전체 일정 .ics 내보내기</button>
+        <button class="btn ghost" onclick="exportICS(true)">오늘 이후 일정만 내보내기</button>
+      </div>
+      <div class="inrow">
+        <input id="gcalUrl" class="in" style="flex:1" placeholder="Apps Script 웹앱 URL (https://script.google.com/…/exec)">
+        <button class="btn y" style="flex:none" onclick="gcalConnect()">연결</button>
+        <button class="btn ghost" style="flex:none" onclick="gcalDisconnect()">해제</button>
+      </div>
+      <div id="gcalStatus" style="margin-top:8px;font-size:13px;color:var(--muted)"></div>
+      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn ghost" onclick="gcalPushAll()">지금 전체 일정 한 번에 보내기</button>
+        <button class="btn ghost" onclick="gcalShowScript()">스크립트 코드 보기 (설치 방법)</button>
+      </div>
+      <pre id="gcalScriptBox" style="display:none;margin-top:12px;background:var(--cream);border-radius:12px;padding:14px;font-size:11.5px;line-height:1.55;overflow:auto;max-height:340px;white-space:pre-wrap"></pre>
+    </div>
+    <div class="card">
       <h3><span class="dot"></span> 데이터 관리</h3>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn ghost" onclick="clearToday()">오늘 항목 비우기</button>
@@ -1537,25 +1558,168 @@ function selectDate(k){selDate=k;renderCal();renderSchedule();}
 
 /* ---------- schedules ---------- */
 function normTime(v){v=String(v).trim();const d=v.replace(/[^0-9]/g,'');if(/^[0-9]{3,4}$/.test(d)){const H=parseInt(d.slice(0,d.length-2),10),M=parseInt(d.slice(-2),10);if(H<24&&M<60)return String(H).padStart(2,'0')+':'+String(M).padStart(2,'0');}return v;}
+
+/* ---------- 구글 캘린더 연동 ---------- */
+/* ① ICS 내보내기 */
+function icsEsc(t){return String(t||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');}
+function icsDate(d){return String(d||'').replace(/-/g,'');}
+function exportICS(futureOnly){
+  var tk=today();
+  var list=db.schedules.filter(function(s){return s.date&&(!futureOnly||s.date>=tk);});
+  if(!list.length){alert('내보낼 일정이 없습니다.');return;}
+  var out=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//HMD//KO','CALSCALE:GREGORIAN'];
+  list.forEach(function(s){
+    var d=icsDate(s.date), hasTime=/^\d{2}:\d{2}$/.test(s.time||'');
+    out.push('BEGIN:VEVENT');
+    out.push('UID:hmd-'+s.id+'@hmd.local');
+    out.push('DTSTAMP:'+d+'T000000Z');
+    if(hasTime){
+      var hm=s.time.replace(':','');
+      out.push('DTSTART;TZID=Asia/Seoul:'+d+'T'+hm+'00');
+      var h=Number(s.time.slice(0,2)), m=Number(s.time.slice(3,5));
+      var end=new Date(2000,0,1,h,m+60);
+      var endD=(end.getDate()>1)?icsDate(nextDay(s.date)):d;
+      out.push('DTEND;TZID=Asia/Seoul:'+endD+'T'+String(end.getHours()).padStart(2,'0')+String(end.getMinutes()).padStart(2,'0')+'00');
+    }else{
+      out.push('DTSTART;VALUE=DATE:'+d);
+      out.push('DTEND;VALUE=DATE:'+icsDate(nextDay(s.date)));
+    }
+    out.push('SUMMARY:'+icsEsc(s.title));
+    if(s.detail)out.push('DESCRIPTION:'+icsEsc(s.detail));
+    if(s.done)out.push('STATUS:CANCELLED');
+    out.push('END:VEVENT');
+  });
+  out.push('END:VCALENDAR');
+  var blob=new Blob([out.join('\r\n')],{type:'text/calendar;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='HMD-일정-'+tk+'.ics';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(a.href);},2000);
+}
+
+/* ② Apps Script 자동 전송 */
+function gcalGet(){return localStorage.getItem('hmd_gcal_url')||'';}
+function gcalConnect(){
+  var v=document.getElementById('gcalUrl').value.trim();
+  if(!v){alert('웹앱 URL을 입력하세요.');return;}
+  if(v.indexOf('https://script.google.com/')!==0){alert('script.google.com 으로 시작하는 웹앱 URL이어야 합니다.');return;}
+  localStorage.setItem('hmd_gcal_url',v);gcalStatus();
+  gcalSend({type:'ping'},function(ok){alert(ok?'연결 확인 완료! 이제 일정이 자동으로 전송됩니다.':'저장은 됐지만 응답 확인은 못했습니다. 배포 설정(액세스: 모든 사용자)을 확인하세요.');});
+}
+function gcalDisconnect(){localStorage.removeItem('hmd_gcal_url');gcalStatus();}
+function gcalStatus(){
+  var el=document.getElementById('gcalStatus');if(!el)return;
+  var u=gcalGet();
+  el.innerHTML=u?'✅ 자동 전송 연결됨 <span style="word-break:break-all;color:#b8c0bc">('+esc(u.slice(0,60))+'…)</span>':'자동 전송이 연결되어 있지 않습니다.';
+  var inp=document.getElementById('gcalUrl');if(inp&&u)inp.value=u;
+}
+/* no-cors 전송: 응답 본문은 못 읽지만 요청은 전달된다 */
+function gcalSend(payload,cb){
+  var u=gcalGet();if(!u){if(cb)cb(false);return;}
+  try{
+    fetch(u,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)})
+      .then(function(){if(cb)cb(true);})
+      .catch(function(){if(cb)cb(false);});
+  }catch(e){if(cb)cb(false);}
+}
+function gcalEventPayload(s,act){
+  return {type:act,uid:'hmd-'+s.id,date:s.date,time:(/^\d{2}:\d{2}$/.test(s.time||'')?s.time:''),
+    title:s.title||'',detail:s.detail||'',done:!!s.done};
+}
+function gcalPush(s){if(!gcalGet()||!s)return;gcalSend(gcalEventPayload(s,'upsert'));}
+function gcalRemove(id){if(!gcalGet())return;gcalSend({type:'delete',uid:'hmd-'+id});}
+function gcalPushAll(){
+  var u=gcalGet();if(!u){alert('먼저 웹앱 URL을 연결하세요.');return;}
+  var list=db.schedules.filter(function(s){return s.date;});
+  if(!list.length){alert('보낼 일정이 없습니다.');return;}
+  gcalSend({type:'bulk',events:list.map(function(s){return gcalEventPayload(s,'upsert');})},
+    function(ok){alert(ok?list.length+'건 전송 요청 완료. 잠시 후 구글 캘린더를 확인하세요.':'전송에 실패했습니다.');});
+}
+function gcalShowScript(){
+  var box=document.getElementById('gcalScriptBox');if(!box)return;
+  if(box.style.display!=='none'){box.style.display='none';return;}
+  box.style.display='';
+  box.textContent=[
+'/* 설치 방법',
+' 1) script.google.com 접속 → 새 프로젝트',
+' 2) 아래 코드를 전부 붙여넣고 저장',
+' 3) 배포 → 새 배포 → 유형: 웹 앱',
+'    - 실행 계정: 나',
+'    - 액세스 권한: 모든 사용자   ← 중요',
+' 4) 생성된 웹 앱 URL(…/exec)을 복사해 위 칸에 붙여넣고 [연결]',
+'*/',
+'var CAL_ID = "primary";   // 특정 캘린더에 넣으려면 해당 캘린더 ID로 변경',
+'',
+'function doPost(e){',
+'  var p = JSON.parse(e.postData.contents || "{}");',
+'  if (p.type === "ping") return out("pong");',
+'  if (p.type === "bulk") { (p.events||[]).forEach(upsert); return out("ok"); }',
+'  if (p.type === "delete") { removeByUid(p.uid); return out("ok"); }',
+'  if (p.type === "upsert") { upsert(p); return out("ok"); }',
+'  return out("ignored");',
+'}',
+'function out(msg){ return ContentService.createTextOutput(msg); }',
+'function cal(){ return CAL_ID==="primary" ? CalendarApp.getDefaultCalendar() : CalendarApp.getCalendarById(CAL_ID); }',
+'function findByUid(uid, dateStr){',
+'  var d = new Date(dateStr+"T00:00:00");',
+'  var from = new Date(d.getTime()-86400000*366), to = new Date(d.getTime()+86400000*366);',
+'  var evs = cal().getEvents(from, to);',
+'  for (var i=0;i<evs.length;i++){',
+'    if (evs[i].getTag("hmd_uid") === uid) return evs[i];',
+'  }',
+'  return null;',
+'}',
+'function removeByUid(uid){',
+'  var now = new Date();',
+'  var evs = cal().getEvents(new Date(now.getTime()-86400000*366), new Date(now.getTime()+86400000*366));',
+'  for (var i=0;i<evs.length;i++) if (evs[i].getTag("hmd_uid")===uid) evs[i].deleteEvent();',
+'}',
+'function upsert(p){',
+'  if (!p || !p.uid || !p.date) return;',
+'  var ev = findByUid(p.uid, p.date);',
+'  if (p.done){ if (ev) ev.deleteEvent(); return; }   // 완료한 일정은 캘린더에서 제거',
+'  var title = p.title || "(제목 없음)";',
+'  if (p.time){',
+'    var st = new Date(p.date+"T"+p.time+":00");',
+'    var en = new Date(st.getTime()+3600000);',
+'    if (ev){',
+'      if (ev.isAllDayEvent()){ ev.deleteEvent(); ev = null; }',
+'      else { ev.setTime(st, en); ev.setTitle(title); ev.setDescription(p.detail||""); }',
+'    }',
+'    if (!ev){ ev = cal().createEvent(title, st, en, {description:p.detail||""}); ev.setTag("hmd_uid", p.uid); }',
+'  } else {',
+'    var day = new Date(p.date+"T00:00:00");',
+'    if (ev){',
+'      if (!ev.isAllDayEvent()){ ev.deleteEvent(); ev = null; }',
+'      else { ev.setAllDayDate(day); ev.setTitle(title); ev.setDescription(p.detail||""); }',
+'    }',
+'    if (!ev){ ev = cal().createAllDayEvent(title, day, {description:p.detail||""}); ev.setTag("hmd_uid", p.uid); }',
+'  }',
+'}'].join('\n');
+}
+
 function addSchedule(){
   const title=document.getElementById('schTitle').value.trim();
   if(!title){alert('일정 제목을 입력하세요.');return;}
-  db.schedules.push({id:uid(),date:selDate,time:normTime(document.getElementById('schTime').value),
-    title,detail:document.getElementById('schDetail').value.trim()});
+  var __ns={id:uid(),date:selDate,time:normTime(document.getElementById('schTime').value),
+    title,detail:document.getElementById('schDetail').value.trim()};
+  db.schedules.push(__ns);gcalPush(__ns);
   save();['schTitle','schTime','schDetail'].forEach(i=>document.getElementById(i).value='');
   renderCal();renderSchedule();
 }
 function schedDetailFocus(e){var el=e.target;if(!el.innerText.trim()){el.innerText='- ';var r=document.createRange();r.selectNodeContents(el);r.collapse(false);var sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);}}
 function schedDetailKey(e){if(e.key==='Enter'){e.preventDefault();document.execCommand('insertLineBreak');document.execCommand('insertText',false,'- ');}}
 function editSchedule(id,field,val){const s=db.schedules.find(x=>x.id===id);if(!s)return;
-  s[field]=field==='time'?normTime(val):String(val).trim();save();renderCal();renderSchedule();}
-function delSchedule(id){db.schedules=db.schedules.filter(s=>s.id!==id);save();renderCal();renderSchedule();}
-function toggleSchedule(id){const s=db.schedules.find(x=>x.id===id);if(!s)return;s.done=!s.done;save();renderCal();renderSchedule();}
+  s[field]=field==='time'?normTime(val):String(val).trim();gcalPush(s);save();renderCal();renderSchedule();}
+function delSchedule(id){db.schedules=db.schedules.filter(s=>s.id!==id);gcalRemove(id);save();renderCal();renderSchedule();}
+function toggleSchedule(id){const s=db.schedules.find(x=>x.id===id);if(!s)return;s.done=!s.done;gcalPush(s);save();renderCal();renderSchedule();}
 function nextDay(ds){const [y,m,d]=ds.split('-').map(Number);const dt=new Date(y,m-1,d+1);return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');}
-function postponeSchedule(id){const s=db.schedules.find(x=>x.id===id);if(!s)return;s.date=nextDay(s.date);save();renderCal();renderSchedule();}
+function postponeSchedule(id){const s=db.schedules.find(x=>x.id===id);if(!s)return;s.date=nextDay(s.date);gcalPush(s);save();renderCal();renderSchedule();}
 let dragSchedId=null;
 function schedDragStart(e,id){dragSchedId=id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',String(id));}
-function schedDrop(e,key){e.preventDefault();const id=dragSchedId!=null?dragSchedId:Number(e.dataTransfer.getData('text/plain'));const s=db.schedules.find(x=>x.id===id);if(s){s.date=key;save();renderCal();renderSchedule();}dragSchedId=null;}
+function schedDrop(e,key){e.preventDefault();const id=dragSchedId!=null?dragSchedId:Number(e.dataTransfer.getData('text/plain'));const s=db.schedules.find(x=>x.id===id);if(s){s.date=key;gcalPush(s);save();renderCal();renderSchedule();}dragSchedId=null;}
 function renderSchedule(){
   const el=document.getElementById('schedList');if(!el)return;
   const [y,m,d]=selDate.split('-');
@@ -3624,6 +3788,7 @@ function delRoutineIn(listId,id){var l=(db.routineLists||[]).find(function(a){re
 function renderRtLists(){var el=document.getElementById('rtLists');if(!el)return;var ls=db.routineLists||[];var others=ls.filter(function(a){return a.id!==curList;});var cards=others.map(function(l){var rows=l.items.length?l.items.map(function(r){return '<div class="rt-uprow"><span class="rt-name">'+esc(r.name)+'</span><span class="rt-time">'+fmtSec(r.sec)+'</span></div>';}).join(''):'<div class="empty" style="padding:8px">비어 있음</div>';return '<div class="card rt-listcard rt-selectable" onclick="selectList('+l.id+')"><div class="rt-list-head"><span class="rt-list-title">'+esc(l.name)+' <span style="color:var(--muted);font-size:12px;font-weight:600">('+l.items.length+')</span></span><span class="del" onclick="event.stopPropagation();delRoutineList('+l.id+')">\u00d7</span></div>'+rows+'</div>';}).join('');var body=others.length?('<div class="g3">'+cards+'</div>'):'<div class="empty" style="padding:8px 0">다른 목록이 없어요.</div>';el.innerHTML='<div class="rt-uplabel" style="margin-top:18px">다른 루틴 목록 (클릭해서 선택)</div>'+body+'<div style="margin-top:12px"><button class="btn ghost" onclick="addRoutineList()">\uff0b 목록 추가</button></div>';}
 function renderRoutiner(){renderRtMain();renderRtLists();}
 function renderAll(){
+  gcalStatus();
   renderTop();renderCal();renderSchedule();renderTodos();renderInbox();renderInboxPage();renderSessions();
   renderWork();renderDashWork();renderReading();renderStudy();renderDashStudy();
   renderAssets();renderDashAsset();renderDiary();renderDiaryPage();renderRoutiner();renderDash();
