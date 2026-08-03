@@ -288,6 +288,28 @@
   .mind-expand-btn{cursor:pointer;flex-shrink:0;margin-left:8px;font-size:14px;line-height:1;padding:5px 9px}
   .mind-backdrop{display:none;position:fixed;inset:0;background:rgba(18,49,43,.45);z-index:94}
   /* 책 표지 확대 보기 */
+  .ex-clip{cursor:zoom-in;max-height:5.4em;overflow:hidden;position:relative}
+  .ex-clip:hover{opacity:.82}
+  .exv-back{display:none;position:fixed;inset:0;z-index:119;background:rgba(18,49,43,.44);align-items:center;justify-content:center;padding:24px}
+  .exv-back.on{display:flex}
+  .exv{background:var(--card);border-radius:20px;box-shadow:0 26px 60px rgba(18,49,43,.26);width:min(720px,100%);max-height:86vh;display:flex;flex-direction:column;overflow:hidden;animation:fwIn .16s ease-out}
+  .exv-head{display:flex;align-items:center;gap:9px;padding:18px 22px 10px;font-size:13px;font-weight:700;color:var(--muted)}
+  .exv-head .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .exv-body{padding:4px 26px 26px;overflow:auto;font-family:'Nanum Myeongjo',serif;font-size:18px;line-height:1.95;color:var(--dark);white-space:pre-wrap;word-break:break-word}
+  .ch-item{border-bottom:1px solid var(--line)}
+  .ch-item:last-of-type{border-bottom:none}
+  .ch-row{display:flex;align-items:center;gap:9px;padding:11px 6px;cursor:pointer;font-size:14px}
+  .ch-row:hover{background:var(--cream);border-radius:8px}
+  .ch-item.on .ch-row{color:var(--green);font-weight:700}
+  .ch-ar{color:var(--muted);font-size:11px;flex:none;width:10px}
+  .ch-nm{outline:none;min-width:0;max-width:calc(100% - 90px)}
+  .ch-row .ch-cnt{margin-right:auto}
+  .ch-nm:focus{background:var(--cream);border-radius:6px;padding:1px 5px}
+  .ch-cnt{font-size:12.5px;font-weight:600;color:var(--muted);flex:none}
+  .ch-item.on .ch-cnt{color:var(--green)}
+  .ch-body{padding:2px 6px 14px}
+  .ch-add{display:flex;gap:8px;align-items:flex-start;margin-top:10px}
+  .ch-add textarea{flex:1;min-height:44px;resize:vertical}
   .bkv-back{display:none;position:fixed;inset:0;z-index:118;background:rgba(18,49,43,.5);align-items:center;justify-content:center;padding:24px}
   .bkv-back.on{display:flex}
   .bkv{background:var(--card);border-radius:20px;box-shadow:0 26px 60px rgba(18,49,43,.28);width:min(880px,100%);max-height:90vh;display:flex;flex-direction:column;overflow:hidden;animation:fwIn .16s ease-out}
@@ -956,6 +978,22 @@
   </section>
 </main>
 
+<div class="exv-back" id="exvBack" onclick="closeExcerptView()">
+  <div class="exv" onclick="event.stopPropagation()">
+    <div class="exv-head">
+      <span class="dot" style="background:var(--green)"></span>
+      <b id="exvMeta"></b>
+      <span class="pen-ic" style="margin-left:auto;font-size:15px" title="수정" onclick="exvEdit()">✎</span>
+      <span class="bkv-x" style="margin-left:0" onclick="closeExcerptView()">×</span>
+    </div>
+    <div class="exv-body" id="exvBody"></div>
+  </div>
+  <select id="exEditChapter" style="display:none"></select>
+  <input id="exEditPage" style="display:none" placeholder="페이지">
+  <input id="exEditText" style="display:none">
+  <input id="dyEditText" style="display:none">
+</div>
+
 <div class="bkv-back" id="bkvBack" onclick="closeBookView()">
   <div class="bkv" onclick="event.stopPropagation()">
     <div class="bkv-headrow"><span class="dot" style="background:var(--green)"></span>&nbsp;<b style="font-size:14px;color:var(--dark)">책 들여다보기</b><span class="bkv-x" onclick="closeBookView()">×</span></div>
@@ -1181,7 +1219,28 @@ function toggleWeather(){showWeather=!showWeather;var b=document.getElementById(
 function addDiary(inputId){var el=document.getElementById(inputId||'diaryInput');if(!el)return;var v=el.value.trim();if(!v)return;db.diary.push({id:uid(),date:today(),text:v});save();el.value='';renderDiary();renderDiaryPage();renderCal();}
 function editDiary(id,val){var x=db.diary.find(function(a){return a.id===id;});if(!x)return;var v=String(val).trim();if(v)x.text=v;save();}
 function delDiary(id){db.diary=db.diary.filter(function(a){return a.id!==id;});save();renderDiary();renderDiaryPage();}
-function diaryItem(x){return '<div class="entry"><div class="body" data-noenter="1" contenteditable onblur="editDiary('+x.id+',this.innerHTML)">'+fwR(x.text)+'</div><div style="text-align:right;margin-top:4px"><span class="del" onclick="delDiary('+x.id+')">×</span></div></div>';}
+function diaryItem(x){return '<div class="entry"><div class="meta">'+
+  '<span class="day">'+esc(x.date||'')+'</span>'+
+  '<span class="pen-ic" style="margin-left:auto" title="수정" onclick="editDiaryFull('+x.id+')">✎</span>'+
+  '<span class="del" onclick="delDiary('+x.id+')">×</span></div>'+
+  '<div class="body ex-clip" title="크게 보기" onclick="openDiaryView('+x.id+')">'+fwR(x.text)+'</div></div>';}
+/* 일기 크게 보기 / 수정 */
+var dvId=null;
+function diaryById(id){return db.diary.find(function(a){return a.id===id;});}
+function openDiaryView(id){var x=diaryById(id);if(!x)return;
+  dvId=id;exvBook=null;exvId=null;
+  document.getElementById('exvMeta').textContent=x.date||'';
+  document.getElementById('exvBody').innerHTML=fwR(x.text);
+  document.getElementById('exvBack').classList.add('on');}
+function editDiaryFull(id){var x=diaryById(id);if(!x)return;
+  dvId=id;
+  document.getElementById('dyEditText').value=x.text||'';
+  fwOpen('dyedit','일기 수정',['dyEditText'],['dyEditText'],saveDiaryFull);}
+function saveDiaryFull(){
+  var x=diaryById(dvId);if(!x){dvId=null;return;}
+  var tx=document.getElementById('dyEditText').value;
+  if(!String(tx).replace(/<[^>]*>/g,'').trim()){alert('내용을 입력하세요.');return;}
+  x.text=tx;dvId=null;save();renderDiary();renderDiaryPage();renderCal();}
 function renderDiary(){var el=document.getElementById('dashDiaryFeed');if(!el)return;var td=today();var list=db.diary.filter(function(x){return x.date===td;});el.innerHTML=list.length?('<div class="datehdr">오늘</div>'+list.map(diaryItem).join('')):'<div class="empty">오늘 일기가 없습니다.</div>';}
 function renderDiaryPage(){var el=document.getElementById('diaryPage');if(!el)return;var cnt=document.getElementById('diaryCount');if(cnt)cnt.textContent=db.diary.length+'건';if(!db.diary.length){el.innerHTML='<div class="empty">작성한 일기가 없습니다.</div>';return;}var g={};db.diary.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));}).forEach(function(x){(g[x.date]=g[x.date]||[]).push(x);});el.innerHTML=Object.keys(g).map(function(d){return '<div class="datehdr">'+d+'</div>'+g[d].map(diaryItem).join('');}).join('');}
 let __pushT=null;
@@ -2308,7 +2367,7 @@ function wvGraphOpen(id){wvCloseGraph();wvOpen(id);go('work');}
 function wvCloseGraph(){const e=document.getElementById('wvGraphOv');if(e)e.remove();}
 
 /* ---------- reading (books + chapters + excerpts) ---------- */
-let readOpenId=null, editBookMode=false;
+let readOpenId=null, editBookMode=false, chOpen=null;
 function bookById(id){return db.reading.find(b=>b.id===id);}
 function toggleBookForm(){const f=document.getElementById('bookForm');f.style.display=f.style.display==='none'?'block':'none';}
 /* ---------- ISBN 서지정보 자동 입력 ---------- */
@@ -2440,6 +2499,62 @@ function delBook(id){if(!confirm('이 책과 발췌 기록을 모두 삭제할�
   db.reading=db.reading.filter(b=>b.id!==id);readOpenId=null;save();renderReading();renderCal();}
 function addChapter(id){const b=bookById(id);const inp=document.getElementById('chapInput');
   const v=inp.value.trim();if(!v)return;b.chapters.push(v);save();renderReading();}
+/* 목차 펼치기 / 접기 */
+function toggleChapter(el){var c=el.getAttribute('data-ch');chOpen=(chOpen===c?null:c);renderReading();
+  if(chOpen){setTimeout(function(){var t=document.getElementById('chExText');if(t&&t.scrollIntoView)t.scrollIntoView({block:'nearest'});},0);}}
+/* 펼친 목차에 바로 발췌 추가 */
+function addChapterExcerpt(bookId){
+  var b=bookById(bookId);if(!b||!chOpen)return;
+  var ta=document.getElementById('chExText'),pg=document.getElementById('chExPage');
+  var text=ta?ta.value.trim():'';
+  if(!text){alert('발췌를 입력하세요.');return;}
+  b.excerpts.push({id:uid(),chapter:chOpen,date:today(),page:pg?pg.value.trim():'',text:text});
+  save();renderReading();renderCal();
+}
+/* ---------- 발췌 크게 보기 / 수정 ---------- */
+var exvBook=null, exvId=null;
+function excerptOf(bookId,exId){var b=bookById(bookId);if(!b)return null;
+  return b.excerpts.find(function(e){return e.id===exId;})||null;}
+function openExcerptView(bookId,exId){
+  var b=bookById(bookId), e=excerptOf(bookId,exId);if(!b||!e)return;
+  exvBook=bookId;exvId=exId;
+  document.getElementById('exvMeta').textContent=
+    (e.chapter||'')+(e.page?' · p.'+e.page:'')+(e.date?' · '+e.date:'');
+  document.getElementById('exvBody').innerHTML=fwR(e.text);
+  document.getElementById('exvBack').classList.add('on');
+}
+function closeExcerptView(){var el=document.getElementById('exvBack');if(el)el.classList.remove('on');exvBook=null;exvId=null;dvId=null;}
+/* 큰화면의 수정 버튼 → 발췌 쓸 때와 같은 편집기 */
+function exvEdit(){
+  if(exvId!=null){var bId=exvBook,eId=exvId;closeExcerptView();editExcerptFull(bId,eId);return;}
+  if(dvId!=null){var dId=dvId;closeExcerptView();editDiaryFull(dId);}
+}
+function editExcerptFull(bookId,exId){
+  var b=bookById(bookId), e=excerptOf(bookId,exId);if(!b||!e)return;
+  exvBook=bookId;exvId=exId;
+  var chs=(b.chapters&&b.chapters.length)?b.chapters.slice():[];
+  if(e.chapter&&chs.indexOf(e.chapter)<0)chs.push(e.chapter);
+  var sel=document.getElementById('exEditChapter');
+  sel.innerHTML=chs.map(function(c){return '<option value="'+escA(c)+'">'+esc(c)+'</option>';}).join('');
+  sel.value=e.chapter||'';
+  document.getElementById('exEditPage').value=e.page||'';
+  document.getElementById('exEditText').value=e.text||'';
+  fwOpen('exedit','발췌 수정',['exEditChapter','exEditPage','exEditText'],['exEditText'],saveExcerptFull);
+}
+function saveExcerptFull(){
+  var b=bookById(exvBook), e=excerptOf(exvBook,exvId);
+  if(!b||!e){exvBook=null;exvId=null;return;}
+  var tx=document.getElementById('exEditText').value;
+  if(!String(tx).replace(/<[^>]*>/g,'').trim()){alert('발췌를 입력하세요.');return;}
+  e.text=tx;
+  e.chapter=document.getElementById('exEditChapter').value||e.chapter;
+  e.page=document.getElementById('exEditPage').value.trim();
+  exvBook=null;exvId=null;
+  save();renderReading();renderCal();
+  if(typeof bkvId!=='undefined'&&bkvId!=null)bkvRenderChs();
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&(exvId!=null||dvId!=null))closeExcerptView();});
+
 /* ---------- 책 표지 확대 보기 ---------- */
 var bkvId=null, bkvCh=null;
 function openBookView(id){
@@ -2475,7 +2590,8 @@ function bkvRenderExs(){
   box.style.display='';
   box.innerHTML='<div class="bkv-h">'+esc(bkvCh)+' 발췌</div>'+
     (list.length?list.map(function(e){
-      return '<div class="bkv-ex">'+(e.page?'<div class="pg">p.'+esc(String(e.page))+(e.date?' · '+esc(e.date):'')+'</div>':'')+fwR(e.text)+'</div>';
+      return '<div class="bkv-ex" title="크게 보기" style="cursor:zoom-in" onclick="openExcerptView('+b.id+','+e.id+')">'
+        +(e.page?'<div class="pg">p.'+esc(String(e.page))+(e.date?' · '+esc(e.date):'')+'</div>':'')+fwR(e.text)+'</div>';
     }).join(''):'<div class="empty" style="padding:10px 4px">이 목차에 저장된 발췌가 없습니다.</div>');
 }
 var bkvNoteTimer=null;
@@ -2485,8 +2601,8 @@ function bkvNoteSave(v){
   clearTimeout(bkvNoteTimer);bkvNoteTimer=setTimeout(save,400);
 }
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&bkvId!=null)closeBookView();});
-function openBook(id){readOpenId=id;editBookMode=false;renderReading();window.scrollTo(0,0);}
-function closeBook(){readOpenId=null;editBookMode=false;renderReading();window.scrollTo(0,0);}
+function openBook(id){readOpenId=id;editBookMode=false;chOpen=null;renderReading();window.scrollTo(0,0);}
+function closeBook(){readOpenId=null;editBookMode=false;chOpen=null;renderReading();window.scrollTo(0,0);}
 function toggleEditBook(){editBookMode=!editBookMode;renderReading();}
 function saveBookEdit(id){const b=bookById(id);if(!b)return;
   const t=document.getElementById('ebTitle').value.trim();if(!t){alert('도서명을 입력하세요.');return;}
@@ -2569,17 +2685,35 @@ function renderBookDetail(b){
   const period=b.end?`${b.start||'?'} ~ ${b.end}  (완독)`:(b.start?`${b.start} ~  (읽는 중)`:'읽는 중');
   const grouped={};(b.chapters.length?b.chapters:[]).forEach(c=>grouped[c]=[]);
   b.excerpts.forEach(e=>{(grouped[e.chapter]=grouped[e.chapter]||[]).push(e);});
-  let chaptersHTML='';
-  Object.keys(grouped).forEach(ch=>{
+  const chNames=Object.keys(grouped);
+  let chapterListHTML='';
+  if(!chNames.length)chapterListHTML='<div class="empty">등록된 목차가 없습니다. 아래에서 추가하세요.</div>';
+  chNames.forEach((ch,i)=>{
     const list=grouped[ch].slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-    chaptersHTML+=`<div class="datehdr" style="font-size:13px;color:var(--green)">${esc(ch)} <span style="color:var(--muted);font-weight:600">(${list.length})</span></div>`;
-    if(!list.length)chaptersHTML+='<div class="sub" style="margin:0 0 8px 4px">발췌 없음</div>';
-    list.forEach(e=>{chaptersHTML+=`<div class="entry"><div class="meta">
-      <span class="day">${e.date||''} · p.<span contenteditable onblur="editExcerpt(${b.id},${e.id},'page',this.innerText)">${esc(String(e.page||''))}</span></span>
-      <select class="rowsel" onchange="editExcerpt(${b.id},${e.id},'chapter',this.value)">
-        ${(b.chapters.length?b.chapters:[e.chapter]).map(c=>`<option${c===e.chapter?' selected':''}>${esc(c)}</option>`).join('')}</select>
-      <span class="del" style="margin-left:auto" onclick="delExcerpt(${b.id},${e.id})">×</span></div>
-      <div class="body"><span contenteditable onblur="editExcerpt(${b.id},${e.id},'text',this.innerHTML)">${fwR(e.text)}</span></div></div>`;});
+    const idx=(b.chapters||[]).indexOf(ch);
+    const opened=(chOpen===ch);
+    let inner='';
+    if(opened){
+      list.forEach(e=>{inner+=`<div class="entry"><div class="meta">
+        <span class="day">${e.date||''}${e.page?' · p.'+esc(String(e.page)):''}</span>
+        <span class="pen-ic" style="margin-left:auto" title="수정" onclick="editExcerptFull(${b.id},${e.id})">✎</span>
+        <span class="del" onclick="delExcerpt(${b.id},${e.id})">×</span></div>
+        <div class="body ex-clip" title="크게 보기" onclick="openExcerptView(${b.id},${e.id})">${fwR(e.text)}</div></div>`;});
+      if(!list.length)inner+='<div class="sub" style="margin:2px 0 8px 2px">발췌 없음</div>';
+      inner+=`<div class="ch-add">
+        <textarea id="chExText" class="in" placeholder="발췌 문장" onfocus="fwStart('chex',this)"></textarea>
+        <input id="chExPage" class="in" style="width:104px;flex:none" placeholder="페이지">
+        <button class="btn y" style="flex:none" onclick="addChapterExcerpt(${b.id})">추가</button></div>`;
+    }
+    chapterListHTML+=`<div class="ch-item${opened?' on':''}">
+      <div class="ch-row" onclick="toggleChapter(this)" data-ch="${escA(ch)}">
+        <span class="ch-ar">${opened?'▾':'▸'}</span>
+        <span class="ch-nm"${idx>=0?` contenteditable onclick="event.stopPropagation()" onblur="editChapter(${b.id},${idx},this.innerText)"`:''}>${esc(ch)}</span>
+        <span class="ch-cnt">(${list.length})</span>
+        ${idx>=0?`<span class="del" style="margin-top:0" onclick="event.stopPropagation();delChapter(${b.id},${idx})">×</span>`:''}
+      </div>
+      ${opened?`<div class="ch-body">${inner}</div>`:''}
+    </div>`;
   });
   document.getElementById('bookDetail').innerHTML=`
     <div class="page-head" style="display:flex;align-items:center;gap:12px">
@@ -2633,16 +2767,10 @@ function renderBookDetail(b){
       </div>
     </div>`}
     <div class="card">
-      <h3><span class="dot" style="background:var(--green)"></span> 목차 관리</h3>
-      ${(b.chapters||[]).map((c,i)=>`<div class="memrow" style="align-items:center">
-        <span style="flex:1;font-size:13.5px" contenteditable onblur="editChapter(${b.id},${i},this.innerText)">${esc(c)}</span>
-        <span class="del" style="margin-top:0" onclick="delChapter(${b.id},${i})">×</span></div>`).join('')}
+      <h3><span class="dot" style="background:var(--green)"></span> 목차 <span class="more">${b.excerpts.length}개 발췌</span></h3>
+      ${chapterListHTML}
       <div class="addrow" style="margin-top:10px"><input id="chapInput" placeholder="새 챕터 추가 후 Enter" onkeydown="esKey(event,function(){addChapter(${b.id})})">
         <button class="btn" onclick="addChapter(${b.id})">추가</button></div>
-    </div>
-    <div class="card">
-      <h3><span class="dot" style="background:var(--green)"></span> 목차별 발췌</h3>
-      ${b.excerpts.length||b.chapters.length?chaptersHTML:'<div class="empty">발췌 문장이 없습니다. 목록 화면의 &laquo;발췌 추가&raquo;에서 등록하세요.</div>'}
     </div>`;
 }
 
@@ -3492,14 +3620,17 @@ var FW_KINDS={
   diary2:['일기 쓰기',['diaryInput2'],['diaryInput2'],function(){addDiary('diaryInput2');}],
   eng:['영어 문장 쓰기',['sTerm','sMean'],['sTerm','sMean'],function(){addStudyDash();}],
   engd:['영어 문장 쓰기',['sdDate','sdTerm','sdMean'],['sdTerm','sdMean'],function(){addStudyDetail();}],
-  cheonil:['천일문 쓰기',['cdChapter','cdUnit','cdSentence','cdDesc'],['cdSentence','cdDesc'],function(){saveCheonilDash();}]
+  cheonil:['천일문 쓰기',['cdChapter','cdUnit','cdSentence','cdDesc'],['cdSentence','cdDesc'],function(){saveCheonilDash();}],
+  chex:['발췌 쓰기',['chExText','chExPage'],['chExText'],function(){if(readOpenId)addChapterExcerpt(readOpenId);}],
+  exedit:['발췌 수정',['exEditChapter','exEditPage','exEditText'],['exEditText'],function(){saveExcerptFull();}],
+  dyedit:['일기 수정',['dyEditText'],['dyEditText'],function(){saveDiaryFull();}]
 };
 function fwStart(kind,src){
   if(fwCfg)return;
   if(src&&src.blur)src.blur();
   var c=FW_KINDS[kind];if(c)fwOpen(kind,c[0],c[1],c[2],c[3]);
 }
-var FW_RICH={diary:1,diary2:1,excerpt:1};   // 큰화면에서 서식 편집을 쓰는 종류
+var FW_RICH={diary:1,diary2:1,excerpt:1,chex:1,exedit:1,dyedit:1};   // 큰화면에서 서식 편집을 쓰는 종류
 function fwLooksHtml(t){return /<[a-z][\s\S]*>/i.test(String(t||''));}
 function fwR(t){t=String(t==null?'':t);return fwLooksHtml(t)?t:esc(t);}   // 저장된 서식(HTML)은 그대로, 일반 글은 이스케이프
 function fwToolbar(ed){
@@ -3627,6 +3758,7 @@ esSet(['bTitle','bAuthor','bPub','bPages','bStart','bEnd','bCat','bLink','bChapt
 esSet(['nTitle','nAuthor','nPub','nPages','nStart','nEnd','nCat','nLink','nChapters'],function(){addBookFromList();});
 esSet(['ebTitle','ebAuthor','ebPub','ebPages','ebStart','ebEnd','ebCat','ebLink','ebChapters'],function(){if(readOpenId)saveBookEdit(readOpenId);});
 esSet(['ebIsbn'],function(){isbnLookup('eb');});
+esSet(['chExText','chExPage'],function(){if(readOpenId)addChapterExcerpt(readOpenId);});
 esSet(['chapInput'],function(){if(readOpenId)addChapter(readOpenId);});
 esSet(['dCat','dItem','dAmount','dNote'],function(){addAssetDash();});
 esSet(['eDate','eCat','eItem','eAmt','eNote'],function(){addAssetDetail(detailAssetTab);});
