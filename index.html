@@ -28,6 +28,7 @@
     --shadow:0 8px 24px rgba(18,49,43,.06);
   }
   *{box-sizing:border-box;margin:0;padding:0}
+  html{scrollbar-gutter:stable}
   body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
     background:var(--cream);color:var(--text);display:flex;min-height:100vh;-webkit-font-smoothing:antialiased;
     letter-spacing:-.1px;font-weight:400}
@@ -307,7 +308,8 @@
   .ch-nm:focus{background:var(--cream);border-radius:6px;padding:1px 5px}
   .ch-cnt{font-size:12.5px;font-weight:600;color:var(--muted);flex:none}
   .ch-item.on .ch-cnt{color:var(--green)}
-  .ch-body{padding:2px 6px 14px}
+  .ch-body{padding:2px 6px 14px;overflow:hidden;animation:chOpen .24s ease-out}
+  @keyframes chOpen{from{opacity:0;max-height:0;transform:translateY(-4px)}to{opacity:1;max-height:1200px;transform:none}}
   .ch-add{display:flex;gap:8px;align-items:flex-start;margin-top:10px}
   .ch-add textarea{flex:1;min-height:44px;resize:vertical}
   .bkv-back{display:none;position:fixed;inset:0;z-index:118;background:rgba(18,49,43,.5);align-items:center;justify-content:center;padding:24px}
@@ -2499,9 +2501,24 @@ function delBook(id){if(!confirm('이 책과 발췌 기록을 모두 삭제할�
   db.reading=db.reading.filter(b=>b.id!==id);readOpenId=null;save();renderReading();renderCal();}
 function addChapter(id){const b=bookById(id);const inp=document.getElementById('chapInput');
   const v=inp.value.trim();if(!v)return;b.chapters.push(v);save();renderReading();}
-/* 목차 펼치기 / 접기 */
-function toggleChapter(el){var c=el.getAttribute('data-ch');chOpen=(chOpen===c?null:c);renderReading();
+/* 목차 펼치기 / 접기 (제목 포함 행 전체 클릭) */
+function toggleChapter(el){
+  var nm=el.querySelector('.ch-nm');
+  if(nm&&nm.getAttribute('contenteditable')==='true')return;   // 이름 수정 중에는 토글하지 않음
+  var c=el.getAttribute('data-ch');chOpen=(chOpen===c?null:c);renderReading();
   if(chOpen){setTimeout(function(){var t=document.getElementById('chExText');if(t&&t.scrollIntoView)t.scrollIntoView({block:'nearest'});},0);}}
+/* 연필 → 이름 수정 모드 */
+function chNameEdit(pen){
+  var row=pen.closest('.ch-row'), nm=row&&row.querySelector('.ch-nm');if(!nm)return;
+  nm.setAttribute('contenteditable','true');nm.focus();
+  var r=document.createRange();r.selectNodeContents(nm);
+  var sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);
+}
+function chNameBlur(e,bookId,idx,el){
+  if(el.getAttribute('contenteditable')!=='true')return;
+  el.removeAttribute('contenteditable');
+  editChapter(bookId,idx,el.innerText!=null?el.innerText:el.textContent);
+}
 /* 펼친 목차에 바로 발췌 추가 */
 function addChapterExcerpt(bookId){
   var b=bookById(bookId);if(!b||!chOpen)return;
@@ -2708,9 +2725,9 @@ function renderBookDetail(b){
     chapterListHTML+=`<div class="ch-item${opened?' on':''}">
       <div class="ch-row" onclick="toggleChapter(this)" data-ch="${escA(ch)}">
         <span class="ch-ar">${opened?'▾':'▸'}</span>
-        <span class="ch-nm"${idx>=0?` contenteditable onclick="event.stopPropagation()" onblur="editChapter(${b.id},${idx},this.innerText)"`:''}>${esc(ch)}</span>
+        <span class="ch-nm"${idx>=0?` onblur="chNameBlur(event,${b.id},${idx},this)"`:''}>${esc(ch)}</span>
         <span class="ch-cnt">(${list.length})</span>
-        ${idx>=0?`<span class="del" style="margin-top:0" onclick="event.stopPropagation();delChapter(${b.id},${idx})">×</span>`:''}
+        ${idx>=0?`<span class="pen-ic" title="이름 수정" onclick="event.stopPropagation();chNameEdit(this)">✎</span><span class="del" style="margin-top:0" onclick="event.stopPropagation();delChapter(${b.id},${idx})">×</span>`:''}
       </div>
       ${opened?`<div class="ch-body">${inner}</div>`:''}
     </div>`;
