@@ -1270,7 +1270,7 @@ function toggleMindExpand(){
   renderMind();
 }
 function curIdeaObj(){if(window.__mindCtx)return window.__mindCtx.obj;return db.inbox.find(function(a){return a.id===curIdea;});}
-function openIdea(id){var x=db.inbox.find(function(a){return a.id===id;});if(!x)return;curIdea=id;if(!x.mind||!x.mind.length){x.mind=[{id:1,t:x.t,x:30,y:30,p:0}];save();}var lbl=document.getElementById("ideaLabel");if(lbl)lbl.textContent=x.t.slice(0,24);var tb=document.getElementById("mindToolbar");if(tb)tb.style.display="";["mindModeSel","mindShapeSel"].forEach(function(i){var ms=document.getElementById(i);if(ms)ms.style.display="";});renderMind();}
+function openIdea(id){window.__mindCtx=null;var x=db.inbox.find(function(a){return a.id===id;});if(!x)return;curIdea=id;if(!x.mind||!x.mind.length){x.mind=[{id:1,t:x.t,x:30,y:30,p:0}];save();}var lbl=document.getElementById("ideaLabel");if(lbl)lbl.textContent=x.t.slice(0,24);var tb=document.getElementById("mindToolbar");if(tb)tb.style.display="";["mindModeSel","mindShapeSel"].forEach(function(i){var ms=document.getElementById(i);if(ms)ms.style.display="";});renderMind();}
 function mindRoot(){var x=curIdeaObj();return (x&&x.mind&&x.mind.length)?x.mind[0].id:1;}
 function mindUid(){var x=curIdeaObj();var m=0;x.mind.forEach(function(n){if(n.id>m)m=n.id;});return m+1;}
 function mindIsRoot(n){return !!n&&(!n.p||n.p===0);}
@@ -1943,6 +1943,7 @@ function wvPostRender(){
   }else if(fmt==='xl'){wvXlRender();}
   else if(fmt==='map'){
     if(!f.mind||!f.mind.length){f.mind=[{id:1,t:f.name||'주제',x:30,y:30,p:0}];save();}
+    if(curView()!=='work')return;              /* 업무 화면이 아닐 때는 컨텍스트를 잡지 않는다 */
     window.__mindCtx={obj:f,canvas:'wvMindCanvas'};
     var shSel=document.getElementById('wvMindShapeSel');
     if(shSel){shSel.innerHTML=MIND_SHAPES.map(function(m){return '<option value="'+m[0]+'">'+m[1]+'</option>';}).join('');shSel.value=mindShape(f);}
