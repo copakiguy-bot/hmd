@@ -969,7 +969,7 @@
     </div>
     <div class="bkv-note">
       <div class="bkv-h">내 생각</div>
-      <textarea id="bkvNote" placeholder="이 책에 대한 생각을 적어보세요 (자동 저장)" oninput="bkvNoteSave(this.value)"></textarea>
+      <textarea id="bkvNote" oninput="bkvNoteSave(this.value)"></textarea>
     </div>
   </div>
 </div>
@@ -2344,9 +2344,9 @@ function isbnLookup(prefix){
     if(el('Pub')&&info.publisher)el('Pub').value=info.publisher;
     if(el('Pages')&&info.pages)el('Pages').value=info.pages;
     var cv=el('Cover');
-    if(cv){cv.value=info.cover||'';
+    if(cv){if(info.cover)cv.value=info.cover;
       var pv=el('CoverPrev');
-      if(pv){if(info.cover){pv.src=info.cover;pv.style.display='block';}else pv.style.display='none';}}
+      if(pv){if(cv.value){pv.src=cv.value;pv.style.display='block';}else pv.style.display='none';}}
     if(stat)stat.textContent='입력 완료 ✓ ('+(info.src||'')+')';
   }
   function tryGoogle(){
@@ -2499,6 +2499,8 @@ function saveBookEdit(id){const b=bookById(id);if(!b)return;
   b.category=document.getElementById('ebCat').value.trim();
   b.link=document.getElementById('ebLink').value.trim();
   b.chapters=document.getElementById('ebChapters').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const cv=document.getElementById('ebCover');if(cv)b.cover=cv.value.trim();
+  const ib=document.getElementById('ebIsbn');if(ib)b.isbn=ib.value.trim();
   editBookMode=false;save();renderReading();renderCal();
 }
 /* 독서목록 페이지에서 새 책 추가 */
@@ -2556,7 +2558,7 @@ function renderReading(){
   tb.innerHTML=db.reading.slice().reverse().map(b=>{
     const period=b.end?`${fmtK(b.start)}~${fmtK(b.end)}`:(b.start?`${fmtK(b.start)}~ 읽는중`:'읽는중');
     return `<tr>
-      <td><div style="display:flex;align-items:center;gap:9px">${b.cover?`<img src="${escA(b.cover)}" style="height:44px;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.18)" onerror="this.style.display='none'">`:''}<div><b style="color:var(--green);cursor:pointer" onclick="openBook(${b.id})">${esc(b.title)}</b>
+      <td><div style="display:flex;align-items:center;gap:9px">${b.cover?`<img src="${escA(b.cover)}" title="표지 크게 보기" style="height:44px;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.18);cursor:zoom-in" onerror="this.style.display='none'" onclick="event.stopPropagation();openBookView(${b.id})">`:''}<div><b style="color:var(--green);cursor:pointer" onclick="openBook(${b.id})">${esc(b.title)}</b>
         <div style="font-size:11px;color:var(--muted)">발췌 ${b.excerpts.length}개</div></div></div></td>
       <td>${esc(b.author||'')}</td><td>${esc(b.publisher||'')}</td>
       <td class="amt">${b.totalPages||''}</td><td style="font-size:12px">${period}</td>
@@ -2589,6 +2591,13 @@ function renderBookDetail(b){
     <div class="card">
       <h3><span class="dot" style="background:var(--green)"></span> 서지정보 수정</h3>
       <div class="form">
+        <div class="isbnrow" style="display:flex;gap:8px;align-items:flex-end;margin-bottom:4px">
+          <div class="field" style="flex:1"><label>ISBN으로 표지·서지 불러오기</label><input id="ebIsbn" value="${escA(b.isbn||'')}" placeholder="예: 9788934972464" onkeydown="if(event.key==='Enter'){event.preventDefault();isbnLookup('eb')}"></div>
+          <button class="btn ghost" style="flex:none" onclick="isbnLookup('eb')">조회</button><button class="btn ghost" style="flex:none;padding:7px 9px" title="알라딘 API 키 설정 (한국 도서 정확 조회)" onclick="setAladinKey()">⚙</button>
+          <span id="ebIsbnStat" style="font-size:11.5px;color:var(--muted);padding-bottom:10px"></span>
+          <input type="hidden" id="ebCover" value="${escA(b.cover||'')}">
+          <img id="ebCoverPrev" src="${escA(b.cover||'')}" style="${b.cover?'':'display:none;'}height:52px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.15)" onerror="this.style.display='none'" alt="표지">
+        </div>
         <div class="two">
           <div class="field"><label>도서명</label><input id="ebTitle" value="${escA(b.title)}"></div>
           <div class="field"><label>저자 / 역자</label><input id="ebAuthor" value="${escA(b.author||'')}"></div>
@@ -3617,6 +3626,7 @@ esSet(['exBook','exChapter','exText','exPage'],function(){addExcerpt();});
 esSet(['bTitle','bAuthor','bPub','bPages','bStart','bEnd','bCat','bLink','bChapters'],function(){addBook();});
 esSet(['nTitle','nAuthor','nPub','nPages','nStart','nEnd','nCat','nLink','nChapters'],function(){addBookFromList();});
 esSet(['ebTitle','ebAuthor','ebPub','ebPages','ebStart','ebEnd','ebCat','ebLink','ebChapters'],function(){if(readOpenId)saveBookEdit(readOpenId);});
+esSet(['ebIsbn'],function(){isbnLookup('eb');});
 esSet(['chapInput'],function(){if(readOpenId)addChapter(readOpenId);});
 esSet(['dCat','dItem','dAmount','dNote'],function(){addAssetDash();});
 esSet(['eDate','eCat','eItem','eAmt','eNote'],function(){addAssetDetail(detailAssetTab);});
