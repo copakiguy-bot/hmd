@@ -1004,6 +1004,7 @@
         <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn y" onclick="gcalPushAll(true)">📤 구글 캘린더로 보내기 (오늘 이후)</button>
           <button class="btn ghost" onclick="gcalPushAll(false)">전체 보내기</button>
+          <button class="btn ghost" onclick="gcalOpenUrl()">🔎 웹앱 주소 열어보기</button>
           <button class="btn ghost" onclick="gcalShowScript()">설치 방법·코드 보기</button>
           <button class="btn ghost" onclick="gcalReset()">연동 초기화</button>
         </div>
@@ -1627,9 +1628,17 @@ function gcalConnect(){
   localStorage.setItem('hmd_gcal_url',v);gcalStatus();
   gcalSend({type:'ping'},function(ok,text){
     if(ok&&text==='pong'){gcalMark(true);alert('연결 확인 완료! 스크립트가 정상 응답했습니다.\n이제 «구글 캘린더로 보내기» 버튼을 누르면 반영됩니다.');}
+    else if(ok&&text==null){gcalMark(null);alert('⚠️ 요청은 나갔지만 구글의 응답을 읽지 못했습니다.\n대개 배포 설정이 [나만]으로 되어 있을 때 이렇습니다.\n\n«웹앱 주소 열어보기»를 눌러 확인해 주세요.\n- «HMD 연동 정상»이 보이면 → 코드는 맞으나 재배포 필요\n- 로그인 화면이 보이면 → 액세스 권한을 [모든 사용자]로 다시 배포');}
     else if(ok){gcalMark(true);alert('요청은 전달됐지만 스크립트 응답('+String(text).slice(0,40)+')이 예상과 다릅니다.\n코드가 그대로 붙여넣어졌는지 확인하세요.');}
     else{gcalMark(false);alert('연결 실패. 다음을 순서대로 확인하세요.\n\n1) 배포 시 [액세스 권한: 모든 사용자] 로 되어 있는지\n   (배포 → 배포 관리 → ✎ 에서 확인)\n2) 권한 승인(고급 → 이동 → 허용)을 끝까지 했는지\n3) 코드를 수정했다면 [새 버전]으로 다시 배포했는지\n4) 주소를 브라우저에 직접 붙여넣어 열었을 때 오류 페이지가 아닌지');}
   });
+}
+/* 브라우저로 직접 열어 실제 응답을 눈으로 확인 */
+function gcalOpenUrl(){
+  var u=gcalGet()||document.getElementById('gcalUrl').value.trim();
+  if(!u){alert('먼저 웹앱 URL을 입력하세요.');return;}
+  alert('새 탭에서 웹앱 주소를 엽니다. 화면에 무엇이 나오는지 확인하세요.\n\n① «HMD 연동 정상 …» → 설치·배포 정상\n② 구글 로그인/권한 요청 화면 → 배포의 [액세스 권한]이 «모든 사용자»가 아님\n③ «스크립트 함수를 찾을 수 없습니다» → 코드에 doGet이 없음(코드 다시 붙여넣고 새 버전 배포)\n④ 열리지 않음/차단 → 이 네트워크에서 script.google.com 접속이 막힘');
+  window.open(u,'_blank');
 }
 function gcalReset(){
   if(!confirm('연동을 초기화할까요?\n앱에 저장된 웹앱 주소와 전송 기록만 지웁니다.\n(구글 캘린더의 일정과 스크립트는 그대로입니다)'))return;
@@ -1656,13 +1665,13 @@ function gcalSend(payload,cb){
     fetch(u,{method:'POST',mode:'cors',redirect:'follow',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
       body:JSON.stringify(payload)})
-      .then(function(r){return r.text().then(function(t){gcalMark(r.ok);if(cb)cb(r.ok,t);});})
+      .then(function(r){return r.text().then(function(t){gcalMark(r.ok&&t==='ok'||r.ok&&t==='pong');if(cb)cb(r.ok,t,true);});})
       .catch(function(){
         /* 읽기가 막힌 환경(file:// 등)에서는 no-cors 로라도 전달 */
         try{
           fetch(u,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
             body:JSON.stringify(payload)})
-            .then(function(){gcalMark(null);if(cb)cb(true,null);})
+            .then(function(){gcalMark(null);if(cb)cb(true,null,false);})
             .catch(function(){gcalMark(false);if(cb)cb(false);});
         }catch(e){gcalMark(false);if(cb)cb(false);}
       });
@@ -1687,10 +1696,17 @@ function gcalPushAll(futureOnly){
   if(!confirm(list.length+'건을 구글 캘린더로 보낼까요?'))return;
   gcalSend({type:'bulk',sync:true,from:futureOnly?tk:'',
     events:list.map(function(s){return gcalEventPayload(s,'upsert');})},
-    function(ok,text){
-      if(ok&&(text==='ok'||text==null))alert(list.length+'건을 보냈습니다.\n구글 캘린더를 새로고침해서 확인하세요.');
-      else if(ok)alert('보내긴 했지만 응답이 예상과 다릅니다: '+String(text).slice(0,60));
-      else alert('전송 실패. «연결 확인»을 눌러 상태를 점검해 주세요.');
+    function(ok,text,verified){
+      if(ok&&verified&&text==='ok'){
+        alert(list.length+'건을 보냈습니다.\n구글 캘린더를 새로고침해서 확인하세요.');
+      }else if(ok&&verified){
+        alert('스크립트가 응답했지만 내용이 예상과 다릅니다:\n'+String(text).slice(0,80)+
+          '\n\n코드를 다시 붙여넣고 [새 버전]으로 배포해 보세요.');
+      }else if(ok&&!verified){
+        alert('⚠️ 보내긴 했지만 구글이 처리했는지 확인하지 못했습니다.\n캘린더에 안 들어갔다면 배포 설정이 원인일 가능성이 큽니다.\n\n«웹앱 주소 열어보기»를 눌러 무엇이 나오는지 확인해 주세요.');
+      }else{
+        alert('전송 실패. «웹앱 주소 열어보기»로 상태를 확인해 주세요.');
+      }
     });
 }
 function gcalShowScript(){
@@ -1718,6 +1734,11 @@ function gcalShowScript(){
 '  return out("ignored");',
 '}',
 'function out(msg){ return ContentService.createTextOutput(msg); }',
+'/* 브라우저로 주소를 열었을 때 설치 상태를 눈으로 확인하는 용도 */',
+'function doGet(){',
+'  var name = (CAL_ID==="primary") ? "기본 캘린더" : CAL_ID;',
+'  return out("HMD 연동 정상 — 대상 캘린더: " + name);',
+'}',
 '/* 보낸 목록에 없는 HMD 일정은 캘린더에서 지운다(앱에서 삭제한 일정 반영) */',
 'function syncBulk(p){',
 '  var evs = p.events || [];',
