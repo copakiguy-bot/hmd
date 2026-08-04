@@ -366,7 +366,9 @@
   .fw-tools .fw-hl{width:26px;height:26px;min-width:26px;border-radius:7px;padding:0;font-size:0;border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}
   .fw-tools .fw-hl:hover{box-shadow:0 0 0 2px var(--yellow)}
   .fw-tools .fw-hl-off{background:#fff;font-size:13px;color:var(--muted);font-weight:700;line-height:1}
-  .fw-rich{width:100%;min-height:46vh;font-family:'Nanum Myeongjo',serif;font-size:17px;line-height:1.85;background:var(--cream);border:1px solid transparent;border-radius:14px;padding:15px 17px;outline:none;overflow:auto;white-space:pre-wrap;word-break:break-word}
+  .fw-now{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--muted);background:var(--cream);
+    border-radius:20px;padding:4px 11px;white-space:nowrap;flex:none}
+  .fw-rich{width:100%;min-height:46vh;font-family:'Gowun Batang',serif;font-size:16px;line-height:1.85;background:var(--cream);border:1px solid transparent;border-radius:14px;padding:15px 17px;outline:none;overflow:auto;white-space:pre-wrap;word-break:break-word}
   .fw-rich:focus{border-color:var(--yellow);background:#fff}
   .fw-foot .btn{margin-left:auto;flex:none}
   @media(max-width:1000px){.fw-back{padding:12px}.fw-main{font-size:16px}}
@@ -728,6 +730,8 @@
     .exv-body{padding:4px 18px 22px;font-size:17px}
     .fw-foot{padding:12px 16px 16px}
     .fw-main{font-size:16px;padding:13px 14px}
+    .fw-rich{font-size:16px;padding:13px 14px}
+    .fw-now{margin-left:0}
     .bkv-note{padding:12px 16px 18px}
     .bkv-cover img{width:52vw}
     .bkv-cover .bkv-t{max-width:52vw}
@@ -3400,6 +3404,7 @@ function cheonilChapterAdd(){const el=document.getElementById('ccIn');if(!el)ret
 function cheonilMd(src){
   src=String(src||'').trim();
   if(!src)return '';
+  if(fwLooksHtml(src))return src;                 /* 편집기로 쓴 서식 글은 그대로 */
   try{return wvMd(src,{nodes:[]});}catch(e){return esc(src).replace(/\n/g,'<br>');}
 }
 /* 입력 중 실시간 마크다운 미리보기 */
@@ -3442,9 +3447,7 @@ function cheonilContentHTML(){
         if(uOpen){
           const editing=cheonilEditKey===(c.id+'_'+u.id);
           const descBlock=editing
-            ? `<textarea id="cmDescEdit" class="in cm-mdedit" placeholder="마크다운으로 작성하세요" oninput="cheonilLivePreview('cmDescEdit','cmDescLive')">${esc(u.desc||'')}</textarea>
-               <div class="cm-hint"># 제목 · **굵게** · *기울임* · - 목록 · 1. 번호 · &gt; 인용 · \`코드\` · | 표 |</div>
-               <div class="cm-live wv-preview"><div class="cm-live-h">미리보기</div><div id="cmDescLive"></div></div>
+            ? `<textarea id="cmDescEdit" class="in" placeholder="" onfocus="fwStart('cmdesc',this)">${esc(u.desc||'')}</textarea>
                <div style="margin-top:8px;display:flex;gap:8px">
                  <button class="btn y" onclick="saveCheonilDesc(${c.id},${u.id})">저장</button>
                  <button class="btn ghost" onclick="cancelEditCheonilDesc()">취소</button></div>`
@@ -3555,8 +3558,7 @@ function cheonilDashHTML(){
       <select id="cdUnit" class="in" style="flex:1" onchange="fillCheonilDashUnitFields()"></select>
       <input id="cdSentence" class="in" style="flex:1.7;font-family:'Nanum Myeongjo',serif" placeholder="Sentence" onfocus="fwStart('cheonil',this)">
     </div>
-    <textarea id="cdDesc" class="in cm-mdedit" style="margin-top:8px;min-height:84px" placeholder="마크다운으로 작성하세요 (# 제목, **굵게**, - 목록, &gt; 인용, \`코드\`)" oninput="cheonilLivePreview('cdDesc','cdDescLive')"></textarea>
-    <div class="cm-live wv-preview"><div class="cm-live-h">미리보기</div><div id="cdDescLive"></div></div>
+    <textarea id="cdDesc" class="in" style="margin-top:8px;min-height:84px" placeholder="" onfocus="fwStart('cheonildesc',this)"></textarea>
     <div style="margin-top:10px;display:flex;gap:8px">
       <button class="btn y" onclick="saveCheonilDash()">저장</button>
       <button class="btn ghost" onclick="toggleCheonilChapterForm()">＋ CHAPTER/UNIT 추가</button>
@@ -4015,7 +4017,9 @@ var FW_KINDS={
   diary2:['일기 쓰기',['diaryInput2'],['diaryInput2'],function(){addDiary('diaryInput2');}],
   eng:['영어 문장 쓰기',['sTerm','sMean'],['sTerm','sMean'],function(){addStudyDash();}],
   engd:['영어 문장 쓰기',['sdDate','sdTerm','sdMean'],['sdTerm','sdMean'],function(){addStudyDetail();}],
-  cheonil:['천일문 쓰기',['cdChapter','cdUnit','cdSentence','cdDesc'],['cdSentence','cdDesc'],function(){saveCheonilDash();}],
+  cheonil:['문장 쓰기',['cdChapter','cdUnit','cdSentence'],['cdSentence'],function(){saveCheonilDash();}],
+  cheonildesc:['설명 쓰기',['cdChapter','cdUnit','cdDesc'],['cdDesc'],function(){saveCheonilDash();}],
+  cmdesc:['설명 쓰기',['cmDescEdit'],['cmDescEdit'],function(){if(cheonilEditKey){var q=String(cheonilEditKey).split('_');saveCheonilDesc(Number(q[0]),Number(q[1]));}}],
   chex:['발췌 쓰기',['chExText','chExPage'],['chExText'],function(){if(readOpenId)addChapterExcerpt(readOpenId);}],
   exedit:['발췌 수정',['exEditChapter','exEditPage','exEditText'],['exEditText'],function(){saveExcerptFull();}],
   dyedit:['일기 수정',['dyEditText'],['dyEditText'],function(){saveDiaryFull();}]
@@ -4025,23 +4029,27 @@ function fwStart(kind,src){
   if(src&&src.blur)src.blur();
   var c=FW_KINDS[kind];if(c)fwOpen(kind,c[0],c[1],c[2],c[3]);
 }
-var FW_RICH={diary:1,diary2:1,excerpt:1,chex:1,exedit:1,dyedit:1};   // 큰화면에서 서식 편집을 쓰는 종류
+var FW_RICH={diary:1,diary2:1,excerpt:1,chex:1,exedit:1,dyedit:1,cheonildesc:1,cmdesc:1};   // 큰화면에서 서식 편집을 쓰는 종류
 function fwLooksHtml(t){return /<[a-z][\s\S]*>/i.test(String(t||''));}
 function fwR(t){t=String(t==null?'':t);return fwLooksHtml(t)?t:esc(t);}   // 저장된 서식(HTML)은 그대로, 일반 글은 이스케이프
+var FW_FONT_KO={'Gowun Batang':'고운바탕','Gowun Dodum':'고운돋움','Nanum Myeongjo':'나눔명조',
+  'Nanum Gothic':'나눔고딕','Nanum Pen Script':'나눔손글씨','Noto Sans KR':'노토산스',
+  'Noto Serif KR':'노토명조','Pretendard':'프리텐다드','serif':'바탕','sans-serif':'돋움'};
 function fwToolbar(ed){
   var bar=document.createElement('div');bar.className='fw-tools';
   bar.innerHTML='<select data-c="fontName" title="글씨체"><option value="">글씨체</option>'
-    +'<option value="Pretendard">프리텐다드</option>'
-    +'<option value="Nanum Gothic">나눔고딕</option>'
-    +'<option value="Nanum Myeongjo">나눔명조</option>'
-    +'<option value="Gowun Dodum">고운돋움</option>'
     +'<option value="Gowun Batang">고운바탕</option>'
+    +'<option value="Gowun Dodum">고운돋움</option>'
+    +'<option value="Nanum Myeongjo">나눔명조</option>'
+    +'<option value="Nanum Gothic">나눔고딕</option>'
+    +'<option value="Pretendard">프리텐다드</option>'
     +'<option value="Nanum Pen Script">나눔손글씨</option>'
     +'<option value="Noto Sans KR">노토산스</option>'
     +'<option value="Noto Serif KR">노토명조</option></select>'
     +'<select data-c="fontSize" title="폰트 크기"><option value="">크기</option>'
-    +'<option value="2">13</option><option value="3">16</option><option value="4">18</option>'
-    +'<option value="5">24</option><option value="6">32</option></select>'
+    +'<option value="1">8pt</option><option value="2">10pt</option><option value="3">12pt</option>'
+    +'<option value="4">14pt</option><option value="5">18pt</option><option value="6">24pt</option>'
+    +'<option value="7">36pt</option></select>'
     +'<button type="button" data-c="bold" title="진하게"><b>B</b></button>'
     +'<button type="button" data-c="italic" title="기울임"><i>I</i></button>'
     +'<button type="button" data-c="underline" title="밑줄"><u>U</u></button>'
@@ -4055,9 +4063,26 @@ function fwToolbar(ed){
     +'<button type="button" class="fw-hl" data-hl="#DDF5E6" title="음영 · 민트" style="background:#DDF5E6"></button>'
     +'<button type="button" class="fw-hl" data-hl="#EDE4FF" title="음영 · 라벤더" style="background:#EDE4FF"></button>'
     +'<button type="button" class="fw-hl" data-hl="#FFE8D1" title="음영 · 살구" style="background:#FFE8D1"></button>'
-    +'<button type="button" class="fw-hl fw-hl-off" data-hl="transparent" title="음영 지우기">×</button>';
+    +'<button type="button" class="fw-hl fw-hl-off" data-hl="transparent" title="음영 지우기">×</button>'
+    +'<span class="fw-now" title="지금 쓰는 글씨체·크기">고운바탕 · 12pt</span>';
+  var now=bar.querySelector('.fw-now');
   function run(cmd,val){ed.focus();try{document.execCommand('styleWithCSS',false,true);}catch(e){}
-    document.execCommand(cmd,false,val||null);}
+    document.execCommand(cmd,false,val||null);setTimeout(upd,0);}
+  /* 커서 위치의 실제 글씨체·크기를 읽어서 표시 */
+  function upd(){
+    if(!now)return;
+    var node=null;
+    try{var sel=window.getSelection();if(sel&&sel.anchorNode)node=sel.anchorNode;}catch(e){}
+    if(node&&node.nodeType===3)node=node.parentNode;
+    if(!node||!ed.contains(node))node=ed;
+    var cs;try{cs=window.getComputedStyle(node);}catch(e){return;}
+    var fam=String(cs.fontFamily||'').split(',')[0].replace(/["']/g,'').trim();
+    var px=parseFloat(cs.fontSize)||16;
+    now.textContent=(FW_FONT_KO[fam]||fam||'기본')+' · '+Math.round(px*0.75)+'pt';
+  }
+  bar.__upd=upd;
+  ['keyup','mouseup','focus','input'].forEach(function(ev){ed.addEventListener(ev,function(){setTimeout(upd,0);});});
+  document.addEventListener('selectionchange',function(){if(document.activeElement===ed)upd();});
   bar.querySelectorAll('button').forEach(function(btn){
     btn.addEventListener('mousedown',function(e){e.preventDefault();});   // 선택 유지
     btn.addEventListener('click',function(){
@@ -4110,7 +4135,8 @@ function fwOpen(kind,title,ids,mains,saveFn){
   });
   if(row.children.length)body.insertBefore(row,body.firstChild);
   back.classList.add('on');
-  setTimeout(function(){var f=document.getElementById('fw_'+mains[0]);if(f)f.focus();},40);
+  setTimeout(function(){var f=document.getElementById('fw_'+mains[0]);if(f)f.focus();
+    document.querySelectorAll('#fwBody .fw-tools').forEach(function(b){if(b.__upd)b.__upd();});},40);
 }
 /* 목록 선택이 바뀌면 나머지 칸을 원래 폼에서 다시 읽어온다 */
 function fwRefresh(exceptId){
