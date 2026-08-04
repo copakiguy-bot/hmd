@@ -287,6 +287,11 @@
   #ideaCard{min-height:200px}
   #mindCanvas{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fbfbf8;min-height:460px;margin-top:4px}
   .mind-expand-btn{cursor:pointer;flex-shrink:0;margin-left:8px;font-size:14px;line-height:1;padding:5px 9px}
+  .bk-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .bk-row:last-child{border-bottom:none}
+  .bk-t{font-size:12.5px;font-weight:700;color:var(--dark)}
+  .bk-tag{font-size:11px;font-weight:700;color:var(--muted);background:var(--cream);border-radius:20px;padding:2px 9px}
+  .bk-n{font-size:12px;color:var(--muted);margin-right:auto}
   .gcal-sec{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px}
   .gcal-sec:last-of-type{margin-bottom:0}
   .gcal-t{font-size:13.5px;font-weight:800;color:var(--dark);margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -1060,6 +1065,15 @@
         <button class="btn ghost" style="flex:none" onclick="clearSyncCode()">해제</button>
       </div>
       <div id="syncStatus" style="margin-top:8px;font-size:13px;color:var(--muted)"></div>
+      <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
+        <div style="font-size:13px;font-weight:800;color:var(--dark);margin-bottom:4px">되돌리기 (자동 백업)</div>
+        <div style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:10px">
+          하루에 한 번, 그리고 클라우드에서 불러오기 직전에 이 기기에 사본을 남깁니다. 내용이 갑자기 사라졌을 때 되돌릴 수 있습니다.</div>
+        <div style="display:flex;gap:10px;margin-bottom:10px">
+          <button class="btn ghost" onclick="backupSave('직접 저장');renderBackupUI();">지금 백업 만들기</button>
+        </div>
+        <div id="bkList"></div>
+      </div>
     </div>
     <div class="card">
       <h3><span class="dot" style="background:#4285f4"></span> 구글 캘린더 내보내기</h3>
@@ -1166,7 +1180,48 @@ function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!
   (db.inbox||[]).forEach(function(x){if(!x.grp)x.grp=x.long?'long':'short';});}
 ensureFields();
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.work)return s;}catch(e){}return seed();}
-function save(){localStorage.setItem(KEY,JSON.stringify(db));cloudPushDebounced();}
+const BK_KEY='hmd_backups';
+function save(){db.__updated=Date.now();localStorage.setItem(KEY,JSON.stringify(db));backupTick();cloudPushDebounced();}
+/* 하루 한 번, 그리고 덮어쓰기 직전에 로컬 스냅샷을 남긴다 (최대 8개) */
+function backupList(){try{return JSON.parse(localStorage.getItem(BK_KEY)||'[]');}catch(e){return [];}}
+function backupSave(tag){
+  try{
+    var list=backupList();
+    list.unshift({t:Date.now(),tag:tag||'자동',data:JSON.stringify(db)});
+    list=list.slice(0,8);
+    localStorage.setItem(BK_KEY,JSON.stringify(list));
+  }catch(e){}
+}
+var __bkDay=null;
+function backupTick(){
+  var d=today();
+  if(__bkDay===d)return;
+  __bkDay=d;
+  var list=backupList();
+  if(list.length&&new Date(list[0].t).toDateString()===new Date().toDateString())return;
+  backupSave('자동(하루 1회)');
+}
+function backupRestore(i){
+  var list=backupList(), b=list[i];if(!b)return;
+  if(!confirm(new Date(b.t).toLocaleString('ko-KR')+' 시점으로 되돌릴까요?\n지금 내용은 «복구 직전»으로 따로 백업해 둡니다.'))return;
+  backupSave('복구 직전');
+  try{db=JSON.parse(b.data);}catch(e){alert('백업을 읽지 못했습니다.');return;}
+  ensureFields();db.__updated=Date.now();
+  localStorage.setItem(KEY,JSON.stringify(db));
+  renderAll();renderBackupUI();
+  alert('복구했습니다.');
+}
+function renderBackupUI(){
+  var el=document.getElementById('bkList');if(!el)return;
+  var list=backupList();
+  el.innerHTML=list.length?list.map(function(b,i){
+    var n=0;try{n=(JSON.parse(b.data).schedules||[]).length;}catch(e){}
+    return '<div class="bk-row"><span class="bk-t">'+esc(new Date(b.t).toLocaleString('ko-KR'))+'</span>'+
+      '<span class="bk-tag">'+esc(b.tag||'')+'</span>'+
+      '<span class="bk-n">일정 '+n+'건</span>'+
+      '<button class="btn ghost" style="flex:none;padding:5px 11px;font-size:12px" onclick="backupRestore('+i+')">되돌리기</button></div>';
+  }).join(''):'<div class="empty" style="padding:10px 0">아직 백업이 없습니다.</div>';
+}
 function uid(){return Date.now()+Math.floor(Math.random()*1000);}
 function seed(){
   return {
@@ -1374,8 +1429,13 @@ function cloudHeaders(){return {apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY
 function setSyncStatus(t){var el=document.getElementById('syncStatus');if(el)el.textContent=t;}
 function renderSyncUI(){var inp=document.getElementById('syncInput');if(inp&&!inp.value)inp.value=syncCode();if(syncCode())setSyncStatus('연결됨: '+syncCode());}
 function cloudPushDebounced(){if(!syncCode())return;clearTimeout(__pushT);__pushT=setTimeout(cloudPush,900);}
-function cloudPush(){var c=syncCode();if(!c)return;fetch(SUPA_URL+'/rest/v1/store?on_conflict=key',{method:'POST',headers:Object.assign({},cloudHeaders(),{Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({key:c,data:db,updated_at:new Date().toISOString()})}).then(function(r){setSyncStatus(r.ok?('저장됨 · '+c):('저장 오류 '+r.status));}).catch(function(){setSyncStatus('오프라인 (로컬만 저장)');});}
-function cloudPull(ask,cb){var c=syncCode();if(!c){if(cb)cb(false);return;}setSyncStatus('불러오는 중…');fetch(SUPA_URL+'/rest/v1/store?key=eq.'+encodeURIComponent(c)+'&select=data',{headers:cloudHeaders()}).then(function(r){return r.json();}).then(function(j){if(Array.isArray(j)&&j.length&&j[0].data){if(ask&&!confirm('클라우드에 저장된 데이터가 있어요. 이 기기로 불러올까요? (현재 기기의 내용은 대체됩니다)')){setSyncStatus('연결됨: '+c);if(cb)cb(true);return;}db=j[0].data;ensureFields();localStorage.setItem(KEY,JSON.stringify(db));renderAll();setSyncStatus('불러옴 · 연결됨: '+c);if(cb)cb(true);}else{setSyncStatus('연결됨: '+c);if(cb)cb(false);}}).catch(function(){setSyncStatus('오프라인');if(cb)cb(false);});}
+function cloudPush(){var c=syncCode();if(!c)return;if(!db.__updated)db.__updated=Date.now();fetch(SUPA_URL+'/rest/v1/store?on_conflict=key',{method:'POST',headers:Object.assign({},cloudHeaders(),{Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({key:c,data:db,updated_at:new Date().toISOString()})}).then(function(r){setSyncStatus(r.ok?('저장됨 · '+c):('저장 오류 '+r.status));}).catch(function(){setSyncStatus('오프라인 (로컬만 저장)');});}
+function cloudPull(ask,cb){var c=syncCode();if(!c){if(cb)cb(false);return;}setSyncStatus('불러오는 중…');fetch(SUPA_URL+'/rest/v1/store?key=eq.'+encodeURIComponent(c)+'&select=data',{headers:cloudHeaders()}).then(function(r){return r.json();}).then(function(j){if(Array.isArray(j)&&j.length&&j[0].data){var rd=j[0].data, rt=Number(rd&&rd.__updated)||0, lt=Number(db&&db.__updated)||0;
+      if(!ask&&lt>rt){                       /* 이 기기 것이 더 최신이면 덮어쓰지 않고 올린다 */
+        setSyncStatus('이 기기가 최신 · 연결됨: '+c);cloudPush();if(cb)cb(true);return;}
+      if(ask&&!confirm('클라우드에 저장된 데이터가 있어요. 이 기기로 불러올까요? (현재 기기의 내용은 대체됩니다)')){setSyncStatus('연결됨: '+c);if(cb)cb(true);return;}
+      backupSave('클라우드 불러오기 직전');
+      db=rd;ensureFields();localStorage.setItem(KEY,JSON.stringify(db));renderAll();renderBackupUI();setSyncStatus('불러옴 · 연결됨: '+c);if(cb)cb(true);}else{setSyncStatus('연결됨: '+c);if(cb)cb(false);}}).catch(function(){setSyncStatus('오프라인');if(cb)cb(false);});}
 function setSyncCode(){var el=document.getElementById('syncInput');var v=el.value.trim();if(!v){alert('동기화 코드를 입력하세요.');return;}localStorage.setItem(SYNC_KEY,v);cloudPull(true,function(found){if(!found)cloudPush();});}
 function clearSyncCode(){localStorage.removeItem(SYNC_KEY);var inp=document.getElementById('syncInput');if(inp)inp.value='';setSyncStatus('연결 해제됨 (이 기기)');}
 let curIdea=null;
@@ -4002,12 +4062,12 @@ function renderRtLists(){
 }
 function renderRoutiner(){renderRtMain();renderRtLists();}
 function renderAll(){
-  gcalStatus();
+  gcalStatus();renderBackupUI();
   renderTop();renderCal();renderSchedule();renderTodos();renderInbox();renderInboxPage();renderSessions();
   renderWork();renderDashWork();renderReading();renderStudy();renderDashStudy();
   renderAssets();renderDashAsset();renderDiary();renderDiaryPage();renderRoutiner();renderDash();
 }
-renderAll();renderSyncUI();if(syncCode())cloudPull(false);
+renderAll();renderSyncUI();renderBackupUI();backupTick();if(syncCode())cloudPull(false);
 
 /* ---------- 집중해서 쓰기 (팝업) ---------- */
 var fwCfg=null;
