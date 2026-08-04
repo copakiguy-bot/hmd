@@ -287,6 +287,11 @@
   #ideaCard{min-height:200px}
   #mindCanvas{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fbfbf8;min-height:460px;margin-top:4px}
   .mind-expand-btn{cursor:pointer;flex-shrink:0;margin-left:8px;font-size:14px;line-height:1;padding:5px 9px}
+  .gcal-sec{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+  .gcal-sec:last-of-type{margin-bottom:0}
+  .gcal-t{font-size:13.5px;font-weight:800;color:var(--dark);margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .gcal-badge{font-size:10.5px;font-weight:700;color:var(--muted);background:var(--cream);border-radius:20px;padding:2px 9px}
+  .gcal-d{font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:10px}
   .mind-backdrop{display:none;position:fixed;inset:0;background:rgba(18,49,43,.45);z-index:94}
   /* 책 표지 확대 보기 */
   .ex-clip{cursor:zoom-in;max-height:5.4em;overflow:hidden;position:relative}
@@ -655,6 +660,10 @@
   .rt-listcard.running{border:2px solid var(--yellow);box-shadow:0 0 0 3px var(--yellow-soft)}
   .rt-listcard .rt-list-head{background:transparent;padding:0 0 8px;border-bottom:1px solid var(--line);margin-bottom:8px}
   .rt-listcard.selected{border:2px solid var(--yellow);box-shadow:0 0 0 3px var(--yellow-soft)}
+  .rt-listcard{cursor:pointer;transition:border-color .12s}
+  .rt-listcard:not(.selected):hover{border-color:var(--yellow-soft)}
+  .rt-listcard .rt-listname,.rt-listcard .rt-name,.rt-listcard .rt-time,.rt-listcard .in{cursor:text}
+  .rt-cur{font-size:10.5px;font-weight:800;color:#b08a2a;background:var(--yellow-soft);border-radius:20px;padding:2px 9px;flex:none}
   .rt-selectable{cursor:pointer;transition:border-color .12s}
   .rt-selectable:hover{border-color:var(--yellow)}
   .tblx{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
@@ -971,25 +980,35 @@
       <div id="syncStatus" style="margin-top:8px;font-size:13px;color:var(--muted)"></div>
     </div>
     <div class="card">
-      <h3><span class="dot" style="background:#4285f4"></span> 구글 캘린더 연동</h3>
+      <h3><span class="dot" style="background:#4285f4"></span> 구글 캘린더 내보내기</h3>
       <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px">
-        <b>① 파일로 내보내기</b> — 아래 버튼으로 .ics 파일을 받은 뒤, 구글 캘린더 &gt; 설정 &gt; <b>가져오기 및 내보내기</b>에서 가져오면 됩니다.<br>
-        <b>② 자동 전송</b> — 구글 Apps Script 웹앱 주소를 연결해두면, 일정을 추가·수정·삭제할 때마다 자동으로 구글 캘린더에 반영됩니다.</p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
-        <button class="btn y" onclick="exportICS(false)">전체 일정 .ics 내보내기</button>
-        <button class="btn ghost" onclick="exportICS(true)">오늘 이후 일정만 내보내기</button>
+        자동 전송은 쓰지 않습니다. 아래 <b>버튼을 누를 때만</b> 구글 캘린더로 보냅니다.</p>
+
+      <div class="gcal-sec">
+        <div class="gcal-t">방법 1 · 파일로 가져오기 <span class="gcal-badge">설정 불필요</span></div>
+        <div class="gcal-d">.ics 파일을 받아 구글 캘린더 &gt; 설정 &gt; <b>가져오기 및 내보내기</b>에서 가져옵니다.</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn y" onclick="exportICS(true)">오늘 이후 일정 내보내기</button>
+          <button class="btn ghost" onclick="exportICS(false)">전체 일정 내보내기</button>
+        </div>
       </div>
-      <div class="inrow">
-        <input id="gcalUrl" class="in" style="flex:1" placeholder="Apps Script 웹앱 URL (https://script.google.com/…/exec)">
-        <button class="btn y" style="flex:none" onclick="gcalConnect()">연결</button>
-        <button class="btn ghost" style="flex:none" onclick="gcalDisconnect()">해제</button>
+
+      <div class="gcal-sec">
+        <div class="gcal-t">방법 2 · 버튼 한 번으로 바로 반영 <span class="gcal-badge">최초 1회 설치</span></div>
+        <div class="gcal-d">구글 Apps Script 웹앱을 한 번 만들어 두면, 아래 «구글 캘린더로 보내기»를 누를 때마다 일정이 캘린더에 반영됩니다. 이미 보낸 일정은 덮어쓰고, 앱에서 지운 일정은 캘린더에서도 지웁니다.</div>
+        <div class="inrow">
+          <input id="gcalUrl" class="in" style="flex:1" placeholder="Apps Script 웹앱 URL (https://script.google.com/…/exec)">
+          <button class="btn y" style="flex:none" onclick="gcalConnect()">연결 확인</button>
+        </div>
+        <div id="gcalStatus" style="margin-top:8px;font-size:13px;color:var(--muted)"></div>
+        <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn y" onclick="gcalPushAll(true)">📤 구글 캘린더로 보내기 (오늘 이후)</button>
+          <button class="btn ghost" onclick="gcalPushAll(false)">전체 보내기</button>
+          <button class="btn ghost" onclick="gcalShowScript()">설치 방법·코드 보기</button>
+          <button class="btn ghost" onclick="gcalReset()">연동 초기화</button>
+        </div>
+        <pre id="gcalScriptBox" style="display:none;margin-top:12px;background:var(--cream);border-radius:12px;padding:14px;font-size:11.5px;line-height:1.55;overflow:auto;max-height:340px;white-space:pre-wrap"></pre>
       </div>
-      <div id="gcalStatus" style="margin-top:8px;font-size:13px;color:var(--muted)"></div>
-      <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn ghost" onclick="gcalPushAll()">지금 전체 일정 한 번에 보내기</button>
-        <button class="btn ghost" onclick="gcalShowScript()">스크립트 코드 보기 (설치 방법)</button>
-      </div>
-      <pre id="gcalScriptBox" style="display:none;margin-top:12px;background:var(--cream);border-radius:12px;padding:14px;font-size:11.5px;line-height:1.55;overflow:auto;max-height:340px;white-space:pre-wrap"></pre>
     </div>
     <div class="card">
       <h3><span class="dot"></span> 데이터 관리</h3>
@@ -1607,16 +1626,24 @@ function gcalConnect(){
   if(v.indexOf('/exec')<0){alert('주소가 /exec 로 끝나야 합니다. (/dev 는 테스트용이라 외부에서 쓸 수 없습니다)');return;}
   localStorage.setItem('hmd_gcal_url',v);gcalStatus();
   gcalSend({type:'ping'},function(ok,text){
-    if(ok&&text==='pong'){gcalMark(true);alert('연결 확인 완료! 스크립트가 정상 응답했습니다.\n이제 일정이 자동으로 전송됩니다.');}
+    if(ok&&text==='pong'){gcalMark(true);alert('연결 확인 완료! 스크립트가 정상 응답했습니다.\n이제 «구글 캘린더로 보내기» 버튼을 누르면 반영됩니다.');}
     else if(ok){gcalMark(true);alert('요청은 전달됐지만 스크립트 응답('+String(text).slice(0,40)+')이 예상과 다릅니다.\n코드가 그대로 붙여넣어졌는지 확인하세요.');}
     else{gcalMark(false);alert('연결 실패. 다음을 순서대로 확인하세요.\n\n1) 배포 시 [액세스 권한: 모든 사용자] 로 되어 있는지\n   (배포 → 배포 관리 → ✎ 에서 확인)\n2) 권한 승인(고급 → 이동 → 허용)을 끝까지 했는지\n3) 코드를 수정했다면 [새 버전]으로 다시 배포했는지\n4) 주소를 브라우저에 직접 붙여넣어 열었을 때 오류 페이지가 아닌지');}
   });
 }
-function gcalDisconnect(){localStorage.removeItem('hmd_gcal_url');gcalStatus();}
+function gcalReset(){
+  if(!confirm('연동을 초기화할까요?\n앱에 저장된 웹앱 주소와 전송 기록만 지웁니다.\n(구글 캘린더의 일정과 스크립트는 그대로입니다)'))return;
+  localStorage.removeItem('hmd_gcal_url');
+  window.__gcalLast=null;
+  var i=document.getElementById('gcalUrl');if(i)i.value='';
+  var b=document.getElementById('gcalScriptBox');if(b)b.style.display='none';
+  gcalStatus();
+  alert('초기화했습니다. 처음부터 다시 설정할 수 있습니다.');
+}
 function gcalStatus(){
   var el=document.getElementById('gcalStatus');if(!el)return;
   var u=gcalGet();
-  var line=u?'✅ 자동 전송 연결됨 <span style="word-break:break-all;color:#b8c0bc">('+esc(u.slice(0,60))+'…)</span>':'자동 전송이 연결되어 있지 않습니다.';
+  var line=u?'✅ 웹앱 연결됨 <span style="word-break:break-all;color:#b8c0bc">('+esc(u.slice(0,60))+'…)</span>':'아직 연결되지 않았습니다. 위 주소를 넣고 «연결 확인»을 누르세요.';
   var L=window.__gcalLast;
   if(u&&L)line+='<br>마지막 전송 '+L.time+' — '+(L.ok===true?'<b style="color:var(--green)">성공</b>':L.ok===false?'<b style="color:var(--red)">실패</b> (연결 버튼으로 다시 점검하세요)':'전달함 (응답 확인 불가)');
   el.innerHTML=line;
@@ -1651,14 +1678,20 @@ function gcalEventPayload(s,act){
   return {type:act,uid:'hmd-'+s.id,date:s.date,time:(/^\d{2}:\d{2}$/.test(s.time||'')?s.time:''),
     title:s.title||'',detail:s.detail||'',done:!!s.done};
 }
-function gcalPush(s){if(!gcalGet()||!s)return;gcalSend(gcalEventPayload(s,'upsert'));}
-function gcalRemove(id){if(!gcalGet())return;gcalSend({type:'delete',uid:'hmd-'+id});}
-function gcalPushAll(){
-  var u=gcalGet();if(!u){alert('먼저 웹앱 URL을 연결하세요.');return;}
-  var list=db.schedules.filter(function(s){return s.date;});
+function gcalPushAll(futureOnly){
+  var u=gcalGet();
+  if(!u){alert('먼저 Apps Script 웹앱 URL을 넣고 «연결 확인»을 눌러 주세요.\n설치 방법은 «설치 방법·코드 보기»에 있습니다.');return;}
+  var tk=today();
+  var list=db.schedules.filter(function(s){return s.date&&(!futureOnly||s.date>=tk);});
   if(!list.length){alert('보낼 일정이 없습니다.');return;}
-  gcalSend({type:'bulk',events:list.map(function(s){return gcalEventPayload(s,'upsert');})},
-    function(ok){alert(ok?list.length+'건 전송 요청 완료. 잠시 후 구글 캘린더를 확인하세요.':'전송에 실패했습니다.');});
+  if(!confirm(list.length+'건을 구글 캘린더로 보낼까요?'))return;
+  gcalSend({type:'bulk',sync:true,from:futureOnly?tk:'',
+    events:list.map(function(s){return gcalEventPayload(s,'upsert');})},
+    function(ok,text){
+      if(ok&&(text==='ok'||text==null))alert(list.length+'건을 보냈습니다.\n구글 캘린더를 새로고침해서 확인하세요.');
+      else if(ok)alert('보내긴 했지만 응답이 예상과 다릅니다: '+String(text).slice(0,60));
+      else alert('전송 실패. «연결 확인»을 눌러 상태를 점검해 주세요.');
+    });
 }
 function gcalShowScript(){
   var box=document.getElementById('gcalScriptBox');if(!box)return;
@@ -1671,19 +1704,33 @@ function gcalShowScript(){
 ' 3) 배포 → 새 배포 → 유형: 웹 앱',
 '    - 실행 계정: 나',
 '    - 액세스 권한: 모든 사용자   ← 중요',
-' 4) 생성된 웹 앱 URL(…/exec)을 복사해 위 칸에 붙여넣고 [연결]',
+' 4) 생성된 웹 앱 URL(…/exec)을 복사해 위 칸에 붙여넣고 [연결 확인]',
+' 5) 이후 [구글 캘린더로 보내기] 버튼을 누를 때만 반영됩니다 (자동 전송 없음)',
 '*/',
 'var CAL_ID = "primary";   // 특정 캘린더에 넣으려면 해당 캘린더 ID로 변경',
 '',
 'function doPost(e){',
 '  var p = JSON.parse(e.postData.contents || "{}");',
 '  if (p.type === "ping") return out("pong");',
-'  if (p.type === "bulk") { (p.events||[]).forEach(upsert); return out("ok"); }',
+'  if (p.type === "bulk") { syncBulk(p); return out("ok"); }',
 '  if (p.type === "delete") { removeByUid(p.uid); return out("ok"); }',
 '  if (p.type === "upsert") { upsert(p); return out("ok"); }',
 '  return out("ignored");',
 '}',
 'function out(msg){ return ContentService.createTextOutput(msg); }',
+'/* 보낸 목록에 없는 HMD 일정은 캘린더에서 지운다(앱에서 삭제한 일정 반영) */',
+'function syncBulk(p){',
+'  var evs = p.events || [];',
+'  var keep = {};',
+'  evs.forEach(function(e){ keep[e.uid] = true; upsert(e); });',
+'  var from = p.from ? new Date(p.from+"T00:00:00") : new Date(Date.now()-86400000*366);',
+'  var to = new Date(Date.now()+86400000*730);',
+'  var all = cal().getEvents(from, to);',
+'  for (var i=0;i<all.length;i++){',
+'    var uid = all[i].getTag("hmd_uid");',
+'    if (uid && !keep[uid]) all[i].deleteEvent();',
+'  }',
+'}',
 'function cal(){ return CAL_ID==="primary" ? CalendarApp.getDefaultCalendar() : CalendarApp.getCalendarById(CAL_ID); }',
 'function findByUid(uid, dateStr){',
 '  var d = new Date(dateStr+"T00:00:00");',
@@ -1728,21 +1775,21 @@ function addSchedule(){
   if(!title){alert('일정 제목을 입력하세요.');return;}
   var __ns={id:uid(),date:selDate,time:normTime(document.getElementById('schTime').value),
     title,detail:document.getElementById('schDetail').value.trim()};
-  db.schedules.push(__ns);gcalPush(__ns);
+  db.schedules.push(__ns);
   save();['schTitle','schTime','schDetail'].forEach(i=>document.getElementById(i).value='');
   renderCal();renderSchedule();
 }
 function schedDetailFocus(e){var el=e.target;if(!el.innerText.trim()){el.innerText='- ';var r=document.createRange();r.selectNodeContents(el);r.collapse(false);var sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);}}
 function schedDetailKey(e){if(e.key==='Enter'){e.preventDefault();document.execCommand('insertLineBreak');document.execCommand('insertText',false,'- ');}}
 function editSchedule(id,field,val){const s=db.schedules.find(x=>x.id===id);if(!s)return;
-  s[field]=field==='time'?normTime(val):String(val).trim();gcalPush(s);save();renderCal();renderSchedule();}
-function delSchedule(id){db.schedules=db.schedules.filter(s=>s.id!==id);gcalRemove(id);save();renderCal();renderSchedule();}
-function toggleSchedule(id){const s=db.schedules.find(x=>x.id===id);if(!s)return;s.done=!s.done;gcalPush(s);save();renderCal();renderSchedule();}
+  s[field]=field==='time'?normTime(val):String(val).trim();save();renderCal();renderSchedule();}
+function delSchedule(id){db.schedules=db.schedules.filter(s=>s.id!==id);save();renderCal();renderSchedule();}
+function toggleSchedule(id){const s=db.schedules.find(x=>x.id===id);if(!s)return;s.done=!s.done;save();renderCal();renderSchedule();}
 function nextDay(ds){const [y,m,d]=ds.split('-').map(Number);const dt=new Date(y,m-1,d+1);return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');}
-function postponeSchedule(id){const s=db.schedules.find(x=>x.id===id);if(!s)return;s.date=nextDay(s.date);gcalPush(s);save();renderCal();renderSchedule();}
+function postponeSchedule(id){const s=db.schedules.find(x=>x.id===id);if(!s)return;s.date=nextDay(s.date);save();renderCal();renderSchedule();}
 let dragSchedId=null;
 function schedDragStart(e,id){dragSchedId=id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',String(id));}
-function schedDrop(e,key){e.preventDefault();const id=dragSchedId!=null?dragSchedId:Number(e.dataTransfer.getData('text/plain'));const s=db.schedules.find(x=>x.id===id);if(s){s.date=key;gcalPush(s);save();renderCal();renderSchedule();}dragSchedId=null;}
+function schedDrop(e,key){e.preventDefault();const id=dragSchedId!=null?dragSchedId:Number(e.dataTransfer.getData('text/plain'));const s=db.schedules.find(x=>x.id===id);if(s){s.date=key;save();renderCal();renderSchedule();}dragSchedId=null;}
 function renderSchedule(){
   const el=document.getElementById('schedList');if(!el)return;
   const [y,m,d]=selDate.split('-');
@@ -3781,15 +3828,47 @@ var curList=null;
 function ensureCurList(){var ls=db.routineLists||[];if(!ls.length)return;if(!curList||!ls.find(function(a){return a.id===curList;}))curList=ls[0].id;}
 function curListObj(){ensureCurList();return (db.routineLists||[]).find(function(a){return a.id===curList;})||null;}
 function rtRoutines(){var l=curListObj();return l?l.items:[];}
-function addRoutineList(){if(!db.routineLists)db.routineLists=[];var l={id:uid(),name:'새 목록',items:[],collapsed:false};db.routineLists.push(l);curList=l.id;save();rtStop();renderRoutiner();}
-function selectList(id){curList=id;rtStop();renderRoutiner();}
+function addRoutineList(){if(!db.routineLists)db.routineLists=[];
+  var l={id:uid(),name:'새 목록',items:[],collapsed:false};db.routineLists.push(l);curList=l.id;save();rtStop();renderRoutiner();
+  setTimeout(function(){
+    var card=document.querySelector('.rt-listcard.selected');
+    if(card&&card.scrollIntoView)card.scrollIntoView({behavior:'smooth',block:'center'});
+    var nm=card&&card.querySelector('.rt-listname');
+    if(nm){nm.focus();var r=document.createRange();r.selectNodeContents(nm);
+      var sl=window.getSelection();sl.removeAllRanges();sl.addRange(r);}
+  },0);}
 function toggleListCollapse(id){var l=(db.routineLists||[]).find(function(a){return a.id===id;});if(l){l.collapsed=!l.collapsed;save();renderRtOthers();}}
-function editListName(id,val){var l=(db.routineLists||[]).find(function(a){return a.id===id;});if(l){var v=String(val).trim();if(v){l.name=v;save();}}}
-function delRoutineList(id){db.routineLists=(db.routineLists||[]).filter(function(a){return a.id!==id;});if(curList===id){curList=null;rtStop();}save();renderRoutiner();}
-function listCardEditHTML(l){var rows=l.items.length?l.items.map(function(r,i){var active=(l.id===curList&&i===rtIdx);return '<div class="rt-row'+(active?' active':'')+'"><button class="rt-play" title="시작" onclick="rtPlay('+l.id+','+i+')">\u25b6</button><span class="rt-name" contenteditable onblur="editRoutineIn('+l.id+','+r.id+',this.innerText)">'+esc(r.name)+'</span><span class="rt-time" contenteditable onblur="editRtTimeIn('+l.id+','+r.id+',this.innerText)">'+fmtSec(r.sec)+'</span><span class="del" onclick="delRoutineIn('+l.id+','+r.id+')">\u00d7</span></div>';}).join(''):'<div class="empty" style="padding:10px 0">\ub8e8\ud2f4\uc744 \ucd94\uac00\ud558\uc138\uc694</div>';var addrow='<div class="inrow" style="margin-top:8px"><input class="in rtNameIn" data-l="'+l.id+'" style="flex:1;min-width:0" placeholder="\ub8e8\ud2f4\uba85"><input class="in rtMinIn" data-l="'+l.id+'" style="flex:none;width:56px" inputmode="decimal" placeholder="\ubd84"><button class="btn y" style="flex:none;padding:8px 10px" onclick="addRoutineIn('+l.id+')">\uff0b</button></div>';return '<div class="card rt-listcard selected"><div class="rt-list-head"><span class="rt-listname" contenteditable onblur="editListName('+l.id+',this.innerText)">'+esc(l.name)+'</span><span class="del" onclick="delRoutineList('+l.id+')">\u00d7</span></div>'+rows+addrow+'</div>';}
-function renderRtMain(){var el=document.getElementById('rtMain');if(!el)return;var l=curListObj();var rs=l?l.items:[];var circle;if(rtIdx>=0&&rtIdx<rs.length){var r=rs[rtIdx];var C=2*Math.PI*70;var frac=Math.max(0,rtRemain)/r.sec;var off=C*(1-frac);var col=frac<0.2?'#e8615a':'#f4b740';circle='<div class="rt-active"><div class="rt-circle"><svg width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="70" fill="none" stroke="var(--line)" stroke-width="14"/><circle id="rt-ring" cx="100" cy="100" r="70" fill="none" stroke="'+col+'" stroke-width="14" stroke-linecap="round" transform="rotate(-90 100 100)" style="stroke-dasharray:'+C+';stroke-dashoffset:'+off+';transition:stroke-dashoffset .95s linear,stroke .3s"/></svg><div class="rt-circle-in"><div class="rt-bigname">'+esc(r.name)+'</div><div class="rt-bigtime" id="rt-bigtime">'+fmtSec(rtRemain)+'</div></div></div></div>';}else{circle='<div class="rt-idle"><b>\u25b6</b> 를 눌러<br>루틴을 시작하세요</div>';}var sel=l?listCardEditHTML(l):'<div class="empty" style="padding:20px">아래에서 목록을 선택하거나 추가하세요.</div>';el.innerHTML='<div class="g2" style="align-items:start"><div>'+circle+'</div><div>'+sel+'</div></div>';}
-function renderRtSel(){var el=document.getElementById('rtSelList');if(!el)return;var l=curListObj();if(!l){el.innerHTML='<div class="empty">목록이 없습니다.</div>';return;}var rows=l.items.length?l.items.map(function(r,i){var active=(i===rtIdx);return '<div class="rt-row'+(active?' active':'')+'"><button class="rt-play" title="시작" onclick="rtStart('+i+')">▶</button><span class="rt-name" contenteditable onblur="editRoutine('+r.id+',this.innerText)">'+esc(r.name)+'</span><span class="rt-time" contenteditable onblur="editRtTime('+r.id+',this.innerText)">'+fmtSec(r.sec)+'</span><span class="del" onclick="delRoutine('+r.id+')">×</span></div>';}).join(''):'<div class="empty" style="padding:14px 0">루틴을 추가하세요.</div>';el.innerHTML='<div class="rt-listname" contenteditable onblur="editListName(\''+l.id+'\',this.innerText)">'+esc(l.name)+'</div>'+rows+'<div class="inrow" style="margin-top:10px"><input id="rtName" class="in" style="flex:1" placeholder="루틴명"><input id="rtMin" class="in" style="flex:none;width:70px" inputmode="decimal" placeholder="분"><button class="btn y" style="flex:none" onclick="addRoutine()">＋</button></div>';}
-function renderRtOthers(){var el=document.getElementById('rtOtherLists');if(!el)return;var ls=db.routineLists||[];var others=ls.filter(function(a){return a.id!==curList;});var html='<div class="rt-uplabel" style="margin-top:18px">다른 루틴 목록</div>';html+=others.map(function(l){var body=l.collapsed?'':'<div class="rt-listbody">'+(l.items.length?l.items.map(function(r){return '<div class="rt-uprow"><span class="rt-name">'+esc(r.name)+'</span><span class="rt-time">'+fmtSec(r.sec)+'</span></div>';}).join(''):'<div class="empty" style="padding:8px">비어 있음</div>')+'</div>';return '<div class="rt-list-card"><div class="rt-list-head"><span class="rt-list-title" onclick="toggleListCollapse(\''+l.id+'\')">'+(l.collapsed?'▸':'▾')+' '+esc(l.name)+' <span style="color:var(--muted);font-weight:600;font-size:12px">('+l.items.length+')</span></span><button class="btn ghost" style="flex:none;padding:5px 12px;font-size:12px" onclick="selectList(\''+l.id+'\')">선택</button><span class="del" onclick="delRoutineList(\''+l.id+'\')">×</span></div>'+body+'</div>';}).join('');if(!others.length)html+='<div class="empty" style="padding:8px 0">다른 목록이 없어요.</div>';html+='<div style="margin-top:10px"><button class="btn ghost" onclick="addRoutineList()">＋ 목록 추가</button></div>';el.innerHTML=html;}
+function editListName(id,val){var l=(db.routineLists||[]).find(function(a){return a.id===id;});if(!l)return;var v=String(val==null?'':val).trim();if(v){l.name=v;save();}}
+function selectList(id){if(curList===id)return;curList=id;rtStop();renderRoutiner();}
+function delRoutineList(id){
+  var l=(db.routineLists||[]).find(function(a){return a.id===id;});
+  if(l&&(l.items.length||String(l.name).trim()!=='새 목록')&&!confirm('«'+(l.name||'목록')+'» 목록을 삭제할까요?'))return;
+  db.routineLists=(db.routineLists||[]).filter(function(a){return a.id!==id;});
+  if(curList===id){curList=null;rtStop();}save();renderRoutiner();}
+function listCardHTML(l){
+  var sel=(l.id===curList);
+  var rows=l.items.length?l.items.map(function(r,i){
+    var active=(sel&&i===rtIdx);
+    return '<div class="rt-row'+(active?' active':'')+'">'+
+      '<button class="rt-play" title="시작" onclick="event.stopPropagation();rtPlay('+l.id+','+i+')">\u25b6</button>'+
+      '<span class="rt-name" contenteditable onclick="event.stopPropagation()" onblur="editRoutineIn('+l.id+','+r.id+',this.innerText)">'+esc(r.name)+'</span>'+
+      '<span class="rt-time" contenteditable onclick="event.stopPropagation()" onblur="editRtTimeIn('+l.id+','+r.id+',this.innerText)">'+fmtSec(r.sec)+'</span>'+
+      '<span class="del" onclick="event.stopPropagation();delRoutineIn('+l.id+','+r.id+')">\u00d7</span></div>';
+  }).join(''):'<div class="empty" style="padding:10px 0">루틴을 추가하세요</div>';
+  var addrow='<div class="inrow" style="margin-top:8px" onclick="event.stopPropagation()">'+
+    '<input class="in rtNameIn" data-l="'+l.id+'" style="flex:1;min-width:0" placeholder="루틴명">'+
+    '<input class="in rtMinIn" data-l="'+l.id+'" style="flex:none;width:56px" inputmode="decimal" placeholder="분">'+
+    '<button class="btn y" style="flex:none;padding:8px 10px" onclick="addRoutineIn('+l.id+')">\uff0b</button></div>';
+  return '<div class="card rt-listcard'+(sel?' selected':'')+'" onclick="selectList('+l.id+')">'+
+    '<div class="rt-list-head">'+
+      '<span class="rt-listname" contenteditable onclick="event.stopPropagation()" onblur="editListName('+l.id+',this.innerText!=null?this.innerText:this.textContent)">'+esc(l.name)+'</span>'+
+      (sel?'<span class="rt-cur">사용 중</span>':'')+
+      '<span class="del" onclick="event.stopPropagation();delRoutineList('+l.id+')">\u00d7</span></div>'+
+    rows+addrow+'</div>';
+}
+function renderRtMain(){var el=document.getElementById('rtMain');if(!el)return;var l=curListObj();var rs=l?l.items:[];var circle;if(rtIdx>=0&&rtIdx<rs.length){var r=rs[rtIdx];var C=2*Math.PI*70;var frac=Math.max(0,rtRemain)/r.sec;var off=C*(1-frac);var col=frac<0.2?'#e8615a':'#f4b740';circle='<div class="rt-active"><div class="rt-circle"><svg width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="70" fill="none" stroke="var(--line)" stroke-width="14"/><circle id="rt-ring" cx="100" cy="100" r="70" fill="none" stroke="'+col+'" stroke-width="14" stroke-linecap="round" transform="rotate(-90 100 100)" style="stroke-dasharray:'+C+';stroke-dashoffset:'+off+';transition:stroke-dashoffset .95s linear,stroke .3s"/></svg><div class="rt-circle-in"><div class="rt-bigname">'+esc(r.name)+'</div><div class="rt-bigtime" id="rt-bigtime">'+fmtSec(rtRemain)+'</div></div></div></div>';}else{circle='<div class="rt-idle"><b>\u25b6</b> 를 눌러<br>루틴을 시작하세요</div>';}el.innerHTML=circle;}
+function renderRtSel(){}   /* 사용하지 않음: 목록은 renderRtLists 로 통합 */
+function renderRtOthers(){}   /* 사용하지 않음: 목록은 renderRtLists 로 통합 */
 function rtRoutines_ORIG(){}
 function fmtSec(s){s=Math.max(0,Math.round(s));var m=Math.floor(s/60),ss=s%60;return m+':'+String(ss).padStart(2,'0');}
 function addRoutine(){var n=document.getElementById('rtName'),t=document.getElementById('rtMin');var name=n.value.trim();if(!name){alert('루틴명을 입력하세요.');return;}var mins=parseFloat(t.value);var sec=Math.round((isNaN(mins)?0:mins)*60);if(sec<=0)sec=60;var l=curListObj();if(!l)return;l.items.push({id:uid(),name:name,sec:sec});save();n.value='';t.value='';renderRtSel();}
@@ -3804,11 +3883,22 @@ function rtPause(){if(rtIdx<0)return;rtPaused=!rtPaused;rtSetButtons();}
 function rtStop(){if(rtTimer)clearInterval(rtTimer);rtTimer=null;rtIdx=-1;rtPaused=false;rtSetButtons();}
 function rtSetButtons(){var pb=document.getElementById('rtPauseBtn');if(pb)pb.textContent=rtPaused?'\u25b6 \uc7ac\uac1c':'\u23f8 \uc77c\uc2dc\uc815\uc9c0';}
 function rtPlay(l,i){curList=l;rtStart(i);}
-function addRoutineIn(listId){var nm=document.querySelector('.rtNameIn[data-l="'+listId+'"]');var mn=document.querySelector('.rtMinIn[data-l="'+listId+'"]');if(!nm)return;var name=nm.value.trim();if(!name)return;var mins=parseFloat(mn.value);var sec=Math.round((isNaN(mins)?0:mins)*60);if(sec<=0)sec=60;var l=(db.routineLists||[]).find(function(a){return a.id===listId;});if(!l)return;l.items.push({id:uid(),name:name,sec:sec});save();renderRtLists();}
+function addRoutineIn(listId){var nm=document.querySelector('.rtNameIn[data-l="'+listId+'"]');var mn=document.querySelector('.rtMinIn[data-l="'+listId+'"]');if(!nm)return;var name=nm.value.trim();if(!name)return;var mins=parseFloat(mn.value);var sec=Math.round((isNaN(mins)?0:mins)*60);if(sec<=0)sec=60;var l=(db.routineLists||[]).find(function(a){return a.id===listId;});if(!l)return;l.items.push({id:uid(),name:name,sec:sec});nm.value='';if(mn)mn.value='';save();renderRoutiner();
+  setTimeout(function(){var f=document.querySelector('.rtNameIn[data-l="'+listId+'"]');if(f)f.focus();},0);}
 function editRoutineIn(listId,id,val){var l=(db.routineLists||[]).find(function(a){return a.id===listId;});if(!l)return;var r=l.items.find(function(a){return a.id===id;});if(r){var v=String(val).trim();if(v)r.name=v;save();}}
 function editRtTimeIn(listId,id,val){var l=(db.routineLists||[]).find(function(a){return a.id===listId;});if(!l)return;var r=l.items.find(function(a){return a.id===id;});if(!r)return;val=String(val).trim();var sec;if(val.indexOf(':')>=0){var pp=val.split(':');sec=(parseInt(pp[0],10)||0)*60+(parseInt(pp[1],10)||0);}else{var f=parseFloat(val);sec=Math.round((isNaN(f)?0:f)*60);}if(sec>0){r.sec=sec;save();renderRtLists();}}
-function delRoutineIn(listId,id){var l=(db.routineLists||[]).find(function(a){return a.id===listId;});if(!l)return;l.items=l.items.filter(function(a){return a.id!==id;});save();if(curList===listId)rtStop();renderRtLists();}
-function renderRtLists(){var el=document.getElementById('rtLists');if(!el)return;var ls=db.routineLists||[];var others=ls.filter(function(a){return a.id!==curList;});var cards=others.map(function(l){var rows=l.items.length?l.items.map(function(r){return '<div class="rt-uprow"><span class="rt-name">'+esc(r.name)+'</span><span class="rt-time">'+fmtSec(r.sec)+'</span></div>';}).join(''):'<div class="empty" style="padding:8px">비어 있음</div>';return '<div class="card rt-listcard rt-selectable" onclick="selectList('+l.id+')"><div class="rt-list-head"><span class="rt-list-title">'+esc(l.name)+' <span style="color:var(--muted);font-size:12px;font-weight:600">('+l.items.length+')</span></span><span class="del" onclick="event.stopPropagation();delRoutineList('+l.id+')">\u00d7</span></div>'+rows+'</div>';}).join('');var body=others.length?('<div class="g3">'+cards+'</div>'):'<div class="empty" style="padding:8px 0">다른 목록이 없어요.</div>';el.innerHTML='<div class="rt-uplabel" style="margin-top:18px">다른 루틴 목록 (클릭해서 선택)</div>'+body+'<div style="margin-top:12px"><button class="btn ghost" onclick="addRoutineList()">\uff0b 목록 추가</button></div>';}
+function delRoutineIn(listId,id){var l=(db.routineLists||[]).find(function(a){return a.id===listId;});if(!l)return;l.items=l.items.filter(function(a){return a.id!==id;});save();if(curList===listId)rtStop();renderRoutiner();}
+function renderRtLists(){
+  var el=document.getElementById('rtLists');if(!el)return;
+  ensureCurList();
+  var ls=db.routineLists||[];
+  var head='<div class="rt-uplabel" style="margin-top:18px;display:flex;align-items:center;gap:10px">루틴 목록'+
+    '<span style="font-weight:600;color:var(--muted);font-size:11.5px">목록을 눌러 사용할 목록을 고르세요</span>'+
+    '<button class="btn ghost" style="margin-left:auto;flex:none;padding:6px 12px;font-size:12px" onclick="addRoutineList()">\uff0b 목록 추가</button></div>';
+  var body=ls.length?('<div class="g3">'+ls.map(listCardHTML).join('')+'</div>')
+    :'<div class="empty" style="padding:14px 0">아직 목록이 없어요. «＋ 목록 추가»로 시작하세요.</div>';
+  el.innerHTML=head+body;
+}
 function renderRoutiner(){renderRtMain();renderRtLists();}
 function renderAll(){
   gcalStatus();
