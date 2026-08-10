@@ -72,6 +72,8 @@
 
   .view{display:none}.view.on{display:block}
   .page-head{margin-bottom:18px}
+  #topSecBar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+  #secDock{margin-top:20px}
   .page-head h1{font-size:24px}
   .page-head p{color:var(--muted);font-size:13.5px;margin-top:4px}
 
@@ -277,12 +279,11 @@
   /* 명조체: 우리는 매일매일 / 독서 발췌 / 일기 / 스케줄 세부내역 */
   #studyPane .mask,#studyPane .body,#dashStudyFeed .mask,#dashStudyFeed .body,
   #bookDetail .body,#dashReadFeed .body,
-  #dashDiaryFeed .body,#diaryPage .body,
   #schedList .sub{font-family:'Nanum Myeongjo',serif}
-  /* 일기: 폰트 크게 + 칸(가로 폭) 넓게 + 가운데 정렬. 아래 700px(칸 너비)와 17px(폰트) 숫자만 바꾸면 조절됨 */
+  /* 일기: 고운바탕 + 칸(가로 폭) 넓게 + 가운데 정렬. 아래 700px(칸 너비)와 13px(폰트) 숫자만 바꾸면 조절됨 */
   #diaryPage,#dashDiaryFeed{max-width:700px;margin-left:auto;margin-right:auto}
-  #diaryPage .body,#dashDiaryFeed .body{font-size:17px;line-height:1.8;overflow-wrap:break-word}
-  #diaryInput,#diaryInput2{font-size:17px;line-height:1.8;max-width:700px;margin-left:auto;margin-right:auto;display:block}
+  #diaryPage .body,#dashDiaryFeed .body{font-family:'Gowun Batang',serif;font-size:11pt;line-height:1.8;overflow-wrap:break-word}
+  #diaryInput,#diaryInput2{font-size:11pt;line-height:1.8;max-width:700px;margin-left:auto;margin-right:auto;display:block}
   #schedList .sub{font-size:13.5px;margin-left:28px;white-space:pre-wrap;line-height:1.6;color:var(--muted)}
   #ideaCard{min-height:200px}
   #mindCanvas{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fbfbf8;min-height:460px;margin-top:4px}
@@ -373,9 +374,20 @@
   .fw-tools .fw-hl-off{background:#fff;font-size:13px;color:var(--muted);font-weight:700;line-height:1}
   .fw-now{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--muted);background:var(--cream);
     border-radius:20px;padding:4px 11px;white-space:nowrap;flex:none}
-  .fw-rich{width:100%;min-height:46vh;font-family:'Gowun Batang',serif;font-size:16px;line-height:1.85;background:var(--cream);border:1px solid transparent;border-radius:14px;padding:15px 17px;outline:none;overflow:auto;white-space:pre-wrap;word-break:break-word}
+  .fw-rich{width:100%;min-height:46vh;font-family:'Gowun Batang',serif;font-size:11pt;line-height:1.85;background:var(--cream);border:1px solid transparent;border-radius:14px;padding:15px 17px;outline:none;overflow:auto;white-space:pre-wrap;word-break:break-word}
   .fw-rich:focus{border-color:var(--yellow);background:#fff}
   .fw-foot .btn{margin-left:auto;flex:none}
+  .fw-kind{display:none;align-items:center;gap:4px;margin-left:10px}
+  .fw-kind.on{display:inline-flex}
+  .fw-kind button{border:1px solid var(--line);background:#fff;border-radius:999px;font-size:11.5px;font-weight:700;padding:3px 11px;cursor:pointer;color:var(--muted);font-family:inherit}
+  .fw-kind button.on{background:var(--yellow);border-color:var(--yellow);color:var(--dark)}
+  .dy-kind{font-size:10.5px;font-weight:700;border-radius:999px;padding:2px 8px;margin-left:8px;background:var(--cream);color:var(--muted);border:1px solid var(--line)}
+  .dy-date{cursor:pointer;user-select:none;display:flex;align-items:center;gap:7px;padding:9px 4px;border-bottom:1px solid var(--line);margin:0}
+  .dy-date:hover{color:var(--dark)}
+  .dy-date .dy-cnt{font-weight:600;color:var(--muted);opacity:.75;font-size:11px}
+  .dy-date .dy-arrow{margin-left:auto;font-size:11px;color:var(--muted)}
+  #diaryPage .entry{margin-top:10px}
+  .exv-body.dy{font-family:'Gowun Batang',serif;font-size:11pt}
   @media(max-width:1000px){.fw-back{padding:12px}.fw-main{font-size:16px}}
   #ideaCard.mind-expanded{position:fixed;top:20px;left:20px;right:20px;bottom:20px;z-index:95;display:flex;flex-direction:column;box-shadow:0 24px 70px rgba(0,0,0,.35);overflow:hidden}
   #ideaCard.mind-expanded #mindCanvas{flex:1;min-height:0}
@@ -440,7 +452,8 @@
   .txt.link:hover{color:var(--green);border-bottom-color:var(--green)}
   .idea-edit{cursor:pointer;flex-shrink:0;font-size:11.5px;color:var(--muted);background:var(--cream);padding:3px 9px;border-radius:7px;font-weight:600}
   .idea-edit:hover{background:var(--line);color:var(--dark)}
-  #diaryInput,#diaryInput2,#exText{font-family:'Nanum Myeongjo',serif}
+  #diaryInput,#diaryInput2{font-family:'Gowun Batang',serif}
+  #exText{font-family:'Nanum Myeongjo',serif}
   .rowdate{border:1px solid var(--line);border-radius:8px;padding:5px 6px;font-size:12px;font-family:inherit;background:#fff;color:var(--text);max-width:140px}
 
   /* ===== Work Vault (Obsidian-style) ===== */
@@ -708,7 +721,7 @@
     .schip{font-size:9px;padding:1px 3px;border-radius:4px}
     .sess-tag{font-size:8px;padding:0 3px}
     .cal-head{gap:6px}
-    .cal-head .lunar-toggle{font-size:11px;padding:5px 10px;border-radius:8px}
+    .cal-head .lunar-toggle,#topSecBar .lunar-toggle{font-size:11px;padding:5px 10px;border-radius:8px}
     .cal-nav b{font-size:15px}
 
     /* 탭·서브탭: 넘치면 옆으로 밀어서 본다 */
@@ -781,6 +794,8 @@
 </aside>
 
 <main class="main">
+  <!-- ===== 상단 고정 섹션 버튼 (모든 메뉴에서 보임) ===== -->
+  <div id="topSecBar"><button id="calToggleBtn" class="lunar-toggle on" onclick="toggleCalendar()">달력</button><button id="schedToggleBtn" class="lunar-toggle on" onclick="toggleSchedPanel()">스케줄</button><button id="studySecBtn" class="lunar-toggle" onclick="toggleSection('study')">매일매일</button><button id="workSecBtn" class="lunar-toggle" onclick="toggleSection('work')">업무</button><button id="readSecBtn" class="lunar-toggle" onclick="toggleSection('read')">독서</button><button id="assetSecBtn" class="lunar-toggle" onclick="toggleSection('asset')">자산</button><button id="diarySecBtn" class="lunar-toggle" onclick="toggleSection('diary')">일기</button><button id="rtNavBtn" class="lunar-toggle" onclick="go('routiner')">루티머</button><button id="weatherBtn" class="lunar-toggle" onclick="toggleWeather()">날씨</button><button id="lunarBtn" class="lunar-toggle" onclick="toggleLunar()">음력</button><button id="inboxToggleBtn" class="lunar-toggle on" onclick="toggleInboxPanel()">인박스</button><button id="sessionSecBtn" class="lunar-toggle" onclick="toggleSection('session')">회기일정</button></div>
   <div class="topbar">
     <div></div>
     <div class="right">
@@ -792,138 +807,6 @@
   <!-- ===== DASHBOARD (오늘) ===== -->
   <section class="view on" id="view-dashboard">
     <div class="page-head"><h1>Hello, My day!</h1></div>
-    <div class="grid">
-      <div class="card" id="calCard" style="grid-column:1/-1">
-        <h3><span class="dot"></span> SCHEDULE</h3>
-        <div class="cal-head"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><b id="calTitle"></b><button id="calToggleBtn" class="lunar-toggle on" onclick="toggleCalendar()">달력</button><button id="schedToggleBtn" class="lunar-toggle on" onclick="toggleSchedPanel()">스케줄</button><button id="studySecBtn" class="lunar-toggle" onclick="toggleSection('study')">매일매일</button><button id="workSecBtn" class="lunar-toggle" onclick="toggleSection('work')">업무</button><button id="readSecBtn" class="lunar-toggle" onclick="toggleSection('read')">독서</button><button id="assetSecBtn" class="lunar-toggle" onclick="toggleSection('asset')">자산</button><button id="diarySecBtn" class="lunar-toggle" onclick="toggleSection('diary')">일기</button><button id="rtNavBtn" class="lunar-toggle" onclick="go('routiner')">루티머</button><button id="weatherBtn" class="lunar-toggle" onclick="toggleWeather()">날씨</button><button id="lunarBtn" class="lunar-toggle" onclick="toggleLunar()">음력</button><button id="inboxToggleBtn" class="lunar-toggle on" onclick="toggleInboxPanel()">인박스</button><button id="sessionSecBtn" class="lunar-toggle" onclick="toggleSection('session')">회기일정</button></div>
-          <div class="cal-nav"><button onclick="shiftMonth(-1)">‹</button> <button onclick="goToday()" style="width:auto;padding:0 10px;font-size:12px">오늘</button> <button onclick="shiftMonth(1)">›</button></div>
-        </div>
-        <table class="cal"><thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead>
-        <tbody id="calBody"></tbody></table>
-      </div>
-      <div class="card" id="schedCard">
-        <h3><span class="dot"></span> <span id="schedLabel"></span> <span class="more" id="schedCount"></span></h3>
-        <div id="schedList" class="fill"></div><div style="margin-top:12px"><button class="btn y" id="schedAddToggle" onclick="toggleSchedForm()">＋ 일정 추가</button></div><div id="schedAddForm" style="display:none">
-        <div class="inrow" style="margin-top:12px">
-          <input id="schTime" class="in" style="flex:none;width:96px" placeholder="시간 예:1300" onblur="this.value=normTime(this.value)">
-          <input id="schTitle" class="in" style="flex:1" placeholder="일정 제목">
-        </div>
-        <textarea id="schDetail" class="in" style="width:100%;min-height:70px;margin-top:8px;resize:vertical" placeholder="세부 내용"></textarea>
-        <div style="margin-top:10px"><button class="btn y" onclick="addSchedule()">저장</button></div></div>
-      </div>
-      <div class="card" id="inboxCard">
-        <h3><span class="dot"></span> INBOX <span class="more" onclick="go('inbox')" style="cursor:pointer"><span id="inboxCount"></span> 전체 →</span></h3>
-        <ul class="todo fill" id="inboxList"></ul>
-        <div class="addrow">
-          <input id="inboxInput" placeholder="입력 후 Enter">
-          <button class="btn" onclick="addInbox()">추가</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" id="sessionSecCard" style="display:none">
-      <h3><span class="dot" style="background:#6a8fd8"></span> 회기일정 <span class="more" id="sessionCount"></span></h3>
-      <div class="tblx"><table class="ledger sess-tbl">
-        <thead><tr><th style="width:19%">회기</th><th style="width:23%">기간</th><th style="width:26%">주요안건</th><th style="width:14%">비고</th><th style="width:74px"></th></tr></thead>
-        <tbody id="sessionBody"></tbody>
-      </table></div>
-      <div class="inrow" style="margin-top:12px;flex-wrap:wrap">
-        <input id="seName" class="in" style="flex:1;min-width:130px" placeholder="회기 (예: 제312회 정기회)">
-        <input id="seStart" type="date" class="in" style="flex:none;width:146px">
-        <input id="seEnd" type="date" class="in" style="flex:none;width:146px">
-        <textarea id="seAgenda" class="in" rows="1" style="flex:1.6;min-width:140px;min-height:38px;resize:vertical" placeholder="주요안건"></textarea>
-        <input id="seNote" class="in" style="flex:1;min-width:100px" placeholder="비고">
-        <button class="btn y" style="flex:none" onclick="addSession()">추가</button>
-      </div>
-      <div style="margin-top:8px;font-size:12px;color:var(--muted)">기간을 넣으면 달력에 해당 기간이 옅게 음영으로 표시됩니다.</div>
-    </div>
-
-    <div class="card" id="workSecCard" style="display:none">
-      <h3><span class="dot" style="background:var(--yellow)"></span> 업무 <span class="more" onclick="go('work')">전체 →</span></h3>
-      <div class="tabs" id="dashWorkTabs">
-        <button class="tab wk" data-t="의회운영" onclick="setDashWorkTab('의회운영')">의회운영</button>
-        <button class="tab wk" data-t="법규정" onclick="setDashWorkTab('법규정')">법규정</button>
-        <button class="tab wk" data-t="매뉴얼" onclick="setDashWorkTab('매뉴얼')">매뉴얼</button>
-      </div>
-      <div style="margin-top:14px">
-        <input id="wTitle" class="in" style="width:100%" placeholder="제목">
-        <textarea id="wContent" class="in" style="width:100%;min-height:90px;margin-top:8px;resize:vertical" placeholder="내용"></textarea>
-        <div style="margin-top:10px"><button class="btn y" onclick="addWorkDash()">＋ 추가</button></div>
-      </div>
-      <div id="dashWorkFeed" style="margin-top:12px"></div>
-    </div>
-    <div class="card" id="studySecCard" style="display:none">
-      <h3><span class="dot" style="background:var(--red)"></span> 우리는 매일매일 <span class="more" style="cursor:pointer" onclick="goStudy(dashStudyTab)">전체 →</span></h3>
-      <div class="tabs" id="dashStudyTabs">
-        <button class="tab st" data-t="단어" onclick="setDashStudyTab('단어')">단어</button>
-        <button class="tab st" data-t="영어" onclick="setDashStudyTab('영어')">영어</button>
-        <button class="tab st" data-t="지식" onclick="setDashStudyTab('지식')">지식</button>
-        <button class="tab st" data-t="문화" onclick="setDashStudyTab('문화')">문화</button>
-      </div>
-      <div id="dashStudyForm" style="margin-top:14px"></div>
-      <div id="dashStudyFeed" style="margin-top:12px"></div>
-    </div>
-    <div class="card" id="readSecCard" style="display:none">
-      <h3><span class="dot" style="background:var(--green)"></span> 독서 <span class="more" onclick="go('reading')">독서목록 →</span></h3>
-      <div class="inrow">
-        <select id="exBook" class="in" onchange="fillChapters()" style="flex:1.2"></select>
-        <select id="exChapter" class="in" style="flex:1.2"></select>
-        <input id="exText" class="in" style="flex:2.2" placeholder="발췌" onfocus="fwStart('excerpt',this)">
-        <input id="exPage" class="in" style="flex:none;width:110px" placeholder="페이지 1~3">
-        <button class="btn y" style="flex:none" onclick="addExcerpt()">추가</button>
-      </div>
-      <div style="margin-top:10px"><button class="btn ghost" onclick="toggleBookForm()">＋ 책 추가</button></div>
-      <div id="bookForm" style="display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:14px">
-        <div class="form">
-          <div class="isbnrow" style="display:flex;gap:8px;align-items:flex-end;margin-bottom:4px">
-            <div class="field" style="flex:1"><label>ISBN으로 자동 입력</label><input id="bIsbn" placeholder="예: 9788934972464" onkeydown="if(event.key==='Enter'){event.preventDefault();isbnLookup('b')}"></div>
-            <button class="btn ghost" style="flex:none" onclick="isbnLookup('b')">조회</button><button class="btn ghost" style="flex:none;padding:7px 9px" title="알라딘 API 키 설정 (한국 도서 정확 조회)" onclick="setAladinKey()">⚙</button>
-            <span id="bIsbnStat" style="font-size:11.5px;color:var(--muted);padding-bottom:10px"></span><input type="hidden" id="bCover"><img id="bCoverPrev" style="display:none;height:52px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.15)" alt="표지">
-          </div>
-          <div class="two">
-            <div class="field"><label>책제목</label><input id="bTitle" placeholder="예: 사피엔스"></div>
-            <div class="field"><label>저자 / 역자</label><input id="bAuthor" placeholder="예: 유발 하라리 / 조현욱"></div>
-          </div>
-          <div class="two">
-            <div class="field"><label>출판사</label><input id="bPub" placeholder="예: 김영사"></div>
-            <div class="field"><label>총페이지</label><input type="number" id="bPages" placeholder="예: 636"></div>
-          </div>
-          <div class="two">
-            <div class="field"><label>시작일</label><input type="date" id="bStart"></div>
-            <div class="field"><label>종료일 (읽는 중이면 비움)</label><input type="date" id="bEnd"></div>
-          </div>
-          <div class="two">
-            <div class="field"><label>카테고리</label><input id="bCat" placeholder="예: 인문, 자기계발" list="catList"><datalist id="catList"></datalist></div>
-            <div class="field"><label>연결 (링크·선택)</label><input id="bLink" placeholder="구매/메모 URL"></div>
-          </div>
-          <div class="field"><label>목차 (한 줄에 한 챕터씩)</label><textarea id="bChapters" placeholder="1부 인지혁명&#10;2부 농업혁명&#10;3부 인류의 통합"></textarea></div>
-          <div><button class="btn y" onclick="addBook()">책 등록</button></div>
-        </div>
-      </div>
-      <div id="dashReadFeed" style="margin-top:12px"></div>
-    </div>
-    <div class="card" id="assetSecCard" style="display:none">
-      <h3><span class="dot"></span> 자산 <span class="more" onclick="go('assets')">가계부 →</span></h3>
-      <div class="tabs" id="dashAssetTabs">
-        <button class="tab exp" data-t="지출" onclick="setDashAssetTab('지출')">지출</button>
-        <button class="tab inv" data-t="투자" onclick="setDashAssetTab('투자')">투자</button>
-        <button class="tab inc" data-t="수입" onclick="setDashAssetTab('수입')">수입</button>
-      </div>
-      <div class="inrow" style="margin-top:14px">
-        <select id="dCat" class="in" style="flex:1.1"></select>
-        <input id="dItem" class="in" style="flex:1.6" placeholder="내역">
-        <input id="dAmount" class="in" inputmode="numeric" style="flex:1" placeholder="금액" oninput="fmtNum(this)">
-        <input id="dNote" class="in" style="flex:1" placeholder="비고">
-        <button class="btn y" style="flex:none" onclick="addAssetDash()">추가</button>
-      </div>
-      <div id="dashAssetFeed" style="margin-top:12px"></div>
-    </div>
-    <div class="card" id="diarySecCard" style="display:none">
-      <h3><span class="dot" style="background:#6a8fd8"></span> 일기 <span class="more" onclick="go('diary')">전체 →</span></h3>
-      <textarea id="diaryInput" class="in" style="width:100%;min-height:110px;resize:vertical" placeholder="오늘의 일기를 남겨보세요" onfocus="fwStart('diary',this)"></textarea>
-      <div style="margin-top:10px;text-align:center"><button class="btn y" onclick="addDiary()">＋ 저장</button></div>
-      <div id="dashDiaryFeed" style="margin-top:12px"></div>
-    </div>
 
   </section>
 
@@ -1115,6 +998,142 @@
       </div>
     </div>
   </section>
+
+  <!-- ===== 하단 공용 섹션 (버튼으로 열고 닫음 · 모든 메뉴에서 보임) ===== -->
+  <div id="secDock">
+    <div class="grid">
+      <div class="card" id="calCard" style="grid-column:1/-1">
+        <h3><span class="dot"></span> SCHEDULE</h3>
+        <div class="cal-head"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><b id="calTitle"></b></div>
+          <div class="cal-nav"><button onclick="shiftMonth(-1)">‹</button> <button onclick="goToday()" style="width:auto;padding:0 10px;font-size:12px">오늘</button> <button onclick="shiftMonth(1)">›</button></div>
+        </div>
+        <table class="cal"><thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead>
+        <tbody id="calBody"></tbody></table>
+      </div>
+      <div class="card" id="schedCard">
+        <h3><span class="dot"></span> <span id="schedLabel"></span> <span class="more" id="schedCount"></span></h3>
+        <div id="schedList" class="fill"></div><div style="margin-top:12px"><button class="btn y" id="schedAddToggle" onclick="toggleSchedForm()">＋ 일정 추가</button></div><div id="schedAddForm" style="display:none">
+        <div class="inrow" style="margin-top:12px">
+          <input id="schTime" class="in" style="flex:none;width:96px" placeholder="시간 예:1300" onblur="this.value=normTime(this.value)">
+          <input id="schTitle" class="in" style="flex:1" placeholder="일정 제목">
+        </div>
+        <textarea id="schDetail" class="in" style="width:100%;min-height:70px;margin-top:8px;resize:vertical" placeholder="세부 내용"></textarea>
+        <div style="margin-top:10px"><button class="btn y" onclick="addSchedule()">저장</button></div></div>
+      </div>
+      <div class="card" id="inboxCard">
+        <h3><span class="dot"></span> INBOX <span class="more" onclick="go('inbox')" style="cursor:pointer"><span id="inboxCount"></span> 전체 →</span></h3>
+        <ul class="todo fill" id="inboxList"></ul>
+        <div class="addrow">
+          <input id="inboxInput" placeholder="입력 후 Enter">
+          <button class="btn" onclick="addInbox()">추가</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="sessionSecCard" style="display:none">
+      <h3><span class="dot" style="background:#6a8fd8"></span> 회기일정 <span class="more" id="sessionCount"></span></h3>
+      <div class="tblx"><table class="ledger sess-tbl">
+        <thead><tr><th style="width:19%">회기</th><th style="width:23%">기간</th><th style="width:26%">주요안건</th><th style="width:14%">비고</th><th style="width:74px"></th></tr></thead>
+        <tbody id="sessionBody"></tbody>
+      </table></div>
+      <div class="inrow" style="margin-top:12px;flex-wrap:wrap">
+        <input id="seName" class="in" style="flex:1;min-width:130px" placeholder="회기 (예: 제312회 정기회)">
+        <input id="seStart" type="date" class="in" style="flex:none;width:146px">
+        <input id="seEnd" type="date" class="in" style="flex:none;width:146px">
+        <textarea id="seAgenda" class="in" rows="1" style="flex:1.6;min-width:140px;min-height:38px;resize:vertical" placeholder="주요안건"></textarea>
+        <input id="seNote" class="in" style="flex:1;min-width:100px" placeholder="비고">
+        <button class="btn y" style="flex:none" onclick="addSession()">추가</button>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:var(--muted)">기간을 넣으면 달력에 해당 기간이 옅게 음영으로 표시됩니다.</div>
+    </div>
+
+    <div class="card" id="workSecCard" style="display:none">
+      <h3><span class="dot" style="background:var(--yellow)"></span> 업무 <span class="more" onclick="go('work')">전체 →</span></h3>
+      <div class="tabs" id="dashWorkTabs">
+        <button class="tab wk" data-t="의회운영" onclick="setDashWorkTab('의회운영')">의회운영</button>
+        <button class="tab wk" data-t="법규정" onclick="setDashWorkTab('법규정')">법규정</button>
+        <button class="tab wk" data-t="매뉴얼" onclick="setDashWorkTab('매뉴얼')">매뉴얼</button>
+      </div>
+      <div style="margin-top:14px">
+        <input id="wTitle" class="in" style="width:100%" placeholder="제목">
+        <textarea id="wContent" class="in" style="width:100%;min-height:90px;margin-top:8px;resize:vertical" placeholder="내용"></textarea>
+        <div style="margin-top:10px"><button class="btn y" onclick="addWorkDash()">＋ 추가</button></div>
+      </div>
+      <div id="dashWorkFeed" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="studySecCard" style="display:none">
+      <h3><span class="dot" style="background:var(--red)"></span> 우리는 매일매일 <span class="more" style="cursor:pointer" onclick="goStudy(dashStudyTab)">전체 →</span></h3>
+      <div class="tabs" id="dashStudyTabs">
+        <button class="tab st" data-t="단어" onclick="setDashStudyTab('단어')">단어</button>
+        <button class="tab st" data-t="영어" onclick="setDashStudyTab('영어')">영어</button>
+        <button class="tab st" data-t="지식" onclick="setDashStudyTab('지식')">지식</button>
+        <button class="tab st" data-t="문화" onclick="setDashStudyTab('문화')">문화</button>
+      </div>
+      <div id="dashStudyForm" style="margin-top:14px"></div>
+      <div id="dashStudyFeed" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="readSecCard" style="display:none">
+      <h3><span class="dot" style="background:var(--green)"></span> 독서 <span class="more" onclick="go('reading')">독서목록 →</span></h3>
+      <div class="inrow">
+        <select id="exBook" class="in" onchange="fillChapters()" style="flex:1.2"></select>
+        <select id="exChapter" class="in" style="flex:1.2"></select>
+        <input id="exText" class="in" style="flex:2.2" placeholder="발췌" onfocus="fwStart('excerpt',this)">
+        <input id="exPage" class="in" style="flex:none;width:110px" placeholder="페이지 1~3">
+        <button class="btn y" style="flex:none" onclick="addExcerpt()">추가</button>
+      </div>
+      <div style="margin-top:10px"><button class="btn ghost" onclick="toggleBookForm()">＋ 책 추가</button></div>
+      <div id="bookForm" style="display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:14px">
+        <div class="form">
+          <div class="isbnrow" style="display:flex;gap:8px;align-items:flex-end;margin-bottom:4px">
+            <div class="field" style="flex:1"><label>ISBN으로 자동 입력</label><input id="bIsbn" placeholder="예: 9788934972464" onkeydown="if(event.key==='Enter'){event.preventDefault();isbnLookup('b')}"></div>
+            <button class="btn ghost" style="flex:none" onclick="isbnLookup('b')">조회</button><button class="btn ghost" style="flex:none;padding:7px 9px" title="알라딘 API 키 설정 (한국 도서 정확 조회)" onclick="setAladinKey()">⚙</button>
+            <span id="bIsbnStat" style="font-size:11.5px;color:var(--muted);padding-bottom:10px"></span><input type="hidden" id="bCover"><img id="bCoverPrev" style="display:none;height:52px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.15)" alt="표지">
+          </div>
+          <div class="two">
+            <div class="field"><label>책제목</label><input id="bTitle" placeholder="예: 사피엔스"></div>
+            <div class="field"><label>저자 / 역자</label><input id="bAuthor" placeholder="예: 유발 하라리 / 조현욱"></div>
+          </div>
+          <div class="two">
+            <div class="field"><label>출판사</label><input id="bPub" placeholder="예: 김영사"></div>
+            <div class="field"><label>총페이지</label><input type="number" id="bPages" placeholder="예: 636"></div>
+          </div>
+          <div class="two">
+            <div class="field"><label>시작일</label><input type="date" id="bStart"></div>
+            <div class="field"><label>종료일 (읽는 중이면 비움)</label><input type="date" id="bEnd"></div>
+          </div>
+          <div class="two">
+            <div class="field"><label>카테고리</label><input id="bCat" placeholder="예: 인문, 자기계발" list="catList"><datalist id="catList"></datalist></div>
+            <div class="field"><label>연결 (링크·선택)</label><input id="bLink" placeholder="구매/메모 URL"></div>
+          </div>
+          <div class="field"><label>목차 (한 줄에 한 챕터씩)</label><textarea id="bChapters" placeholder="1부 인지혁명&#10;2부 농업혁명&#10;3부 인류의 통합"></textarea></div>
+          <div><button class="btn y" onclick="addBook()">책 등록</button></div>
+        </div>
+      </div>
+      <div id="dashReadFeed" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="assetSecCard" style="display:none">
+      <h3><span class="dot"></span> 자산 <span class="more" onclick="go('assets')">가계부 →</span></h3>
+      <div class="tabs" id="dashAssetTabs">
+        <button class="tab exp" data-t="지출" onclick="setDashAssetTab('지출')">지출</button>
+        <button class="tab inv" data-t="투자" onclick="setDashAssetTab('투자')">투자</button>
+        <button class="tab inc" data-t="수입" onclick="setDashAssetTab('수입')">수입</button>
+      </div>
+      <div class="inrow" style="margin-top:14px">
+        <select id="dCat" class="in" style="flex:1.1"></select>
+        <input id="dItem" class="in" style="flex:1.6" placeholder="내역">
+        <input id="dAmount" class="in" inputmode="numeric" style="flex:1" placeholder="금액" oninput="fmtNum(this)">
+        <input id="dNote" class="in" style="flex:1" placeholder="비고">
+        <button class="btn y" style="flex:none" onclick="addAssetDash()">추가</button>
+      </div>
+      <div id="dashAssetFeed" style="margin-top:12px"></div>
+    </div>
+    <div class="card" id="diarySecCard" style="display:none">
+      <h3><span class="dot" style="background:#6a8fd8"></span> 일기 <span class="more" onclick="go('diary')">전체 →</span></h3>
+      <textarea id="diaryInput" class="in" style="width:100%;min-height:110px;resize:vertical" onfocus="fwStart('diary',this)"></textarea>
+      <div style="margin-top:10px;text-align:center"><button class="btn y" onclick="addDiary()">＋ 저장</button></div>
+      <div id="dashDiaryFeed" style="margin-top:12px"></div>
+    </div>
+  </div>
 </main>
 
 <div class="exv-back" id="exvBack" onclick="closeExcerptView()">
@@ -1151,9 +1170,9 @@
   </div>
 </div>
 
-<div class="fw-back" id="fwBack" onclick="fwClose()">
+<div class="fw-back" id="fwBack" onclick="fwBackClick()">
   <div class="fw" onclick="event.stopPropagation()">
-    <div class="fw-head"><span class="dot" style="background:var(--yellow)"></span><b id="fwTitle"></b><span class="fw-x" onclick="fwClose()">×</span></div>
+    <div class="fw-head"><span class="dot" style="background:var(--yellow)"></span><b id="fwTitle"></b><span class="fw-kind" id="fwKind"><button type="button" data-k="기록" onclick="fwKindSet('기록')">기록</button><button type="button" data-k="단상" onclick="fwKindSet('단상')">단상</button></span><span class="fw-x" onclick="fwClose()">×</span></div>
     <div class="fw-body" id="fwBody"></div>
     <div class="fw-foot"><span class="fw-hint" id="fwHint"></span><button class="btn y" onclick="fwSave()">저장</button></div>
   </div>
@@ -1307,6 +1326,10 @@ function go(v){
   var stab=null;
   if(v&&v.indexOf('study:')===0){stab=v.slice(6);v='study';}
   if(v==='study'&&stab)detailStudyTab=stab;
+  var prev=curView();
+  if(prev==='dashboard'&&v!=='dashboard')dashDockState=dockGetState();   /* 대시보드 상태 저장 */
+  if(v!=='dashboard'&&prev!==v)dockAllOff();                             /* 다른 메뉴: 버튼 모두 꺼진 상태 */
+  else if(v==='dashboard'&&prev!=='dashboard')dockApply(dashDockState||{cal:true,sched:true,inbox:true,secs:['study','read','diary']});
   document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='view-'+v));
   syncNav(v);
   var __sb=document.querySelector('.sidebar');if(__sb)__sb.classList.remove('open');renderAll();window.scrollTo(0,0);
@@ -1370,9 +1393,11 @@ function wxIcon(c){c=Number(c);if(c===0)return '☀️';if(c===1||c===2)return '
 async function fetchWeather(){if(weatherData||weatherLoading)return;weatherLoading=true;try{var url='https://api.open-meteo.com/v1/forecast?latitude=36.6&longitude=126.66&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&hourly=temperature_2m,precipitation_probability,relative_humidity_2m,weather_code&timezone=Asia/Seoul&forecast_days=14';var r=await fetch(url);weatherData=await r.json();}catch(e){weatherData={error:String(e)};}weatherLoading=false;renderCal();renderSchedule();}
 function weatherCellHTML(key){if(!weatherData||!weatherData.daily)return weatherLoading?'<span class="wx-load">…</span>':'';var t=weatherData.daily.time;var i=t?t.indexOf(key):-1;if(i<0)return '';var hi=Math.round(weatherData.daily.temperature_2m_max[i]);var lo=Math.round(weatherData.daily.temperature_2m_min[i]);var pop=weatherData.daily.precipitation_probability_max[i];return '<div class="wx"><span class="wx-ic">'+wxIcon(weatherData.daily.weather_code[i])+'</span><span class="wx-t">'+hi+'°/'+lo+'°</span><span class="wx-p">☔'+(pop==null?'-':pop)+'%</span></div>';}
 function hourlyWeatherHTML(key){if(weatherLoading)return '<div class="empty">날씨 불러오는 중…</div>';if(!weatherData||!weatherData.hourly)return '<div class="empty">날씨 데이터를 불러오지 못했습니다.</div>';var H=weatherData.hourly;var keys=[key,nextDay(key)];var idx=[];for(var i=0;i<H.time.length;i++){var dp=H.time[i].slice(0,10);if(keys.indexOf(dp)<0)continue;if((+H.time[i].slice(11,13))%3===0)idx.push(i);}if(!idx.length)return '<div class="empty">해당 날짜의 시간별 예보가 없습니다. (오늘부터 2주 이내만 제공)</div>';var CW=46;var head='<tr><th></th>';var lastD='';for(var a=0;a<idx.length;a++){var t=H.time[idx[a]];var dp=t.slice(0,10);var hh=+t.slice(11,13);var dl='';if(dp!==lastD){dl='<span class="wx-day">'+(+dp.slice(8,10))+'일</span>';lastD=dp;}head+='<td class="wx-h">'+dl+hh+'시</td>';}head+='</tr>';function rowf(lb,f){var o='<tr><th>'+lb+'</th>';for(var a=0;a<idx.length;a++)o+=f(idx[a]);return o+'</tr>';}var rW=rowf('날씨',function(i){return '<td>'+wxIcon(H.weather_code[i])+'</td>';});var temps=[];for(var a=0;a<idx.length;a++)temps.push(Math.round(H.temperature_2m[idx[a]]));var mx=Math.max.apply(null,temps),mn=Math.min.apply(null,temps),ch=54,pd=16;function ty(v){return mx===mn?ch/2:pd+(ch-2*pd)*(1-(v-mn)/(mx-mn));}var pts='',dots='',VW=1000;for(var a=0;a<temps.length;a++){var x=(a+0.5)/temps.length*VW,y=ty(temps[a]);pts+=x+','+y+' ';dots+='<circle cx="'+x+'" cy="'+y+'" r="5" fill="#3a7bd5"/>';}var chartRow='<tr class="wx-cr"><th></th><td colspan="'+temps.length+'"><svg width="100%" height="'+ch+'" viewBox="0 0 '+VW+' '+ch+'" preserveAspectRatio="none" style="display:block"><polyline fill="none" stroke="#7fb0e8" stroke-width="2" points="'+pts+'"/>'+dots+'</svg></td></tr>';var rT=rowf('기온',function(i){return '<td>'+Math.round(H.temperature_2m[i])+'°</td>';});var rP=rowf('강수',function(i){var p=H.precipitation_probability[i];return '<td class="wx-pp">'+(p==null?'-':p+'%')+'</td>';});var rH=rowf('습도',function(i){var h=H.relative_humidity_2m[i];return '<td>'+(h==null?'-':h+'%')+'</td>';});return '<div class="wx-scroll"><table class="wx-table">'+head+rW+chartRow+rT+rP+rH+'</table></div>';}
-function toggleCalendar(){var c=document.getElementById('calCard');if(!c)return;var tbl=c.querySelector('.cal'),nav=c.querySelector('.cal-nav');var on=tbl.style.display!=='none';tbl.style.display=on?'none':'';if(nav)nav.style.display=on?'none':'';var b=document.getElementById('calToggleBtn');if(b)b.classList.toggle('on',!on);}
-function toggleSchedPanel(){var c=document.getElementById('schedCard');if(!c)return;var on=c.style.display!=='none';c.style.display=on?'none':'';var b=document.getElementById('schedToggleBtn');if(b)b.classList.toggle('on',!on);}
-function toggleInboxPanel(){var c=document.getElementById('inboxCard');if(!c)return;var on=c.style.display!=='none';c.style.display=on?'none':'';var b=document.getElementById('inboxToggleBtn');if(b)b.classList.toggle('on',!on);}
+function toggleCalendar(){var c=document.getElementById('calCard');if(!c)return;var tbl=c.querySelector('.cal'),nav=c.querySelector('.cal-nav');var on=c.style.display!=='none'&&tbl.style.display!=='none';var show=!on;
+  c.style.display=show?'':(curView()==='dashboard'?'':'none');   /* 대시보드에선 카드 틀 유지, 다른 메뉴에선 통째로 숨김 */
+  tbl.style.display=show?'':'none';if(nav)nav.style.display=show?'':'none';var b=document.getElementById('calToggleBtn');if(b)b.classList.toggle('on',show);if(show)secScroll(c);}
+function toggleSchedPanel(){var c=document.getElementById('schedCard');if(!c)return;var on=c.style.display!=='none';c.style.display=on?'none':'';var b=document.getElementById('schedToggleBtn');if(b)b.classList.toggle('on',!on);if(!on)secScroll(c);}
+function toggleInboxPanel(){var c=document.getElementById('inboxCard');if(!c)return;var on=c.style.display!=='none';c.style.display=on?'none':'';var b=document.getElementById('inboxToggleBtn');if(b)b.classList.toggle('on',!on);if(!on)secScroll(c);}
 function toggleSchedForm(){var f=document.getElementById('schedAddForm');if(!f)return;var on=f.style.display!=='none';f.style.display=on?'none':'';if(!on){var t=document.getElementById('schTitle');if(t)t.focus();}}
 function setSectionOn(name,on){var c=document.getElementById(name+'SecCard');var b=document.getElementById(name+'SecBtn');
   if(!c)return;c.style.display=on?'':'none';if(b)b.classList.toggle('on',on);}
@@ -1393,14 +1418,37 @@ function showMyThree(){
   var t=document.getElementById('studySecCard');
   if(t&&t.scrollIntoView)setTimeout(function(){t.scrollIntoView({behavior:'smooth',block:'start'});},60);
 }
-function toggleSection(name){var c=document.getElementById(name+'SecCard');var b=document.getElementById(name+'SecBtn');if(!c)return;var on=c.style.display!=='none';c.style.display=on?'none':'';if(b)b.classList.toggle('on',!on);}
+function toggleSection(name){var c=document.getElementById(name+'SecCard');var b=document.getElementById(name+'SecBtn');if(!c)return;var on=c.style.display!=='none';c.style.display=on?'none':'';if(b)b.classList.toggle('on',!on);if(!on)secScroll(c);}
+/* 버튼으로 섹션을 켜면 하단에 생성된 위치로 스크롤 */
+function secScroll(el){if(el&&el.scrollIntoView)setTimeout(function(){el.scrollIntoView({behavior:'smooth',block:'start'});},60);}
+/* ----- 상단 버튼 상태: 대시보드는 상태 기억, 다른 메뉴는 모두 꺼진 상태로 시작 ----- */
+var dashDockState=null;
+var DOCK_SECS=['study','work','read','asset','diary','session'];
+function dockGetState(){
+  var c=document.getElementById('calCard'),tbl=c?c.querySelector('.cal'):null;
+  function vis(id){var e=document.getElementById(id);return !!(e&&e.style.display!=='none');}
+  return {cal:!!(c&&c.style.display!=='none'&&tbl&&tbl.style.display!=='none'),
+    sched:vis('schedCard'),inbox:vis('inboxCard'),
+    secs:DOCK_SECS.filter(function(n){return vis(n+'SecCard');})};
+}
+function dockApply(st){st=st||{};
+  var c=document.getElementById('calCard');
+  if(c){var tbl=c.querySelector('.cal'),nav=c.querySelector('.cal-nav'),v=!!st.cal;
+    c.style.display=v?'':'none';if(tbl)tbl.style.display=v?'':'none';if(nav)nav.style.display=v?'':'none';
+    var b=document.getElementById('calToggleBtn');if(b)b.classList.toggle('on',v);}
+  setPanelOn('schedCard','schedToggleBtn',!!st.sched);
+  setPanelOn('inboxCard','inboxToggleBtn',!!st.inbox);
+  DOCK_SECS.forEach(function(n){setSectionOn(n,!!(st.secs&&st.secs.indexOf(n)>=0));});
+}
+function dockAllOff(){dockApply({cal:false,sched:false,inbox:false,secs:[]});}
 function applyWeatherLayout(){var sc=document.getElementById('schedCard'),ib=document.getElementById('inboxCard'),af=document.getElementById('schedAddForm'),tg=document.getElementById('schedAddToggle');if(sc)sc.style.gridColumn=showWeather?'1/-1':'';if(ib)ib.style.display=showWeather?'none':'';if(af)af.style.display='none';if(tg)tg.style.display=showWeather?'none':'';}
 function toggleWeather(){showWeather=!showWeather;var b=document.getElementById('weatherBtn');if(b)b.classList.toggle('on',showWeather);if(showWeather&&!weatherData)fetchWeather();applyWeatherLayout();renderCal();renderSchedule();}
-function addDiary(inputId){var el=document.getElementById(inputId||'diaryInput');if(!el)return;var v=el.value.trim();if(!v)return;db.diary.push({id:uid(),date:today(),text:v});save();el.value='';renderDiary();renderDiaryPage();renderCal();}
+function addDiary(inputId){var el=document.getElementById(inputId||'diaryInput');if(!el)return;var v=el.value.trim();if(!v)return;db.diary.push({id:uid(),date:today(),text:v,kind:fwDiaryKind||'기록'});save();el.value='';renderDiary();renderDiaryPage();renderCal();}
 function editDiary(id,val){var x=db.diary.find(function(a){return a.id===id;});if(!x)return;var v=String(val).trim();if(v)x.text=v;save();}
 function delDiary(id){db.diary=db.diary.filter(function(a){return a.id!==id;});save();renderDiary();renderDiaryPage();}
 function diaryItem(x){return '<div class="entry"><div class="meta">'+
   '<span class="day">'+esc(x.date||'')+'</span>'+
+  (x.kind?'<span class="dy-kind">'+esc(x.kind)+'</span>':'')+
   '<span class="pen-ic" style="margin-left:auto" title="수정" onclick="editDiaryFull('+x.id+')">✎</span>'+
   '<span class="del" onclick="delDiary('+x.id+')">×</span></div>'+
   '<div class="body ex-clip" title="크게 보기" onclick="openDiaryView('+x.id+')">'+fwR(x.text)+'</div></div>';}
@@ -1409,20 +1457,22 @@ var dvId=null;
 function diaryById(id){return db.diary.find(function(a){return a.id===id;});}
 function openDiaryView(id){var x=diaryById(id);if(!x)return;
   dvId=id;exvBook=null;exvId=null;
-  document.getElementById('exvMeta').textContent=x.date||'';
-  document.getElementById('exvBody').innerHTML=fwR(x.text);
+  document.getElementById('exvMeta').textContent=(x.date||'')+(x.kind?' · '+x.kind:'');
+  var bd=document.getElementById('exvBody');bd.classList.add('dy');bd.innerHTML=fwR(x.text);
   document.getElementById('exvBack').classList.add('on');}
 function editDiaryFull(id){var x=diaryById(id);if(!x)return;
-  dvId=id;
+  dvId=id;fwDiaryKind=x.kind||'기록';
   document.getElementById('dyEditText').value=x.text||'';
   fwOpen('dyedit','일기 수정',['dyEditText'],['dyEditText'],saveDiaryFull);}
 function saveDiaryFull(){
   var x=diaryById(dvId);if(!x){dvId=null;return;}
   var tx=document.getElementById('dyEditText').value;
   if(!String(tx).replace(/<[^>]*>/g,'').trim()){alert('내용을 입력하세요.');return;}
-  x.text=tx;dvId=null;save();renderDiary();renderDiaryPage();renderCal();}
+  x.text=tx;x.kind=fwDiaryKind||x.kind||'기록';dvId=null;save();renderDiary();renderDiaryPage();renderCal();}
 function renderDiary(){var el=document.getElementById('dashDiaryFeed');if(!el)return;var td=today();var list=db.diary.filter(function(x){return x.date===td;});el.innerHTML=list.length?('<div class="datehdr">오늘</div>'+list.map(diaryItem).join('')):'<div class="empty">오늘 일기가 없습니다.</div>';}
-function renderDiaryPage(){var el=document.getElementById('diaryPage');if(!el)return;var cnt=document.getElementById('diaryCount');if(cnt)cnt.textContent=db.diary.length+'건';if(!db.diary.length){el.innerHTML='<div class="empty">작성한 일기가 없습니다.</div>';return;}var g={};db.diary.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));}).forEach(function(x){(g[x.date]=g[x.date]||[]).push(x);});el.innerHTML=Object.keys(g).map(function(d){return '<div class="datehdr">'+d+'</div>'+g[d].map(diaryItem).join('');}).join('');}
+var diaryOpen={};   /* 펼쳐진 날짜 목록 */
+function toggleDiaryDate(d){diaryOpen[d]=!diaryOpen[d];renderDiaryPage();}
+function renderDiaryPage(){var el=document.getElementById('diaryPage');if(!el)return;var cnt=document.getElementById('diaryCount');if(cnt)cnt.textContent=db.diary.length+'건';if(!db.diary.length){el.innerHTML='<div class="empty">작성한 일기가 없습니다.</div>';return;}var g={};db.diary.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));}).forEach(function(x){(g[x.date]=g[x.date]||[]).push(x);});el.innerHTML=Object.keys(g).map(function(d){var open=!!diaryOpen[d];return '<div class="datehdr dy-date" onclick="toggleDiaryDate(\''+esc(d)+'\')"><span>'+esc(d)+'</span><span class="dy-cnt">'+g[d].length+'건</span><span class="dy-arrow">'+(open?'▾':'▸')+'</span></div>'+(open?g[d].map(diaryItem).join(''):'');}).join('');}
 let __pushT=null;
 function syncCode(){return localStorage.getItem(SYNC_KEY)||'';}
 function cloudHeaders(){return {apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json'};}
@@ -2933,6 +2983,7 @@ function excerptOf(bookId,exId){var b=bookById(bookId);if(!b)return null;
 function openExcerptView(bookId,exId){
   var b=bookById(bookId), e=excerptOf(bookId,exId);if(!b||!e)return;
   exvBook=bookId;exvId=exId;
+  document.getElementById('exvBody').classList.remove('dy');
   document.getElementById('exvMeta').textContent=
     (e.chapter||'')+(e.page?' · p.'+e.page:'')+(e.date?' · '+e.date:'');
   document.getElementById('exvBody').innerHTML=fwR(e.text);
@@ -4090,6 +4141,10 @@ function fwStart(kind,src){
   var c=FW_KINDS[kind];if(c)fwOpen(kind,c[0],c[1],c[2],c[3]);
 }
 var FW_RICH={diary:1,diary2:1,excerpt:1,chex:1,exedit:1,dyedit:1,cheonildesc:1,cmdesc:1};   // 큰화면에서 서식 편집을 쓰는 종류
+/* 일기 종류: 기록 / 단상 */
+var fwDiaryKind='기록';
+function fwKindSet(k){fwDiaryKind=k;fwKindPaint();}
+function fwKindPaint(){document.querySelectorAll('#fwKind button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-k')===fwDiaryKind);});}
 function fwLooksHtml(t){return /<[a-z][\s\S]*>/i.test(String(t||''));}
 function fwR(t){t=String(t==null?'':t);return fwLooksHtml(t)?t:esc(t);}   // 저장된 서식(HTML)은 그대로, 일반 글은 이스케이프
 var FW_FONT_KO={'Gowun Batang':'고운바탕','Gowun Dodum':'고운돋움','Nanum Myeongjo':'나눔명조',
@@ -4124,21 +4179,28 @@ function fwToolbar(ed){
     +'<button type="button" class="fw-hl" data-hl="#EDE4FF" title="음영 · 라벤더" style="background:#EDE4FF"></button>'
     +'<button type="button" class="fw-hl" data-hl="#FFE8D1" title="음영 · 살구" style="background:#FFE8D1"></button>'
     +'<button type="button" class="fw-hl fw-hl-off" data-hl="transparent" title="음영 지우기">×</button>'
-    +'<span class="fw-now" title="지금 쓰는 글씨체·크기">고운바탕 · 12pt</span>';
+    +'<span class="fw-now" title="지금 쓰는 글씨체·크기">고운바탕 · 11pt</span>';
   var now=bar.querySelector('.fw-now');
+  var selFont=bar.querySelector('select[data-c="fontName"]'), selSize=bar.querySelector('select[data-c="fontSize"]');
   function run(cmd,val){ed.focus();try{document.execCommand('styleWithCSS',false,true);}catch(e){}
     document.execCommand(cmd,false,val||null);setTimeout(upd,0);}
-  /* 커서 위치의 실제 글씨체·크기를 읽어서 표시 */
+  /* 커서 위치의 실제 글씨체·크기를 읽어서 표시 (드롭다운에도 현재값 반영) */
+  var FW_PTS=[8,10,12,14,18,24,36];
   function upd(){
-    if(!now)return;
     var node=null;
     try{var sel=window.getSelection();if(sel&&sel.anchorNode)node=sel.anchorNode;}catch(e){}
     if(node&&node.nodeType===3)node=node.parentNode;
     if(!node||!ed.contains(node))node=ed;
     var cs;try{cs=window.getComputedStyle(node);}catch(e){return;}
     var fam=String(cs.fontFamily||'').split(',')[0].replace(/["']/g,'').trim();
-    var px=parseFloat(cs.fontSize)||16;
-    now.textContent=(FW_FONT_KO[fam]||fam||'기본')+' · '+Math.round(px*0.75)+'pt';
+    var px=parseFloat(cs.fontSize)||16, pt=Math.round(px*0.75);
+    if(now)now.textContent=(FW_FONT_KO[fam]||fam||'기본')+' · '+pt+'pt';
+    if(selFont){var has=false;for(var i=0;i<selFont.options.length;i++){if(selFont.options[i].value===fam){has=true;break;}}
+      if(has){selFont.options[0].text='글씨체';selFont.value=fam;}
+      else{selFont.options[0].text=(FW_FONT_KO[fam]||fam||'글씨체');selFont.value='';}}
+    if(selSize){var hit=-1;for(var j=0;j<FW_PTS.length;j++){if(Math.abs(FW_PTS[j]-pt)<0.6){hit=j;break;}}
+      if(hit>=0){selSize.options[0].text='크기';selSize.value=String(hit+1);}
+      else{selSize.options[0].text=pt+'pt';selSize.value='';}}
   }
   bar.__upd=upd;
   ['keyup','mouseup','focus','input'].forEach(function(ev){ed.addEventListener(ev,function(){setTimeout(upd,0);});});
@@ -4153,7 +4215,7 @@ function fwToolbar(ed){
     });
   });
   bar.querySelectorAll('select').forEach(function(sel){
-    sel.addEventListener('change',function(){if(this.value){run(sel.getAttribute('data-c'),this.value);this.selectedIndex=0;}});
+    sel.addEventListener('change',function(){if(this.value){run(sel.getAttribute('data-c'),this.value);}});
   });
   return bar;
 }
@@ -4163,6 +4225,13 @@ function fwOpen(kind,title,ids,mains,saveFn){
   var rich=!!FW_RICH[kind];
   fwCfg={kind:kind,ids:ids,mains:mains,save:saveFn,rich:rich};
   document.getElementById('fwTitle').textContent=title;
+  /* 일기 종류(기록/단상) 버튼: 일기 쓰기·수정에서만 표시 */
+  var kbox=document.getElementById('fwKind');
+  if(kbox){
+    var isDy=(kind==='diary'||kind==='diary2'||kind==='dyedit');
+    kbox.classList.toggle('on',isDy);
+    if(isDy){if(kind!=='dyedit')fwDiaryKind='기록';fwKindPaint();}
+  }
   document.getElementById('fwHint').textContent=rich?'':((mains.indexOf('diaryInput')>=0||mains.indexOf('diaryInput2')>=0)
     ? 'Esc 닫기' : 'Enter 저장 · Shift+Enter 줄바꿈 · Esc 닫기');
   body.innerHTML='';
@@ -4210,6 +4279,11 @@ function fwRefresh(exceptId){
   });
 }
 function fwClose(){var back=document.getElementById('fwBack');if(back)back.classList.remove('on');fwCfg=null;}
+/* 일기 팝업은 빈 곳(배경)을 눌러도 닫히지 않음 — X 버튼으로만 종료 */
+function fwBackClick(){
+  if(fwCfg&&(fwCfg.kind==='diary'||fwCfg.kind==='diary2'||fwCfg.kind==='dyedit'))return;
+  fwClose();
+}
 function fwSave(){
   if(!fwCfg)return;
   var c=fwCfg;
