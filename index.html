@@ -469,6 +469,14 @@
   .tlx-stripe{position:absolute;background:rgba(244,183,64,.16);border-radius:6px;pointer-events:none}
   .tlx-bar{position:absolute;height:18px;background:#EDE4FF;border:none;border-radius:5px;display:flex;align-items:center;padding:0 5px;overflow:hidden}
   .tlx-bar span{font-family:inherit;font-size:10.5px;font-weight:600;color:#5b3fa8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.5}
+  /* ===== 초과근무 (기존 달력에 통합) ===== */
+  .cal-ot{width:100%;border:none;background:var(--cream);border-radius:6px;padding:3px 4px;font-size:11.5px;font-weight:700;color:var(--dark);text-align:center;font-family:inherit;outline:none;margin-top:4px;display:block}
+  .cal-ot:focus{background:#fff;box-shadow:0 0 0 2px var(--yellow)}
+  .cal-ot::-webkit-outer-spin-button,.cal-ot::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .cal td.cal-wk{vertical-align:middle;text-align:center;font-weight:800;color:var(--dark);font-size:13px;min-width:46px;background:var(--cream);border-radius:10px}
+  .cal th.cal-wkh{font-size:11px;color:var(--muted)}
+  #calOtFoot{margin-top:8px;font-size:13px;color:var(--text);text-align:right}
+  #calOtFoot b{font-size:15px;color:var(--dark)}
   .tl-ev.rt{background:#DDF5E6}.tl-ev.rt b{color:#1f6b4a}
   .tl-ev.ok{background:#bfe9cf}
   .tl-ev.done{opacity:.5}.tl-ev.done b{text-decoration:line-through}
@@ -887,7 +895,7 @@
 
 <main class="main">
   <!-- ===== 상단 고정 섹션 버튼 (모든 메뉴에서 보임) ===== -->
-  <div id="topSecBar"><button id="calToggleBtn" class="lunar-toggle on" onclick="toggleCalendar()">달력</button><button id="schedToggleBtn" class="lunar-toggle on" onclick="toggleSchedPanel()">스케줄</button><button id="tlToggleBtn" class="lunar-toggle" onclick="toggleTimeline()">타임라인</button><button id="studySecBtn" class="lunar-toggle" onclick="toggleSection('study')">매일매일</button><button id="workSecBtn" class="lunar-toggle" onclick="toggleSection('work')">업무</button><button id="readSecBtn" class="lunar-toggle" onclick="toggleSection('read')">독서</button><button id="assetSecBtn" class="lunar-toggle" onclick="toggleSection('asset')">자산</button><button id="diarySecBtn" class="lunar-toggle" onclick="toggleSection('diary')">일기</button><button id="rtNavBtn" class="lunar-toggle" onclick="go('routiner')">루티머</button><button id="weatherBtn" class="lunar-toggle" onclick="toggleWeather()">날씨</button><button id="lunarBtn" class="lunar-toggle" onclick="toggleLunar()">음력</button><button id="inboxToggleBtn" class="lunar-toggle on" onclick="toggleInboxPanel()">인박스</button><button id="sessionSecBtn" class="lunar-toggle" onclick="toggleSection('session')">회기일정</button></div>
+  <div id="topSecBar"><button id="calToggleBtn" class="lunar-toggle on" onclick="toggleCalendar()">달력</button><button id="schedToggleBtn" class="lunar-toggle on" onclick="toggleSchedPanel()">스케줄</button><button id="tlToggleBtn" class="lunar-toggle" onclick="toggleTimeline()">타임라인</button><button id="studySecBtn" class="lunar-toggle" onclick="toggleSection('study')">매일매일</button><button id="workSecBtn" class="lunar-toggle" onclick="toggleSection('work')">업무</button><button id="readSecBtn" class="lunar-toggle" onclick="toggleSection('read')">독서</button><button id="assetSecBtn" class="lunar-toggle" onclick="toggleSection('asset')">자산</button><button id="diarySecBtn" class="lunar-toggle" onclick="toggleSection('diary')">일기</button><button id="rtNavBtn" class="lunar-toggle" onclick="go('routiner')">루티머</button><button id="weatherBtn" class="lunar-toggle" onclick="toggleWeather()">날씨</button><button id="lunarBtn" class="lunar-toggle" onclick="toggleLunar()">음력</button><button id="inboxToggleBtn" class="lunar-toggle on" onclick="toggleInboxPanel()">인박스</button><button id="sessionSecBtn" class="lunar-toggle" onclick="toggleSection('session')">회기일정</button><button id="otSecBtn" class="lunar-toggle" onclick="toggleOvertime()">초과근무</button></div>
   <div class="topbar">
     <div></div>
     <div class="right">
@@ -1101,6 +1109,7 @@
         </div>
         <table class="cal"><thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead>
         <tbody id="calBody"></tbody></table>
+        <div id="calOtFoot" style="display:none"></div>
       </div>
       <div class="card" id="schedCard">
         <h3><span class="dot"></span> <span id="schedLabel"></span> <span class="more" id="schedCount"></span></h3>
@@ -1335,7 +1344,7 @@ const dstr=(off=0)=>{const t=new Date();t.setDate(t.getDate()-off);
   return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');};
 const today=()=>dstr(0);
 let db=load();
-function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.routines)db.routines=[];if(!db.tlRoutines)db.tlRoutines=[];if(!db.tlrLog)db.tlrLog={};if(!db.tlProjects)db.tlProjects=[];if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
+function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.routines)db.routines=[];if(!db.tlRoutines)db.tlRoutines=[];if(!db.tlrLog)db.tlrLog={};if(!db.tlProjects)db.tlProjects=[];if(!db.overtime)db.overtime={};if(db.otRate==null)db.otRate=12113;if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
   if(!db.cheonildu||Array.isArray(db.cheonildu)){
     var __oldCd=Array.isArray(db.cheonildu)?db.cheonildu:[];var __chapMap={};var __chapOrder=[];
     __oldCd.forEach(function(x){var cn=x.chapter||'(챕터 미입력)';if(!__chapMap[cn]){__chapMap[cn]={id:uid(),name:cn,units:[]};__chapOrder.push(cn);}
@@ -1604,8 +1613,7 @@ function renderTimeline(){
     var endMn=Math.min(e.mn+e.dur,24*60-1);
     var range=tlFmt(e.mn)+'~'+tlFmt(endMn);
     html+='<div class="tl-ev'+(e.k==='r'?' rt':'')+(e.done?' done':'')+(e.ok?' ok':'')+'" data-k="'+e.k+'" data-id="'+e.id+'"'
-      +' ondblclick="tlOpenTimer(\''+e.k+'\','+e.id+')"'
-      +' style="left:'+left+'px;top:'+(8+li*38)+'px;width:'+bw+'px" title="'+escA(e.title+(e.detail?' — '+e.detail:'')+' ('+range+') — 더블클릭: 타이머')+'">'
+      +' style="left:'+left+'px;top:'+(8+li*38)+'px;width:'+bw+'px" title="'+escA(e.title+(e.detail?' — '+e.detail:'')+' ('+range+') — 두 번 탭: 타이머')+'">'
       +'<b>'+esc(lbl)+'</b><span class="tl-time">'+range+'</span></div>';
   });
   var trackH=Math.max(110,8+Math.max(1,lanes.length)*38+18);
@@ -1652,7 +1660,13 @@ function tlBindDrag(){
       if(!tlDrag||tlDrag.el!==el)return;
       el.classList.remove('dragging');
       var d=tlDrag;tlDrag=null;
-      if(!d.moved)return;
+      if(!d.moved){
+        /* 이동 없이 두 번 탭(클릭) → 타이머 (모바일 포함) */
+        var now=Date.now();
+        if(now-(el.__lastTap||0)<450){el.__lastTap=0;tlOpenTimer(d.k,d.id);}
+        else el.__lastTap=now;
+        return;
+      }
       var left=parseFloat(el.style.left);
       var mn=Math.round((left/TL_HW*60)/5)*5+TL_START*60;   /* 5분 단위 스냅 */
       mn=Math.max(TL_START*60,Math.min(mn,TL_END*60));
@@ -1664,6 +1678,41 @@ function tlBindDrag(){
     el.addEventListener('pointerup',finish);
     el.addEventListener('pointercancel',function(){if(tlDrag&&tlDrag.el===el){tlDrag=null;el.classList.remove('dragging');renderTimeline();}});
   });
+}
+/* ===== 초과근무: 기존 달력에 통합 (버튼 → 날짜칸에 시간 입력 + 주합계·월합계) ===== */
+var showOvertime=false;
+function otFmtH(n){return String(Math.round(n*10)/10);}
+function toggleOvertime(){
+  showOvertime=!showOvertime;
+  var b=document.getElementById('otSecBtn');if(b)b.classList.toggle('on',showOvertime);
+  if(showOvertime){
+    var c=document.getElementById('calCard');
+    if(c){var tbl=c.querySelector('.cal'),nav=c.querySelector('.cal-nav');
+      if(c.style.display==='none'||(tbl&&tbl.style.display==='none')){
+        c.style.display='';if(tbl)tbl.style.display='';if(nav)nav.style.display='';
+        var cb=document.getElementById('calToggleBtn');if(cb)cb.classList.add('on');
+      }
+      secScroll(c);
+    }
+  }
+  renderCal();
+}
+function calOtSet(el){
+  var k=el.getAttribute('data-k'),v=parseFloat(el.value);
+  if(isNaN(v)||v<=0)delete db.overtime[k];else db.overtime[k]=v;
+  save();calOtRecalc();
+}
+function calOtRecalc(){
+  if(!showOvertime)return;
+  var total=0;
+  document.querySelectorAll('#calBody tr').forEach(function(tr){
+    var s=0;
+    tr.querySelectorAll('.cal-ot').forEach(function(i){s+=parseFloat(i.value)||0;});
+    var wk=tr.querySelector('.cal-wk');if(wk)wk.textContent=s>0?otFmtH(s):'';
+    total+=s;
+  });
+  var f=document.getElementById('calOtFoot');
+  if(f)f.innerHTML='이번 달 초과근무 합계 <b>'+otFmtH(total)+'</b> 시간';
 }
 /* ----- 스케줄 타이머: 더블클릭 → 별도 창(다른 모니터로 이동 가능)에서 소요시간 카운트다운 ----- */
 function tlOpenTimer(kind,id){
@@ -1977,7 +2026,8 @@ function dockApply(st){st=st||{};
   if(st.tl&&typeof renderTimeline==='function')renderTimeline();
   DOCK_SECS.forEach(function(n){setSectionOn(n,!!(st.secs&&st.secs.indexOf(n)>=0));});
 }
-function dockAllOff(){dockApply({cal:false,sched:false,inbox:false,secs:[]});}
+function dockAllOff(){dockApply({cal:false,sched:false,inbox:false,secs:[]});
+  showOvertime=false;var ob=document.getElementById('otSecBtn');if(ob)ob.classList.remove('on');}
 function applyWeatherLayout(){var sc=document.getElementById('schedCard'),ib=document.getElementById('inboxCard'),af=document.getElementById('schedAddForm'),tg=document.getElementById('schedAddToggle');if(sc)sc.style.gridColumn=showWeather?'1/-1':'';if(ib)ib.style.display=showWeather?'none':'';if(af)af.style.display='none';if(tg)tg.style.display=showWeather?'none':'';var rb=document.getElementById('routineBox');if(rb)rb.style.display=showWeather?'none':((sc&&sc.style.display==='none')?'none':'');}
 function toggleWeather(){showWeather=!showWeather;var b=document.getElementById('weatherBtn');if(b)b.classList.toggle('on',showWeather);if(showWeather&&!weatherData)fetchWeather();applyWeatherLayout();renderCal();renderSchedule();}
 function addDiary(inputId){var el=document.getElementById(inputId||'diaryInput');if(!el)return;var v=el.value.trim();if(!v)return;db.diary.push({id:uid(),date:today(),text:v,kind:fwDiaryKind||'기록'});save();el.value='';renderDiary();renderDiaryPage();renderCal();}
@@ -2296,10 +2346,21 @@ function renderCal(){
         const st=SOLARTERM[key];
         const chips=sc.slice(0,2).map(s=>`<span class="schip" draggable="true" ondragstart="schedDragStart(event,${s.id})">${s.time?esc(s.time)+' ':''}${esc(s.title)}</span>`).join('')
           +(sc.length>2?`<span class="smore">+${sc.length-2}</span>`:'');
+        const otCell=(showOvertime&&!showWeather)?`<input class="cal-ot" data-k="${key}" type="number" min="0" step="0.5" value="${db.overtime&&db.overtime[key]!=null?db.overtime[key]:''}" onclick="event.stopPropagation()" onchange="calOtSet(this)" title="초과근무 시간">`:'';
         html+=`<td><div class="d ${key===tk?'today':''} ${key===selDate?'sel':''} ${hn?'hol':''} ${isSun?'sun':''} ${ses.length?'sess':''}"${ses.length?` title="${escA(ses.map(z=>(z.name||'회기')+(z.agenda?' · '+z.agenda:'')).join(' / '))}"`:''} onclick="selectDate('${key}')" ondragover="event.preventDefault()" ondrop="schedDrop(event,'${key}')">
-          <div class="dnum"><span class="n">${day}</span>${showLunar?`<span class="lun">(${lunarOf(key)})</span>`:''}${hn?`<span class="holname">${esc(hn)}</span>`:''}${st?`<span class="term">${st}</span>`:''}${set.has(key)?'<span class="rec"></span>':''}${sesTag}</div>${showWeather?weatherCellHTML(key):chips}</div></td>`;day++;}
-    }html+='</tr>';if(day>dim&&r>=4)break;}
+          <div class="dnum"><span class="n">${day}</span>${showLunar?`<span class="lun">(${lunarOf(key)})</span>`:''}${hn?`<span class="holname">${esc(hn)}</span>`:''}${st?`<span class="term">${st}</span>`:''}${set.has(key)?'<span class="rec"></span>':''}${sesTag}</div>${showWeather?weatherCellHTML(key):chips}${otCell}</div></td>`;day++;}
+    }
+    if(showOvertime)html+='<td class="cal-wk"></td>';
+    html+='</tr>';if(day>dim&&r>=4)break;}
   document.getElementById('calBody').innerHTML=html;
+  /* 초과근무 모드: 주합계 열 머리글 + 월합계 표시줄 */
+  var hr=document.querySelector('#calCard .cal thead tr');
+  if(hr){var ex=hr.querySelector('.cal-wkh');
+    if(showOvertime&&!ex)hr.insertAdjacentHTML('beforeend','<th class="cal-wkh">주합계</th>');
+    else if(!showOvertime&&ex)ex.remove();}
+  var otf=document.getElementById('calOtFoot');
+  if(otf)otf.style.display=showOvertime?'':'none';
+  calOtRecalc();
 }
 function shiftMonth(d){viewM+=d;if(viewM<0){viewM=11;viewY--}if(viewM>11){viewM=0;viewY++}renderCal();}
 function goToday(){const t=new Date();viewY=t.getFullYear();viewM=t.getMonth();selDate=today();renderCal();renderSchedule();}
@@ -2327,7 +2388,7 @@ function exportICS(futureOnly){
       var hm=s.time.replace(':','');
       out.push('DTSTART;TZID=Asia/Seoul:'+d+'T'+hm+'00');
       var h=Number(s.time.slice(0,2)), m=Number(s.time.slice(3,5));
-      var end=new Date(2000,0,1,h,m+60);
+      var end=new Date(2000,0,1,h,m+(s.dur>0?s.dur:60));
       var endD=(end.getDate()>1)?icsDate(nextDay(s.date)):d;
       out.push('DTEND;TZID=Asia/Seoul:'+endD+'T'+String(end.getHours()).padStart(2,'0')+String(end.getMinutes()).padStart(2,'0')+'00');
     }else{
@@ -2436,7 +2497,7 @@ function gcalMark(ok){
 }
 function gcalEventPayload(s,act){
   return {type:act,uid:'hmd-'+s.id,date:s.date,time:(/^\d{2}:\d{2}$/.test(s.time||'')?s.time:''),
-    title:s.title||'',detail:s.detail||'',done:!!s.done};
+    dur:(s.dur>0?s.dur:60),title:s.title||'',detail:s.detail||'',done:!!s.done};
 }
 function gcalPushAll(futureOnly){
   var u=gcalGet();
@@ -2453,7 +2514,7 @@ function gcalPushAll(futureOnly){
       var ds=dstr2(d);
       rtEvents.push({type:'upsert',uid:'hmd-rt-'+r.id+'-'+ds,date:ds,
         time:(/^\d{2}:\d{2}$/.test(r.time||'')?r.time:''),
-        title:'[루틴] '+r.title,detail:'',done:false});
+        dur:(r.dur>0?r.dur:30),title:'[루틴] '+r.title,detail:'',done:false});
     }
   });
   var msg='일정 '+list.length+'건'+(rts.length?' + 루틴 '+rts.length+'개(30일치)':'')+'를 구글 캘린더로 보낼까요?';
@@ -2538,7 +2599,8 @@ function gcalShowScript(){
 '  var title = p.title || "(제목 없음)";',
 '  if (p.time){',
 '    var st = new Date(p.date+"T"+p.time+":00");',
-'    var en = new Date(st.getTime()+3600000);',
+'    var mins = (p.dur && p.dur>0) ? p.dur : 60;   // 소요시간(분), 없으면 60분',
+'    var en = new Date(st.getTime()+mins*60000);',
 '    if (ev){',
 '      if (ev.isAllDayEvent()){ ev.deleteEvent(); ev = null; }',
 '      else { ev.setTime(st, en); ev.setTitle(title); ev.setDescription(p.detail||""); }',
