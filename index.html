@@ -416,6 +416,10 @@
   .cm-live{margin-top:8px;border:1px solid var(--line);border-radius:9px;background:#fbfbf8;padding:9px 12px;font-size:14px;line-height:1.7}
   .cm-live-h{font-size:10.5px;font-weight:800;color:var(--muted);letter-spacing:.4px;margin-bottom:4px}
   .cm-md{cursor:text;border-radius:9px;background:#fbfbf8;min-height:22px}
+  /* 천일문(대시보드): 고운돋움 + 영어 문장 전체 표시 */
+  .cd-dodum,.cd-dodum p,.cd-dodum li{font-family:'Gowun Dodum',sans-serif}
+  .cd-sent-full{font-family:'Gowun Dodum',sans-serif;font-size:14.5px;line-height:1.75;margin-top:8px;padding:9px 12px;border-radius:9px;background:var(--cream);white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;color:var(--dark)}
+  #fw_cdSentence,#fw_cdDesc{font-family:'Gowun Dodum',sans-serif}
   .cm-md:hover{outline:1px dashed var(--line)}
   .cm-md.wv-preview,.cm-live.wv-preview{padding:9px 12px;font-size:14px;line-height:1.7}
   .cm-md.wv-preview h1,.cm-live.wv-preview h1{font-size:19px;margin:10px 0 6px}
@@ -3674,13 +3678,13 @@ function cheonilDashFeedHTML(){
   const td=today();const items=[];
   cheonilChapters().forEach(c=>(c.units||[]).forEach(u=>{if(u.date===td&&(u.desc||u.sentence))items.push({c,u});}));
   if(!items.length)return '<div class="empty">오늘 작성한 천일문이 없습니다.</div>';
-  return '<div class="datehdr">오늘 작성한 천일문</div>'+items.map(({c,u})=>`<div class="entry">
+  return items.map(({c,u})=>`<div class="entry">
       <div class="cm-row">
         <span class="cm-tag">${esc(c.name)}</span>
         <span class="cm-tag unit">${esc(u.name||'UNIT')}</span>
-        <span class="cm-sent" style="border-bottom:none">${esc(u.sentence||'')}</span>
       </div>
-      <div class="cm-md wv-preview">${cheonilMd(u.desc)}</div></div>`).join('');
+      <div class="cm-md wv-preview cd-dodum">${cheonilMd(u.desc)}</div>
+      ${u.sentence?`<div class="cd-sent-full">${esc(u.sentence)}</div>`:''}</div>`).join('');
 }
 function cheonilDashHTML(){
   return `<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">
@@ -3688,9 +3692,8 @@ function cheonilDashHTML(){
     <div class="inrow">
       <select id="cdChapter" class="in" style="flex:1" onchange="fillCheonilDashUnits()"></select>
       <select id="cdUnit" class="in" style="flex:1" onchange="fillCheonilDashUnitFields()"></select>
-      <input id="cdSentence" class="in" style="flex:1.7;font-family:'Nanum Myeongjo',serif" placeholder="Sentence" onfocus="fwStart('cheonil',this)">
     </div>
-    <textarea id="cdDesc" class="in" style="margin-top:8px;min-height:84px" placeholder="" onfocus="fwStart('cheonildesc',this)"></textarea>
+    <textarea id="cdDesc" class="in" style="display:block;width:100%;margin-top:8px;min-height:84px;font-family:'Gowun Dodum',sans-serif" placeholder="" onfocus="fwStart('cheonildesc',this)"></textarea>
     <div style="margin-top:10px;display:flex;gap:8px">
       <button class="btn y" onclick="saveCheonilDash()">저장</button>
       <button class="btn ghost" onclick="toggleCheonilChapterForm()">＋ CHAPTER/UNIT 추가</button>
@@ -3707,6 +3710,10 @@ function cheonilDashHTML(){
       </div>
     </div>
     <div id="cheonilDashFeed" style="margin-top:12px">${cheonilDashFeedHTML()}</div>
+    <div class="inrow" style="margin-top:10px">
+      <input id="cdSentence" class="in" style="flex:1;font-family:'Gowun Dodum',sans-serif" placeholder="영어 문장 (Sentence)" onfocus="fwStart('cheonil',this)">
+      <button class="btn y" style="flex:none" onclick="saveCheonilDash()">저장</button>
+    </div>
   </div>`;
 }
 
