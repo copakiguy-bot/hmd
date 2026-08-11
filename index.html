@@ -3682,9 +3682,27 @@ function cheonilDashFeedHTML(){
       <div class="cm-row">
         <span class="cm-tag">${esc(c.name)}</span>
         <span class="cm-tag unit">${esc(u.name||'UNIT')}</span>
+        <span class="pen-ic" style="margin-left:auto" title="수정" onclick="editCheonilDash(${c.id},${u.id})">✎</span>
+        <span class="del" title="삭제" onclick="delCheonilDash(${c.id},${u.id})">×</span>
       </div>
       <div class="cm-md wv-preview cd-dodum">${cheonilMd(u.desc)}</div>
       ${u.sentence?`<div class="cd-sent-full">${esc(u.sentence)}</div>`:''}</div>`).join('');
+}
+/* 작성한 천일문 수정: 해당 챕터·유닛을 선택해 편집기 열기 */
+function editCheonilDash(cid,uid2){
+  const cs=document.getElementById('cdChapter');if(!cs)return;
+  cs.value=String(cid);fillCheonilDashUnits();
+  const us=document.getElementById('cdUnit');if(us)us.value=String(uid2);
+  fillCheonilDashUnitFields();
+  fwStart('cheonildesc',document.getElementById('cdDesc'));
+}
+/* 작성한 천일문 삭제: 설명·문장을 비움 (챕터·유닛 목차는 유지) */
+function delCheonilDash(cid,uid2){
+  if(!confirm('이 천일문 내용을 삭제할까요? (챕터·유닛 목차는 남습니다)'))return;
+  const u=cheonilUnitById(cid,uid2);if(!u)return;
+  u.desc='';u.sentence='';delete u.date;
+  save();renderDashStudy();renderStudy();renderCal();
+  fillCheonilDashUnitFields();
 }
 function cheonilDashHTML(){
   return `<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">
