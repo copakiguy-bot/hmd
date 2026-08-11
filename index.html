@@ -418,7 +418,7 @@
   .cm-md{cursor:text;border-radius:9px;background:#fbfbf8;min-height:22px}
   /* 천일문(대시보드): 고운돋움 + 영어 문장 전체 표시 */
   .cd-dodum,.cd-dodum p,.cd-dodum li{font-family:'Gowun Dodum',sans-serif}
-  .cd-sent-full{font-family:'Gowun Dodum',sans-serif;font-size:14.5px;line-height:1.75;margin-top:8px;padding:9px 12px;border-radius:9px;background:var(--cream);white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;color:var(--dark)}
+  .cd-sent-full{font-family:'Gowun Dodum',sans-serif;font-size:12pt;line-height:1.75;margin-top:8px;padding:9px 12px;border-radius:9px;background:var(--cream);white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;color:var(--dark);overflow:visible}
   #fw_cdSentence,#fw_cdDesc{font-family:'Gowun Dodum',sans-serif}
   .cm-md:hover{outline:1px dashed var(--line)}
   .cm-md.wv-preview,.cm-live.wv-preview{padding:9px 12px;font-size:14px;line-height:1.7}
@@ -3629,8 +3629,12 @@ function fillCheonilDashSelectors(){
   const cs=document.getElementById('cdChapter');if(!cs)return;
   const chapters=cheonilChapters();const prevC=cs.value;
   cs.innerHTML=chapters.length?chapters.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join(''):'<option value="">No CHAPTER</option>';
-  if(prevC&&chapters.some(c=>String(c.id)===prevC))cs.value=prevC;
+  const t0=cheonilTodayItems();
+  if(t0.length&&chapters.some(c=>c.id===t0[0].c.id))cs.value=String(t0[0].c.id);   /* 오늘 작성분이 있으면 그 챕터·유닛 고정 */
+  else if(prevC&&chapters.some(c=>String(c.id)===prevC))cs.value=prevC;
   fillCheonilDashUnits();
+  if(t0.length){const us=document.getElementById('cdUnit');
+    if(us&&Array.prototype.some.call(us.options,o=>o.value===String(t0[0].u.id))){us.value=String(t0[0].u.id);fillCheonilDashUnitFields();}}
 }
 function fillCheonilDashUnits(){
   const cs=document.getElementById('cdChapter'),us=document.getElementById('cdUnit');if(!cs||!us)return;
@@ -3674,9 +3678,13 @@ function cheonilUnitAddDash(){
   addCheonilUnit(Number(sel.value),el.value);el.value='';
   fillCheonilDashSelectors();renderStudy();
 }
-function cheonilDashFeedHTML(){
+function cheonilTodayItems(){
   const td=today();const items=[];
   cheonilChapters().forEach(c=>(c.units||[]).forEach(u=>{if(u.date===td&&(u.desc||u.sentence))items.push({c,u});}));
+  return items;
+}
+function cheonilDashFeedHTML(){
+  const items=cheonilTodayItems();
   if(!items.length)return '<div class="empty">오늘 작성한 천일문이 없습니다.</div>';
   return items.map(({c,u})=>`<div class="entry">
       <div class="cm-row">
@@ -3707,6 +3715,8 @@ function delCheonilDash(cid,uid2){
 function cheonilDashHTML(){
   return `<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">
     <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:8px;letter-spacing:.3px">천일문</div>
+    ${(()=>{const t=cheonilTodayItems();const hasEntry=t.length>0;const hasSent=hasEntry&&t.some(i=>i.u.sentence);
+    return `<div id="cheonilCompose" style="${hasEntry?'display:none':''}">
     <div class="inrow">
       <select id="cdChapter" class="in" style="flex:1" onchange="fillCheonilDashUnits()"></select>
       <select id="cdUnit" class="in" style="flex:1" onchange="fillCheonilDashUnitFields()"></select>
@@ -3727,11 +3737,12 @@ function cheonilDashHTML(){
         <button class="btn ghost" style="flex:none" onclick="cheonilUnitAddDash()">UNIT 추가</button>
       </div>
     </div>
-    <div id="cheonilDashFeed" style="margin-top:12px">${cheonilDashFeedHTML()}</div>
-    <div class="inrow" style="margin-top:10px">
-      <input id="cdSentence" class="in" style="flex:1;font-family:'Gowun Dodum',sans-serif" placeholder="영어 문장 (Sentence)" onfocus="fwStart('cheonil',this)">
-      <button class="btn y" style="flex:none" onclick="saveCheonilDash()">저장</button>
     </div>
+    <div id="cheonilDashFeed" style="margin-top:12px">${cheonilDashFeedHTML()}</div>
+    <div class="inrow" style="margin-top:10px${hasSent?';display:none':''}">
+      <textarea id="cdSentence" class="in" style="flex:1;min-height:44px;resize:vertical;font-family:'Gowun Dodum',sans-serif" placeholder="영어 문장 (Sentence)" onfocus="fwStart('cheonil',this)"></textarea>
+      <button class="btn y" style="flex:none" onclick="saveCheonilDash()">저장</button>
+    </div>`;})()}
   </div>`;
 }
 
@@ -4278,7 +4289,7 @@ function fwOpen(kind,title,ids,mains,saveFn){
     kbox.classList.toggle('on',isDy);
     if(isDy){if(kind!=='dyedit')fwDiaryKind='기록';fwKindPaint();}
   }
-  document.getElementById('fwHint').textContent=rich?'':((mains.indexOf('diaryInput')>=0||mains.indexOf('diaryInput2')>=0)
+  document.getElementById('fwHint').textContent=rich?'':((mains.indexOf('diaryInput')>=0||mains.indexOf('diaryInput2')>=0||mains.indexOf('cdSentence')>=0)
     ? 'Esc 닫기' : 'Enter 저장 · Shift+Enter 줄바꿈 · Esc 닫기');
   body.innerHTML='';
   var row=document.createElement('div');row.className='inrow';row.style.flexWrap='wrap';
@@ -4360,7 +4371,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&fwCfg)fwClo
 
 /* ---------- Enter = 저장 / Shift+Enter = 줄바꿈 ---------- */
 /* 일기(일기 입력창·일기 본문)와 검색창은 제외 */
-var ES_SKIP={diaryInput:1,diaryInput2:1,wvq:1,expSearch:1,bkvNote:1};
+var ES_SKIP={diaryInput:1,diaryInput2:1,wvq:1,expSearch:1,bkvNote:1,cdSentence:1};   /* cdSentence: Enter=줄바꿈 */
 var ES_MAP={};
 function esSet(ids,fn){ids.forEach(function(i){ES_MAP[i]=fn;});}
 esSet(['schTime','schTitle','schDetail'],function(){addSchedule();});
@@ -4386,7 +4397,7 @@ esSet(['seeName','seeStart','seeEnd','seeAgenda','seeNote'],function(){saveSessi
 esSet(['cuKind','cuKindEtc','cuTitle','cuOne','cuReview','cuTags','cuNote'],function(){addCulture('cu');});
 esSet(['ctDate','ctKind','ctKindEtc','ctTitle','ctOne','ctReview','ctTags','ctNote'],function(){addCulture('ct');});
 esSet(['syncInput'],function(){setSyncCode();});
-esSet(['cdSentence','cdDesc'],function(){saveCheonilDash();});
+esSet(['cdDesc'],function(){saveCheonilDash();});
 esSet(['ccdChapter'],function(){cheonilChapterAddDash();});
 esSet(['ccdUnit'],function(){cheonilUnitAddDash();});
 esSet(['ccIn'],function(){cheonilChapterAdd();});
