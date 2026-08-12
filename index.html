@@ -276,10 +276,11 @@
   .section-title{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.4px;margin:24px 0 4px}
   .menu-btn{display:none}
   @media(max-width:1000px){.grid,.row2,.two,.g2,.g3{grid-template-columns:1fr}.sidebar{display:none}.main{padding-top:58px}.menu-btn{display:flex;position:fixed;top:12px;left:12px;z-index:60;width:44px;height:44px;border-radius:12px;background:var(--dark);color:#fff;align-items:center;justify-content:center;font-size:20px;border:none;cursor:pointer;box-shadow:var(--shadow)}.sidebar.open{display:flex;position:fixed;left:0;top:0;height:100vh;z-index:59}}
-  /* 명조체: 우리는 매일매일 / 독서 발췌 / 일기 / 스케줄 세부내역 */
+  /* 명조체: 우리는 매일매일 / 스케줄 세부내역 */
   #studyPane .mask,#studyPane .body,#dashStudyFeed .mask,#dashStudyFeed .body,
-  #bookDetail .body,#dashReadFeed .body,
   #schedList .sub{font-family:'Nanum Myeongjo',serif}
+  /* 독서 발췌 표시: 고운돋움 */
+  #bookDetail .body,#dashReadFeed .body{font-family:'Gowun Dodum',sans-serif}
   /* 일기: 고운바탕 + 칸(가로 폭) 넓게 + 가운데 정렬. 아래 700px(칸 너비)와 13px(폰트) 숫자만 바꾸면 조절됨 */
   #diaryPage,#dashDiaryFeed{max-width:700px;margin-left:auto;margin-right:auto}
   #diaryPage .body,#dashDiaryFeed .body{font-family:'Gowun Dodum',sans-serif;font-size:11pt;line-height:1.8;overflow-wrap:break-word}
@@ -307,7 +308,7 @@
   .exv{background:var(--card);border-radius:20px;box-shadow:0 26px 60px rgba(18,49,43,.26);width:min(720px,100%);max-height:86vh;display:flex;flex-direction:column;overflow:hidden;animation:fwIn .16s ease-out}
   .exv-head{display:flex;align-items:center;gap:9px;padding:18px 22px 10px;font-size:13px;font-weight:700;color:var(--muted)}
   .exv-head .dot{width:8px;height:8px;border-radius:50%;flex:none}
-  .exv-body{padding:4px 26px 26px;overflow:auto;font-family:'Nanum Myeongjo',serif;font-size:18px;line-height:1.95;color:var(--dark);white-space:pre-wrap;word-break:break-word}
+  .exv-body{padding:4px 26px 26px;overflow:auto;font-family:'Gowun Dodum',sans-serif;font-size:18px;line-height:1.95;color:var(--dark);white-space:pre-wrap;word-break:break-word}
   .ch-item{border-bottom:1px solid var(--line)}
   .ch-item:last-of-type{border-bottom:none}
   .ch-row{display:flex;align-items:center;gap:9px;padding:11px 6px;cursor:pointer;font-size:14px}
@@ -339,7 +340,7 @@
   .bkv-ch.on{background:var(--green-soft);color:var(--green);font-weight:700}
   .bkv-ch .cnt{margin-left:auto;font-size:11px;color:var(--muted);font-weight:600}
   .bkv-exs{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;overflow:auto;min-height:0}
-  .bkv-ex{font-family:'Nanum Myeongjo',serif;font-size:14.5px;line-height:1.75;color:var(--dark);padding:9px 12px;background:var(--cream);border-radius:12px;margin-bottom:8px}
+  .bkv-ex{font-family:'Gowun Dodum',sans-serif;font-size:14.5px;line-height:1.75;color:var(--dark);padding:9px 12px;background:var(--cream);border-radius:12px;margin-bottom:8px}
   .bkv-ex .pg{font-family:'Noto Sans KR',sans-serif;font-size:11px;color:var(--muted);font-weight:700;margin-bottom:3px}
   .bkv-note{padding:14px 26px 22px}
   .bkv-note textarea{width:100%;min-height:96px;resize:vertical;font-family:'Nanum Myeongjo',serif;font-size:15px;line-height:1.8;background:var(--cream);border:1px solid transparent;border-radius:14px;padding:13px 15px}
@@ -552,6 +553,11 @@
   .cm-uhead{display:flex;align-items:center;gap:9px;padding:11px 14px 11px 28px;cursor:pointer;user-select:none}
   .cm-uhead:hover{background:#fbfbf8}
   .cm-uname{flex:1;font-size:13.5px;font-weight:700}
+  .cm-uname.done{color:var(--green)}
+  .cm-uok{flex:none;width:18px;height:18px;border-radius:50%;background:#DDF5E6;color:#1f6b4a;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+  .tlr-time[contenteditable]{cursor:text;border-bottom:1px dashed transparent;padding:1px 3px;border-radius:4px}
+  .tlr-time[contenteditable]:hover{border-bottom-color:var(--yellow);background:var(--cream)}
+  .tlr-time[contenteditable]:focus{outline:none;background:#fff;box-shadow:0 0 0 2px var(--yellow)}
   .cm-ubody{padding:2px 14px 14px 28px}
   .cm-mdedit{width:100%;min-height:110px;resize:vertical;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.7}
   .cm-hint{font-size:11px;color:var(--muted);margin-top:5px}
@@ -1973,6 +1979,12 @@ function addTlRoutine(){
   renderTlRoutines();renderTimeline();
 }
 function tlrToggleActive(id){var r=db.tlRoutines.find(function(x){return x.id===id;});if(!r)return;r.active=(r.active===false);save();renderTlRoutines();renderTimeline();}
+function tlrEditTime(id,val){
+  var r=db.tlRoutines.find(function(x){return x.id===id;});if(!r)return;
+  var v=String(val).trim();
+  r.time=(v==='-'||v==='')?'':normTime(v);
+  save();renderTlRoutines();renderTimeline();
+}
 function delTlRoutine(id){if(!confirm('이 루틴을 삭제할까요?'))return;db.tlRoutines=db.tlRoutines.filter(function(x){return x.id!==id;});save();renderTlRoutines();renderTimeline();}
 function tlrOk(id,date){return !!(db.tlrLog&&db.tlrLog[date]&&db.tlrLog[date][id]);}
 function tlrToggleOk(id){db.tlrLog[selDate]=db.tlrLog[selDate]||{};db.tlrLog[selDate][id]=!db.tlrLog[selDate][id];save();renderTlRoutines();renderTimeline();}
@@ -1991,7 +2003,7 @@ function renderTlRoutines(){
     var ok=tlrOk(r.id,selDate);
     return '<div class="tlr-item'+(r.active===false?' off':'')+'">'
       +'<input type="checkbox" '+(r.active!==false?'checked':'')+' onchange="tlrToggleActive('+r.id+')" title="타임라인 표시 여부">'
-      +'<span class="tlr-time">'+esc(r.time||'-')+'</span>'
+      +'<span class="tlr-time" contenteditable title="눌러서 시간 수정 (예: 0700)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}" onblur="tlrEditTime('+r.id+',this.innerText)">'+esc(r.time||'-')+'</span>'
       +'<b>'+esc(r.title)+'</b>'
       +'<span class="tlr-ok'+(ok?' on':'')+'" onclick="tlrToggleOk('+r.id+')" title="선택한 날짜의 성공 여부">성공</span>'
       +'<span class="del" onclick="delTlRoutine('+r.id+')">×</span></div>';
@@ -4315,7 +4327,7 @@ function cheonilContentHTML(){
         }
         return `<div class="cm-unit">
           <div class="cm-uhead" onclick="toggleCheonilU(${u.id})">
-            <span class="cm-ca">${uOpen?'▾':'▸'}</span><span class="cm-uname">${esc(u.name||'UNIT')}</span></div>
+            <span class="cm-ca">${uOpen?'▾':'▸'}</span><span class="cm-uname${(u.desc||u.sentence)?' done':''}">${esc(u.name||'UNIT')}</span>${(u.desc||u.sentence)?'<span class="cm-uok" title="작성됨">✓</span>':''}</div>
           ${body}</div>`;
       }).join(''):unitsHTML;
     }
