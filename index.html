@@ -504,13 +504,33 @@
   .tlr-item.off b,.tlr-item.off .tlr-time{opacity:.4;text-decoration:line-through}
   .tlr-ok{flex:none;font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;cursor:pointer;background:#fff}
   .tlr-ok.on{background:var(--green);border-color:var(--green);color:#fff}
-  /* 루틴 통계 */
+  /* 루틴 통계 대시보드 */
   .tlr-stats{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
   .tlr-stats .tlr-stats-t{font-size:12px;font-weight:800;color:var(--muted);margin-bottom:8px;letter-spacing:.3px}
-  .tlr-stats table{width:100%;border-collapse:collapse;font-size:12.5px}
-  .tlr-stats th{font-size:11px;font-weight:800;color:var(--muted);text-align:left;padding:5px 8px;border-bottom:1px solid var(--line)}
-  .tlr-stats td{padding:7px 8px;border-bottom:1px solid var(--line);color:var(--text)}
-  .tlr-stats td:first-child{font-weight:700;color:var(--dark)}
+  .tlr-rings{display:flex;gap:44px;flex-wrap:wrap;margin:8px 0 18px;justify-content:center}
+  .tlr-ring{text-align:center}
+  .tlr-ring-l{font-size:13px;font-weight:800;color:var(--dark);margin-top:4px}
+  .tlr-ring-s{font-size:11.5px;color:var(--muted);font-weight:700}
+  .tlr-grid{border-collapse:collapse;font-size:11px;white-space:nowrap}
+  .tlr-grid th{font-size:10px;font-weight:800;color:var(--muted);padding:3px 2px;text-align:center;min-width:21px}
+  .tlr-grid th.su{color:var(--red)}
+  .tlr-grid th.sa{color:#2b5fd9}
+  .tlr-grid th.rn,.tlr-grid td.rn{text-align:left;min-width:110px;max-width:160px;position:sticky;left:0;background:var(--card);z-index:2;padding-right:10px}
+  .tlr-grid td.rn{font-size:12px;font-weight:700;color:var(--dark);overflow:hidden;text-overflow:ellipsis}
+  .tlr-grid td.rn .tm{font-size:10px;color:var(--muted);font-weight:700;margin-right:5px}
+  .tlr-grid td{padding:2px 1px;text-align:center}
+  .tlr-grid .tg{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:5px;border:1px solid var(--line);background:#fbfbf8;cursor:pointer;font-size:11px;font-weight:800;user-select:none}
+  .tlr-grid .tg:hover{border-color:var(--yellow)}
+  .tlr-grid th.tdy,.tlr-grid td.tdy{background:rgba(244,183,64,.13)}
+  .tlr-grid th.pr{min-width:170px;text-align:left;padding-left:10px}
+  .tlr-grid th.st{min-width:36px}
+  .tlr-grid td.pr{padding-left:10px}
+  .tlr-grid td.pr .prw{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;color:var(--muted)}
+  .tlr-grid td.pr .prw b{color:var(--dark);font-size:12px;min-width:34px;text-align:right}
+  .pbar{flex:1;height:8px;min-width:64px;background:var(--cream);border-radius:99px;overflow:hidden}
+  .pbar i{display:block;height:100%;border-radius:99px}
+  .tlr-grid td.st{font-size:12.5px;color:var(--dark)}
+  .tlr-hint{margin-top:7px;font-size:11px;color:var(--muted)}
   .cm-md:hover{outline:1px dashed var(--line)}
   .cm-md.wv-preview,.cm-live.wv-preview{padding:9px 12px;font-size:14px;line-height:1.7}
   .cm-md.wv-preview h1,.cm-live.wv-preview h1{font-size:19px;margin:10px 0 6px}
@@ -1956,9 +1976,16 @@ function tlrToggleActive(id){var r=db.tlRoutines.find(function(x){return x.id===
 function delTlRoutine(id){if(!confirm('이 루틴을 삭제할까요?'))return;db.tlRoutines=db.tlRoutines.filter(function(x){return x.id!==id;});save();renderTlRoutines();renderTimeline();}
 function tlrOk(id,date){return !!(db.tlrLog&&db.tlrLog[date]&&db.tlrLog[date][id]);}
 function tlrToggleOk(id){db.tlrLog[selDate]=db.tlrLog[selDate]||{};db.tlrLog[selDate][id]=!db.tlrLog[selDate][id];save();renderTlRoutines();renderTimeline();}
+/* 시간순 정렬 (시간 없는 루틴은 뒤로) */
+function tlrSorted(list){
+  return (list||[]).slice().sort(function(a,b){
+    var x=tlParseMin(a.time),y=tlParseMin(b.time);
+    return (x==null?1e9:x)-(y==null?1e9:y);
+  });
+}
 function renderTlRoutines(){
   var el=document.getElementById('tlrList');if(!el)return;
-  var list=db.tlRoutines||[];
+  var list=tlrSorted(db.tlRoutines);
   var cnt=document.getElementById('tlrCount');if(cnt)cnt.textContent=list.length?list.length+'개':'';
   el.innerHTML=list.length?list.map(function(r){
     var ok=tlrOk(r.id,selDate);
@@ -1970,22 +1997,72 @@ function renderTlRoutines(){
       +'<span class="del" onclick="delTlRoutine('+r.id+')">×</span></div>';
   }).join(''):'<div class="empty">루틴이 없습니다.</div>';
 }
-/* ----- 루틴 통계 (주 · 월) ----- */
+/* ----- 루틴 통계: 시각화 대시보드 (링 + 월간 체크 그리드 + 진행 막대 + 연속) ----- */
+var TLR_ACC=['#1c8258','#5b78d0','#d9930f','#d94f46','#2f9e8f','#8b5cd6'];   /* 검증된 강조색 */
+var TLR_WKBG=['#DDEBFF','#DDF5E6','#FFF3B8','#EDE4FF','#FFE8D1','#FFE0E6'];  /* 주별 파스텔 */
+var TLR_WKTX=['#2b5a9e','#1f6b4a','#8a6412','#5b3fa8','#8a5420','#b8506b'];
+function tlrStreak(r){
+  var n=0,d=new Date();
+  while(true){var k=dstr2(d);if(db.tlrLog[k]&&db.tlrLog[k][r.id]){n++;d.setDate(d.getDate()-1);}else break;}
+  return n;
+}
+function tlrRing(pct,color,label,sub){
+  var R=42,C=Math.round(2*Math.PI*R*100)/100,off=C*(1-Math.min(1,pct));
+  return '<div class="tlr-ring"><svg width="112" height="112" viewBox="0 0 112 112">'
+    +'<circle cx="56" cy="56" r="'+R+'" fill="none" stroke="#efece2" stroke-width="11"/>'
+    +'<circle cx="56" cy="56" r="'+R+'" fill="none" stroke="'+color+'" stroke-width="11" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+off+'" transform="rotate(-90 56 56)"/>'
+    +'<text x="56" y="63" text-anchor="middle" font-size="20" font-weight="800" fill="#12312b">'+Math.round(pct*100)+'%</text></svg>'
+    +'<div class="tlr-ring-l">'+label+'</div><div class="tlr-ring-s">'+sub+'</div></div>';
+}
+function tlrGridToggle(id,k){
+  db.tlrLog[k]=db.tlrLog[k]||{};
+  if(db.tlrLog[k][id])delete db.tlrLog[k][id];else db.tlrLog[k][id]=true;
+  save();renderTlRoutines();renderTimeline();
+}
 function tlrStatsHTML(){
-  var list=db.tlRoutines||[];if(!list.length)return '';
-  var t=new Date();var dowM=(t.getDay()+6)%7;   /* 월요일 시작 */
-  var wStart=new Date(t.getFullYear(),t.getMonth(),t.getDate()-dowM);
-  var mStart=new Date(t.getFullYear(),t.getMonth(),1);
-  var tEnd=new Date(t.getFullYear(),t.getMonth(),t.getDate());
-  function dk(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-  function cnt(r,from){var n=0,d=new Date(from.getTime());while(d<=tEnd){var k=dk(d);if(db.tlrLog[k]&&db.tlrLog[k][r.id])n++;d.setDate(d.getDate()+1);}return n;}
-  var wDays=dowM+1,mDays=t.getDate();
-  return '<div class="tlr-stats"><div class="tlr-stats-t">루틴 통계</div><table>'
-    +'<thead><tr><th>루틴</th><th>이번 주</th><th>이번 달</th></tr></thead><tbody>'
-    +list.map(function(r){
-      var w=cnt(r,wStart),m=cnt(r,mStart);
-      return '<tr><td>'+esc(r.title)+'</td><td>'+w+'/'+wDays+'일 · '+Math.round(w/wDays*100)+'%</td><td>'+m+'/'+mDays+'일 · '+Math.round(m/mDays*100)+'%</td></tr>';
-    }).join('')+'</tbody></table></div>';
+  var list=tlrSorted((db.tlRoutines||[]).filter(function(r){return r.active!==false;}));
+  if(!list.length)return '';
+  var t=new Date(),y=t.getFullYear(),m=t.getMonth(),dim=new Date(y,m+1,0).getDate(),td=t.getDate();
+  function key(d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
+  function ok(r,d){var k=key(d);return !!(db.tlrLog[k]&&db.tlrLog[k][r.id]);}
+  /* 요약 링: 오늘 · 이번 주 · 이번 달 */
+  var dowM=(t.getDay()+6)%7,wDays=dowM+1;
+  var todayOk=list.filter(function(r){return ok(r,td);}).length;
+  var wOk=0,mOk=0;
+  list.forEach(function(r){
+    for(var d=td-dowM;d<=td;d++)if(d>=1&&ok(r,d))wOk++;
+    for(var d2=1;d2<=td;d2++)if(ok(r,d2))mOk++;
+  });
+  var rings=tlrRing(list.length?todayOk/list.length:0,'#d9930f','오늘',todayOk+'/'+list.length)
+    +tlrRing(list.length*wDays?wOk/(list.length*wDays):0,'#1c8258','이번 주',wOk+'/'+(list.length*wDays))
+    +tlrRing(list.length*td?mOk/(list.length*td):0,'#5b78d0','이번 달',mOk+'/'+(list.length*td));
+  /* 월간 체크 그리드 */
+  var firstDow=new Date(y,m,1).getDay();
+  var head='<tr><th class="rn">루틴</th>';
+  for(var d3=1;d3<=dim;d3++){var dow=new Date(y,m,d3).getDay();
+    head+='<th class="'+(dow===0?'su':(dow===6?'sa':''))+(d3===td?' tdy':'')+'">'+d3+'</th>';}
+  head+='<th class="pr">달성</th><th class="st">연속</th></tr>';
+  var rows=list.map(function(r,ri){
+    var cells='';
+    for(var d4=1;d4<=dim;d4++){
+      var wi=Math.floor((firstDow+d4-1)/7)%TLR_WKBG.length;
+      var o=ok(r,d4);
+      cells+='<td'+(d4===td?' class="tdy"':'')+'><span class="tg'+(o?' on':'')+'"'
+        +(o?' style="background:'+TLR_WKBG[wi]+';color:'+TLR_WKTX[wi]+';border-color:transparent"':'')
+        +' onclick="tlrGridToggle('+r.id+',\''+key(d4)+'\')" title="'+escA(r.title+' · '+(m+1)+'/'+d4+(o?' 성공':''))+'">'+(o?'✓':'')+'</span></td>';
+    }
+    var cnt=0;for(var d5=1;d5<=dim;d5++)if(ok(r,d5))cnt++;
+    var pct=td?Math.round(cnt/td*100):0;
+    var col=TLR_ACC[ri%TLR_ACC.length];
+    return '<tr><td class="rn" title="'+escA(r.title)+'">'+(r.time?'<span class="tm">'+esc(r.time)+'</span>':'')+esc(r.title)+'</td>'
+      +cells
+      +'<td class="pr"><div class="prw"><span>'+cnt+'/'+td+'일</span><div class="pbar"><i style="width:'+Math.min(100,pct)+'%;background:'+col+'"></i></div><b>'+pct+'%</b></div></td>'
+      +'<td class="st"><b>'+tlrStreak(r)+'</b></td></tr>';
+  }).join('');
+  return '<div class="tlr-stats"><div class="tlr-stats-t">루틴 통계 · '+y+'년 '+(m+1)+'월</div>'
+    +'<div class="tlr-rings">'+rings+'</div>'
+    +'<div class="tblx"><table class="tlr-grid"><thead>'+head+'</thead><tbody>'+rows+'</tbody></table></div>'
+    +'<div class="tlr-hint">날짜 칸을 누르면 그 날의 성공을 표시하거나 해제할 수 있습니다. · 달성률은 오늘까지 경과일 기준</div></div>';
 }
 setInterval(function(){var c=document.getElementById('timelineCard');if(c&&c.style.display!=='none'&&!tlDrag)renderTimeline();},60000);   /* 현재 시간선 이동 */
 function toggleSchedForm(){var f=document.getElementById('schedAddForm');if(!f)return;var on=f.style.display!=='none';f.style.display=on?'none':'';if(!on){var t=document.getElementById('schTitle');if(t)t.focus();}}
