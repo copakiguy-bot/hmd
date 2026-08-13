@@ -804,6 +804,22 @@
   .mv-btn{cursor:pointer;flex-shrink:0;font-size:15px;font-weight:800;color:var(--green);padding:0 4px}
   .mv-btn:hover{color:var(--dark)}
   /* ===== INBOX 2단 (왼쪽 내용 · 오른쪽 주석) ===== */
+  #inboxCard{grid-column:1/-1}
+  .inb-quick{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 4px;
+    background:var(--cream);border-radius:12px;padding:10px 12px}
+  .inb-quick .btn{padding:7px 15px;font-size:12.5px}
+  .inb-quick-l{font-size:12px;font-weight:800;color:var(--dark)}
+  .inb-quick-h{font-size:11px;color:var(--muted);margin-left:auto}
+  .inb-go{font-size:10.5px;font-weight:700;color:var(--dark);background:var(--cream);
+    border-radius:999px;padding:3px 9px;cursor:pointer}
+  .inb-go:hover{background:var(--yellow-soft)}
+  .inb-arc{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+  .inb-arc-h{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;
+    font-size:12.5px;font-weight:800;color:var(--muted);padding:3px 2px}
+  .inb-arc-h:hover{color:var(--dark)}
+  .inb-arc-h .ca{transition:transform .15s;font-size:13px}
+  .inb-arc-s{font-weight:600;font-size:11px;color:var(--muted);margin-left:6px}
+  .inb-arc-h.open .ca{transform:rotate(90deg)}
   .inb2{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;align-items:start}
   .inb-right{border-left:1px solid var(--line);padding-left:18px;min-height:80px}
   @media(max-width:1000px){.inb2{grid-template-columns:1fr}
@@ -983,7 +999,6 @@
   </div>
   <div class="nav" data-v="assets">Assets</div>
   <div class="nav" data-v="inbox">Idea</div>
-  <div class="nav" data-v="grave">Archive</div>
   <div class="nav" data-v="routines">Routines</div>
   <div class="nav" data-v="routiner">Rutimer</div>
   <div class="nav" data-v="diary">Diary</div>
@@ -1107,34 +1122,8 @@
         <div id="mindCanvas"></div>
       </div>
 
-      <!-- ===== 실제 INBOX (2단: 왼쪽 내용 · 오른쪽 주석) ===== -->
-      <div class="card" id="inboxRealCard">
-        <h3><span class="dot" style="background:var(--red)"></span> INBOX
-          <span class="more" id="inbRealCount"></span>
-          <span class="more" style="cursor:pointer;margin-left:12px" onclick="go('grave')">📦 보관함 →</span></h3>
-        <div class="addrow" style="margin-bottom:14px">
-          <input id="inbRealInput" placeholder="INBOX에 직접 등록 · 입력 후 Enter">
-          <button class="btn" onclick="addRealInbox()">추가</button>
-        </div>
-        <div class="inb2">
-          <div class="inb-left" id="inbLeft"></div>
-          <div class="inb-right" id="inbRight"></div>
-        </div>
-      </div>
   </section>
 
-  <!-- ===== 보관함 ===== -->
-  <section class="view" id="view-grave">
-    <div class="page-head"><h1>📦 보관함</h1><p>처리를 끝내고 내려보낸 INBOX 기록입니다. 주석과 출처가 그대로 남습니다.</p></div>
-    <div class="card">
-      <h3><span class="dot" style="background:var(--muted)"></span> 처리 기록 <span class="more" id="grvCount"></span></h3>
-      <div class="addrow" style="margin:2px 0 16px">
-        <input id="grvSearch" placeholder="제목·주석 내용으로 검색" oninput="renderGrave()">
-        <button class="btn ghost" onclick="go('inbox')">← INBOX로</button>
-      </div>
-      <div id="grvBody"></div>
-    </div>
-  </section>
   <div class="mind-backdrop" id="mindBackdrop" onclick="toggleMindExpand()"></div>
 
   <!-- ===== 일기 ===== -->
@@ -1277,11 +1266,23 @@
         <div style="margin-top:10px"><button class="btn y" onclick="addSchedule()">저장</button></div></div>
       </div>
       <div class="card" id="inboxCard">
-        <h3><span class="dot" style="background:var(--red)"></span> INBOX <span class="more" onclick="goInbox()" style="cursor:pointer"><span id="inboxCount"></span> 전체 →</span></h3>
-        <ul class="todo fill" id="inboxList"></ul>
+        <h3><span class="dot" style="background:var(--red)"></span> INBOX <span class="more" id="inboxCount"></span></h3>
         <div class="addrow">
-          <input id="inboxInput" placeholder="입력 후 Enter">
-          <button class="btn" onclick="addInbox()">추가</button>
+          <input id="inboxInput">
+        </div>
+        <div id="inbLeft" style="margin-top:6px"></div>
+        <div class="inb-arc">
+          <div class="inb-arc-h" id="holdHead" onclick="toggleHold()"><span class="ca">›</span> 보관함 <span id="holdCount"></span></div>
+          <div id="holdWrap" style="display:none"><div id="holdBody" style="margin-top:8px"></div></div>
+        </div>
+        <div class="inb-arc">
+          <div class="inb-arc-h" id="arcHead" onclick="toggleArchive()"><span class="ca">›</span> 기록실 <span id="arcCount"></span></div>
+          <div id="arcWrap" style="display:none">
+            <div class="addrow" style="margin:10px 0 12px">
+              <input id="arcSearch" placeholder="검색" oninput="renderArchive()">
+            </div>
+            <div id="arcBody"></div>
+          </div>
         </div>
       </div>
       <div class="card" id="routineBox">
@@ -1640,14 +1641,14 @@ function go(v){
   var prev=curView();
   if(prev==='dashboard'&&v!=='dashboard')dashDockState=dockGetState();   /* 대시보드 상태 저장 */
   if(v!=='dashboard'&&prev!==v)dockAllOff();                             /* 다른 메뉴: 버튼 모두 꺼진 상태 */
-  else if(v==='dashboard'&&prev!=='dashboard')dockApply(dashDockState||{top:'cal',sub:{sched:true,tl:true}});
+  else if(v==='dashboard'&&prev!=='dashboard')dockApply({top:'cal',sub:{sched:true,tl:true}});
   document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='view-'+v));
   syncNav(v);
   var __sb=document.querySelector('.sidebar');if(__sb)__sb.classList.remove('open');renderAll();window.scrollTo(0,0);
 }
 function curView(){var el=document.querySelector('.view.on');return el?el.id.replace('view-',''):'dashboard';}
 /* 대시보드 INBOX 카드의 «전체 →» : IDEA 페이지의 INBOX 칸으로 */
-function goInbox(){go('inbox');setTimeout(function(){var c=document.getElementById('inboxRealCard');if(c)c.scrollIntoView({behavior:'smooth',block:'start'});},90);}
+function goInbox(){go('dashboard');topActive='inbox';applyTopState();setTimeout(function(){var c=document.getElementById('inboxCard');if(c)c.scrollIntoView({behavior:'smooth',block:'start'});},90);}
 function syncNav(v){
   v=v||curView();
   document.querySelectorAll('.nav').forEach(function(n){
@@ -2300,7 +2301,7 @@ function dockApply(st){st=st||{};
   var s=st.sub||{};calSub={sched:!!s.sched,tl:!!s.tl,session:!!s.session,ot:!!s.ot};
   applyTopState();
 }
-function dockAllOff(){topActive=null;applyTopState();}
+function dockAllOff(){topActive=null;calSub={sched:false,tl:false,session:false,ot:false};applyTopState();}
 function addDiary(inputId){var el=document.getElementById(inputId||'diaryInput');if(!el)return;var v=el.value.trim();if(!v)return;db.diary.push({id:uid(),date:today(),text:v,kind:fwDiaryKind||'기록'});save();el.value='';renderDiary();renderDiaryPage();renderCal();}
 function editDiary(id,val){var x=db.diary.find(function(a){return a.id===id;});if(!x)return;var v=String(val).trim();if(v)x.text=v;save();}
 function delDiary(id){db.diary=db.diary.filter(function(a){return a.id!==id;});save();renderDiary();renderDiaryPage();}
@@ -2348,7 +2349,7 @@ function setSyncCode(){var el=document.getElementById('syncInput');var v=el.valu
 function clearSyncCode(){localStorage.removeItem(SYNC_KEY);var inp=document.getElementById('syncInput');if(inp)inp.value='';setSyncStatus('연결 해제됨 (이 기기)');}
 let curIdea=null;
 var editInboxId=null;
-function inboxPageItemHTML(x){var editing=editInboxId===x.id;var title=editing?'<span class="txt" id="inbEditField" contenteditable onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();this.blur();}" onblur="saveEditInbox('+x.id+',this.innerText)">'+esc(x.t)+'</span>':'<span class="txt link" title="마인드맵 열기" onclick="openMind('+x.id+')">'+esc(x.t)+'</span>';var ng=nextGrp(grpOf(x));return '<li class="'+(x.done?"done":"")+'">'+'<div class="chk '+(x.done?"done":"")+'" onclick="toggleInbox('+x.id+')">'+(x.done?"✓":"")+'</div>'+title+'<span class="idea-edit" title="제목 수정" onclick="startEditInbox('+x.id+')">제목 수정</span>'+'<span class="mv-btn" title="'+grpLabel(ng)+'으로 이동" onclick="moveNextGrp('+x.id+')">→</span>'+'<span class="del" onclick="delInbox('+x.id+')">×</span></li>';}
+function inboxPageItemHTML(x){var editing=editInboxId===x.id;var title=editing?'<span class="txt" id="inbEditField" contenteditable onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();this.blur();}" onblur="saveEditInbox('+x.id+',this.innerText)">'+esc(x.t)+'</span>':'<span class="txt link" title="마인드맵 열기" onclick="openMind('+x.id+')">'+esc(x.t)+'</span>';var ng=nextGrp(grpOf(x));return '<li class="'+(x.done?"done":"")+'">'+'<div class="chk '+(x.done?"done":"")+'" onclick="toggleInbox('+x.id+')">'+(x.done?"✓":"")+'</div>'+title+'<span class="idea-edit" title="제목 수정" onclick="startEditInbox('+x.id+')">제목 수정</span>'+(x.done&&x.doneAt?'<span class="inb-date" title="완료 후 24시간이 지나면 기록실로 내려갑니다">'+esc(arcLeftTxt(x))+'</span>':'')+'<span class="mv-btn" title="'+grpLabel(ng)+'으로 이동" onclick="moveNextGrp('+x.id+')">→</span>'+'<span class="del" onclick="delInbox('+x.id+')">×</span></li>';}
 function startEditInbox(id){editInboxId=id;renderInboxPage();setTimeout(function(){var el=document.getElementById("inbEditField");if(el){el.focus();var r=document.createRange();r.selectNodeContents(el);var sl=window.getSelection();sl.removeAllRanges();sl.addRange(r);}},0);}
 function saveEditInbox(id,val){var x=db.inbox.find(function(a){return a.id===id;});if(x){var v=String(val).trim();if(v)x.t=v;}editInboxId=null;save();renderInbox();renderInboxPage();}
 function openMind(id){openIdea(id);var c=document.getElementById("ideaCard");if(c)c.scrollIntoView({behavior:"smooth",block:"start"});}
@@ -3191,15 +3192,26 @@ function inboxItemHTML(x){return `<li class="${x.done?'done':''}">
   <div class="chk ${x.done?'done':''}" onclick="toggleInbox(${x.id})">${x.done?'✓':''}</div>
   <span class="txt" contenteditable onblur="editInbox(${x.id},this.innerText)">${esc(x.t)}</span>
   <span class="del" onclick="delInbox(${x.id})">×</span></li>`;}
+/* 입력칸에 글자가 있으면 «일정»·«아이디어» 버튼을 띄운다 */
+/* INBOX 항목 분류: 일정(오늘·시간없음) / 아이디어 / 보관함(추진 계획 없는 아이디어) */
+function inbItemTo(id,kind){
+  var x=db.inbox.find(function(a){return a.id===id;});if(!x)return;
+  if(kind==='sched'){
+    db.schedules.push({id:uid(),date:today(),time:'',dur:30,title:x.t,detail:''});
+    db.inbox=db.inbox.filter(function(a){return a.id!==id;});
+    save();renderCal();renderSchedule();
+  }else if(kind==='hold'){ x.grp='hold';save(); }
+  else{ x.grp='idea';save(); }
+  renderInbox();renderInboxPage();
+}
 function renderInbox(){
-  const ul=document.getElementById('inboxList');if(!ul)return;
-  const items=inbList();const open=items.filter(x=>!x.done);
-  ul.innerHTML=items.length?items.slice().reverse().map(inboxItemHTML).join('')
-    :'<div class="empty">INBOX가 비어 있습니다.</div>';
-  document.getElementById('inboxCount').textContent=`${open.length} / ${items.length}`;
+  var items=inbList(),open=items.filter(function(x){return !x.done;});
+  var c=document.getElementById('inboxCount');
+  if(c)c.textContent=items.length?(open.length+' / '+items.length):'';
+  renderInboxSection();renderHold();renderArchive();
 }
 function grpOf(x){return x.grp||(x.long?'long':'short');}
-function grpLabel(g){return g==='idea'?'아이디어':g==='short'?'단기':g==='long'?'장기':'INBOX';}
+function grpLabel(g){return g==='idea'?'아이디어':g==='short'?'단기':g==='long'?'장기':g==='hold'?'보관함':'INBOX';}
 /* 아이디어 → 단기 → 장기 → INBOX (한 방향 파이프라인) */
 function nextGrp(g){return g==='idea'?'short':g==='short'?'long':'inbox';}
 function moveNextGrp(id){
@@ -3212,12 +3224,6 @@ function moveNextGrp(id){
 /* ===== 실제 INBOX ===== */
 function inbList(){return (db.inbox||[]).filter(function(x){return grpOf(x)==='inbox'&&!x.buried;});}
 function graveList(){return (db.inbox||[]).filter(function(x){return !!x.buried;});}
-function addRealInbox(){
-  var el=document.getElementById('inbRealInput');if(!el)return;
-  var v=el.value.trim();if(!v)return;
-  db.inbox.push({id:uid(),date:today(),t:v,done:false,grp:'inbox',src:'direct',notes:[]});
-  save();el.value='';renderInbox();renderInboxPage();
-}
 function inbSrcBadge(x){
   var m={direct:['직접등록','direct'],long:['장기프로젝트','long'],memo:['포스트잇','memo']};
   var s=m[x.src];return s?'<span class="inb-src '+s[1]+'">'+s[0]+'</span>':'';
@@ -3237,88 +3243,98 @@ function inbMarkQuotes(x){
   }
   return out+(open?'</mark>':'');
 }
+/* INBOX·보관함 공용 한 줄 markup */
+function inbRowHTML(x,inHold){
+  return '<div class="inb-item'+(x.done?' done':'')+'" data-inb="'+x.id+'">'
+    +'<div class="chk '+(x.done?'done':'')+'" onclick="toggleInbox('+x.id+')">'+(x.done?'✓':'')+'</div>'
+    +'<div class="inb-body"><div class="inb-t">'+esc(x.t)+'</div>'
+    +'<div class="inb-meta">'
+    +'<span class="inb-date">'+esc(x.date||'')+(x.done&&x.doneAt?' · 완료 '+esc(x.doneAt)+' · '+esc(arcLeftTxt(x)):'')+'</span>'
+    +'</div></div>'
+    +'<span class="inb-go" onclick="inbItemTo('+x.id+',\'sched\')" title="오늘 일정으로 (시간 없음)">일정</span>'
+    +'<span class="inb-go" onclick="inbItemTo('+x.id+',\'idea\')" title="아이디어 칸으로">아이디어</span>'
+    +(inHold
+      ?'<span class="inb-go" onclick="holdToInbox('+x.id+')" title="INBOX로 되돌리기">INBOX</span>'
+      :'<span class="inb-go" onclick="inbItemTo('+x.id+',\'hold\')" title="보관함으로">보관함</span>')
+    +'<span class="del" onclick="delInbox('+x.id+')">×</span></div>';
+}
 function renderInboxSection(){
   var L=document.getElementById('inbLeft');if(!L)return;
   var list=inbList().slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));});
-  var c=document.getElementById('inbRealCount');if(c)c.textContent=list.length+'건';
-  L.innerHTML=list.length?list.map(function(x){
-    return '<div class="inb-item'+(x.done?' done':'')+'" data-inb="'+x.id+'">'
-      +'<div class="chk '+(x.done?'done':'')+'" onclick="toggleInbox('+x.id+')">'+(x.done?'✓':'')+'</div>'
-      +'<div class="inb-body"><div class="inb-t">'+inbMarkQuotes(x)+'</div>'
-      +'<div class="inb-meta">'+inbSrcBadge(x)
-      +'<span class="inb-date">'+esc(x.date||'')+(x.done&&x.doneAt?' · 완료 '+esc(x.doneAt):'')+'</span>'
-      +(x.done?'<button class="inb-bury" onclick="buryInbox('+x.id+')">보관함으로 ⬇</button>':'')
-      +'</div></div>'
-      +'<span class="del" onclick="delInbox('+x.id+')">×</span></div>';
-  }).join(''):'<div class="empty">INBOX가 비어 있습니다.<br><span style="font-size:12px">직접 등록하거나 · 장기 프로젝트에서 → · 포스트잇에서 INBOX</span></div>';
-  var R=document.getElementById('inbRight');if(!R)return;
-  var notes=[];
-  list.forEach(function(x){(x.notes||[]).forEach(function(n){notes.push([x,n]);});});
-  R.innerHTML=notes.length?notes.map(function(o){
-    return '<div class="inb-note" data-note="'+o[1].id+'">'
-      +'<div class="nh"><span class="no" title="원문 위치로" onclick="inbFlash('+o[0].id+')">'+esc(String(o[0].t).slice(0,26))+'</span>'
-      +'<span class="del" onclick="delInbNote('+o[0].id+','+o[1].id+')">×</span></div>'
-      +'<span class="q">“'+esc(o[1].q)+'”</span>'
-      +'<div class="nt" contenteditable onblur="saveInbNote('+o[0].id+','+o[1].id+',this.innerText)">'+esc(o[1].text||'')+'</div></div>';
-  }).join(''):'<div class="inb-hint">왼쪽 INBOX 내용을 <b>마우스로 드래그해 긁으면</b><br>이 자리에 주석 칸이 생깁니다.</div>';
+  L.innerHTML=list.length?list.map(function(x){return inbRowHTML(x,false);}).join('')
+    :'<div class="empty">INBOX가 비어 있습니다.</div>';
 }
-/* 왼쪽에서 글자를 긁으면 오른쪽에 주석을 만든다 */
-function inbSelToNote(){
-  var sel=window.getSelection();if(!sel||sel.isCollapsed)return;
-  var q=String(sel.toString()).replace(/\s+/g,' ').trim();
-  if(q.length<2)return;
-  var nd=sel.anchorNode;if(!nd)return;
-  var el=(nd.nodeType===1?nd:nd.parentNode);
-  var host=(el&&el.closest)?el.closest('[data-inb]'):null;if(!host)return;
-  var x=db.inbox.find(function(a){return a.id===+host.getAttribute('data-inb');});if(!x)return;
-  if(!x.notes)x.notes=[];
-  if(x.notes.some(function(n){return n.q===q;})){sel.removeAllRanges();return;}
-  var nid=uid();
-  x.notes.push({id:nid,q:q,text:'',ts:nowStamp()});
-  save();sel.removeAllRanges();renderInboxSection();
-  setTimeout(function(){var f=document.querySelector('.inb-note[data-note="'+nid+'"] .nt');if(f)f.focus();},40);
-}
-function saveInbNote(xid,nid,val){
-  var x=db.inbox.find(function(a){return a.id===xid;});if(!x)return;
-  var n=(x.notes||[]).find(function(a){return a.id===nid;});if(!n)return;
-  n.text=String(val).trim();save();
-}
-function delInbNote(xid,nid){
-  var x=db.inbox.find(function(a){return a.id===xid;});if(!x)return;
-  x.notes=(x.notes||[]).filter(function(a){return a.id!==nid;});save();renderInboxSection();
-}
-function inbFlash(id){
-  var el=document.querySelector('.inb-item[data-inb="'+id+'"]');if(!el)return;
-  el.scrollIntoView({behavior:'smooth',block:'center'});
-  el.classList.remove('inb-flash');void el.offsetWidth;el.classList.add('inb-flash');
-}
-/* ===== 보관함 ===== */
-function buryInbox(id){
+/* ===== 보관함: 아직 추진 계획이 없는 아이디어 ===== */
+function holdList(){return (db.inbox||[]).filter(function(x){return grpOf(x)==='hold'&&!x.buried;});}
+var holdOpen=false;
+function toggleHold(){holdOpen=!holdOpen;renderHold();}
+function holdToInbox(id){
   var x=db.inbox.find(function(a){return a.id===id;});if(!x)return;
-  x.buried=true;x.done=true;if(!x.doneAt)x.doneAt=nowStamp();
-  save();renderInbox();renderInboxPage();
+  x.grp='inbox';save();renderInbox();renderInboxPage();
 }
+function renderHold(){
+  var head=document.getElementById('holdHead'),wrap=document.getElementById('holdWrap');
+  var el=document.getElementById('holdBody');if(!el||!head||!wrap)return;
+  var list=holdList().slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));});
+  var c=document.getElementById('holdCount');if(c)c.textContent=list.length?'· '+list.length+'건':'· 비어 있음';
+  head.classList.toggle('open',holdOpen);
+  wrap.style.display=holdOpen?'':'none';
+  if(!holdOpen)return;
+  el.innerHTML=list.length?list.map(function(x){return inbRowHTML(x,true);}).join('')
+    :'<div class="empty">보관함이 비어 있습니다.</div>';
+}
+/* ===== 기록실 (접이식): 완료된 것들 ===== */
 function unburyInbox(id){
   var x=db.inbox.find(function(a){return a.id===id;});if(!x)return;
-  x.buried=false;x.done=false;x.doneAt=null;x.grp='inbox';
+  x.buried=false;x.done=false;x.doneAt=null;
   save();renderInbox();renderInboxPage();
 }
+function stampMs(s){
+  var m=/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(String(s||''));
+  return m?new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5]).getTime():0;
+}
+/* 완료(체크)한 항목은 24시간이 지나면 기록실로 내려간다 */
+function archiveSweep(){
+  var now=Date.now(),moved=0;
+  (db.inbox||[]).forEach(function(x){
+    if(x.buried||!x.done||!x.doneAt)return;
+    var g=grpOf(x);
+    if(g!=='idea'&&g!=='short'&&g!=='long'&&g!=='inbox'&&g!=='hold')return;
+    if(now-stampMs(x.doneAt)>=86400000){x.buried=true;moved++;}
+  });
+  if(moved)save();
+  return moved;
+}
+/* 완료 후 기록실까지 남은 시간 */
+function arcLeftTxt(x){
+  var left=86400000-(Date.now()-stampMs(x.doneAt));
+  if(left<=0)return '곧 기록실로';
+  var hh=Math.floor(left/3600000);
+  return (hh>0?hh+'시간':Math.max(1,Math.round(left/60000))+'분')+' 뒤 기록실로';
+}
+var arcOpen=false;
+function toggleArchive(){arcOpen=!arcOpen;renderArchive();}
 function grvDayLabel(d){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return d;
   var p=d.split('-'),dt=new Date(+p[0],+p[1]-1,+p[2]);
   return (+p[0])+'년 '+(+p[1])+'월 '+(+p[2])+'일 ('+['일','월','화','수','목','금','토'][dt.getDay()]+')';
 }
-function renderGrave(){
-  var el=document.getElementById('grvBody');if(!el)return;
-  var sIn=document.getElementById('grvSearch');
+function renderArchive(){
+  var head=document.getElementById('arcHead'),wrap=document.getElementById('arcWrap');
+  var el=document.getElementById('arcBody');if(!el||!head||!wrap)return;
+  var all=graveList();
+  var cnt=document.getElementById('arcCount');if(cnt)cnt.textContent=all.length?'· '+all.length+'건':'· 비어 있음';
+  head.classList.toggle('open',arcOpen);
+  wrap.style.display=arcOpen?'':'none';
+  if(!arcOpen)return;
+  var sIn=document.getElementById('arcSearch');
   var q=(sIn?sIn.value:'').trim().toLowerCase();
-  var list=graveList().filter(function(x){
+  var list=all.filter(function(x){
     if(!q)return true;
     var hay=(x.t||'')+' '+(x.notes||[]).map(function(n){return n.q+' '+(n.text||'');}).join(' ');
     return hay.toLowerCase().indexOf(q)>=0;
   });
-  var c=document.getElementById('grvCount');if(c)c.textContent=list.length+'건';
-  if(!list.length){el.innerHTML='<div class="empty">'+(q?'검색 결과가 없습니다.':'아직 보관함이 비어 있습니다.')+'</div>';return;}
+  if(!list.length){el.innerHTML='<div class="empty">'+(q?'검색 결과가 없습니다.':'아직 기록실이 비어 있습니다.')+'</div>';return;}
   var by={};
   list.forEach(function(x){var d=String(x.doneAt||x.date||'').slice(0,10)||'날짜 없음';(by[d]=by[d]||[]).push(x);});
   el.innerHTML=Object.keys(by).sort(function(a,b){return b.localeCompare(a);}).map(function(d){
@@ -3326,10 +3342,11 @@ function renderGrave(){
       +'<span style="margin-left:auto">'+by[d].length+'건</span></div>'
       +by[d].map(function(x){
         return '<div class="grv-item"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
-          +'<span class="grv-t">'+esc(x.t)+'</span>'+inbSrcBadge(x)
+          +'<span class="grv-t">'+esc(x.t)+'</span>'
+          +'<span class="inb-src">'+esc(grpLabel(grpOf(x)))+'</span>'+inbSrcBadge(x)
           +'<span class="inb-date">'+esc(String(x.doneAt||'').slice(11))+'</span>'
           +'<span style="margin-left:auto;display:flex;gap:8px;align-items:center">'
-          +'<span class="idea-edit" title="INBOX로 되살리기" onclick="unburyInbox('+x.id+')">되살리기</span>'
+          +'<span class="idea-edit" title="되돌리기" onclick="unburyInbox('+x.id+')">되살리기</span>'
           +'<span class="del" onclick="delInbox('+x.id+')">×</span></span></div>'
           +((x.notes||[]).length?'<div class="grv-notes">'+x.notes.map(function(n){
               return '<div class="grv-note"><span class="q">“'+esc(n.q)+'”</span>'+(n.text?' — '+esc(n.text):'')+'</div>';
@@ -3340,26 +3357,20 @@ function renderGrave(){
 }
 function inboxFlatHTML(list){return '<ul class="todo">'+list.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));}).map(inboxPageItemHTML).join('')+'</ul>';}
 function renderInboxPage(){
+  archiveSweep();
   var el=document.getElementById('inboxPage');if(!el)return;
-  var shortL=db.inbox.filter(function(z){return grpOf(z)==='short';});
-  var longL=db.inbox.filter(function(z){return grpOf(z)==='long';});
-  var ideaL=db.inbox.filter(function(z){return grpOf(z)==='idea';});
+  var vis=function(g){return db.inbox.filter(function(z){return grpOf(z)===g&&!z.buried;});};
+  var shortL=vis('short'),longL=vis('long'),ideaL=vis('idea');
   document.getElementById('inboxPageCount').textContent=shortL.length+'건';
   var lc=document.getElementById('longCount');if(lc)lc.textContent=longL.length+'건';
   var ic=document.getElementById('ideaPageCount');if(ic)ic.textContent=ideaL.length+'건';
   var lEl=document.getElementById('longPage');if(lEl)lEl.innerHTML=longL.length?inboxFlatHTML(longL):'<div class="empty">장기 프로젝트가 없습니다.</div>';
   var iEl=document.getElementById('ideaPage');if(iEl)iEl.innerHTML=ideaL.length?inboxFlatHTML(ideaL):'<div class="empty">아이디어가 없습니다.</div>';
   el.innerHTML=shortL.length?inboxFlatHTML(shortL):'<div class="empty">단기 항목이 없습니다.</div>';
-  renderInboxSection();renderGrave();
-  updateMindPanel();
+  updateMindPanel();renderInbox();
 }
-/* 왼쪽 INBOX 칸에서 드래그로 글자를 긁으면 주석 생성 */
-(function bindInbSel(){
-  var L=document.getElementById('inbLeft');
-  if(!L){setTimeout(bindInbSel,120);return;}
-  L.addEventListener('mouseup',function(){setTimeout(inbSelToNote,10);});
-  L.addEventListener('touchend',function(){setTimeout(inbSelToNote,60);});
-})();
+/* 완료 후 24시간이 지났는지 주기적으로 확인 */
+setInterval(function(){if(archiveSweep())renderInboxPage();},300000);
 
 /* ---------- todos (daily) ---------- */
 function todosToday(){return db.todos[today()]||(db.todos[today()]=[]);}
@@ -5702,7 +5713,6 @@ esSet(['tlpName','tlpStart'],function(){tlAddProject();});
 esSet(['tlpiTitle','tlpiStart','tlpiDur'],function(){tlAddProjItem();});
 esSet(['inboxInput'],function(){addInbox();});
 esSet(['inboxInput2'],function(){addInbox('inboxInput2','idea');});
-esSet(['inbRealInput'],function(){addRealInbox();});
 esSet(['wTitle','wContent'],function(){addWorkDash();});
 esSet(['sTerm','sMean','sCat','sTitle','sContent'],function(){addStudyDash();});
 esSet(['sdDate','sdTerm','sdMean','sdCat','sdTitle','sdContent'],function(){addStudyDetail();});
