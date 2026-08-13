@@ -506,6 +506,15 @@
   .tlr-item.off b,.tlr-item.off .tlr-time{opacity:.4;text-decoration:line-through}
   .tlr-ok{flex:none;font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;cursor:pointer;background:#fff}
   .tlr-ok.on{background:var(--green);border-color:var(--green);color:#fff}
+  /* 대시보드 루틴 카드: 지금 차례인 루틴만 강조, 지나간 루틴은 흐리게 */
+  .tlr-item.now{background:var(--yellow-soft);border-bottom-color:transparent;border-radius:10px;
+    padding:9px 8px;margin:2px 0;box-shadow:inset 3px 0 0 var(--yellow)}
+  .tlr-item.now b{color:#8a6412;font-weight:800}
+  .tlr-item.now .tlr-time{color:#8a6412;font-weight:800}
+  .tlr-item.past{opacity:.42}
+  .tlr-item.past b{font-weight:400}
+  .tlr-nowtag{flex:none;font-size:10px;font-weight:800;color:#8a6412;background:#fff;
+    border-radius:999px;padding:2px 8px;letter-spacing:.2px}
   /* 루틴 통계 대시보드 */
   .tlr-stats{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
   .tlr-stats .tlr-stats-t{font-size:12px;font-weight:800;color:var(--muted);margin-bottom:8px;letter-spacing:.3px}
@@ -928,6 +937,7 @@
   </div>
   <div class="nav" data-v="assets">Assets</div>
   <div class="nav" data-v="inbox">Inbox</div>
+  <div class="nav" data-v="routines">Routines</div>
   <div class="nav" data-v="routiner">Rutimer</div>
   <div class="nav" data-v="diary">Diary</div>
   <div class="nav" data-v="settings">Settings</div>
@@ -1076,6 +1086,26 @@
       <div id="rtLists"></div>
     </div>
   </section>
+  <!-- ===== 루틴 전체 ===== -->
+  <section class="view" id="view-routines">
+    <div class="page-head"><h1>루틴</h1><p>등록한 루틴 전체입니다. 대시보드 카드에는 지금 차례인 루틴을 가운데 두고 5개만 보입니다.</p></div>
+    <div class="card">
+      <h3><span class="dot" style="background:var(--green)"></span> 전체 루틴 <span class="more" id="tlrPageCount"></span></h3>
+      <div id="tlrPageList"></div>
+      <div style="margin-top:12px"><button class="btn y" onclick="toggleTlrForm()">＋ 루틴 추가</button></div>
+      <div id="tlrAddForm" style="display:none">
+        <div class="inrow" style="margin-top:12px">
+          <input id="tlrTime" class="in" style="flex:none;width:92px" placeholder="시간 예:0700" onblur="this.value=normTime(this.value)">
+          <input id="tlrDur" class="in" style="flex:none;width:88px" inputmode="numeric" placeholder="소요(분)·30">
+        </div>
+        <div class="inrow" style="margin-top:8px">
+          <input id="tlrTitle" class="in" style="flex:1" placeholder="루틴 이름">
+          <button class="btn y" style="flex:none" onclick="addTlRoutine()">저장</button>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div id="tlrStatsPage"></div></div>
+  </section>
   <!-- ===== 설정 ===== -->
   <section class="view" id="view-settings">
     <div class="page-head"><h1>설정</h1></div>
@@ -1114,7 +1144,8 @@
 
       <div class="gcal-sec">
         <div class="gcal-t">방법 2 · 버튼 한 번으로 바로 반영 <span class="gcal-badge">최초 1회 설치</span></div>
-        <div class="gcal-d">구글 Apps Script 웹앱을 한 번 만들어 두면, 아래 «구글 캘린더로 보내기»를 누를 때마다 일정이 캘린더에 반영됩니다. 이미 보낸 일정은 덮어쓰고, 앱에서 지운 일정은 캘린더에서도 지웁니다.</div>
+        <div class="gcal-d">구글 Apps Script 웹앱을 한 번 만들어 두면, 아래 «구글 캘린더로 보내기»를 누를 때마다 일정이 캘린더에 반영됩니다. 이미 보낸 일정은 덮어쓰고, 앱에서 지운 일정은 캘린더에서도 지웁니다.<br>
+        루틴은 <b>반복 일정 1건</b>으로 등록되고, <b>바뀐 것이 없는 항목은 건너뛰므로</b> 여러 번 눌러도 구글 호출이 늘어나지 않습니다.</div>
         <div class="inrow">
           <input id="gcalUrl" class="in" style="flex:1" placeholder="Apps Script 웹앱 URL (https://script.google.com/…/exec)">
           <button class="btn y" style="flex:none" onclick="gcalConnect()">연결 확인</button>
@@ -1125,6 +1156,7 @@
           <button class="btn ghost" onclick="gcalPushAll(false)">전체 보내기</button>
           <button class="btn ghost" onclick="gcalOpenUrl()">🔎 웹앱 주소 열어보기</button>
           <button class="btn ghost" onclick="gcalShowScript()">설치 방법·코드 보기</button>
+          <button class="btn ghost" onclick="gcalCleanup()">🧹 예전 루틴 일정 정리</button>
           <button class="btn ghost" onclick="gcalReset()">연동 초기화</button>
         </div>
         <pre id="gcalScriptBox" style="display:none;margin-top:12px;background:var(--cream);border-radius:12px;padding:14px;font-size:11.5px;line-height:1.55;overflow:auto;max-height:340px;white-space:pre-wrap"></pre>
@@ -1178,19 +1210,9 @@
         </div>
       </div>
       <div class="card" id="routineBox">
-        <h3><span class="dot" style="background:var(--green)"></span> 루틴 <span class="more" id="tlrCount"></span></h3>
+        <h3><span class="dot" style="background:var(--green)"></span> 루틴
+          <span class="more" onclick="go('routines')" style="cursor:pointer"><span id="tlrCount"></span> 전체 →</span></h3>
         <div id="tlrList" class="fill"></div>
-        <div style="margin-top:12px"><button class="btn y" onclick="toggleTlrForm()">＋ 루틴 추가</button></div>
-        <div id="tlrAddForm" style="display:none">
-          <div class="inrow" style="margin-top:12px">
-            <input id="tlrTime" class="in" style="flex:none;width:92px" placeholder="시간 예:0700" onblur="this.value=normTime(this.value)">
-            <input id="tlrDur" class="in" style="flex:none;width:88px" inputmode="numeric" placeholder="소요(분)·30">
-          </div>
-          <div class="inrow" style="margin-top:8px">
-            <input id="tlrTitle" class="in" style="flex:1" placeholder="루틴 이름">
-            <button class="btn y" style="flex:none" onclick="addTlRoutine()">저장</button>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -1539,7 +1561,7 @@ function go(v){
   var prev=curView();
   if(prev==='dashboard'&&v!=='dashboard')dashDockState=dockGetState();   /* 대시보드 상태 저장 */
   if(v!=='dashboard'&&prev!==v)dockAllOff();                             /* 다른 메뉴: 버튼 모두 꺼진 상태 */
-  else if(v==='dashboard'&&prev!=='dashboard')dockApply(dashDockState||{top:'cal',sub:{sched:true}});
+  else if(v==='dashboard'&&prev!=='dashboard')dockApply(dashDockState||{top:'cal',sub:{sched:true,tl:true}});
   document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='view-'+v));
   syncNav(v);
   var __sb=document.querySelector('.sidebar');if(__sb)__sb.classList.remove('open');renderAll();window.scrollTo(0,0);
@@ -2001,20 +2023,68 @@ function tlrSorted(list){
     return (x==null?1e9:x)-(y==null?1e9:y);
   });
 }
+/* 루틴 한 줄 markup (대시보드 카드·전체 페이지 공용) */
+function tlrItemHTML(r,cls,badge){
+  var ok=tlrOk(r.id,selDate);
+  return '<div class="tlr-item'+(r.active===false?' off':'')+(cls||'')+'">'
+    +'<input type="checkbox" '+(r.active!==false?'checked':'')+' onchange="tlrToggleActive('+r.id+')" title="타임라인 표시 여부">'
+    +'<span class="tlr-time" contenteditable title="눌러서 시간 수정 (예: 0700)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}" onblur="tlrEditTime('+r.id+',this.innerText)">'+esc(r.time||'-')+'</span>'
+    +'<b>'+esc(r.title)+'</b>'
+    +(badge||'')
+    +'<span class="tlr-ok'+(ok?' on':'')+'" onclick="tlrToggleOk('+r.id+')" title="선택한 날짜의 성공 여부">성공</span>'
+    +'<span class="del" onclick="delTlRoutine('+r.id+')">×</span></div>';
+}
+/* ----- 대시보드 카드: 지금 차례인 루틴을 가운데(3번째)에 두고 5개만 ----- */
+var TLR_WIN=5, TLR_CENTER=2;
+/* 지금 시각 이후로 가장 먼저 오는 루틴. 오늘 남은 게 없으면 내일 첫 루틴으로 넘어간다 */
+function tlrNowIdx(list){
+  var t=new Date(),mn=t.getHours()*60+t.getMinutes();
+  for(var i=0;i<list.length;i++){var v=tlParseMin(list[i].time);if(v!=null&&v>=mn)return i;}
+  return 0;
+}
+/* 목록을 고리처럼 이어 붙여 5칸을 뽑는다 (pos: 0=지금, 음수=지나감, 양수=다음) */
+function tlrWindow(list){
+  var n=list.length;if(!n)return [];
+  var k=Math.min(TLR_WIN,n),cur=tlrNowIdx(list),off=Math.min(TLR_CENTER,Math.floor((k-1)/2)),out=[];
+  for(var i=0;i<k;i++)out.push({r:list[((cur-off+i)%n+n)%n],pos:i-off});
+  return out;
+}
 function renderTlRoutines(){
-  var el=document.getElementById('tlrList');if(!el)return;
   var list=tlrSorted(db.tlRoutines);
   var cnt=document.getElementById('tlrCount');if(cnt)cnt.textContent=list.length?list.length+'개':'';
-  el.innerHTML=list.length?list.map(function(r){
-    var ok=tlrOk(r.id,selDate);
-    return '<div class="tlr-item'+(r.active===false?' off':'')+'">'
-      +'<input type="checkbox" '+(r.active!==false?'checked':'')+' onchange="tlrToggleActive('+r.id+')" title="타임라인 표시 여부">'
-      +'<span class="tlr-time" contenteditable title="눌러서 시간 수정 (예: 0700)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}" onblur="tlrEditTime('+r.id+',this.innerText)">'+esc(r.time||'-')+'</span>'
-      +'<b>'+esc(r.title)+'</b>'
-      +'<span class="tlr-ok'+(ok?' on':'')+'" onclick="tlrToggleOk('+r.id+')" title="선택한 날짜의 성공 여부">성공</span>'
-      +'<span class="del" onclick="delTlRoutine('+r.id+')">×</span></div>';
-  }).join(''):'<div class="empty">루틴이 없습니다.</div>';
+  var el=document.getElementById('tlrList');
+  if(el){
+    if(!list.length)el.innerHTML='<div class="empty">루틴이 없습니다.</div>';
+    else if(selDate!==today()){   /* 다른 날짜를 보는 중이면 위에서부터 5개, 강조 없음 */
+      el.innerHTML=list.slice(0,TLR_WIN).map(function(r){return tlrItemHTML(r,'','');}).join('');
+    }else{
+      el.innerHTML=tlrWindow(list).map(function(w){
+        return tlrItemHTML(w.r,w.pos===0?' now':(w.pos<0?' past':''),
+          w.pos===0?'<span class="tlr-nowtag">지금</span>':'');
+      }).join('');
+    }
+  }
+  renderRoutinesPage();
 }
+/* ----- 전체 루틴 페이지 ----- */
+function renderRoutinesPage(){
+  var el=document.getElementById('tlrPageList');if(!el)return;
+  var list=tlrSorted(db.tlRoutines);
+  var c=document.getElementById('tlrPageCount');if(c)c.textContent=list.length+'개';
+  el.innerHTML=list.length?list.map(function(r){return tlrItemHTML(r,'','');}).join('')
+    :'<div class="empty">루틴이 없습니다. 아래 «＋ 루틴 추가»로 만들어 보세요.</div>';
+  var st=document.getElementById('tlrStatsPage');if(st)st.innerHTML=tlrStatsHTML();
+}
+/* 시간이 지나 «지금» 차례가 바뀌면 카드를 다시 그린다 (시간 수정 중이면 건드리지 않음) */
+var __tlrCurSig=null;
+setInterval(function(){
+  var list=tlrSorted(db.tlRoutines);if(!list.length)return;
+  var sig=String(tlrNowIdx(list));
+  if(sig===__tlrCurSig)return;
+  var ae=document.activeElement;
+  if(ae&&ae.closest&&ae.closest('#tlrList'))return;
+  __tlrCurSig=sig;renderTlRoutines();
+},30000);
 /* ----- 루틴 통계: 시각화 대시보드 (링 + 월간 체크 그리드 + 진행 막대 + 연속) ----- */
 var TLR_ACC=['#1c8258','#5b78d0','#d9930f','#d94f46','#2f9e8f','#8b5cd6'];   /* 검증된 강조색 */
 var TLR_WKBG=['#DDEBFF','#DDF5E6','#FFF3B8','#EDE4FF','#FFE8D1','#FFE0E6'];  /* 주별 파스텔 */
@@ -2103,7 +2173,7 @@ function showMyThree(){
 function secScroll(el){if(el&&el.scrollIntoView)setTimeout(function(){el.scrollIntoView({behavior:'smooth',block:'start'});},60);}
 /* ===== 상단 버튼: 1버튼 1활성화 (달력 그룹만 예외로 복수 허용) ===== */
 var topActive='cal';                                        /* 'cal'|'study'|'work'|'read'|'asset'|'diary'|'inbox'|null */
-var calSub={sched:true,tl:false,session:false,ot:false};    /* 달력 안의 복수 토글 */
+var calSub={sched:true,tl:true,session:false,ot:false};    /* 달력 안의 복수 토글 · 기본: 스케줄+타임라인 */
 function applyTopState(){
   var isCal=(topActive==='cal');
   var c=document.getElementById('calCard');
@@ -2628,36 +2698,69 @@ function gcalPushAll(futureOnly){
   var list=db.schedules.filter(function(s){return s.date&&(!futureOnly||s.date>=tk);});
   var rts=(db.tlRoutines||[]).filter(function(r){return r.active!==false;});
   if(!list.length&&!rts.length){alert('보낼 일정이 없습니다.');return;}
-  /* 루틴은 오늘부터 30일치 일정으로 펼쳐서 등록 (HMD 달력에는 표시하지 않음) */
-  var rtEvents=[];
-  rts.forEach(function(r){
-    for(var i=0;i<30;i++){
-      var d=new Date();d.setDate(d.getDate()+i);
-      var ds=dstr2(d);
-      rtEvents.push({type:'upsert',uid:'hmd-rt-'+r.id+'-'+ds,date:ds,
-        time:(/^\d{2}:\d{2}$/.test(r.time||'')?r.time:''),
-        dur:(r.dur>0?r.dur:30),title:'[루틴] '+r.title,detail:'',done:false});
-    }
+  /* 루틴은 낱개 30일치가 아니라 「반복 일정」 1건으로 보낸다 (구글 호출 수 30분의 1) */
+  var rtEvents=rts.map(function(r){
+    return {series:true,uid:'hmd-rt-'+r.id,date:tk,
+      time:(/^\d{2}:\d{2}$/.test(r.time||'')?r.time:''),
+      dur:(r.dur>0?r.dur:30),title:'[루틴] '+r.title,detail:''};
   });
-  var msg='일정 '+list.length+'건'+(rts.length?' + 루틴 '+rts.length+'개(30일치)':'')+'를 구글 캘린더로 보낼까요?';
+  var msg='일정 '+list.length+'건'+(rts.length?' + 루틴 '+rts.length+'개(각 반복 일정 1건)':'')+'를 구글 캘린더로 보낼까요?'
+    +'\n\n※ 지난번과 달라진 것이 없는 항목은 구글을 호출하지 않고 건너뜁니다.';
   if(!confirm(msg))return;
   gcalSend({type:'bulk',sync:true,from:futureOnly?tk:'',
     events:list.map(function(s){return gcalEventPayload(s,'upsert');}).concat(rtEvents)},
-    function(ok,text,verified){
-      if(ok&&verified&&String(text).indexOf('ok')===0){
-        var m=/\+(\d+)\s+~(\d+)\s+-(\d+)/.exec(String(text));
-        var detail=m?('\n\n구글 처리 결과 — 새로 만든 일정 '+m[1]+'건 · 갱신 '+m[2]+'건 · 삭제 '+m[3]+'건'
-          +((+m[1]===0&&+m[2]===0)?'\n\n⚠️ 처리된 일정이 0건입니다. 스크립트가 옛 버전일 수 있으니 코드를 다시 붙여넣고 [새 버전]으로 재배포하세요.':'')):'';
-        alert('일정 '+list.length+'건'+(rts.length?' + 루틴 30일치':'')+'를 보냈습니다.'+detail+'\n구글 캘린더를 새로고침해서 확인하세요.');
-      }else if(ok&&verified){
-        alert('스크립트가 응답했지만 내용이 예상과 다릅니다:\n'+String(text).slice(0,80)+
-          '\n\n코드를 다시 붙여넣고 [새 버전]으로 배포해 보세요.');
-      }else if(ok&&!verified){
-        alert('보내긴 했지만 이 화면에서는 구글의 응답을 읽을 수 없는 환경입니다.\n\n«웹앱 주소 열어보기»를 누르면 「마지막 전송 처리: ok +N ~M -K」 형태로\n방금 전송의 처리 결과(새로생성·갱신·삭제 건수)를 확인할 수 있습니다.');
-      }else{
-        alert('전송 실패. «웹앱 주소 열어보기»로 상태를 확인해 주세요.');
-      }
-    });
+    function(ok,text,verified){gcalReport(ok,text,verified);});
+}
+/* 전송 결과 안내 — ok(정상) / limit(구글이 쓰기 차단) / 그 외 오류 를 구분해서 보여준다 */
+function gcalReport(ok,text,verified){
+  var t=String(text||''),m=/\+(\d+)\s+~(\d+)\s+-(\d+)/.exec(t);
+  var cnt=m?('새로 만든 일정 '+m[1]+'건 · 갱신 '+m[2]+'건 · 삭제 '+m[3]+'건'):'';
+  if(ok&&verified&&t.indexOf('limit')===0){
+    alert('⚠️ 구글이 캘린더 쓰기를 일시 차단했습니다.\n\n'
+      +(cnt?'차단 직전까지 처리 — '+cnt+'\n(여기까지는 정상 저장됐습니다)\n\n':'')
+      +'중요: 오늘은 이 버튼을 더 누르지 마세요.\n누를 때마다 차단 기간이 다시 연장됩니다.\n\n24시간 이상 지난 뒤에 한 번만 다시 눌러 주세요.');
+    return;
+  }
+  if(ok&&verified&&t.indexOf('ok')===0){
+    var capped=t.indexOf('분할')>=0;
+    alert('구글 캘린더로 보냈습니다.'
+      +(cnt?'\n\n처리 결과 — '+cnt:'')
+      +(capped?'\n\n※ 한 번에 처리하는 상한(60건)에 걸려 일부만 처리했습니다.\n5~10분 뒤에 한 번 더 눌러 나머지를 이어서 보내세요.':'')
+      +'\n\n구글 캘린더를 새로고침해서 확인하세요.');
+    return;
+  }
+  if(ok&&verified){
+    alert('스크립트가 응답했지만 내용이 예상과 다릅니다:\n'+t.slice(0,120)
+      +'\n\n코드를 다시 붙여넣고 [새 버전]으로 배포해 보세요.');
+    return;
+  }
+  if(ok&&!verified){
+    alert('보내긴 했지만 이 화면에서는 구글의 응답을 읽을 수 없는 환경입니다.\n\n«웹앱 주소 열어보기»를 누르면 「마지막 전송 처리」에서\n방금 전송의 결과를 확인할 수 있습니다.');
+    return;
+  }
+  alert('전송 실패. «웹앱 주소 열어보기»로 상태를 확인해 주세요.');
+}
+/* 예전(낱개 30일치) 방식으로 쌓인 루틴 일정을 나눠서 정리한다 */
+function gcalCleanup(){
+  if(!gcalGet()){alert('먼저 Apps Script 웹앱 URL을 넣고 «연결 확인»을 눌러 주세요.');return;}
+  if(!confirm('예전 방식으로 만들어진 루틴 일정(하루에 1건씩 낱개로 등록된 것)을 지웁니다.\n\n'
+    +'한 번에 40건씩만 지우고 남은 개수를 알려 줍니다.\n남은 것이 있으면 5~10분 뒤에 다시 눌러 주세요.\n\n'
+    +'※ 일반 일정과 새 반복 루틴은 건드리지 않습니다.'))return;
+  gcalSend({type:'cleanup',limit:40},function(ok,text,verified){
+    var t=String(text||'');
+    if(ok&&verified&&t.indexOf('ok')===0){
+      var m=/-(\d+)\s+남음\s+(\d+)/.exec(t);
+      if(!m){alert('정리 완료: '+t);return;}
+      alert('정리했습니다 — 이번에 '+m[1]+'건 삭제, 남은 것 '+m[2]+'건.'
+        +(+m[2]>0?'\n\n5~10분 뒤에 한 번 더 눌러 주세요.':'\n\n예전 루틴 일정이 모두 정리됐습니다.'));
+    }else if(ok&&verified&&t.indexOf('limit')===0){
+      alert('⚠️ 구글이 캘린더 쓰기를 일시 차단했습니다.\n오늘은 더 누르지 마시고 24시간 뒤에 다시 시도하세요.');
+    }else if(ok&&!verified){
+      alert('요청은 보냈습니다. «웹앱 주소 열어보기»에서 결과를 확인하세요.');
+    }else{
+      alert('정리 실패. «웹앱 주소 열어보기»로 상태를 확인해 주세요.');
+    }
+  });
 }
 function gcalShowScript(){
   var box=document.getElementById('gcalScriptBox');if(!box)return;
@@ -2672,26 +2775,47 @@ function gcalShowScript(){
 '    - 액세스 권한: 모든 사용자   ← 중요',
 ' 4) 생성된 웹 앱 URL(…/exec)을 복사해 위 칸에 붙여넣고 [연결 확인]',
 ' 5) 이후 [구글 캘린더로 보내기] 버튼을 누를 때만 반영됩니다 (자동 전송 없음)',
+'',
+' ※ 이 버전은 구글의 "짧은 시간에 너무 많이 만들거나 삭제했습니다" 차단을 피하도록',
+'    - 루틴을 낱개 30일치가 아니라 「반복 일정」 1건으로 등록하고',
+'    - 지난번과 달라진 것이 없는 항목은 아예 호출하지 않으며',
+'    - 한 번에 하는 생성/삭제를 MAX_OPS 건으로 제한하고 중간중간 쉽니다.',
 '*/',
 'var CAL_ID = "primary";   // 특정 캘린더에 넣으려면 해당 캘린더 ID로 변경',
+'var MAX_OPS = 60;         // 한 번 전송에서 허용할 최대 생성+삭제 횟수',
+'var SLEEP_EVERY = 5;      // 이만큼 쓰기마다 쉬어 준다',
+'var SLEEP_MS = 1500;      // 쉬는 시간(밀리초)',
+'var RT_DAYS = 365;        // 루틴 반복 일정을 며칠치로 만들지',
+'',
+'var __c = 0, __u = 0, __d = 0, __ops = 0, __capped = false;',
 '',
 'function doPost(e){',
+'  var p = {};',
+'  try { p = JSON.parse(e.postData.contents || "{}"); }',
+'  catch (er) { return out("error: 요청을 읽지 못했습니다"); }',
 '  try {',
-'    var p = JSON.parse(e.postData.contents || "{}");',
 '    if (p.type === "ping") return out("pong");',
-'    if (p.type === "bulk") { var r = syncBulk(p); var s = "ok +"+r.c+" ~"+r.u+" -"+r.d; setLast(s); return out(s); }',
+'    if (p.type === "cleanup") { var k = cleanupOld(p); var sc = "ok cleanup -"+k.removed+" 남음 "+k.remain; setLast(sc); return out(sc); }',
+'    if (p.type === "bulk") { syncBulk(p); var sb = tally("ok"); setLast(sb); return out(sb); }',
 '    if (p.type === "delete") { removeByUid(p.uid); return out("ok"); }',
 '    if (p.type === "upsert") { upsert(p); return out("ok"); }',
 '    return out("ignored");',
-'  } catch(err) {',
-'    setLast("오류 발생: " + err);   // 실패 원인을 저장해 두고 웹앱 주소 열어보기에서 보여준다',
-'    return out("error: " + err);',
+'  } catch (err) {',
+'    var msg = String(err);',
+'    var limited = (msg.indexOf("너무 많이") >= 0) || (msg.toLowerCase().indexOf("too many") >= 0);',
+'    var se = tally(limited ? "limit" : "error") + " · " + msg;',
+'    setLast(se);',
+'    return out(se);',
 '  }',
 '}',
+'function tally(head){ return head + " +"+__c+" ~"+__u+" -"+__d + (__capped ? " (분할)" : ""); }',
 'function setLast(s){ try { PropertiesService.getScriptProperties().setProperty("hmd_last", s+" ("+new Date().toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})+")"); } catch(e2) {} }',
 'function out(msg){ return ContentService.createTextOutput(msg); }',
-'/* CAL_ID 선언이 빠져 있어도 동작하도록 안전하게 읽는다 */',
 'function calId(){ try { return CAL_ID || "primary"; } catch(e) { return "primary"; } }',
+'function cal(){ var id = calId(); return id==="primary" ? CalendarApp.getDefaultCalendar() : CalendarApp.getCalendarById(id); }',
+'/* 한국 시간 고정: 스크립트 프로젝트의 시간대 설정과 무관하게 KST로 계산 */',
+'function kst(dateStr, timeStr){ return new Date(dateStr+"T"+(timeStr||"00:00")+":00+09:00"); }',
+'',
 '/* 브라우저로 주소를 열었을 때 설치 상태를 눈으로 확인하는 용도 */',
 'function doGet(){',
 '  var id = calId();',
@@ -2700,14 +2824,83 @@ function gcalShowScript(){
 '  try { last = PropertiesService.getScriptProperties().getProperty("hmd_last") || last; } catch(err) {}',
 '  return out("HMD 연동 정상 — 대상 캘린더: " + name + " | 마지막 전송 처리: " + last + "  (+새로생성 ~갱신 -삭제)");',
 '}',
-'/* 보낸 목록에 없는 HMD 일정은 캘린더에서 지운다(앱에서 삭제한 일정 반영) */',
-'/* 달력 조회는 한 번만 하고 uid 지도를 만들어 재사용한다 (일정+루틴 수십 건도 빠르게 처리) */',
-'var __made = 0, __c = 0, __u = 0, __d = 0;',
-'/* 한국 시간 고정: 스크립트 프로젝트의 시간대 설정과 무관하게 KST로 계산 */',
-'function kst(dateStr, timeStr){ return new Date(dateStr+"T"+(timeStr||"00:00")+":00+09:00"); }',
+'',
+'/* ── 쓰기 예산: 생성/삭제 횟수를 제한하고 쉬어 가며 처리한다 ── */',
+'function canWrite(){ if (__ops >= MAX_OPS) { __capped = true; return false; } return true; }',
+'function spend(){ __ops++; if (__ops % SLEEP_EVERY === 0) Utilities.sleep(SLEEP_MS); }',
+'',
+'/* ── 서명 캐시: 지난번과 내용이 같으면 구글을 아예 호출하지 않는다 ── */',
+'function hash(s){ var h = 0; s = String(s); for (var i=0;i<s.length;i++){ h = ((h<<5)-h+s.charCodeAt(i))|0; } return h.toString(36); }',
+'function sigLoad(){ try { return JSON.parse(PropertiesService.getScriptProperties().getProperty("hmd_sigs") || "{}"); } catch(e){ return {}; } }',
+'function sigSave(m){ try { var t = JSON.stringify(m); if (t.length > 8000) t = "{}"; PropertiesService.getScriptProperties().setProperty("hmd_sigs", t); } catch(e){} }',
+'',
 'function syncBulk(p){',
-'  __c = 0; __u = 0; __d = 0;',
+'  __c = 0; __u = 0; __d = 0; __ops = 0; __capped = false;',
 '  var evs = p.events || [];',
+'  var singles = [], series = [];',
+'  for (var i=0;i<evs.length;i++){ if (evs[i] && evs[i].series) series.push(evs[i]); else singles.push(evs[i]); }',
+'  var sigs = sigLoad();',
+'  try {',
+'    syncSeries(series);',
+'    syncSingles(singles, p, sigs);',
+'  } finally {',
+'    sigSave(sigs);   /* 중간에 차단당해도 여기까지의 진행 상황은 기억해 둔다 */',
+'  }',
+'}',
+'',
+'/* ── 루틴: 반복 일정 1건으로 관리한다 (낱개 생성/삭제를 하지 않음) ── */',
+'function syncSeries(list){',
+'  var props = PropertiesService.getScriptProperties();',
+'  var keep = {};',
+'  for (var i=0;i<list.length;i++){',
+'    var r = list[i];',
+'    if (!r || !r.uid || !r.date) continue;',
+'    keep[r.uid] = true;',
+'    var title = r.title || "(제목 없음)";',
+'    var mins = (r.dur && r.dur > 0) ? r.dur : 30;',
+'    var sig = hash([r.time||"", mins, title, r.detail||"", RT_DAYS].join("|"));',
+'    var saved = props.getProperty("ser_"+r.uid);',
+'    if (saved){',
+'      var o = {};',
+'      try { o = JSON.parse(saved); } catch(e){ o = {}; }',
+'      if (o.sig === sig) continue;            /* 달라진 것이 없으면 통째로 건너뛴다 */',
+'      if (o.id){',
+'        try {',
+'          var s = cal().getEventSeriesById(o.id);',
+'          var rec2 = CalendarApp.newRecurrence().addDailyRule().times(RT_DAYS);',
+'          s.setTitle(title);',
+'          s.setDescription(r.detail||"");',
+'          if (r.time){ var st2 = kst(r.date, r.time); s.setRecurrence(rec2, st2, new Date(st2.getTime()+mins*60000)); }',
+'          else { s.setRecurrence(rec2, kst(r.date)); }',
+'          __u++;',
+'          props.setProperty("ser_"+r.uid, JSON.stringify({id:o.id, sig:sig}));',
+'          continue;',
+'        } catch(e){ /* 시리즈가 사라졌으면 아래에서 새로 만든다 */ }',
+'      }',
+'    }',
+'    if (!canWrite()) return;',
+'    var rec = CalendarApp.newRecurrence().addDailyRule().times(RT_DAYS);',
+'    var ns;',
+'    if (r.time){ var st3 = kst(r.date, r.time); ns = cal().createEventSeries(title, st3, new Date(st3.getTime()+mins*60000), rec, {description:r.detail||""}); }',
+'    else { ns = cal().createAllDayEventSeries(title, kst(r.date), rec, {description:r.detail||""}); }',
+'    try { ns.setTag("hmd_uid", r.uid); } catch(e){}',
+'    props.setProperty("ser_"+r.uid, JSON.stringify({id:ns.getId(), sig:sig}));',
+'    __c++; spend();',
+'  }',
+'  /* 앱에서 지운(또는 끈) 루틴은 반복 일정을 통째로 삭제 = 삭제 호출 1번 */',
+'  var allp = props.getProperties();',
+'  for (var k in allp){',
+'    if (k.indexOf("ser_") !== 0) continue;',
+'    var uid = k.substring(4);',
+'    if (keep[uid]) continue;',
+'    if (!canWrite()) return;',
+'    try { var oo = JSON.parse(allp[k]); cal().getEventSeriesById(oo.id).deleteEventSeries(); __d++; spend(); } catch(e){}',
+'    props.deleteProperty(k);',
+'  }',
+'}',
+'',
+'/* ── 일반 일정 ── */',
+'function syncSingles(list, p, sigs){',
 '  var from = p.from ? kst(p.from) : new Date(Date.now()-86400000*366);',
 '  var to = new Date(Date.now()+86400000*730);',
 '  var scanFrom = new Date(Math.min(from.getTime(), Date.now()-86400000*366));',
@@ -2715,51 +2908,89 @@ function gcalShowScript(){
 '  var byUid = {};',
 '  for (var i=0;i<all.length;i++){ var u = all[i].getTag("hmd_uid"); if (u && !byUid[u]) byUid[u] = all[i]; }',
 '  var keep = {};',
-'  evs.forEach(function(e){ keep[e.uid] = true; upsert(e, byUid); });',
+'  for (var k=0;k<list.length;k++){ if (list[k] && list[k].uid){ keep[list[k].uid] = true; upsert(list[k], byUid, sigs); } }',
+'  /* 보낸 목록에 없는 HMD 일정은 캘린더에서 지운다(앱에서 삭제한 일정 반영) */',
 '  for (var j=0;j<all.length;j++){',
 '    var uid = all[j].getTag("hmd_uid");',
-'    if (uid && !keep[uid] && all[j].getStartTime() >= from) { all[j].deleteEvent(); __d++; }',
+'    if (!uid) continue;',
+'    if (uid.indexOf("hmd-rt-") === 0) continue;      /* 루틴은 위에서 따로 처리하므로 손대지 않는다 */',
+'    if (keep[uid]) continue;',
+'    if (all[j].getStartTime() < from) continue;',
+'    if (!canWrite()) return;',
+'    all[j].deleteEvent(); __d++; delete sigs[uid]; spend();',
 '  }',
-'  return {c:__c, u:__u, d:__d};',
 '}',
-'function cal(){ var id = calId(); return id==="primary" ? CalendarApp.getDefaultCalendar() : CalendarApp.getCalendarById(id); }',
+'',
+'function upsert(p, byUid, sigs){',
+'  if (!p || !p.uid || !p.date) return;',
+'  sigs = sigs || {};',
+'  var ev = byUid ? (byUid[p.uid] || null) : findByUid(p.uid, p.date);',
+'  if (p.done){   /* 완료한 일정은 캘린더에서 제거 */',
+'    if (ev){ if (!canWrite()) return; ev.deleteEvent(); __d++; delete sigs[p.uid]; spend(); }',
+'    return;',
+'  }',
+'  var title = p.title || "(제목 없음)";',
+'  var mins = (p.dur && p.dur > 0) ? p.dur : 60;   /* 소요시간(분), 없으면 60분 */',
+'  var sig = hash([p.date, p.time||"", mins, title, p.detail||""].join("|"));',
+'  if (ev && sigs[p.uid] === sig) return;          /* 달라진 것이 없으면 호출하지 않는다 */',
+'  if (p.time){',
+'    var st = kst(p.date, p.time);',
+'    var en = new Date(st.getTime()+mins*60000);',
+'    if (ev && ev.isAllDayEvent()){ if (!canWrite()) return; ev.deleteEvent(); __d++; spend(); ev = null; }',
+'    if (ev){ ev.setTime(st, en); ev.setTitle(title); ev.setDescription(p.detail||""); __u++; }',
+'    else {',
+'      if (!canWrite()) return;',
+'      var ne = cal().createEvent(title, st, en, {description:p.detail||""});',
+'      ne.setTag("hmd_uid", p.uid); __c++; spend();',
+'    }',
+'  } else {',
+'    var day = kst(p.date);',
+'    if (ev && !ev.isAllDayEvent()){ if (!canWrite()) return; ev.deleteEvent(); __d++; spend(); ev = null; }',
+'    if (ev){ ev.setAllDayDate(day); ev.setTitle(title); ev.setDescription(p.detail||""); __u++; }',
+'    else {',
+'      if (!canWrite()) return;',
+'      var na = cal().createAllDayEvent(title, day, {description:p.detail||""});',
+'      na.setTag("hmd_uid", p.uid); __c++; spend();',
+'    }',
+'  }',
+'  sigs[p.uid] = sig;',
+'}',
+'',
 'function findByUid(uid, dateStr){',
 '  var d = new Date(dateStr+"T00:00:00");',
-'  var from = new Date(d.getTime()-86400000*366), to = new Date(d.getTime()+86400000*366);',
-'  var evs = cal().getEvents(from, to);',
-'  for (var i=0;i<evs.length;i++){',
-'    if (evs[i].getTag("hmd_uid") === uid) return evs[i];',
-'  }',
+'  var evs = cal().getEvents(new Date(d.getTime()-86400000*366), new Date(d.getTime()+86400000*366));',
+'  for (var i=0;i<evs.length;i++){ if (evs[i].getTag("hmd_uid") === uid) return evs[i]; }',
 '  return null;',
 '}',
 'function removeByUid(uid){',
 '  var now = new Date();',
 '  var evs = cal().getEvents(new Date(now.getTime()-86400000*366), new Date(now.getTime()+86400000*366));',
-'  for (var i=0;i<evs.length;i++) if (evs[i].getTag("hmd_uid")===uid) evs[i].deleteEvent();',
-'}',
-'function made(){ __made++; if (__made % 10 === 0) Utilities.sleep(1200); }   // 생성 속도 제한 회피',
-'function upsert(p, byUid){',
-'  if (!p || !p.uid || !p.date) return;',
-'  var ev = byUid ? (byUid[p.uid] || null) : findByUid(p.uid, p.date);',
-'  if (p.done){ if (ev) ev.deleteEvent(); return; }   // 완료한 일정은 캘린더에서 제거',
-'  var title = p.title || "(제목 없음)";',
-'  if (p.time){',
-'    var st = kst(p.date, p.time);',
-'    var mins = (p.dur && p.dur>0) ? p.dur : 60;   // 소요시간(분), 없으면 60분',
-'    var en = new Date(st.getTime()+mins*60000);',
-'    if (ev){',
-'      if (ev.isAllDayEvent()){ ev.deleteEvent(); ev = null; }',
-'      else { ev.setTime(st, en); ev.setTitle(title); ev.setDescription(p.detail||""); __u++; }',
-'    }',
-'    if (!ev){ ev = cal().createEvent(title, st, en, {description:p.detail||""}); ev.setTag("hmd_uid", p.uid); __c++; made(); }',
-'  } else {',
-'    var day = kst(p.date);',
-'    if (ev){',
-'      if (!ev.isAllDayEvent()){ ev.deleteEvent(); ev = null; }',
-'      else { ev.setAllDayDate(day); ev.setTitle(title); ev.setDescription(p.detail||""); __u++; }',
-'    }',
-'    if (!ev){ ev = cal().createAllDayEvent(title, day, {description:p.detail||""}); ev.setTag("hmd_uid", p.uid); __c++; made(); }',
+'  var n = 0;',
+'  for (var i=0;i<evs.length;i++){',
+'    if (evs[i].getTag("hmd_uid") !== uid) continue;',
+'    evs[i].deleteEvent(); n++;',
+'    if (n % SLEEP_EVERY === 0) Utilities.sleep(SLEEP_MS);',
 '  }',
+'}',
+'',
+'/* ── 예전(낱개 30일치) 방식으로 쌓인 루틴 일정을 나눠서 정리 ──',
+'   태그가 hmd-rt-<루틴id>-<날짜> 형태인 것만 지운다.',
+'   새 반복 루틴의 태그는 hmd-rt-<루틴id> 라 걸리지 않는다. */',
+'function cleanupOld(p){',
+'  var limit = (p && p.limit > 0) ? p.limit : 40;',
+'  var now = new Date();',
+'  var all = cal().getEvents(new Date(now.getTime()-86400000*400), new Date(now.getTime()+86400000*800));',
+'  var removed = 0, remain = 0;',
+'  for (var i=0;i<all.length;i++){',
+'    var u = all[i].getTag("hmd_uid");',
+'    if (!u || !/^hmd-rt-.+-\\d{4}-\\d{2}-\\d{2}$/.test(u)) continue;',
+'    if (removed >= limit){ remain++; continue; }',
+'    try {',
+'      all[i].deleteEvent(); removed++;',
+'      if (removed % SLEEP_EVERY === 0) Utilities.sleep(SLEEP_MS);',
+'    } catch(e){ remain++; }',
+'  }',
+'  return {removed:removed, remain:remain};',
 '}'].join('\n');
 }
 
