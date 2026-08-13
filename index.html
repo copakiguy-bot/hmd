@@ -429,6 +429,7 @@
   .cd-dodum,.cd-dodum p,.cd-dodum li{font-family:'Gowun Dodum',sans-serif}
   .cd-sent-full{font-family:'Gowun Dodum',sans-serif;font-size:12pt;line-height:1.75;margin-top:8px;padding:9px 12px;border-radius:9px;background:var(--cream);white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;color:var(--dark);overflow:visible}
   #fw_cdSentence,#fw_cdDesc{font-family:'Gowun Dodum',sans-serif}
+  .cd-sent-in,#fw_cdSentence{font-family:'Gowun Dodum',sans-serif;font-size:11pt;line-height:1.7}
   /* ===== 데일리 타임라인 (06~23시) ===== */
   .tl-wrap{overflow-x:auto;padding-bottom:4px}
   .tl-inner{position:relative;padding-left:20px}
@@ -761,6 +762,11 @@
   .word-mean{font-family:'Nanum Myeongjo',serif;margin-top:24px;font-size:clamp(17px,2.6vw,25px);color:#4a5751;line-height:1.7;display:inline-block;padding:6px 14px;border-radius:12px;word-break:keep-all}
   .word-mean.masked{background:var(--line);color:transparent;user-select:none;cursor:pointer;min-width:160px}
   .word-hint{margin-top:14px;font-size:13px;color:var(--muted)}
+  .word-read{font-size:.5em;font-weight:700;color:var(--muted);margin-left:6px;white-space:nowrap}
+  .word-term.masked .word-read{color:transparent}
+  .word-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:22px}
+  .word-nav .btn{flex:none;padding:7px 16px;font-size:13px}
+  .word-pos{font-size:12px;font-weight:700;color:var(--muted);min-width:56px}
 
   /* 독서 발췌 랜덤 + 타이머 */
   .ex-ov{position:fixed;inset:0;background:rgba(18,49,43,.55);display:flex;align-items:center;justify-content:center;z-index:120;padding:20px}
@@ -2460,9 +2466,11 @@ function renderCal(){
         const st=SOLARTERM[key];
         const chips=sc.slice(0,2).map(s=>`<span class="schip" draggable="true" ondragstart="schedDragStart(event,${s.id})">${s.time?esc(s.time)+' ':''}${esc(s.title)}</span>`).join('')
           +(sc.length>2?`<span class="smore">+${sc.length-2}</span>`:'');
-        const otCell=(showOvertime&&!showWeather)?`<input class="cal-ot" data-k="${key}" type="number" min="0" step="0.5" value="${db.overtime&&db.overtime[key]!=null?db.overtime[key]:''}" onclick="event.stopPropagation()" onchange="calOtSet(this)" title="초과근무 시간">`:'';
-        html+=`<td><div class="d ${key===tk?'today':''} ${key===selDate?'sel':''} ${hn?'hol':''} ${isSun?'sun':''} ${ses.length?'sess':''}"${ses.length?` title="${escA(ses.map(z=>(z.name||'회기')+(z.agenda?' · '+z.agenda:'')).join(' / '))}"`:''} onclick="selectDate('${key}')" ondragover="event.preventDefault()" ondrop="schedDrop(event,'${key}')">
-          <div class="dnum"><span class="n">${day}</span>${showLunar?`<span class="lun">(${lunarOf(key)})</span>`:''}${hn?`<span class="holname">${esc(hn)}</span>`:''}${st?`<span class="term">${st}</span>`:''}${set.has(key)?'<span class="rec"></span>':''}${sesTag}</div>${showWeather?weatherCellHTML(key):chips}${otCell}</div></td>`;day++;}
+        const otCell=showOvertime?`<input class="cal-ot" data-k="${key}" type="number" min="0" step="0.5" value="${db.overtime&&db.overtime[key]!=null?db.overtime[key]:''}" onclick="event.stopPropagation()" onchange="calOtSet(this)" title="초과근무 시간">`:'';
+        /* 초과근무 모드에서는 일정·회기 표시를 숨기고 초과근무 시간만 보여준다 */
+        const body=showOvertime?otCell:chips;
+        html+=`<td><div class="d ${key===tk?'today':''} ${key===selDate?'sel':''} ${hn?'hol':''} ${isSun?'sun':''} ${(ses.length&&!showOvertime)?'sess':''}"${(ses.length&&!showOvertime)?` title="${escA(ses.map(z=>(z.name||'회기')+(z.agenda?' · '+z.agenda:'')).join(' / '))}"`:''} onclick="selectDate('${key}')" ondragover="event.preventDefault()" ondrop="schedDrop(event,'${key}')">
+          <div class="dnum"><span class="n">${day}</span>${showLunar?`<span class="lun">(${lunarOf(key)})</span>`:''}${hn?`<span class="holname">${esc(hn)}</span>`:''}${st?`<span class="term">${st}</span>`:''}${(set.has(key)&&!showOvertime)?'<span class="rec"></span>':''}${showOvertime?'':sesTag}</div>${body}</div></td>`;day++;}
     }
     if(showOvertime)html+='<td class="cal-wk"></td>';
     html+='</tr>';if(day>dim&&r>=4)break;}
@@ -4098,18 +4106,77 @@ function memRow(x){
     <span class="mask on" style="flex:1.3" onclick="this.classList.toggle('on')">${esc(x.meaning||'')}</span>
     <span class="edit-ic" title="수정" onclick="startEditMem(${x.id})">수정</span>
     <span class="del" onclick="delEntry('study',${x.id},renderStudyAll)">×</span></div>`;}
+/* 한자 훈음 판별: 뜻이 「조사할 검, 증거 증」처럼 각 글자의 훈음이면 단어(훈음) 형태로 합쳐서 보여준다 */
+function wordHanjaCombo(x){
+  var term=String(x.term||'').replace(/\([^)]*\)/g,'').trim();      /* 낙관(樂觀) → 낙관 */
+  var ko=term.replace(/[^가-힣]/g,'');
+  var mean=String(x.meaning||'').trim();
+  if(!ko||!mean)return null;
+  var parts=mean.split(/\s*,\s*/).filter(function(s){return s;});
+  if(parts.length!==ko.length||parts.length<1)return null;
+  var joined=parts.map(function(s){
+    var w=s.trim().split(/\s+/);var last=w[w.length-1];
+    return (w.length>=2&&/^[가-힣]$/.test(last))?last:'';
+  }).join('');
+  if(joined!==ko&&!wordDueum(joined,ko))return null;   /* 두음법칙(락관→낙관) 허용 */
+  return {word:term,read:parts.join(', ')};
+}
+/* 첫 글자 두음법칙 비교: ㄹ→ㄴ/ㅇ */
+function wordDueum(a,b){
+  if(a.length!==b.length||a.length<1)return false;
+  if(a.slice(1)!==b.slice(1))return false;
+  var ca=a.charCodeAt(0)-0xAC00,cb=b.charCodeAt(0)-0xAC00;
+  if(ca<0||cb<0)return false;
+  var ia=Math.floor(ca/588),ib=Math.floor(cb/588);
+  if(ca%588!==cb%588)return false;
+  return (ia===5&&(ib===2||ib===11))||(ia===2&&ib===11);   /* ㄹ→ㄴ/ㅇ, ㄴ→ㅇ */
+}
+/* 확대 화면에서 넘겨볼 목록 (같은 탭, 화면과 같은 순서) */
+var wordSeq=[],wordIdx=-1;
+function wordListFor(x){
+  var tab=x.tab;
+  return db.study.filter(function(s){return s.tab===tab&&isMemTab(tab);})
+    .slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date))||(a.id-b.id);});
+}
 function zoomWord(id){
   const x=db.study.find(s=>s.id===id);if(!x)return;
+  wordSeq=wordListFor(x).map(function(s){return s.id;});
+  wordIdx=wordSeq.indexOf(id);
   const ov=document.createElement('div');ov.className='word-ov';ov.id='wordOv';
   ov.onclick=e=>{if(e.target===ov)closeWord();};
   ov.innerHTML=`<div class="word-box"><span class="word-close" onclick="closeWord()">✕</span>
-    <div class="word-term masked" onclick="this.classList.toggle('masked');var h=document.getElementById('wordHint');if(h)h.style.display='none'">${esc(x.term||'')}</div>
-    <div class="word-mean">${esc(x.meaning||'')}</div>
-    <div class="word-hint" id="wordHint">단어를 보려면 위 가려진 영역을 탭하세요</div></div>`;
+    <div id="wordInner"></div>
+    <div class="word-nav"><button class="btn ghost" onclick="wordStep(-1)">‹ 이전</button>
+      <span class="word-pos" id="wordPos"></span>
+      <button class="btn y" onclick="wordStep(1)">다음 한자 ›</button></div></div>`;
   document.body.appendChild(ov);
+  wordPaint();
   document.addEventListener('keydown',wordEsc);
 }
-function wordEsc(e){if(e.key==='Escape')closeWord();}
+function wordPaint(){
+  var inner=document.getElementById('wordInner');if(!inner)return;
+  var id=wordSeq[wordIdx];
+  var x=db.study.find(function(s){return s.id===id;});if(!x)return;
+  var hj=wordHanjaCombo(x);
+  inner.innerHTML=hj
+    ? `<div class="word-term masked" onclick="this.classList.toggle('masked');var h=document.getElementById('wordHint');if(h)h.style.display='none'">${esc(hj.word)}<span class="word-read">(${esc(hj.read)})</span></div>
+       <div class="word-hint" id="wordHint">단어를 보려면 위 가려진 영역을 탭하세요</div>`
+    : `<div class="word-term masked" onclick="this.classList.toggle('masked');var h=document.getElementById('wordHint');if(h)h.style.display='none'">${esc(x.term||'')}</div>
+       <div class="word-mean">${esc(x.meaning||'')}</div>
+       <div class="word-hint" id="wordHint">단어를 보려면 위 가려진 영역을 탭하세요</div>`;
+  var pos=document.getElementById('wordPos');
+  if(pos)pos.textContent=(wordIdx+1)+' / '+wordSeq.length;
+}
+function wordStep(d){
+  if(!wordSeq.length)return;
+  wordIdx=(wordIdx+d+wordSeq.length)%wordSeq.length;
+  wordPaint();
+}
+function wordEsc(e){
+  if(e.key==='Escape')closeWord();
+  else if(e.key==='ArrowRight')wordStep(1);
+  else if(e.key==='ArrowLeft')wordStep(-1);
+}
 function closeWord(){const e=document.getElementById('wordOv');if(e)e.remove();document.removeEventListener('keydown',wordEsc);}
 
 /* 대시보드 */
@@ -4449,13 +4516,14 @@ function delCheonilDash(cid,uid2){
 function cheonilDashHTML(){
   return `<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">
     <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:8px;letter-spacing:.3px">천일문</div>
-    ${(()=>{const t=cheonilTodayItems();const hasEntry=t.length>0;const hasSent=hasEntry&&t.some(i=>i.u.sentence);
+    ${(()=>{const t=cheonilTodayItems();const hasEntry=t.length>0;
     return `<div id="cheonilCompose" style="${hasEntry?'display:none':''}">
     <div class="inrow">
       <select id="cdChapter" class="in" style="flex:1" onchange="fillCheonilDashUnits()"></select>
       <select id="cdUnit" class="in" style="flex:1" onchange="fillCheonilDashUnitFields()"></select>
     </div>
-    <textarea id="cdDesc" class="in" style="display:block;width:100%;margin-top:8px;min-height:84px;font-family:'Gowun Dodum',sans-serif" placeholder="" onfocus="fwStart('cheonildesc',this)"></textarea>
+    <textarea id="cdSentence" class="in cd-sent-in" style="display:block;width:100%;margin-top:8px;min-height:44px;resize:vertical" placeholder="오늘의 문장" onfocus="fwStart('cheonil',this)"></textarea>
+    <textarea id="cdDesc" class="in" style="display:block;width:100%;margin-top:8px;min-height:84px;font-family:'Gowun Dodum',sans-serif" placeholder="유닛 내용 (눌러서 편집기)" onfocus="fwStart('cheonildesc',this)"></textarea>
     <div style="margin-top:10px;display:flex;gap:8px">
       <button class="btn y" onclick="saveCheonilDash()">저장</button>
       <button class="btn ghost" onclick="toggleCheonilChapterForm()">＋ CHAPTER/UNIT 추가</button>
@@ -4472,11 +4540,7 @@ function cheonilDashHTML(){
       </div>
     </div>
     </div>
-    <div id="cheonilDashFeed" style="margin-top:12px">${cheonilDashFeedHTML()}</div>
-    <div class="inrow" style="margin-top:10px${hasSent?';display:none':''}">
-      <textarea id="cdSentence" class="in" style="flex:1;min-height:44px;resize:vertical;font-family:'Gowun Dodum',sans-serif" placeholder="영어 문장 (Sentence)" onfocus="fwStart('cheonil',this)"></textarea>
-      <button class="btn y" style="flex:none" onclick="saveCheonilDash()">저장</button>
-    </div>`;})()}
+    <div id="cheonilDashFeed" style="margin-top:12px">${cheonilDashFeedHTML()}</div>`;})()}
   </div>`;
 }
 
