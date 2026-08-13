@@ -277,15 +277,16 @@
   .menu-btn{display:none}
   @media(max-width:1000px){.grid,.row2,.two,.g2,.g3{grid-template-columns:1fr}.sidebar{display:none}.main{padding-top:58px}.menu-btn{display:flex;position:fixed;top:12px;left:12px;z-index:60;width:44px;height:44px;border-radius:12px;background:var(--dark);color:#fff;align-items:center;justify-content:center;font-size:20px;border:none;cursor:pointer;box-shadow:var(--shadow)}.sidebar.open{display:flex;position:fixed;left:0;top:0;height:100vh;z-index:59}}
   /* 명조체: 우리는 매일매일 / 스케줄 세부내역 */
-  #studyPane .mask,#studyPane .body,#dashStudyFeed .mask,#dashStudyFeed .body,
-  #schedList .sub{font-family:'Nanum Myeongjo',serif}
+  #studyPane .mask,#studyPane .body,#dashStudyFeed .mask,#dashStudyFeed .body{font-family:'Nanum Myeongjo',serif}
   /* 독서 발췌 표시: 고운돋움 */
   #bookDetail .body,#dashReadFeed .body{font-family:'Gowun Dodum',sans-serif}
   /* 일기: 고운바탕 + 칸(가로 폭) 넓게 + 가운데 정렬. 아래 700px(칸 너비)와 13px(폰트) 숫자만 바꾸면 조절됨 */
   #diaryPage,#dashDiaryFeed{max-width:700px;margin-left:auto;margin-right:auto}
   #diaryPage .body,#dashDiaryFeed .body{font-family:'Gowun Dodum',sans-serif;font-size:11pt;line-height:1.8;overflow-wrap:break-word}
   #diaryInput,#diaryInput2{font-size:11pt;line-height:1.8;max-width:700px;margin-left:auto;margin-right:auto;display:block}
-  #schedList .sub{font-size:13.5px;margin-left:28px;white-space:pre-wrap;line-height:1.6;color:var(--muted)}
+  /* 일정 세부내용: 루틴 제목과 같은 글꼴·크기 */
+  #schedList .sub{font-family:'Noto Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+    font-size:13px;margin-left:28px;white-space:pre-wrap;line-height:1.6;color:var(--muted)}
   #ideaCard{min-height:200px}
   #mindCanvas{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fbfbf8;min-height:460px;margin-top:4px}
   .mind-expand-btn{cursor:pointer;flex-shrink:0;margin-left:8px;font-size:14px;line-height:1;padding:5px 9px}
@@ -406,9 +407,10 @@
   #memoPad .memo-x{margin-left:auto;cursor:pointer;font-size:17px;line-height:1;color:#a3922f}
   #memoPad .memo-x:hover{color:#6b5d15}
   #memoText{width:100%;min-height:150px;resize:vertical;border:none;outline:none;background:transparent;font-family:'Noto Sans KR',sans-serif;font-size:10pt;line-height:1.65;color:#4a4110}
-  #memoPad .memo-foot{display:flex;align-items:center;gap:8px;margin-top:6px}
-  #memoPad .memo-foot .btn{margin-left:auto;padding:5px 14px;font-size:12px;flex:none}
-  #memoMsg{font-size:11px;color:#8a7b26}
+  #memoPad .memo-foot{display:flex;align-items:center;gap:6px;margin-top:6px}
+  #memoPad .memo-foot .btn{padding:5px 12px;font-size:11.5px;flex:none}
+  #memoPad .memo-foot .btn.ghost{background:#fffdf0;color:#7a6a1e}
+  #memoMsg{font-size:11px;color:#8a7b26;flex:1;min-width:0}
   @media(max-width:1000px){#memoFab{right:10px}#memoPad{right:10px;width:220px}}
   @media(max-width:1000px){.fw-back{padding:12px}.fw-main{font-size:16px}}
   #ideaCard.mind-expanded{position:fixed;top:20px;left:20px;right:20px;bottom:20px;z-index:95;display:flex;flex-direction:column;box-shadow:0 24px 70px rgba(0,0,0,.35);overflow:hidden}
@@ -801,6 +803,50 @@
   .ex-petals{font-size:12px;color:var(--muted);margin-top:10px}
   .mv-btn{cursor:pointer;flex-shrink:0;font-size:15px;font-weight:800;color:var(--green);padding:0 4px}
   .mv-btn:hover{color:var(--dark)}
+  /* ===== INBOX 2단 (왼쪽 내용 · 오른쪽 주석) ===== */
+  .inb2{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;align-items:start}
+  .inb-right{border-left:1px solid var(--line);padding-left:18px;min-height:80px}
+  @media(max-width:1000px){.inb2{grid-template-columns:1fr}
+    .inb-right{border-left:none;border-top:1px solid var(--line);padding-left:0;padding-top:14px}}
+  .inb-item{display:flex;align-items:flex-start;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line)}
+  .inb-item:last-child{border-bottom:none}
+  .inb-item .chk{margin-top:1px}
+  .inb-body{flex:1;min-width:0}
+  .inb-t{font-size:14px;line-height:1.55;word-break:break-word;cursor:text}
+  .inb-item.done .inb-t{text-decoration:line-through;color:var(--muted)}
+  .inb-t mark{background:var(--yellow-soft);color:inherit;border-radius:3px;padding:0 1px}
+  .inb-meta{margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .inb-src{font-size:10.5px;font-weight:700;border-radius:999px;padding:2px 8px;background:var(--cream);color:var(--muted)}
+  .inb-src.direct{background:#e9edfb;color:#3f5aa6}
+  .inb-src.long{background:var(--green-soft);color:#1f6b4a}
+  .inb-src.memo{background:#fff3a6;color:#7a6a1e}
+  .inb-date{font-size:10.5px;color:var(--muted);font-weight:700}
+  .inb-bury{font-size:10.5px;font-weight:700;color:#fff;background:var(--muted);border:none;border-radius:999px;padding:3px 10px;cursor:pointer}
+  .inb-bury:hover{background:var(--dark)}
+  .inb-note{border:1px solid var(--line);border-left:3px solid var(--yellow);border-radius:10px;
+    padding:9px 11px;margin-bottom:9px;background:#fffdf7}
+  .inb-note .nh{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+  .inb-note .no{font-size:10.5px;color:var(--muted);font-weight:700;flex:1;min-width:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+  .inb-note .no:hover{color:var(--dark)}
+  .inb-note .q{font-size:11.5px;color:#8a6412;font-weight:700;line-height:1.55;display:block;margin-bottom:5px}
+  .inb-note .nt{font-size:12.5px;line-height:1.6;color:var(--dark);outline:none;min-height:19px}
+  .inb-note .nt:empty:before{content:'주석 입력…';color:var(--muted)}
+  .inb-hint{font-size:11.5px;color:var(--muted);line-height:1.7;padding:6px 2px}
+  .inb-flash{animation:inbFlash 1.1s ease-out}
+  @keyframes inbFlash{0%{background:var(--yellow-soft)}100%{background:transparent}}
+  /* ===== 보관함 ===== */
+  .grv-day{margin-bottom:20px}
+  .grv-day:last-child{margin-bottom:0}
+  .grv-day-h{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.3px;display:flex;
+    align-items:center;gap:8px;padding-bottom:7px;border-bottom:1px solid var(--line);margin-bottom:6px}
+  .grv-item{padding:10px 2px;border-bottom:1px solid var(--line)}
+  .grv-item:last-child{border-bottom:none}
+  .grv-t{font-size:13.5px;text-decoration:line-through;color:var(--muted)}
+  .grv-notes{margin-top:7px;padding-left:11px;border-left:2px solid var(--line)}
+  .grv-note{font-size:12px;line-height:1.6;margin-bottom:4px;color:var(--dark)}
+  .grv-note:last-child{margin-bottom:0}
+  .grv-note .q{color:#8a6412;font-weight:700}
   .rt-row{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line)}
   .rt-row:last-child{border-bottom:none}
   .rt-row.active{background:#fffdf5;border-radius:8px}
@@ -936,7 +982,8 @@
     <div class="nav sub" data-v="study:문화">Culture</div>
   </div>
   <div class="nav" data-v="assets">Assets</div>
-  <div class="nav" data-v="inbox">Inbox</div>
+  <div class="nav" data-v="inbox">Idea</div>
+  <div class="nav" data-v="grave">Archive</div>
   <div class="nav" data-v="routines">Routines</div>
   <div class="nav" data-v="routiner">Rutimer</div>
   <div class="nav" data-v="diary">Diary</div>
@@ -1042,12 +1089,12 @@
 
   <!-- ===== Inbox ===== -->
   <section class="view" id="view-inbox">
-    <div class="page-head"><h1>Inbox</h1></div>
+    <div class="page-head"><h1>IDEA</h1><p>떠오른 것을 담아 아이디어 → 단기 → 장기로 키우고, 실행 단계가 되면 아래 INBOX로 내려보냅니다.</p></div>
     <div class="card">
-      <h3><span class="dot"></span> 새 항목</h3>
+      <h3><span class="dot"></span> 새 아이디어</h3>
       <div class="addrow">
         <input id="inboxInput2" placeholder="담아둘 내용 입력 후 Enter">
-        <button class="btn" onclick="addInbox('inboxInput2')">추가</button>
+        <button class="btn" onclick="addInbox('inboxInput2','idea')">추가</button>
       </div>
     </div>
     <div class="g3" style="align-items:start">
@@ -1059,6 +1106,34 @@
         <div id="mindToolbar" style="display:none;margin-bottom:8px"><button class="btn y" onclick="mindAddTopic()">＋ 주제 추가</button> <span style="font-size:11.5px;color:var(--muted)"><b>Tab</b>=하위 · <b>Enter</b>=대등 · <b>Shift+Enter</b>=줄바꿈 · 칸을 끌어 이동 · ○ 눌러 가지접기</span></div>
         <div id="mindCanvas"></div>
       </div>
+
+      <!-- ===== 실제 INBOX (2단: 왼쪽 내용 · 오른쪽 주석) ===== -->
+      <div class="card" id="inboxRealCard">
+        <h3><span class="dot" style="background:var(--red)"></span> INBOX
+          <span class="more" id="inbRealCount"></span>
+          <span class="more" style="cursor:pointer;margin-left:12px" onclick="go('grave')">📦 보관함 →</span></h3>
+        <div class="addrow" style="margin-bottom:14px">
+          <input id="inbRealInput" placeholder="INBOX에 직접 등록 · 입력 후 Enter">
+          <button class="btn" onclick="addRealInbox()">추가</button>
+        </div>
+        <div class="inb2">
+          <div class="inb-left" id="inbLeft"></div>
+          <div class="inb-right" id="inbRight"></div>
+        </div>
+      </div>
+  </section>
+
+  <!-- ===== 보관함 ===== -->
+  <section class="view" id="view-grave">
+    <div class="page-head"><h1>📦 보관함</h1><p>처리를 끝내고 내려보낸 INBOX 기록입니다. 주석과 출처가 그대로 남습니다.</p></div>
+    <div class="card">
+      <h3><span class="dot" style="background:var(--muted)"></span> 처리 기록 <span class="more" id="grvCount"></span></h3>
+      <div class="addrow" style="margin:2px 0 16px">
+        <input id="grvSearch" placeholder="제목·주석 내용으로 검색" oninput="renderGrave()">
+        <button class="btn ghost" onclick="go('inbox')">← INBOX로</button>
+      </div>
+      <div id="grvBody"></div>
+    </div>
   </section>
   <div class="mind-backdrop" id="mindBackdrop" onclick="toggleMindExpand()"></div>
 
@@ -1202,7 +1277,7 @@
         <div style="margin-top:10px"><button class="btn y" onclick="addSchedule()">저장</button></div></div>
       </div>
       <div class="card" id="inboxCard">
-        <h3><span class="dot"></span> INBOX <span class="more" onclick="go('inbox')" style="cursor:pointer"><span id="inboxCount"></span> 전체 →</span></h3>
+        <h3><span class="dot" style="background:var(--red)"></span> INBOX <span class="more" onclick="goInbox()" style="cursor:pointer"><span id="inboxCount"></span> 전체 →</span></h3>
         <ul class="todo fill" id="inboxList"></ul>
         <div class="addrow">
           <input id="inboxInput" placeholder="입력 후 Enter">
@@ -1357,8 +1432,10 @@
 <button id="memoFab" onclick="memoToggle()" title="포스트잇 메모">🗒️</button>
 <div id="memoPad">
   <div class="memo-head">포스트잇 <span class="memo-x" onclick="memoToggle()">×</span></div>
-  <textarea id="memoText" placeholder="메모 후 저장하면 인박스로 이동합니다"></textarea>
-  <div class="memo-foot"><span id="memoMsg"></span><button class="btn y" onclick="memoSave()">저장</button></div>
+  <textarea id="memoText" placeholder="메모 후 보낼 곳을 고르세요"></textarea>
+  <div class="memo-foot"><span id="memoMsg"></span>
+    <button class="btn ghost" onclick="memoSave('inbox')" title="바로 처리할 일 → INBOX">INBOX</button>
+    <button class="btn y" onclick="memoSave('idea')" title="더 굴려볼 생각 → IDEA">IDEA</button></div>
 </div>
 
 <div class="exv-back" id="exvBack" onclick="closeExcerptView()">
@@ -1428,7 +1505,9 @@ function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!
     db.cheonildu={chapters:__chapOrder.map(function(k){return __chapMap[k];})};
   }
   if(!db.cheonildu.chapters)db.cheonildu.chapters=[];
-  (db.inbox||[]).forEach(function(x){if(!x.grp)x.grp=x.long?'long':'short';});}
+  (db.inbox||[]).forEach(function(x){if(!x.grp)x.grp=x.long?'long':'short';if(!x.notes)x.notes=[];if(!x.src)x.src='direct';});
+  /* 일정 세부내용의 앞머리 '- ' 를 가운뎃점으로 한 번 바꿔 준다 */
+  if(!db.__dotMigrated){(db.schedules||[]).forEach(function(s){if(s.detail)s.detail=String(s.detail).replace(/^-[ \t]/gm,'· ');});db.__dotMigrated=1;}}
 ensureFields();
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.work)return s;}catch(e){}return seed();}
 const BK_KEY='hmd_backups';
@@ -1567,6 +1646,8 @@ function go(v){
   var __sb=document.querySelector('.sidebar');if(__sb)__sb.classList.remove('open');renderAll();window.scrollTo(0,0);
 }
 function curView(){var el=document.querySelector('.view.on');return el?el.id.replace('view-',''):'dashboard';}
+/* 대시보드 INBOX 카드의 «전체 →» : IDEA 페이지의 INBOX 칸으로 */
+function goInbox(){go('inbox');setTimeout(function(){var c=document.getElementById('inboxRealCard');if(c)c.scrollIntoView({behavior:'smooth',block:'start'});},90);}
 function syncNav(v){
   v=v||curView();
   document.querySelectorAll('.nav').forEach(function(n){
@@ -3004,8 +3085,8 @@ function addSchedule(){
   save();['schTitle','schTime','schDetail','schDur'].forEach(i=>{var e=document.getElementById(i);if(e)e.value='';});
   renderCal();renderSchedule();
 }
-function schedDetailFocus(e){var el=e.target;if(!el.innerText.trim()){el.innerText='- ';var r=document.createRange();r.selectNodeContents(el);r.collapse(false);var sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);}}
-function schedDetailKey(e){if(e.key==='Enter'){e.preventDefault();document.execCommand('insertLineBreak');document.execCommand('insertText',false,'- ');}}
+function schedDetailFocus(e){var el=e.target;if(!el.innerText.trim()){el.innerText='· ';var r=document.createRange();r.selectNodeContents(el);r.collapse(false);var sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);}}
+function schedDetailKey(e){if(e.key==='Enter'){e.preventDefault();document.execCommand('insertLineBreak');document.execCommand('insertText',false,'· ');}}
 function editSchedule(id,field,val){const s=db.schedules.find(x=>x.id===id);if(!s)return;
   s[field]=field==='time'?normTime(val):String(val).trim();save();renderCal();renderSchedule();}
 function delSchedule(id){db.schedules=db.schedules.filter(s=>s.id!==id);save();renderCal();renderSchedule();}
@@ -3095,13 +3176,14 @@ function renderSessions(){
 }
 
 /* ---------- inbox ---------- */
-function addInbox(inputId){
+function nowStamp(){var d=new Date();return dstr2(d)+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function addInbox(inputId,grp){
   const el=document.getElementById(inputId||'inboxInput');
   const v=el.value.trim();if(!v)return;
-  db.inbox.push({id:uid(),date:today(),t:v,done:false,grp:'idea'});save();el.value='';
+  db.inbox.push({id:uid(),date:today(),t:v,done:false,grp:grp||'inbox',src:'direct',notes:[]});save();el.value='';
   renderInbox();renderInboxPage();
 }
-function toggleInbox(id){const x=db.inbox.find(a=>a.id===id);if(x){x.done=!x.done;save();renderInbox();renderInboxPage();}}
+function toggleInbox(id){const x=db.inbox.find(a=>a.id===id);if(x){x.done=!x.done;x.doneAt=x.done?nowStamp():null;save();renderInbox();renderInboxPage();}}
 function editInbox(id,val){const x=db.inbox.find(a=>a.id===id);if(!x)return;
   const v=String(val).trim();if(v)x.t=v;save();renderInbox();renderInboxPage();}
 function delInbox(id){db.inbox=db.inbox.filter(a=>a.id!==id);save();renderInbox();renderInboxPage();}
@@ -3111,15 +3193,151 @@ function inboxItemHTML(x){return `<li class="${x.done?'done':''}">
   <span class="del" onclick="delInbox(${x.id})">×</span></li>`;}
 function renderInbox(){
   const ul=document.getElementById('inboxList');if(!ul)return;
-  const items=db.inbox.filter(x=>grpOf(x)!=='long');const open=items.filter(x=>!x.done);
+  const items=inbList();const open=items.filter(x=>!x.done);
   ul.innerHTML=items.length?items.slice().reverse().map(inboxItemHTML).join('')
-    :'<div class="empty">담아둔 항목이 없습니다.</div>';
+    :'<div class="empty">INBOX가 비어 있습니다.</div>';
   document.getElementById('inboxCount').textContent=`${open.length} / ${items.length}`;
 }
 function grpOf(x){return x.grp||(x.long?'long':'short');}
-function grpLabel(g){return g==='idea'?'아이디어':g==='long'?'장기':'단기';}
-function nextGrp(g){return g==='short'?'long':g==='long'?'idea':'short';}
-function moveNextGrp(id){var x=db.inbox.find(function(a){return a.id===id;});if(x){x.grp=nextGrp(grpOf(x));save();renderInbox();renderInboxPage();}}
+function grpLabel(g){return g==='idea'?'아이디어':g==='short'?'단기':g==='long'?'장기':'INBOX';}
+/* 아이디어 → 단기 → 장기 → INBOX (한 방향 파이프라인) */
+function nextGrp(g){return g==='idea'?'short':g==='short'?'long':'inbox';}
+function moveNextGrp(id){
+  var x=db.inbox.find(function(a){return a.id===id;});if(!x)return;
+  var from=grpOf(x);if(from==='inbox')return;
+  x.grp=nextGrp(from);
+  if(x.grp==='inbox'){x.src=(from==='long')?'long':x.src||'direct';if(!x.notes)x.notes=[];}
+  save();renderInbox();renderInboxPage();
+}
+/* ===== 실제 INBOX ===== */
+function inbList(){return (db.inbox||[]).filter(function(x){return grpOf(x)==='inbox'&&!x.buried;});}
+function graveList(){return (db.inbox||[]).filter(function(x){return !!x.buried;});}
+function addRealInbox(){
+  var el=document.getElementById('inbRealInput');if(!el)return;
+  var v=el.value.trim();if(!v)return;
+  db.inbox.push({id:uid(),date:today(),t:v,done:false,grp:'inbox',src:'direct',notes:[]});
+  save();el.value='';renderInbox();renderInboxPage();
+}
+function inbSrcBadge(x){
+  var m={direct:['직접등록','direct'],long:['장기프로젝트','long'],memo:['포스트잇','memo']};
+  var s=m[x.src];return s?'<span class="inb-src '+s[1]+'">'+s[0]+'</span>':'';
+}
+/* 주석이 걸린 구간을 형광펜으로 표시 (겹쳐도 안전하게 글자 단위 처리) */
+function inbMarkQuotes(x){
+  var t=String(x.t||''),qs=[];
+  (x.notes||[]).forEach(function(n){if(n.q&&t.indexOf(n.q)>=0)qs.push(n.q);});
+  if(!qs.length)return esc(t);
+  var mask=[],i,j;
+  qs.forEach(function(q){i=0;while((i=t.indexOf(q,i))>=0){for(j=i;j<i+q.length;j++)mask[j]=1;i+=q.length;}});
+  var out='',open=false;
+  for(var k=0;k<t.length;k++){
+    if(mask[k]&&!open){out+='<mark>';open=true;}
+    else if(!mask[k]&&open){out+='</mark>';open=false;}
+    out+=esc(t[k]);
+  }
+  return out+(open?'</mark>':'');
+}
+function renderInboxSection(){
+  var L=document.getElementById('inbLeft');if(!L)return;
+  var list=inbList().slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));});
+  var c=document.getElementById('inbRealCount');if(c)c.textContent=list.length+'건';
+  L.innerHTML=list.length?list.map(function(x){
+    return '<div class="inb-item'+(x.done?' done':'')+'" data-inb="'+x.id+'">'
+      +'<div class="chk '+(x.done?'done':'')+'" onclick="toggleInbox('+x.id+')">'+(x.done?'✓':'')+'</div>'
+      +'<div class="inb-body"><div class="inb-t">'+inbMarkQuotes(x)+'</div>'
+      +'<div class="inb-meta">'+inbSrcBadge(x)
+      +'<span class="inb-date">'+esc(x.date||'')+(x.done&&x.doneAt?' · 완료 '+esc(x.doneAt):'')+'</span>'
+      +(x.done?'<button class="inb-bury" onclick="buryInbox('+x.id+')">보관함으로 ⬇</button>':'')
+      +'</div></div>'
+      +'<span class="del" onclick="delInbox('+x.id+')">×</span></div>';
+  }).join(''):'<div class="empty">INBOX가 비어 있습니다.<br><span style="font-size:12px">직접 등록하거나 · 장기 프로젝트에서 → · 포스트잇에서 INBOX</span></div>';
+  var R=document.getElementById('inbRight');if(!R)return;
+  var notes=[];
+  list.forEach(function(x){(x.notes||[]).forEach(function(n){notes.push([x,n]);});});
+  R.innerHTML=notes.length?notes.map(function(o){
+    return '<div class="inb-note" data-note="'+o[1].id+'">'
+      +'<div class="nh"><span class="no" title="원문 위치로" onclick="inbFlash('+o[0].id+')">'+esc(String(o[0].t).slice(0,26))+'</span>'
+      +'<span class="del" onclick="delInbNote('+o[0].id+','+o[1].id+')">×</span></div>'
+      +'<span class="q">“'+esc(o[1].q)+'”</span>'
+      +'<div class="nt" contenteditable onblur="saveInbNote('+o[0].id+','+o[1].id+',this.innerText)">'+esc(o[1].text||'')+'</div></div>';
+  }).join(''):'<div class="inb-hint">왼쪽 INBOX 내용을 <b>마우스로 드래그해 긁으면</b><br>이 자리에 주석 칸이 생깁니다.</div>';
+}
+/* 왼쪽에서 글자를 긁으면 오른쪽에 주석을 만든다 */
+function inbSelToNote(){
+  var sel=window.getSelection();if(!sel||sel.isCollapsed)return;
+  var q=String(sel.toString()).replace(/\s+/g,' ').trim();
+  if(q.length<2)return;
+  var nd=sel.anchorNode;if(!nd)return;
+  var el=(nd.nodeType===1?nd:nd.parentNode);
+  var host=(el&&el.closest)?el.closest('[data-inb]'):null;if(!host)return;
+  var x=db.inbox.find(function(a){return a.id===+host.getAttribute('data-inb');});if(!x)return;
+  if(!x.notes)x.notes=[];
+  if(x.notes.some(function(n){return n.q===q;})){sel.removeAllRanges();return;}
+  var nid=uid();
+  x.notes.push({id:nid,q:q,text:'',ts:nowStamp()});
+  save();sel.removeAllRanges();renderInboxSection();
+  setTimeout(function(){var f=document.querySelector('.inb-note[data-note="'+nid+'"] .nt');if(f)f.focus();},40);
+}
+function saveInbNote(xid,nid,val){
+  var x=db.inbox.find(function(a){return a.id===xid;});if(!x)return;
+  var n=(x.notes||[]).find(function(a){return a.id===nid;});if(!n)return;
+  n.text=String(val).trim();save();
+}
+function delInbNote(xid,nid){
+  var x=db.inbox.find(function(a){return a.id===xid;});if(!x)return;
+  x.notes=(x.notes||[]).filter(function(a){return a.id!==nid;});save();renderInboxSection();
+}
+function inbFlash(id){
+  var el=document.querySelector('.inb-item[data-inb="'+id+'"]');if(!el)return;
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+  el.classList.remove('inb-flash');void el.offsetWidth;el.classList.add('inb-flash');
+}
+/* ===== 보관함 ===== */
+function buryInbox(id){
+  var x=db.inbox.find(function(a){return a.id===id;});if(!x)return;
+  x.buried=true;x.done=true;if(!x.doneAt)x.doneAt=nowStamp();
+  save();renderInbox();renderInboxPage();
+}
+function unburyInbox(id){
+  var x=db.inbox.find(function(a){return a.id===id;});if(!x)return;
+  x.buried=false;x.done=false;x.doneAt=null;x.grp='inbox';
+  save();renderInbox();renderInboxPage();
+}
+function grvDayLabel(d){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return d;
+  var p=d.split('-'),dt=new Date(+p[0],+p[1]-1,+p[2]);
+  return (+p[0])+'년 '+(+p[1])+'월 '+(+p[2])+'일 ('+['일','월','화','수','목','금','토'][dt.getDay()]+')';
+}
+function renderGrave(){
+  var el=document.getElementById('grvBody');if(!el)return;
+  var sIn=document.getElementById('grvSearch');
+  var q=(sIn?sIn.value:'').trim().toLowerCase();
+  var list=graveList().filter(function(x){
+    if(!q)return true;
+    var hay=(x.t||'')+' '+(x.notes||[]).map(function(n){return n.q+' '+(n.text||'');}).join(' ');
+    return hay.toLowerCase().indexOf(q)>=0;
+  });
+  var c=document.getElementById('grvCount');if(c)c.textContent=list.length+'건';
+  if(!list.length){el.innerHTML='<div class="empty">'+(q?'검색 결과가 없습니다.':'아직 보관함이 비어 있습니다.')+'</div>';return;}
+  var by={};
+  list.forEach(function(x){var d=String(x.doneAt||x.date||'').slice(0,10)||'날짜 없음';(by[d]=by[d]||[]).push(x);});
+  el.innerHTML=Object.keys(by).sort(function(a,b){return b.localeCompare(a);}).map(function(d){
+    return '<div class="grv-day"><div class="grv-day-h">'+esc(grvDayLabel(d))
+      +'<span style="margin-left:auto">'+by[d].length+'건</span></div>'
+      +by[d].map(function(x){
+        return '<div class="grv-item"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+          +'<span class="grv-t">'+esc(x.t)+'</span>'+inbSrcBadge(x)
+          +'<span class="inb-date">'+esc(String(x.doneAt||'').slice(11))+'</span>'
+          +'<span style="margin-left:auto;display:flex;gap:8px;align-items:center">'
+          +'<span class="idea-edit" title="INBOX로 되살리기" onclick="unburyInbox('+x.id+')">되살리기</span>'
+          +'<span class="del" onclick="delInbox('+x.id+')">×</span></span></div>'
+          +((x.notes||[]).length?'<div class="grv-notes">'+x.notes.map(function(n){
+              return '<div class="grv-note"><span class="q">“'+esc(n.q)+'”</span>'+(n.text?' — '+esc(n.text):'')+'</div>';
+            }).join('')+'</div>':'')
+          +'</div>';
+      }).join('')+'</div>';
+  }).join('');
+}
 function inboxFlatHTML(list){return '<ul class="todo">'+list.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));}).map(inboxPageItemHTML).join('')+'</ul>';}
 function renderInboxPage(){
   var el=document.getElementById('inboxPage');if(!el)return;
@@ -3132,8 +3350,16 @@ function renderInboxPage(){
   var lEl=document.getElementById('longPage');if(lEl)lEl.innerHTML=longL.length?inboxFlatHTML(longL):'<div class="empty">장기 프로젝트가 없습니다.</div>';
   var iEl=document.getElementById('ideaPage');if(iEl)iEl.innerHTML=ideaL.length?inboxFlatHTML(ideaL):'<div class="empty">아이디어가 없습니다.</div>';
   el.innerHTML=shortL.length?inboxFlatHTML(shortL):'<div class="empty">단기 항목이 없습니다.</div>';
+  renderInboxSection();renderGrave();
   updateMindPanel();
 }
+/* 왼쪽 INBOX 칸에서 드래그로 글자를 긁으면 주석 생성 */
+(function bindInbSel(){
+  var L=document.getElementById('inbLeft');
+  if(!L){setTimeout(bindInbSel,120);return;}
+  L.addEventListener('mouseup',function(){setTimeout(inbSelToNote,10);});
+  L.addEventListener('touchend',function(){setTimeout(inbSelToNote,60);});
+})();
 
 /* ---------- todos (daily) ---------- */
 function todosToday(){return db.todos[today()]||(db.todos[today()]=[]);}
@@ -5425,15 +5651,16 @@ function memoToggle(){
   p.classList.toggle('on');
   if(p.classList.contains('on'))setTimeout(function(){var t=document.getElementById('memoText');if(t)t.focus();},30);
 }
-function memoSave(){
+function memoSave(grp){
   var t=document.getElementById('memoText');if(!t)return;
   var v=t.value.trim();if(!v)return;
-  db.inbox.push({id:uid(),date:today(),t:v,done:false,grp:'idea'});save();
+  grp=(grp==='inbox')?'inbox':'idea';
+  db.inbox.push({id:uid(),date:today(),t:v,done:false,grp:grp,src:'memo',notes:[]});save();
   if(typeof renderInbox==='function')renderInbox();
   if(typeof renderInboxPage==='function')renderInboxPage();
   t.value='';
   var m=document.getElementById('memoMsg');
-  if(m){m.textContent='인박스로 저장됨 ✓';setTimeout(function(){m.textContent='';},1800);}
+  if(m){m.textContent=(grp==='inbox'?'INBOX로 저장 ✓':'IDEA로 저장 ✓');setTimeout(function(){m.textContent='';},1800);}
 }
 function fwSave(){
   if(!fwCfg)return;
@@ -5474,7 +5701,8 @@ esSet(['tlrTime','tlrDur','tlrTitle'],function(){addTlRoutine();});
 esSet(['tlpName','tlpStart'],function(){tlAddProject();});
 esSet(['tlpiTitle','tlpiStart','tlpiDur'],function(){tlAddProjItem();});
 esSet(['inboxInput'],function(){addInbox();});
-esSet(['inboxInput2'],function(){addInbox('inboxInput2');});
+esSet(['inboxInput2'],function(){addInbox('inboxInput2','idea');});
+esSet(['inbRealInput'],function(){addRealInbox();});
 esSet(['wTitle','wContent'],function(){addWorkDash();});
 esSet(['sTerm','sMean','sCat','sTitle','sContent'],function(){addStudyDash();});
 esSet(['sdDate','sdTerm','sdMean','sdCat','sdTitle','sdContent'],function(){addStudyDetail();});
