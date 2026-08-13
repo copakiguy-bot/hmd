@@ -2653,7 +2653,7 @@ function gcalPushAll(futureOnly){
         alert('스크립트가 응답했지만 내용이 예상과 다릅니다:\n'+String(text).slice(0,80)+
           '\n\n코드를 다시 붙여넣고 [새 버전]으로 배포해 보세요.');
       }else if(ok&&!verified){
-        alert('⚠️ 보내긴 했지만 구글이 처리했는지 확인하지 못했습니다.\n캘린더에 안 들어갔다면 배포 설정이 원인일 가능성이 큽니다.\n\n«웹앱 주소 열어보기»를 눌러 무엇이 나오는지 확인해 주세요.');
+        alert('보내긴 했지만 이 화면에서는 구글의 응답을 읽을 수 없는 환경입니다.\n\n«웹앱 주소 열어보기»를 누르면 「마지막 전송 처리: ok +N ~M -K」 형태로\n방금 전송의 처리 결과(새로생성·갱신·삭제 건수)를 확인할 수 있습니다.');
       }else{
         alert('전송 실패. «웹앱 주소 열어보기»로 상태를 확인해 주세요.');
       }
@@ -2678,7 +2678,9 @@ function gcalShowScript(){
 'function doPost(e){',
 '  var p = JSON.parse(e.postData.contents || "{}");',
 '  if (p.type === "ping") return out("pong");',
-'  if (p.type === "bulk") { var r = syncBulk(p); return out("ok +"+r.c+" ~"+r.u+" -"+r.d); }',
+'  if (p.type === "bulk") { var r = syncBulk(p); var s = "ok +"+r.c+" ~"+r.u+" -"+r.d;',
+'    try { PropertiesService.getScriptProperties().setProperty("hmd_last", s+" ("+new Date().toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})+")"); } catch(err) {}',
+'    return out(s); }',
 '  if (p.type === "delete") { removeByUid(p.uid); return out("ok"); }',
 '  if (p.type === "upsert") { upsert(p); return out("ok"); }',
 '  return out("ignored");',
@@ -2690,7 +2692,9 @@ function gcalShowScript(){
 'function doGet(){',
 '  var id = calId();',
 '  var name = (id==="primary") ? "기본 캘린더" : id;',
-'  return out("HMD 연동 정상 — 대상 캘린더: " + name);',
+'  var last = "아직 전송 기록 없음";',
+'  try { last = PropertiesService.getScriptProperties().getProperty("hmd_last") || last; } catch(err) {}',
+'  return out("HMD 연동 정상 — 대상 캘린더: " + name + " | 마지막 전송 처리: " + last + "  (+새로생성 ~갱신 -삭제)");',
 '}',
 '/* 보낸 목록에 없는 HMD 일정은 캘린더에서 지운다(앱에서 삭제한 일정 반영) */',
 '/* 달력 조회는 한 번만 하고 uid 지도를 만들어 재사용한다 (일정+루틴 수십 건도 빠르게 처리) */',
