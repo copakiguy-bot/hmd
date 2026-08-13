@@ -2599,7 +2599,7 @@ function gcalSend(payload,cb){
     fetch(u,{method:'POST',mode:'cors',redirect:'follow',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
       body:JSON.stringify(payload)})
-      .then(function(r){return r.text().then(function(t){gcalMark(r.ok&&t==='ok'||r.ok&&t==='pong');if(cb)cb(r.ok,t,true);});})
+      .then(function(r){return r.text().then(function(t){gcalMark(r.ok&&(String(t).indexOf('ok')===0||t==='pong'));if(cb)cb(r.ok,t,true);});})
       .catch(function(){
         /* 읽기가 막힌 환경(file:// 등)에서는 no-cors 로라도 전달 */
         try{
@@ -2644,8 +2644,11 @@ function gcalPushAll(futureOnly){
   gcalSend({type:'bulk',sync:true,from:futureOnly?tk:'',
     events:list.map(function(s){return gcalEventPayload(s,'upsert');}).concat(rtEvents)},
     function(ok,text,verified){
-      if(ok&&verified&&text==='ok'){
-        alert('일정 '+list.length+'건'+(rts.length?' + 루틴 30일치':'')+'를 보냈습니다.\n구글 캘린더를 새로고침해서 확인하세요.');
+      if(ok&&verified&&String(text).indexOf('ok')===0){
+        var m=/\+(\d+)\s+~(\d+)\s+-(\d+)/.exec(String(text));
+        var detail=m?('\n\n구글 처리 결과 — 새로 만든 일정 '+m[1]+'건 · 갱신 '+m[2]+'건 · 삭제 '+m[3]+'건'
+          +((+m[1]===0&&+m[2]===0)?'\n\n⚠️ 처리된 일정이 0건입니다. 스크립트가 옛 버전일 수 있으니 코드를 다시 붙여넣고 [새 버전]으로 재배포하세요.':'')):'';
+        alert('일정 '+list.length+'건'+(rts.length?' + 루틴 30일치':'')+'를 보냈습니다.'+detail+'\n구글 캘린더를 새로고침해서 확인하세요.');
       }else if(ok&&verified){
         alert('스크립트가 응답했지만 내용이 예상과 다릅니다:\n'+String(text).slice(0,80)+
           '\n\n코드를 다시 붙여넣고 [새 버전]으로 배포해 보세요.');
@@ -2675,7 +2678,7 @@ function gcalShowScript(){
 'function doPost(e){',
 '  var p = JSON.parse(e.postData.contents || "{}");',
 '  if (p.type === "ping") return out("pong");',
-'  if (p.type === "bulk") { syncBulk(p); return out("ok"); }',
+'  if (p.type === "bulk") { var r = syncBulk(p); return out("ok +"+r.c+" ~"+r.u+" -"+r.d); }',
 '  if (p.type === "delete") { removeByUid(p.uid); return out("ok"); }',
 '  if (p.type === "upsert") { upsert(p); return out("ok"); }',
 '  return out("ignored");',
@@ -2691,10 +2694,13 @@ function gcalShowScript(){
 '}',
 '/* 보낸 목록에 없는 HMD 일정은 캘린더에서 지운다(앱에서 삭제한 일정 반영) */',
 '/* 달력 조회는 한 번만 하고 uid 지도를 만들어 재사용한다 (일정+루틴 수십 건도 빠르게 처리) */',
-'var __made = 0;',
+'var __made = 0, __c = 0, __u = 0, __d = 0;',
+'/* 한국 시간 고정: 스크립트 프로젝트의 시간대 설정과 무관하게 KST로 계산 */',
+'function kst(dateStr, timeStr){ return new Date(dateStr+"T"+(timeStr||"00:00")+":00+09:00"); }',
 'function syncBulk(p){',
+'  __c = 0; __u = 0; __d = 0;',
 '  var evs = p.events || [];',
-'  var from = p.from ? new Date(p.from+"T00:00:00") : new Date(Date.now()-86400000*366);',
+'  var from = p.from ? kst(p.from) : new Date(Date.now()-86400000*366);',
 '  var to = new Date(Date.now()+86400000*730);',
 '  var scanFrom = new Date(Math.min(from.getTime(), Date.now()-86400000*366));',
 '  var all = cal().getEvents(scanFrom, to);',
@@ -2704,8 +2710,9 @@ function gcalShowScript(){
 '  evs.forEach(function(e){ keep[e.uid] = true; upsert(e, byUid); });',
 '  for (var j=0;j<all.length;j++){',
 '    var uid = all[j].getTag("hmd_uid");',
-'    if (uid && !keep[uid] && all[j].getStartTime() >= from) all[j].deleteEvent();',
+'    if (uid && !keep[uid] && all[j].getStartTime() >= from) { all[j].deleteEvent(); __d++; }',
 '  }',
+'  return {c:__c, u:__u, d:__d};',
 '}',
 'function cal(){ var id = calId(); return id==="primary" ? CalendarApp.getDefaultCalendar() : CalendarApp.getCalendarById(id); }',
 'function findByUid(uid, dateStr){',
@@ -2729,21 +2736,21 @@ function gcalShowScript(){
 '  if (p.done){ if (ev) ev.deleteEvent(); return; }   // 완료한 일정은 캘린더에서 제거',
 '  var title = p.title || "(제목 없음)";',
 '  if (p.time){',
-'    var st = new Date(p.date+"T"+p.time+":00");',
+'    var st = kst(p.date, p.time);',
 '    var mins = (p.dur && p.dur>0) ? p.dur : 60;   // 소요시간(분), 없으면 60분',
 '    var en = new Date(st.getTime()+mins*60000);',
 '    if (ev){',
 '      if (ev.isAllDayEvent()){ ev.deleteEvent(); ev = null; }',
-'      else { ev.setTime(st, en); ev.setTitle(title); ev.setDescription(p.detail||""); }',
+'      else { ev.setTime(st, en); ev.setTitle(title); ev.setDescription(p.detail||""); __u++; }',
 '    }',
-'    if (!ev){ ev = cal().createEvent(title, st, en, {description:p.detail||""}); ev.setTag("hmd_uid", p.uid); made(); }',
+'    if (!ev){ ev = cal().createEvent(title, st, en, {description:p.detail||""}); ev.setTag("hmd_uid", p.uid); __c++; made(); }',
 '  } else {',
-'    var day = new Date(p.date+"T00:00:00");',
+'    var day = kst(p.date);',
 '    if (ev){',
 '      if (!ev.isAllDayEvent()){ ev.deleteEvent(); ev = null; }',
-'      else { ev.setAllDayDate(day); ev.setTitle(title); ev.setDescription(p.detail||""); }',
+'      else { ev.setAllDayDate(day); ev.setTitle(title); ev.setDescription(p.detail||""); __u++; }',
 '    }',
-'    if (!ev){ ev = cal().createAllDayEvent(title, day, {description:p.detail||""}); ev.setTag("hmd_uid", p.uid); made(); }',
+'    if (!ev){ ev = cal().createAllDayEvent(title, day, {description:p.detail||""}); ev.setTag("hmd_uid", p.uid); __c++; made(); }',
 '  }',
 '}'].join('\n');
 }
