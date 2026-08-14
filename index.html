@@ -893,9 +893,18 @@
   .hm-led td:nth-child(4){white-space:normal}
   .hm-led tr:last-child td{border-bottom:none}
   .hm-led .amt{text-align:right;font-weight:700}
-  .hm-lg-set{font-size:11.5px;color:var(--muted);font-weight:700;margin-left:3px}
-  .hm-lg-left{font-size:11.5px;color:var(--muted);font-weight:700;margin-left:4px}
-  .hm-lg-left.over{color:var(--red);font-weight:800}
+  /* 이번달 지출 표: 오와 열 맞춤 */
+  .hm-bt{width:100%;border-collapse:collapse;margin-top:14px;font-size:12.5px;
+    font-variant-numeric:tabular-nums;table-layout:fixed}
+  .hm-bt th{font-size:11.5px;font-weight:700;color:var(--muted);text-align:left;
+    padding:0 6px 7px;border-bottom:1px solid var(--line)}
+  .hm-bt th.amt,.hm-bt td.amt{text-align:right}
+  .hm-bt td{padding:7px 6px;border-bottom:1px solid var(--line);font-weight:700;color:var(--dark);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hm-bt td.amt.over{color:var(--red);font-weight:800}
+  .hm-bt td .sw{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:7px;vertical-align:middle}
+  .hm-bt tbody tr:last-child td{border-bottom:1px solid var(--line)}
+  .hm-bt tfoot td{padding-top:9px;font-weight:800;border-bottom:none}
   /* ===== INBOX 2단 (왼쪽 내용 · 오른쪽 주석) ===== */
   #inboxCard{grid-column:1/-1}
   .inb-quick{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 4px;
@@ -5705,14 +5714,21 @@ function hmDonut(map,size){
     seg+='<circle cx="21" cy="21" r="15.9" fill="none" stroke="'+PALETTE[i%PALETTE.length]+'" stroke-width="6" stroke-dasharray="'+p+' '+(100-p)+'" stroke-dashoffset="'+off+'"/>';off-=p;});
   var svg='<svg width="'+size+'" height="'+size+'" viewBox="0 0 42 42">'+seg
     +'<text x="21" y="22.5" text-anchor="middle" font-size="4.2" font-weight="700" fill="#12312b">'+shortWon(total)+'</text></svg>';
-  var legend=entries.map(function(e,i){
+  var setT=0,spT=0;
+  var rows=entries.map(function(e,i){
     var set=db.budget[e[0]]||0,left=set-e[1];
-    return '<div><span class="sw" style="background:'+PALETTE[i%PALETTE.length]+'"></span> '
-      +esc(e[0])+(set?'<span class="hm-lg-set">('+set.toLocaleString()+'원)</span>':'')
-      +'<b style="margin-left:auto">'+e[1].toLocaleString()+'원'
-      +(set?'<span class="hm-lg-left'+(left<0?' over':'')+'">('+left.toLocaleString()+'원)</span>':'')+'</b></div>';
+    setT+=set;spT+=e[1];
+    return '<tr><td><span class="sw" style="background:'+PALETTE[i%PALETTE.length]+'"></span>'+esc(e[0])+'</td>'
+      +'<td class="amt">'+(set?set.toLocaleString()+'원':'—')+'</td>'
+      +'<td class="amt">'+e[1].toLocaleString()+'원</td>'
+      +'<td class="amt'+(set&&left<0?' over':'')+'">'+(set?left.toLocaleString()+'원':'—')+'</td></tr>';
   }).join('');
-  return '<div style="text-align:center">'+svg+'</div><div class="legend hm-legend">'+legend+'</div>';
+  var leftT=setT-spT;
+  return '<div style="text-align:center">'+svg+'</div>'
+    +'<table class="hm-bt"><thead><tr><th>카테고리</th><th class="amt">설정</th><th class="amt">지출</th><th class="amt">잔액</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'<tfoot><tr><td>합계</td><td class="amt">'+setT.toLocaleString()+'원</td><td class="amt">'+spT.toLocaleString()+'원</td>'
+    +'<td class="amt'+(leftT<0?' over':'')+'">'+leftT.toLocaleString()+'원</td></tr></tfoot></table>';
 }
 function renderHome(){
   var g=document.getElementById('homeGrid');
