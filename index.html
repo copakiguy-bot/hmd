@@ -810,8 +810,8 @@
   .inb-quick .btn{padding:7px 15px;font-size:12.5px}
   .inb-quick-l{font-size:12px;font-weight:800;color:var(--dark)}
   .inb-quick-h{font-size:11px;color:var(--muted);margin-left:auto}
-  .inb-go{font-size:10.5px;font-weight:700;color:var(--dark);background:var(--cream);
-    border-radius:999px;padding:3px 9px;cursor:pointer}
+  .inb-go{font-size:13px;font-weight:700;color:var(--dark);background:var(--cream);
+    border-radius:999px;padding:7px 16px;cursor:pointer;flex:none}
   .inb-go:hover{background:var(--yellow-soft)}
   .inb-arc{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
   .inb-arc-h{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;
@@ -2276,6 +2276,15 @@ function applyTopState(){
   if(isCal&&calSub.tl&&typeof renderTimeline==='function')renderTimeline();
 }
 function toggleTop(name){
+  /* 다른 메뉴(IDEA 등)에서 누르면: 그 페이지 아래에 붙이지 않고, 해당 섹션만 있는 화면으로 전환 */
+  if(curView()!=='dashboard'){
+    go('dashboard');
+    topActive=name;
+    calSub=(name==='cal')?{sched:true,tl:true,session:false,ot:false}:{sched:false,tl:false,session:false,ot:false};
+    applyTopState();
+    window.scrollTo(0,0);
+    return;
+  }
   topActive=(topActive===name)?null:name;
   applyTopState();
   if(topActive===name){
@@ -3200,6 +3209,10 @@ function inbItemTo(id,kind){
     db.schedules.push({id:uid(),date:today(),time:'',dur:30,title:x.t,detail:''});
     db.inbox=db.inbox.filter(function(a){return a.id!==id;});
     save();renderCal();renderSchedule();
+  }else if(kind==='diary'){
+    db.diary.push({id:uid(),date:today(),text:x.t,kind:'기록'});
+    db.inbox=db.inbox.filter(function(a){return a.id!==id;});
+    save();renderDiary();renderDiaryPage();renderCal();
   }else if(kind==='hold'){ x.grp='hold';save(); }
   else{ x.grp='idea';save(); }
   renderInbox();renderInboxPage();
@@ -3252,10 +3265,11 @@ function inbRowHTML(x,inHold){
     +'<span class="inb-date">'+esc(x.date||'')+(x.done&&x.doneAt?' · 완료 '+esc(x.doneAt)+' · '+esc(arcLeftTxt(x)):'')+'</span>'
     +'</div></div>'
     +'<span class="inb-go" onclick="inbItemTo('+x.id+',\'sched\')" title="오늘 일정으로 (시간 없음)">일정</span>'
-    +'<span class="inb-go" onclick="inbItemTo('+x.id+',\'idea\')" title="아이디어 칸으로">아이디어</span>'
+    +'<span class="inb-go" onclick="inbItemTo('+x.id+',\'diary\')" title="오늘 일기로">일기</span>'
+    +'<span class="inb-go" onclick="inbItemTo('+x.id+',\'idea\')" title="착상(아이디어) 칸으로">착상</span>'
     +(inHold
       ?'<span class="inb-go" onclick="holdToInbox('+x.id+')" title="INBOX로 되돌리기">INBOX</span>'
-      :'<span class="inb-go" onclick="inbItemTo('+x.id+',\'hold\')" title="보관함으로">보관함</span>')
+      :'<span class="inb-go" onclick="inbItemTo('+x.id+',\'hold\')" title="보관으로">보관</span>')
     +'<span class="del" onclick="delInbox('+x.id+')">×</span></div>';
 }
 function renderInboxSection(){
