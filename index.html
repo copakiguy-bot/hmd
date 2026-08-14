@@ -830,6 +830,45 @@
   .ex-petals{font-size:12px;color:var(--muted);margin-top:10px}
   .mv-btn{cursor:pointer;flex-shrink:0;font-size:15px;font-weight:800;color:var(--green);padding:0 4px}
   .mv-btn:hover{color:var(--dark)}
+  /* ===== 아이디어 연결 그래프 ===== */
+  .ig-ov{position:fixed;inset:0;background:rgba(18,49,43,.5);display:flex;align-items:center;justify-content:center;z-index:130;padding:18px}
+  .ig-box{background:var(--card);border-radius:20px;width:min(1240px,96vw);height:min(880px,94vh);
+    display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.3)}
+  .ig-top{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--line);flex:none}
+  .ig-top b{font-size:14px}
+  .ig-leg{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);font-weight:700}
+  .ig-leg span{display:inline-flex;align-items:center;gap:5px}
+  .ig-leg i{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .ig-tools{margin-left:auto;display:flex;gap:5px}
+  .ig-tools button{border:1px solid var(--line);background:var(--cream);color:var(--dark);border-radius:8px;
+    padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer}
+  .ig-tools button:hover{background:var(--yellow-soft)}
+  .ig-x{cursor:pointer;font-size:19px;color:var(--muted);line-height:1}
+  .ig-x:hover{color:var(--dark)}
+  .ig-body{flex:1;min-height:0;display:flex}
+  .ig-svg{flex:1;min-width:0;background:#fbfbf8;cursor:grab;user-select:none;display:block;height:100%}
+  .ig-svg:active{cursor:grabbing}
+  .ig-n{cursor:pointer}
+  .ig-side{width:290px;flex:none;border-left:1px solid var(--line);padding:16px;overflow-y:auto}
+  @media(max-width:900px){.ig-side{display:none}}
+  .ig-s-empty{font-size:12px;color:var(--muted);line-height:1.7;text-align:center;padding:24px 0}
+  .ig-s-stat{border-top:1px solid var(--line);padding-top:10px}
+  .ig-s-stat div{display:flex;font-size:12px;padding:4px 0;color:var(--muted);font-weight:700}
+  .ig-s-stat b{margin-left:auto;color:var(--dark)}
+  .ig-s-h{font-size:14px;font-weight:800;color:var(--dark);line-height:1.5;word-break:break-word}
+  .ig-s-badge{display:inline-block;margin-top:7px;font-size:10.5px;font-weight:800;color:#fff;border-radius:999px;padding:2px 9px}
+  .ig-s-lbl{font-size:11.5px;font-weight:800;color:var(--muted);margin:14px 0 5px}
+  .ig-s-lbl span{font-weight:600;margin-left:5px}
+  .ig-s-in{width:100%;padding:8px 10px;font-size:12.5px}
+  .ig-s-ta{width:100%;min-height:110px;padding:8px 10px;font-size:12.5px;resize:vertical;line-height:1.6}
+  .ig-s-btns{margin-top:10px}
+  .ig-s-btns .btn{padding:7px 16px;font-size:12.5px}
+  .ig-s-chips{display:flex;flex-wrap:wrap;gap:5px}
+  .ig-s-chips span{font-size:10.5px;font-weight:700;background:var(--cream);border-radius:999px;padding:3px 9px;cursor:pointer;color:var(--dark)}
+  .ig-s-chips span:hover{background:var(--yellow-soft)}
+  .ig-s-list div{font-size:12px;padding:4px 0;border-bottom:1px solid var(--line);color:var(--dark);line-height:1.5}
+  .ig-s-list div:last-child{border-bottom:none}
+  .ig-foot{flex:none;padding:9px 18px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted)}
   /* ===== 통합 대시보드(홈) ===== */
   .hm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
   .hm-grid>.card{margin:0}
@@ -1218,6 +1257,7 @@
   <!-- ===== Inbox ===== -->
   <section class="view" id="view-inbox">
     <div class="page-head"><h1>IDEA</h1><p>떠오른 것을 담아 아이디어 → 단기 → 장기로 키우고, 실행 단계가 되면 아래 INBOX로 내려보냅니다.</p></div>
+    <div style="margin-bottom:14px"><button class="btn ghost" onclick="ideaGraph()">🕸 연결 그래프</button></div>
     <div class="card">
       <h3><span class="dot"></span> 새 아이디어</h3>
       <div class="addrow">
@@ -1379,7 +1419,8 @@
         <div style="margin-top:10px"><button class="btn y" onclick="addSchedule()">저장</button></div></div>
       </div>
       <div class="card" id="inboxCard">
-        <h3><span class="dot" style="background:var(--red)"></span> INBOX <span class="more" id="inboxCount"></span></h3>
+        <h3><span class="dot" style="background:var(--red)"></span> INBOX <span class="more" id="inboxCount"></span>
+          <span class="more" style="cursor:pointer;margin-left:12px" onclick="ideaGraph()">🕸 그래프</span></h3>
         <div class="addrow">
           <input id="inboxInput">
         </div>
@@ -1618,7 +1659,7 @@ function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!
     db.cheonildu={chapters:__chapOrder.map(function(k){return __chapMap[k];})};
   }
   if(!db.cheonildu.chapters)db.cheonildu.chapters=[];
-  (db.inbox||[]).forEach(function(x){if(!x.grp)x.grp=x.long?'long':'short';if(!x.notes)x.notes=[];if(!x.src)x.src='direct';});
+  (db.inbox||[]).forEach(function(x){if(!x.grp)x.grp=x.long?'long':'short';if(!x.notes)x.notes=[];if(!x.src)x.src='direct';if(x.tags==null)x.tags='';if(x.memo==null)x.memo='';});
   (db.study||[]).forEach(function(x){if(!x.notes)x.notes=[];});
   /* 일정 세부내용의 앞머리 '- ' 를 가운뎃점으로 한 번 바꿔 준다 */
   if(!db.__catMigrated){
@@ -3425,6 +3466,259 @@ function renderHold(){
   if(!holdOpen)return;
   el.innerHTML=list.length?list.map(function(x){return inbRowHTML(x,true);}).join('')
     :'<div class="empty">보관함이 비어 있습니다.</div>';
+}
+/* ================= 아이디어 연결 그래프 (옵시디언식) ================= */
+var IG_COLOR={idea:'#6a8fd8',short:'#f4b740',long:'#2f6f5e',hold:'#b56fb0',tag:'#8a9490'};
+var IG_LABEL={idea:'아이디어',short:'단기',long:'장기',hold:'보관함'};
+var IG_GRPS=['idea','short','long','hold'];
+/* 그래프에 올릴 항목 (기록실로 내려간 것은 제외) */
+function igItems(){
+  return (db.inbox||[]).filter(function(x){return IG_GRPS.indexOf(grpOf(x))>=0&&!x.buried;});
+}
+function igTags(x){
+  return String(x.tags||'').split(/[,\s]+/).map(function(s){return s.replace(/^#/,'').trim();}).filter(Boolean);
+}
+/* 메모의 [[제목]] → 대상 항목 */
+function igLinks(x,byTitle){
+  var out=[],re=/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g,m;
+  while((m=re.exec(String(x.memo||'')))){
+    var k=m[1].trim().toLowerCase(),y=byTitle[k];
+    if(y&&y.id!==x.id)out.push(y);
+  }
+  return out;
+}
+function igBacklinks(x){
+  var low=String(x.t||'').trim().toLowerCase(),out=[];
+  igItems().forEach(function(y){
+    if(y.id===x.id)return;
+    var re=/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g,m;
+    while((m=re.exec(String(y.memo||'')))){if(m[1].trim().toLowerCase()===low){out.push(y);break;}}
+  });
+  return out;
+}
+/* 노드·간선 만들기 */
+function igBuild(){
+  var items=igItems(),byTitle={};
+  items.forEach(function(x){byTitle[String(x.t||'').trim().toLowerCase()]=x;});
+  var nodes=items.map(function(x){
+    return {key:'i'+x.id,id:x.id,name:x.t||'',type:grpOf(x),deg:0};
+  });
+  var index={};nodes.forEach(function(n,i){index[n.key]=i;});
+  var edges=[];
+  /* 위키링크: 방향 있음 */
+  items.forEach(function(x){
+    igLinks(x,byTitle).forEach(function(y){
+      edges.push({a:index['i'+x.id],b:index['i'+y.id],kind:'link'});
+    });
+  });
+  /* 태그: 태그 노드를 거쳐 묶는다 */
+  var tagMap={};
+  items.forEach(function(x){igTags(x).forEach(function(t){(tagMap[t]=tagMap[t]||[]).push(x);});});
+  Object.keys(tagMap).forEach(function(t){
+    if(tagMap[t].length<1)return;
+    var k='t'+t;
+    nodes.push({key:k,name:'#'+t,type:'tag',tag:t,deg:0});
+    index[k]=nodes.length-1;
+    tagMap[t].forEach(function(x){edges.push({a:index['i'+x.id],b:index[k],kind:'tag'});});
+  });
+  edges.forEach(function(e){nodes[e.a].deg++;nodes[e.b].deg++;});
+  return {nodes:nodes,edges:edges};
+}
+/* 힘 기반 배치 */
+function igLayout(g,W,H){
+  var N=g.nodes.length;if(!N)return;
+  g.nodes.forEach(function(n,k){
+    n.x=W/2+Math.min(W,H)*0.32*Math.cos(2*Math.PI*k/N);
+    n.y=H/2+Math.min(W,H)*0.32*Math.sin(2*Math.PI*k/N);
+    n.vx=0;n.vy=0;
+  });
+  var REP=Math.max(1800,N*90);
+  for(var it=0;it<320;it++){
+    for(var a=0;a<N;a++)for(var b=a+1;b<N;b++){
+      var dx=g.nodes[a].x-g.nodes[b].x,dy=g.nodes[a].y-g.nodes[b].y;
+      var d=Math.sqrt(dx*dx+dy*dy)||1,f=REP/(d*d);
+      g.nodes[a].vx+=dx/d*f;g.nodes[a].vy+=dy/d*f;
+      g.nodes[b].vx-=dx/d*f;g.nodes[b].vy-=dy/d*f;
+    }
+    g.edges.forEach(function(e){
+      var A=g.nodes[e.a],B=g.nodes[e.b];
+      var dx=B.x-A.x,dy=B.y-A.y,d=Math.sqrt(dx*dx+dy*dy)||1;
+      var f=(d-(e.kind==='tag'?90:120))*0.013;
+      A.vx+=dx/d*f;A.vy+=dy/d*f;B.vx-=dx/d*f;B.vy-=dy/d*f;
+    });
+    g.nodes.forEach(function(n){                     /* 가운데로 살짝 모으기 */
+      n.vx+=(W/2-n.x)*0.0016;n.vy+=(H/2-n.y)*0.0016;
+      n.x+=n.vx*0.85;n.y+=n.vy*0.85;n.vx*=0.55;n.vy*=0.55;
+    });
+  }
+  /* 화면에 맞춰 정규화 */
+  var mnX=1e9,mxX=-1e9,mnY=1e9,mxY=-1e9;
+  g.nodes.forEach(function(n){mnX=Math.min(mnX,n.x);mxX=Math.max(mxX,n.x);mnY=Math.min(mnY,n.y);mxY=Math.max(mxY,n.y);});
+  var pad=80,s=Math.min((W-pad*2)/((mxX-mnX)||1),(H-pad*2)/((mnY===mxY?1:mxY-mnY)||1));
+  s=Math.min(s,3.2);
+  g.nodes.forEach(function(n){
+    n.x=pad+(n.x-mnX)*s+((W-pad*2-(mxX-mnX)*s)/2);
+    n.y=pad+(n.y-mnY)*s+((H-pad*2-(mxY-mnY)*s)/2);
+  });
+}
+var igState=null;
+function igRadius(n){return n.type==='tag'?(5+Math.min(7,n.deg*0.9)):(7+Math.min(15,n.deg*1.7));}
+function ideaGraph(){
+  var g=igBuild();
+  if(!g.nodes.length){alert('그래프에 표시할 항목이 없습니다.\n아이디어·단기·장기·보관함에 항목을 먼저 담아 주세요.');return;}
+  igState={g:g,W:1200,H:820,vb:{x:0,y:0,w:1200,h:820},drag:null,pan:null,sel:null};
+  var ov=document.createElement('div');ov.className='ig-ov';ov.id='igOv';
+  ov.innerHTML='<div class="ig-box">'
+    +'<div class="ig-top"><b>🕸 아이디어 연결 그래프</b>'
+    +'<span class="ig-leg">'+IG_GRPS.map(function(k){return '<span><i style="background:'+IG_COLOR[k]+'"></i>'+IG_LABEL[k]+'</span>';}).join('')
+    +'<span><i style="background:'+IG_COLOR.tag+'"></i>태그</span></span>'
+    +'<span class="ig-tools"><button onclick="igZoom(0.8)">＋</button><button onclick="igZoom(1.25)">－</button>'
+    +'<button onclick="igReset()">맞춤</button></span>'
+    +'<span class="ig-x" onclick="igClose()">✕</span></div>'
+    +'<div class="ig-body"><svg id="igSvg" class="ig-svg"></svg><div class="ig-side" id="igSide"></div></div>'
+    +'<div class="ig-foot">노드를 끌어 옮기고 · 빈 곳을 끌어 화면 이동 · 휠로 확대 · 노드를 눌러 태그와 메모 편집</div>'
+    +'</div>';
+  document.body.appendChild(ov);
+  /* 실제 캔버스 크기에 맞춰 배치해야 화면을 꽉 채운다 */
+  var sv=document.getElementById('igSvg'),r=sv.getBoundingClientRect();
+  var W=Math.max(600,Math.round(r.width)),H=Math.max(400,Math.round(r.height));
+  igState.W=W;igState.H=H;igState.vb={x:0,y:0,w:W,h:H};
+  igLayout(g,W,H);
+  igPaint();igBind();
+  igSide(null);
+  document.addEventListener('keydown',igEsc);
+}
+function igEsc(e){if(e.key==='Escape')igClose();}
+function igClose(){var e=document.getElementById('igOv');if(e)e.remove();igState=null;document.removeEventListener('keydown',igEsc);}
+function igZoom(f){
+  if(!igState)return;var v=igState.vb;
+  var cx=v.x+v.w/2,cy=v.y+v.h/2;
+  v.w=Math.max(200,Math.min(igState.W*3,v.w*f));v.h=Math.max(140,Math.min(igState.H*3,v.h*f));
+  v.x=cx-v.w/2;v.y=cy-v.h/2;igPaint();
+}
+function igReset(){if(!igState)return;igState.vb={x:0,y:0,w:igState.W,h:igState.H};igPaint();}
+function igPaint(){
+  if(!igState)return;
+  var svg=document.getElementById('igSvg');if(!svg)return;
+  var g=igState.g,v=igState.vb;
+  svg.setAttribute('viewBox',v.x+' '+v.y+' '+v.w+' '+v.h);
+  var defs='<defs><marker id="igArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">'
+    +'<path d="M0,0 L10,5 L0,10 z" fill="#9aa8a2"/></marker></defs>';
+  var sel=igState.sel;
+  var near={};
+  if(sel!=null){near[sel]=1;g.edges.forEach(function(e){if(e.a===sel)near[e.b]=1;if(e.b===sel)near[e.a]=1;});}
+  var lines=g.edges.map(function(e){
+    var A=g.nodes[e.a],B=g.nodes[e.b];
+    var on=(sel==null)||(e.a===sel||e.b===sel);
+    var ang=Math.atan2(B.y-A.y,B.x-A.x),r=igRadius(B)+7;
+    var ex=B.x-Math.cos(ang)*r,ey=B.y-Math.sin(ang)*r;
+    return '<line x1="'+A.x.toFixed(1)+'" y1="'+A.y.toFixed(1)+'" x2="'+ex.toFixed(1)+'" y2="'+ey.toFixed(1)
+      +'" stroke="'+(e.kind==='tag'?'#c9d2cd':'#9aa8a2')+'" stroke-width="'+(e.kind==='tag'?1:1.5)+'"'
+      +(e.kind==='tag'?' stroke-dasharray="4 4"':' marker-end="url(#igArrow)"')
+      +' opacity="'+(on?0.95:0.12)+'"/>';
+  }).join('');
+  var circles=g.nodes.map(function(n,i){
+    var r=igRadius(n),on=(sel==null)||near[i];
+    var fs=Math.max(10,Math.min(15,10+n.deg*0.4));
+    var label=n.name.length>18?n.name.slice(0,18)+'…':n.name;
+    return '<g class="ig-n" data-i="'+i+'" opacity="'+(on?1:0.18)+'">'
+      +'<circle cx="'+n.x.toFixed(1)+'" cy="'+n.y.toFixed(1)+'" r="'+r+'" fill="'+IG_COLOR[n.type]+'"'
+      +(n.type==='tag'?' fill-opacity="0.55"':'')+' stroke="#fff" stroke-width="1.5"/>'
+      +'<text x="'+n.x.toFixed(1)+'" y="'+(n.y+r+13).toFixed(1)+'" text-anchor="middle" font-size="'+fs+'" fill="#3a4a44">'+esc(label)+'</text></g>';
+  }).join('');
+  svg.innerHTML=defs+lines+circles;
+}
+function igBind(){
+  var svg=document.getElementById('igSvg');if(!svg)return;
+  function toSvg(ev){
+    var r=svg.getBoundingClientRect(),v=igState.vb;
+    return {x:v.x+(ev.clientX-r.left)/r.width*v.w, y:v.y+(ev.clientY-r.top)/r.height*v.h};
+  }
+  svg.addEventListener('mousedown',function(ev){
+    var gEl=ev.target.closest('.ig-n');
+    var pt=toSvg(ev);
+    if(gEl){igState.drag={i:+gEl.getAttribute('data-i'),moved:false};}
+    else{igState.pan={x:pt.x,y:pt.y};}
+    ev.preventDefault();
+  });
+  window.addEventListener('mousemove',igMove);
+  window.addEventListener('mouseup',igUp);
+  svg.addEventListener('wheel',function(ev){ev.preventDefault();igZoom(ev.deltaY>0?1.12:0.89);},{passive:false});
+  function igMove(ev){
+    if(!igState)return;
+    var pt=toSvg(ev);
+    if(igState.drag){
+      var n=igState.g.nodes[igState.drag.i];
+      n.x=pt.x;n.y=pt.y;igState.drag.moved=true;igPaint();
+    }else if(igState.pan){
+      var v=igState.vb;
+      v.x-=pt.x-igState.pan.x;v.y-=pt.y-igState.pan.y;igPaint();
+    }
+  }
+  function igUp(ev){
+    if(!igState)return;
+    if(igState.drag&&!igState.drag.moved){
+      var i=igState.drag.i;
+      igState.sel=(igState.sel===i)?null:i;
+      igPaint();igSide(igState.sel);
+    }
+    igState.drag=null;igState.pan=null;
+  }
+}
+/* 오른쪽 정보/편집 패널 */
+function igSide(i){
+  var el=document.getElementById('igSide');if(!el)return;
+  if(i==null){
+    var g=igState.g,cnt={};IG_GRPS.forEach(function(k){cnt[k]=0;});
+    g.nodes.forEach(function(n){if(cnt[n.type]!=null)cnt[n.type]++;});
+    var tags=g.nodes.filter(function(n){return n.type==='tag';}).length;
+    el.innerHTML='<div class="ig-s-empty">노드를 누르면 여기에서<br>태그와 메모를 편집합니다.</div>'
+      +'<div class="ig-s-stat">'+IG_GRPS.map(function(k){return '<div><span>'+IG_LABEL[k]+'</span><b>'+cnt[k]+'</b></div>';}).join('')
+      +'<div><span>태그</span><b>'+tags+'</b></div>'
+      +'<div><span>연결</span><b>'+g.edges.length+'</b></div></div>';
+    return;
+  }
+  var n=igState.g.nodes[i];
+  if(n.type==='tag'){
+    var mem=igItems().filter(function(x){return igTags(x).indexOf(n.tag)>=0;});
+    el.innerHTML='<div class="ig-s-h">#'+esc(n.tag)+'</div>'
+      +'<div class="ig-s-lbl">이 태그가 달린 항목 '+mem.length+'개</div>'
+      +'<div class="ig-s-list">'+mem.map(function(x){return '<div>'+esc(x.t)+'</div>';}).join('')+'</div>';
+    return;
+  }
+  var x=(db.inbox||[]).find(function(a){return a.id===n.id;});if(!x)return;
+  var bl=igBacklinks(x);
+  var others=igItems().filter(function(y){return y.id!==x.id;});
+  el.innerHTML='<div class="ig-s-h">'+esc(x.t)+'</div>'
+    +'<div class="ig-s-badge" style="background:'+IG_COLOR[grpOf(x)]+'">'+IG_LABEL[grpOf(x)]+'</div>'
+    +'<div class="ig-s-lbl">태그 <span>쉼표로 구분</span></div>'
+    +'<input class="in ig-s-in" id="igTags" value="'+escA(x.tags||'')+'" placeholder="창업, 독서">'
+    +'<div class="ig-s-lbl">메모 <span>[[제목]]으로 연결</span></div>'
+    +'<textarea class="in ig-s-ta" id="igMemo" placeholder="[[다른 항목 제목]]을 쓰면 선이 생깁니다">'+esc(x.memo||'')+'</textarea>'
+    +'<div class="ig-s-btns"><button class="btn y" onclick="igSave('+x.id+')">저장</button></div>'
+    +(others.length?'<div class="ig-s-lbl">항목 넣기</div><div class="ig-s-chips">'
+      +others.slice(0,30).map(function(y){return '<span onclick="igInsert('+JSON.stringify(y.t).replace(/"/g,'&quot;')+')">'+esc(y.t.slice(0,16))+'</span>';}).join('')+'</div>':'')
+    +(bl.length?'<div class="ig-s-lbl">🔗 백링크 '+bl.length+'</div><div class="ig-s-list">'
+      +bl.map(function(y){return '<div>'+esc(y.t)+'</div>';}).join('')+'</div>':'');
+}
+function igInsert(title){
+  var ta=document.getElementById('igMemo');if(!ta)return;
+  var ins='[['+title+']]';
+  var s=ta.selectionStart||ta.value.length;
+  ta.value=ta.value.slice(0,s)+ins+ta.value.slice(ta.selectionEnd||s);
+  ta.focus();ta.selectionStart=ta.selectionEnd=s+ins.length;
+}
+function igSave(id){
+  var x=(db.inbox||[]).find(function(a){return a.id===id;});if(!x)return;
+  var tg=document.getElementById('igTags'),mm=document.getElementById('igMemo');
+  if(tg)x.tags=String(tg.value).split(/[,\s]+/).map(function(s){return s.replace(/^#/,'').trim();}).filter(Boolean).join(', ');
+  if(mm)x.memo=mm.value;
+  save();
+  var keep=x.id;
+  igClose();ideaGraph();
+  var idx=igState.g.nodes.findIndex(function(n){return n.type!=='tag'&&n.id===keep;});
+  if(idx>=0){igState.sel=idx;igPaint();igSide(idx);}
+  renderInbox();renderInboxPage();
 }
 /* ===== 기록실 (접이식): 완료된 것들 ===== */
 function unburyInbox(id){
