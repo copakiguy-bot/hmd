@@ -796,6 +796,7 @@
   .word-term.masked{background:var(--line);color:transparent;user-select:none;min-width:210px}
   .word-mean{font-family:'Nanum Myeongjo',serif;margin-top:24px;font-size:clamp(17px,2.6vw,25px);color:#4a5751;line-height:1.7;display:inline-block;padding:6px 14px;border-radius:12px;word-break:keep-all}
   .word-mean.masked{background:var(--line);color:transparent;user-select:none;cursor:pointer;min-width:160px}
+  .word-sent{font-size:clamp(20px,3.4vw,34px);letter-spacing:-.3px;line-height:1.55;padding:4px 8px;cursor:default}
   .word-hint{margin-top:14px;font-size:13px;color:var(--muted)}
   .word-read{font-size:.5em;font-weight:700;color:var(--muted);margin-left:6px;white-space:nowrap}
   .word-term.masked .word-read{color:transparent}
@@ -890,9 +891,8 @@
   .hm-led td:nth-child(4){white-space:normal}
   .hm-led tr:last-child td{border-bottom:none}
   .hm-led .amt{text-align:right;font-weight:700}
-  .hm-bud-t th{font-size:11px;color:var(--muted);font-weight:700;text-align:left;padding:4px;border-bottom:1px solid var(--line)}
-  .hm-bud-t th.amt{text-align:right}
-  .hm-bud-t tfoot td{font-weight:800;border-top:1px solid var(--line);border-bottom:none}
+  .hm-legend div{flex-wrap:wrap}
+  .hm-lg-sub{width:100%;padding-left:19px;font-size:11px;color:var(--muted);font-weight:700;margin-top:-3px}
   /* ===== INBOX 2단 (왼쪽 내용 · 오른쪽 주석) ===== */
   #inboxCard{grid-column:1/-1}
   .inb-quick{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 4px;
@@ -1073,7 +1073,7 @@
   <div class="nav" data-v="study">Study<span class="ca">›</span></div>
   <div class="subnav" id="studySub" style="display:none">
     <div class="nav sub" data-v="study:단어">Words</div>
-    <div class="nav sub" data-v="study:영어">English</div>
+    <div class="nav sub" data-v="study:영어">Sentences</div>
     <div class="nav sub" data-v="study:지식">Knowledge</div>
     <div class="nav sub" data-v="study:문화">Culture</div>
   </div>
@@ -1099,6 +1099,7 @@
   <!-- ===== DASHBOARD (오늘) ===== -->
   <section class="view on" id="view-dashboard">
     <div class="page-head"><h1>Hello, My day!</h1></div>
+    <div id="homeTlSlot"></div>
     <div id="homeGrid" style="display:none">
       <div class="hm-grid">
         <div class="card hm-card" id="hmSched"></div>
@@ -1177,7 +1178,7 @@
     <div class="page-head"><h1 id="studyH1">Words</h1><p id="studyH1Sub">우리는 매일매일 · 단어</p></div>
     <div class="tabs" id="studyTabs">
       <button class="tab st" data-t="단어" onclick="setDetailStudyTab('단어')">Words</button>
-      <button class="tab st" data-t="영어" onclick="setDetailStudyTab('영어')">English</button>
+      <button class="tab st" data-t="영어" onclick="setDetailStudyTab('영어')">Sentences</button>
       <button class="tab st" data-t="지식" onclick="setDetailStudyTab('지식')">Knowledge</button>
       <button class="tab st" data-t="문화" onclick="setDetailStudyTab('문화')">Culture</button>
     </div>
@@ -1442,7 +1443,7 @@
       <h3><span class="dot" style="background:var(--red)"></span> 우리는 매일매일 <span class="more" style="cursor:pointer" onclick="goStudy(dashStudyTab)">전체 →</span></h3>
       <div class="tabs" id="dashStudyTabs">
         <button class="tab st" data-t="단어" onclick="setDashStudyTab('단어')">단어</button>
-        <button class="tab st" data-t="영어" onclick="setDashStudyTab('영어')">영어</button>
+        <button class="tab st" data-t="영어" onclick="setDashStudyTab('영어')">문장</button>
         <button class="tab st" data-t="지식" onclick="setDashStudyTab('지식')">지식</button>
         <button class="tab st" data-t="문화" onclick="setDashStudyTab('문화')">문화</button>
       </div>
@@ -2359,6 +2360,12 @@ var calSub={sched:true,tl:true,session:false,ot:false};    /* 달력 안의 복�
 function applyTopState(){
   var isCal=(topActive==='cal'),isHome=(topActive==='home');
   var hg=document.getElementById('homeGrid');if(hg)hg.style.display=isHome?'':'none';
+  /* 홈에서는 타임라인을 맨 위로 옮겨 붙인다 */
+  var tlc=document.getElementById('timelineCard'),slot=document.getElementById('homeTlSlot'),dock=document.getElementById('secDock');
+  if(tlc&&slot&&dock){
+    if(isHome){if(tlc.parentNode!==slot){slot.appendChild(tlc);tlc.style.marginTop='0';tlc.style.marginBottom='20px';}}
+    else if(tlc.parentNode===slot){dock.appendChild(tlc);tlc.style.marginTop='';tlc.style.marginBottom='';}
+  }
   if(isHome&&typeof renderHome==='function')renderHome();
   var c=document.getElementById('calCard');
   if(c){c.style.display=isCal?'':'none';
@@ -4618,7 +4625,9 @@ function addStudyCat(tab,c){c=String(c||'').trim();if(!c)return;
   db.studyCats=db.studyCats||{};db.studyCats[tab]=db.studyCats[tab]||[];
   if(!db.studyCats[tab].includes(c))db.studyCats[tab].push(c);}
 /* ---------- 문화 (영화·음악·직접입력 / 별점·한줄평·리뷰·태그·비고) ---------- */
-const STUDY_EN={단어:'Words',영어:'English',지식:'Knowledge',문화:'Culture'};
+const STUDY_EN={단어:'Words',영어:'Sentences',지식:'Knowledge',문화:'Culture'};
+const STUDY_KO={단어:'단어',영어:'문장',지식:'지식',문화:'문화'};
+const studyKo=t=>STUDY_KO[t]||t;
 const CULT_KINDS=['영화','음악'];
 var cultRating={};
 function starTxt(v){v=Number(v)||0;return (v%1)?v.toFixed(1):String(v);}
@@ -4753,7 +4762,7 @@ function zoomWord(id){
     <div id="wordInner"></div>
     <div class="word-nav"><button class="btn ghost" onclick="wordStep(-1)">‹ 이전</button>
       <span class="word-pos" id="wordPos"></span>
-      <button class="btn y" onclick="wordStep(1)">다음 한자 ›</button></div></div>`;
+      <button class="btn y" id="wordNextBtn" onclick="wordStep(1)">다음 한자 ›</button></div></div>`;
   document.body.appendChild(ov);
   wordPaint();
   document.addEventListener('keydown',wordEsc);
@@ -4762,6 +4771,15 @@ function wordPaint(){
   var inner=document.getElementById('wordInner');if(!inner)return;
   var id=wordSeq[wordIdx];
   var x=db.study.find(function(s){return s.id===id;});if(!x)return;
+  if(x.tab==='영어'){
+    inner.innerHTML=`<div class="word-term word-sent">${esc(x.term||'')}</div>
+       <div class="word-mean masked" onclick="this.classList.remove('masked');var h=document.getElementById('wordHint');if(h)h.style.display='none'">${esc(x.meaning||'')}</div>
+       <div class="word-hint" id="wordHint">해석을 보려면 가려진 영역을 탭하세요</div>`;
+    var p2=document.getElementById('wordPos');
+    if(p2)p2.textContent=(wordIdx+1)+' / '+wordSeq.length;
+    var nb=document.getElementById('wordNextBtn');if(nb)nb.textContent='다음 문장 ›';
+    return;
+  }
   var hj=wordHanjaCombo(x);
   inner.innerHTML=hj
     ? `<div class="word-term masked" onclick="this.classList.toggle('masked');var h=document.getElementById('wordHint');if(h)h.style.display='none'">${esc(hj.word)}<span class="word-read">(${esc(hj.read)})</span></div>
@@ -4771,6 +4789,7 @@ function wordPaint(){
        <div class="word-hint" id="wordHint">단어를 보려면 위 가려진 영역을 탭하세요</div>`;
   var pos=document.getElementById('wordPos');
   if(pos)pos.textContent=(wordIdx+1)+' / '+wordSeq.length;
+  var nb2=document.getElementById('wordNextBtn');if(nb2)nb2.textContent='다음 한자 ›';
 }
 function wordStep(d){
   if(!wordSeq.length)return;
@@ -4807,7 +4826,7 @@ function renderDashStudy(){
   const t=dashStudyTab,form=document.getElementById('dashStudyForm'),feed=document.getElementById('dashStudyFeed');
   if(!form)return;
   form.innerHTML=isMemTab(t)?(t==='영어'?`<div class="inrow" style="align-items:flex-start">
-      <textarea id="sTerm" class="in" style="flex:1;min-height:60px;resize:vertical" placeholder="영어 문장" onfocus="fwStart('eng',this)"></textarea>
+      <textarea id="sTerm" class="in" style="flex:1;min-height:60px;resize:vertical" placeholder="문장" onfocus="fwStart('eng',this)"></textarea>
       <textarea id="sMean" class="in" style="flex:1.3;min-height:60px;resize:vertical" placeholder="해석" onfocus="fwStart('eng',this)"></textarea>
       <button class="btn y" style="flex:none" onclick="addStudyDash()">＋ 추가</button></div>`
     :`<div class="inrow">
@@ -4822,13 +4841,13 @@ function renderDashStudy(){
       <div style="margin-top:10px"><button class="btn y" onclick="addStudyDash()">＋ 추가</button></div>`;
   if(t==='영어'){form.innerHTML+=cheonilDashHTML();fillCheonilDashSelectors();fillCheonilChapterFormSelectors();}
   const list=db.study.filter(x=>x.tab===t&&x.date===today());
-  feed.innerHTML=list.length?(`<div class="datehdr">오늘 ${t}${isMemTab(t)?' (뜻을 눌러 확인)':''}</div>`+
+  feed.innerHTML=list.length?(`<div class="datehdr">오늘 ${studyKo(t)}${isMemTab(t)?' (뜻을 눌러 확인)':''}</div>`+
     (isMemTab(t)?list.map(memRow).join(''):t==='문화'?list.map(cultureRow).join(''):list.map(x=>
       `<div class="entry"><div class="meta">${x.category?`<span class="cat-badge b-study">${esc(x.category)}</span>`:''}
         <b contenteditable onblur="editStudy(${x.id},'title',this.innerText)" style="flex:1">${esc(x.title||'')}</b>
         <span class="del" onclick="delStudyEntry(${x.id})">×</span></div>
         <div class="body" contenteditable onblur="editStudy(${x.id},'content',this.innerText)">${esc(x.content||'')}</div></div>`).join('')))
-    :`<div class="empty">오늘 ${t} 기록이 없습니다.</div>`;
+    :`<div class="empty">오늘 ${studyKo(t)} 기록이 없습니다.</div>`;
 }
 
 /* 세부 */
@@ -4859,7 +4878,7 @@ function renderStudy(){
   const t=detailStudyTab,rows=db.study.filter(x=>x.tab===t),g=groupByDate(rows);
   syncCultBg();
   const h1=document.getElementById('studyH1');if(h1)h1.textContent=STUDY_EN[t]||t;
-  const h1s=document.getElementById('studyH1Sub');if(h1s)h1s.textContent='우리는 매일매일 · '+t;
+  const h1s=document.getElementById('studyH1Sub');if(h1s)h1s.textContent='우리는 매일매일 · '+studyKo(t);
   let list='';
   Object.keys(g).forEach(d=>{list+=`<div class="datehdr">${d}</div>`;
     g[d].forEach(x=>{list+=isMemTab(t)?memRow(x):t==='문화'?cultureRow(x):`<div class="entry">
@@ -4873,7 +4892,7 @@ function renderStudy(){
       </div></div>`;});});
   const form=isMemTab(t)?(t==='영어'?`<div class="inrow" style="align-items:flex-start">
       <input id="sdDate" type="date" class="in" style="flex:none;width:150px" value="${today()}">
-      <textarea id="sdTerm" class="in" style="flex:1;min-height:60px;resize:vertical" placeholder="영어 문장" onfocus="fwStart('engd',this)"></textarea>
+      <textarea id="sdTerm" class="in" style="flex:1;min-height:60px;resize:vertical" placeholder="문장" onfocus="fwStart('engd',this)"></textarea>
       <textarea id="sdMean" class="in" style="flex:1.3;min-height:60px;resize:vertical" placeholder="해석" onfocus="fwStart('engd',this)"></textarea>
       <button class="btn y" style="flex:none" onclick="addStudyDetail()">＋ 추가</button></div>`
     :`<div class="inrow">
@@ -5524,7 +5543,7 @@ function hmLatest(tab,n){
 }
 /* ‹ › : 이전(더 최신) / 다음(더 예전) 묶음 */
 function hmStep(tab,dir,per){
-  var n=(tab==='영어')?hmEngUnits().length:hmAll(tab).length;
+  var n=hmAll(tab).length;
   var max=Math.max(0,n-per);
   var off=(hmOff[tab]||0)+dir*per;
   hmOff[tab]=Math.max(0,Math.min(max,off));
@@ -5606,27 +5625,18 @@ function hmWordsHTML(){
       return '<div class="hm-row" onclick="zoomWord('+x.id+')"><b style="font-size:18px;letter-spacing:.5px;font-family:\'Nanum Myeongjo\',serif">'+esc(x.term||'')+'</b><span class="sub">'+esc(String(x.date).slice(5))+'</span></div>';
     }).join(''):'<div class="hm-empty">단어가 없습니다.</div>')+'</div>';
 }
-function hmStrip(s){var d=document.createElement('div');d.innerHTML=String(s||'');return (d.textContent||'').replace(/\s+/g,' ').trim();}
-/* 작성된 천일문 유닛(최신순) */
-function hmEngUnits(){
-  var out=[];
-  cheonilChapters().forEach(function(c){(c.units||[]).forEach(function(u){
-    if(u.sentence||u.desc)out.push({c:c,u:u,d:String(u.date||'')});});});
-  return out.sort(function(a,b){return b.d.localeCompare(a.d);});
-}
 function hmEngHTML(){
-  var us=hmEngUnits();
-  var off=Math.min(hmOff['영어']||0,Math.max(0,us.length-1));hmOff['영어']=off;
+  var l=hmAll('영어'),n=l.length;
+  var off=Math.min(hmOff['영어']||0,Math.max(0,n-1));hmOff['영어']=off;
   var nav='<span class="hm-nav">'
     +'<span onclick="hmStep(\'영어\',-1,1)" style="'+(off<=0?'opacity:.28;pointer-events:none':'')+'">‹</span>'
-    +'<span onclick="hmStep(\'영어\',1,1)" style="'+(off+1>=us.length?'opacity:.28;pointer-events:none':'')+'">›</span></span>';
-  if(!us.length)return hmTn('영어',nav)+'<div class="hm-empty">작성한 천일문이 없습니다.</div>';
-  var it=us[off],sent=hmStrip(it.u.sentence)||hmStrip(it.u.desc);
-  return hmTn('영어',nav)
-    +'<div class="hm-body" style="cursor:pointer" onclick="goStudy(\'영어\')">'
-    +'<div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:8px">'
-    +esc(it.c.name)+' · '+esc(it.u.name||'UNIT')+(it.d?' <span style="font-weight:600">('+esc(it.d.slice(5))+')</span>':'')+'</div>'
-    +'<div style="font-size:14.5px;font-weight:700;line-height:1.65;color:var(--dark)">'+esc(sent)+'</div>'
+    +'<span onclick="hmStep(\'영어\',1,1)" style="'+(off+1>=n?'opacity:.28;pointer-events:none':'')+'">›</span></span>';
+  if(!n)return hmTn('문장',nav)+'<div class="hm-empty">등록한 문장이 없습니다.</div>';
+  var x=l[off];
+  return hmTn('문장',nav)
+    +'<div class="hm-body" style="cursor:pointer" onclick="zoomWord('+x.id+')" title="눌러서 크게 보기">'
+    +'<div style="font-size:14.5px;font-weight:700;line-height:1.65;color:var(--dark)">'+esc(x.term||'')+'</div>'
+    +'<div style="font-size:10.5px;color:var(--muted);font-weight:700;margin-top:8px">'+esc(String(x.date).slice(5))+'</div>'
     +'</div>';
 }
 function hmStarsRO(v){
@@ -5679,23 +5689,26 @@ function hmExpChartHTML(){
     var v=sumAssets(function(a){return a.type==='지출'&&a.category===c&&monthOf(a.date)===mk;});
     if(v)pie[c]=v;spent+=v;
   });
-  var rows='',setT=0,spT=0;
-  ASSET_CATS.지출.forEach(function(c){
-    var set=db.budget[c]||0,v=sumAssets(function(a){return a.type==='지출'&&a.category===c&&monthOf(a.date)===mk;});
-    if(!set&&!v)return;
-    setT+=set;spT+=v;
-    var left=set-v;
-    rows+='<tr><td>'+esc(c)+'</td><td class="amt">'+set.toLocaleString()+'</td>'
-      +'<td class="amt">'+v.toLocaleString()+'</td>'
-      +'<td class="amt"'+(left<0?' style="color:var(--red)"':'')+'>'+left.toLocaleString()+'</td></tr>';
-  });
-  var tbl=rows?'<table class="hm-led hm-bud-t" style="margin-top:12px">'
-    +'<thead><tr><th>카테고리</th><th class="amt">설정액</th><th class="amt">지출액</th><th class="amt">잔액</th></tr></thead>'
-    +'<tbody>'+rows+'</tbody>'
-    +'<tfoot><tr><td>합계</td><td class="amt">'+setT.toLocaleString()+'</td><td class="amt">'+spT.toLocaleString()+'</td>'
-    +'<td class="amt"'+((setT-spT)<0?' style="color:var(--red)"':'')+'>'+(setT-spT).toLocaleString()+'</td></tr></tfoot></table>':'';
   return hmT('이번달 지출','자산 →',"go('assets')",'var(--red)')
-    +(spent?donutFromMap(pie,300,true):'<div class="hm-empty">이번달 지출이 없습니다.</div>')+tbl;
+    +(spent?hmDonut(pie,300):'<div class="hm-empty">이번달 지출이 없습니다.</div>');
+}
+/* 자산 도넛 + 범례에 설정액·잔액을 덧붙인 버전 */
+function hmDonut(map,size){
+  var entries=Object.entries(map).filter(function(e){return e[1]>0;});
+  var total=entries.reduce(function(s,e){return s+e[1];},0);
+  var off=25,seg='<circle cx="21" cy="21" r="15.9" fill="none" stroke="#eee" stroke-width="6"/>';
+  entries.forEach(function(e,i){var p=total?e[1]/total*100:0;
+    seg+='<circle cx="21" cy="21" r="15.9" fill="none" stroke="'+PALETTE[i%PALETTE.length]+'" stroke-width="6" stroke-dasharray="'+p+' '+(100-p)+'" stroke-dashoffset="'+off+'"/>';off-=p;});
+  var svg='<svg width="'+size+'" height="'+size+'" viewBox="0 0 42 42">'+seg
+    +'<text x="21" y="22.5" text-anchor="middle" font-size="4.2" font-weight="700" fill="#12312b">'+shortWon(total)+'</text></svg>';
+  var legend=entries.map(function(e,i){
+    var set=db.budget[e[0]]||0,left=set-e[1];
+    return '<div><span class="sw" style="background:'+PALETTE[i%PALETTE.length]+'"></span> '+esc(e[0])
+      +'<b style="margin-left:auto">'+won(e[1])+'</b>'
+      +'<span class="hm-lg-sub">'+(set?'설정 '+set.toLocaleString()
+        +' · <span'+(left<0?' style="color:var(--red);font-weight:800"':'')+'>잔액 '+left.toLocaleString()+'</span>':'설정 없음')+'</span></div>';
+  }).join('');
+  return '<div style="text-align:center">'+svg+'</div><div class="legend hm-legend">'+legend+'</div>';
 }
 function renderHome(){
   var g=document.getElementById('homeGrid');
@@ -5945,8 +5958,8 @@ var FW_KINDS={
   excerpt:['발췌 쓰기',['exBook','exChapter','exText','exPage'],['exText'],function(){addExcerpt();}],
   diary:['일기 쓰기',['diaryInput'],['diaryInput'],function(){addDiary('diaryInput');}],
   diary2:['일기 쓰기',['diaryInput2'],['diaryInput2'],function(){addDiary('diaryInput2');}],
-  eng:['영어 문장 쓰기',['sTerm','sMean'],['sTerm','sMean'],function(){addStudyDash();}],
-  engd:['영어 문장 쓰기',['sdDate','sdTerm','sdMean'],['sdTerm','sdMean'],function(){addStudyDetail();}],
+  eng:['문장 쓰기',['sTerm','sMean'],['sTerm','sMean'],function(){addStudyDash();}],
+  engd:['문장 쓰기',['sdDate','sdTerm','sdMean'],['sdTerm','sdMean'],function(){addStudyDetail();}],
   cheonil:['문장 쓰기',['cdChapter','cdUnit','cdSentence'],['cdSentence'],function(){saveCheonilDash();}],
   cheonildesc:['설명 쓰기',['cdChapter','cdUnit','cdDesc'],['cdDesc'],function(){saveCheonilDash();}],
   cmdesc:['설명 쓰기',['cmDescEdit'],['cmDescEdit'],function(){if(cheonilEditKey){var q=String(cheonilEditKey).split('_');saveCheonilDesc(Number(q[0]),Number(q[1]));}}],
