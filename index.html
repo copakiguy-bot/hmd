@@ -1730,7 +1730,7 @@ function go(v){
   var prev=curView();
   if(prev==='dashboard'&&v!=='dashboard')dashDockState=dockGetState();   /* 대시보드 상태 저장 */
   if(v!=='dashboard'&&prev!==v)dockAllOff();                             /* 다른 메뉴: 버튼 모두 꺼진 상태 */
-  else if(v==='dashboard'&&prev!=='dashboard')dockApply({top:'home'});
+  else if(v==='dashboard')dockApply({top:'home'});   /* 이미 대시보드여도 홈으로 복귀 */
   document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='view-'+v));
   syncNav(v);
   var __sb=document.querySelector('.sidebar');if(__sb)__sb.classList.remove('open');renderAll();window.scrollTo(0,0);
@@ -5163,7 +5163,17 @@ function fillCheonilDashSelectors(){
   cs.innerHTML=chapters.length?chapters.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join(''):'<option value="">No CHAPTER</option>';
   const t0=cheonilTodayItems();
   if(t0.length&&chapters.some(c=>c.id===t0[0].c.id))cs.value=String(t0[0].c.id);   /* 오늘 작성분이 있으면 그 챕터·유닛 고정 */
-  else if(prevC&&chapters.some(c=>String(c.id)===prevC))cs.value=prevC;
+  else{
+    /* 하루가 지나면: 아직 작성하지 않은 첫 유닛을 기본 선택해 빈 폼이 나오게 */
+    let nc=null,nu=null;
+    outer:for(const c of chapters){for(const u of (c.units||[])){if(!u.desc&&!u.sentence){nc=c;nu=u;break outer;}}}
+    if(nc)cs.value=String(nc.id);
+    else if(prevC&&chapters.some(c=>String(c.id)===prevC))cs.value=prevC;
+    fillCheonilDashUnits();
+    if(nu){const us=document.getElementById('cdUnit');
+      if(us&&Array.prototype.some.call(us.options,o=>o.value===String(nu.id))){us.value=String(nu.id);fillCheonilDashUnitFields();}}
+    return;
+  }
   fillCheonilDashUnits();
   if(t0.length){const us=document.getElementById('cdUnit');
     if(us&&Array.prototype.some.call(us.options,o=>o.value===String(t0[0].u.id))){us.value=String(t0[0].u.id);fillCheonilDashUnitFields();}}
@@ -5502,7 +5512,8 @@ function hmLatest(tab,n){
 }
 /* ‹ › : 이전(더 최신) / 다음(더 예전) 묶음 */
 function hmStep(tab,dir,per){
-  var all=hmAll(tab),max=Math.max(0,all.length-per);
+  var n=(tab==='영어')?hmEngUnits().length:hmAll(tab).length;
+  var max=Math.max(0,n-per);
   var off=(hmOff[tab]||0)+dir*per;
   hmOff[tab]=Math.max(0,Math.min(max,off));
   renderHome();
@@ -5580,22 +5591,31 @@ function hmWordsHTML(){
   var l=hmLatest('단어',5);
   return hmTn('단어',hmNav('단어',5,hmAll('단어').length))
     +'<div class="hm-body">'+(l.length?l.map(function(x){
-      return '<div class="hm-row" onclick="zoomWord('+x.id+')"><b>'+esc(x.term||'')+'</b><span class="sub">'+esc(String(x.date).slice(5))+'</span></div>';
+      return '<div class="hm-row" onclick="zoomWord('+x.id+')"><b style="font-size:17px;letter-spacing:.5px">'+esc(x.term||'')+'</b><span class="sub">'+esc(String(x.date).slice(5))+'</span></div>';
     }).join(''):'<div class="hm-empty">단어가 없습니다.</div>')+'</div>';
 }
+function hmStrip(s){var d=document.createElement('div');d.innerHTML=String(s||'');return (d.textContent||'').replace(/\s+/g,' ').trim();}
+/* 작성된 천일문 유닛(최신순) */
+function hmEngUnits(){
+  var out=[];
+  cheonilChapters().forEach(function(c){(c.units||[]).forEach(function(u){
+    if(u.sentence||u.desc)out.push({c:c,u:u,d:String(u.date||'')});});});
+  return out.sort(function(a,b){return b.d.localeCompare(a.d);});
+}
 function hmEngHTML(){
-  var nav=hmNav('영어',1,hmAll('영어').length);
-  var e=hmLatest('영어',1)[0];
-  var u=null,ud='';
-  cheonilChapters().forEach(function(c){(c.units||[]).forEach(function(x){
-    if((x.sentence||x.desc)&&String(x.date||'')>=ud){ud=String(x.date||'');u=x;}});});
-  var body='';
-  if(e)body+='<div class="hm-row" onclick="goStudy(\'영어\')"><b style="white-space:normal;line-height:1.5">'+esc(e.term||'')+'</b></div>'
-    +'<div style="font-size:11.5px;color:var(--muted);padding:2px 0 6px;line-height:1.5">'+esc(e.meaning||'')+'</div>';
-  if(u)body+='<div class="hm-row" onclick="goStudy(\'영어\')"><b style="white-space:normal;line-height:1.5">'+esc(u.sentence||u.desc)+'</b></div>'
-    +'<div style="font-size:10.5px;color:var(--muted);padding-top:2px">천일문 · '+esc(u.name||'')+'</div>';
+  var us=hmEngUnits();
+  var off=Math.min(hmOff['영어']||0,Math.max(0,us.length-1));hmOff['영어']=off;
+  var nav='<span class="hm-nav">'
+    +'<span onclick="hmStep(\'영어\',-1,1)" style="'+(off<=0?'opacity:.28;pointer-events:none':'')+'">‹</span>'
+    +'<span onclick="hmStep(\'영어\',1,1)" style="'+(off+1>=us.length?'opacity:.28;pointer-events:none':'')+'">›</span></span>';
+  if(!us.length)return hmTn('영어',nav)+'<div class="hm-empty">작성한 천일문이 없습니다.</div>';
+  var it=us[off],sent=hmStrip(it.u.sentence)||hmStrip(it.u.desc);
   return hmTn('영어',nav)
-    +'<div class="hm-body">'+(body||'<div class="hm-empty">기록이 없습니다.</div>')+'</div>';
+    +'<div class="hm-body" style="cursor:pointer" onclick="goStudy(\'영어\')">'
+    +'<div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:8px">'
+    +esc(it.c.name)+' · '+esc(it.u.name||'UNIT')+(it.d?' <span style="font-weight:600">('+esc(it.d.slice(5))+')</span>':'')+'</div>'
+    +'<div style="font-size:14.5px;font-weight:700;line-height:1.65;color:var(--dark)">'+esc(sent)+'</div>'
+    +'</div>';
 }
 function hmListCard(title,tab,color){
   var l=hmLatest(tab,5);
@@ -5616,7 +5636,7 @@ function addHomeExpense(){
 }
 function hmExpInHTML(){
   var rows=db.assets.filter(function(a){return a.type==='지출';})
-    .sort(function(a,b){return String(b.date).localeCompare(String(a.date))||b.id-a.id;}).slice(0,5);
+    .sort(function(a,b){return String(b.date).localeCompare(String(a.date))||b.id-a.id;}).slice(0,10);
   return hmT('지출입력','가계부 →',"go('assets')",'var(--red)')
     +'<div class="hm-exp-form">'
     +'<input id="hmDate" type="date" class="in" style="flex:none;width:128px" value="'+today()+'">'
