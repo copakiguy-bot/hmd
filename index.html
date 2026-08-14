@@ -886,13 +886,20 @@
     justify-content:center;cursor:pointer;font-size:12px;color:var(--dark);user-select:none}
   .hm-bknav span:hover{background:var(--yellow-soft)}
   /* 지출 */
-  .hm-exp-form{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-  .hm-exp-form .in{padding:8px 10px;font-size:12.5px}
-  .hm-led{width:100%;border-collapse:collapse;font-size:12px}
-  .hm-led td{padding:5px 4px;border-bottom:1px solid var(--line);white-space:nowrap}
-  .hm-led td:nth-child(4){white-space:normal}
-  .hm-led tr:last-child td{border-bottom:none}
-  .hm-led .amt{text-align:right;font-weight:700}
+  /* 지출입력: 입력줄과 내역줄이 같은 열을 쓴다 */
+  .hm-exp-grid{display:grid;grid-template-columns:132px 104px minmax(72px,1fr) minmax(90px,1.35fr) 62px;
+    gap:8px;align-items:center}
+  .hm-exp-form{margin-bottom:6px}
+  .hm-exp-form .in{padding:8px 10px;font-size:12.5px;width:100%;min-width:0}
+  .hm-exp-form .in.amt{text-align:right}
+  .hm-exp-form .btn{width:100%;padding:9px 0;font-size:13px}
+  .hm-exp-row{font-size:12px;padding:7px 0;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  .hm-exp-row:last-child{border-bottom:none}
+  .hm-exp-row>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 10px}
+  .hm-exp-row .d{color:var(--muted)}
+  .hm-exp-row .amt{text-align:right;font-weight:700}
+  @media(max-width:640px){.hm-exp-grid{grid-template-columns:1fr 1fr;gap:6px}
+    .hm-exp-form .btn{grid-column:1/-1}.hm-exp-row>span:last-child{display:none}}
   /* 이번달 지출 표: 오와 열 맞춤 */
   .hm-bt{width:100%;border-collapse:collapse;margin-top:14px;font-size:12.5px;
     font-variant-numeric:tabular-nums;table-layout:fixed}
@@ -5685,16 +5692,18 @@ function hmExpInHTML(){
   var rows=db.assets.filter(function(a){return a.type==='지출';})
     .sort(function(a,b){return String(b.date).localeCompare(String(a.date))||b.id-a.id;}).slice(0,10);
   return hmT('지출입력','가계부 →',"go('assets')",'var(--red)')
-    +'<div class="hm-exp-form">'
-    +'<input id="hmDate" type="date" class="in" style="flex:none;width:128px" value="'+today()+'">'
-    +'<select id="hmCat" class="in" style="flex:1;min-width:90px">'+ASSET_CATS.지출.map(function(c){return '<option>'+esc(c)+'</option>';}).join('')+'</select>'
-    +'<input id="hmAmt" class="in" inputmode="numeric" style="flex:1;min-width:80px" placeholder="금액" oninput="fmtNum(this)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addHomeExpense();}">'
-    +'<input id="hmItem" class="in" style="flex:1.4;min-width:100px" placeholder="내역" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addHomeExpense();}">'
-    +'<button class="btn y" style="flex:none" onclick="addHomeExpense()">추가</button></div>'
-    +'<table class="hm-led">'+(rows.length?rows.map(function(a){
-      return '<tr><td style="color:var(--muted)">'+esc(String(a.date).slice(5))+'</td><td>'+esc(a.category||'')+'</td>'
-        +'<td class="amt">'+Number(a.amount||0).toLocaleString()+'</td><td>'+esc(a.item||'')+'</td></tr>';
-    }).join(''):'<tr><td colspan="4"><div class="hm-empty">지출 내역이 없습니다.</div></td></tr>')+'</table>';
+    +'<div class="hm-exp-form hm-exp-grid">'
+    +'<input id="hmDate" type="date" class="in" value="'+today()+'">'
+    +'<select id="hmCat" class="in">'+ASSET_CATS.지출.map(function(c){return '<option>'+esc(c)+'</option>';}).join('')+'</select>'
+    +'<input id="hmAmt" class="in amt" inputmode="numeric" placeholder="금액" oninput="fmtNum(this)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addHomeExpense();}">'
+    +'<input id="hmItem" class="in" placeholder="내역" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addHomeExpense();}">'
+    +'<button class="btn y" onclick="addHomeExpense()">추가</button></div>'
+    +(rows.length?'<div class="hm-exp-list">'+rows.map(function(a){
+      return '<div class="hm-exp-row hm-exp-grid"><span class="d">'+esc(String(a.date).slice(5))+'</span>'
+        +'<span class="c">'+esc(a.category||'')+'</span>'
+        +'<span class="amt">'+Number(a.amount||0).toLocaleString()+'</span>'
+        +'<span class="i">'+esc(a.item||'')+'</span><span></span></div>';
+    }).join('')+'</div>':'<div class="hm-empty">지출 내역이 없습니다.</div>');
 }
 function hmExpChartHTML(){
   var mk=thisMonth(),pie={},spent=0;
