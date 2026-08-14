@@ -846,6 +846,7 @@
   .hm-row b{font-weight:700;color:var(--dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
   .hm-row .sub{font-size:11px;color:var(--muted);flex:none}
   .hm-empty{color:var(--muted);font-size:12px;text-align:center;padding:22px 0}
+  .hm-row .hm-star{width:12px;height:14px;font-size:12px;line-height:14px}
   /* 주요일정 */
   .hm-sch{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12.5px}
   .hm-sch .tm{font-weight:800;font-size:11.5px;color:var(--muted);flex:none;width:38px}
@@ -886,9 +887,12 @@
   .hm-exp-form .in{padding:8px 10px;font-size:12.5px}
   .hm-led{width:100%;border-collapse:collapse;font-size:12px}
   .hm-led td{padding:5px 4px;border-bottom:1px solid var(--line);white-space:nowrap}
-  .hm-led td:nth-child(3){white-space:normal}
+  .hm-led td:nth-child(4){white-space:normal}
   .hm-led tr:last-child td{border-bottom:none}
   .hm-led .amt{text-align:right;font-weight:700}
+  .hm-bud-t th{font-size:11px;color:var(--muted);font-weight:700;text-align:left;padding:4px;border-bottom:1px solid var(--line)}
+  .hm-bud-t th.amt{text-align:right}
+  .hm-bud-t tfoot td{font-weight:800;border-top:1px solid var(--line);border-bottom:none}
   /* ===== INBOX 2단 (왼쪽 내용 · 오른쪽 주석) ===== */
   #inboxCard{grid-column:1/-1}
   .inb-quick{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 4px;
@@ -1597,6 +1601,14 @@ function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!
   (db.inbox||[]).forEach(function(x){if(!x.grp)x.grp=x.long?'long':'short';if(!x.notes)x.notes=[];if(!x.src)x.src='direct';});
   (db.study||[]).forEach(function(x){if(!x.notes)x.notes=[];});
   /* 일정 세부내용의 앞머리 '- ' 를 가운뎃점으로 한 번 바꿔 준다 */
+  if(!db.__catMigrated){
+    var __ren={'모임':'모임1','데이트':'모임2'};
+    (db.assets||[]).forEach(function(a){if(a.type==='지출'&&__ren[a.category])a.category=__ren[a.category];});
+    Object.keys(__ren).forEach(function(k){
+      if(db.budget&&db.budget[k]!=null){
+        db.budget[__ren[k]]=(db.budget[__ren[k]]||0)+db.budget[k];delete db.budget[k];}});
+    db.__catMigrated=1;
+  }
   if(!db.__dotMigrated){(db.schedules||[]).forEach(function(s){if(s.detail)s.detail=String(s.detail).replace(/^-[ \t]/gm,'· ');});db.__dotMigrated=1;}}
 ensureFields();
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.work)return s;}catch(e){}return seed();}
@@ -1685,7 +1697,7 @@ function seed(){
       {id:47,date:dstr(3),type:'투자',category:'코인',item:'비트코인',amount:150000,note:''},
       {id:48,date:dstr(5),type:'투자',category:'적금',item:'정기적금',amount:300000,note:''}
     ],
-    budget:{'데이트':350000,'식비':80000,'모임':30000,'세탁':30000,'문화생활':20000,'유류&교통':200000,'이발':20000,'기타':30000,'경조사':50000},
+    budget:{'모임2':350000,'식비':80000,'모임1':30000,'세탁':30000,'문화생활':20000,'유류&교통':200000,'이발':20000,'기타':30000,'경조사':50000},
     fixed:[
       {id:61,name:'엄마',amount:200000,note:''},{id:62,name:'실손보험',amount:55000,note:''},
       {id:63,name:'서하가든',amount:50000,note:''},{id:64,name:'대광회',amount:30000,note:''},
@@ -5287,7 +5299,7 @@ function cheonilDashHTML(){
 
 /* ---------- assets (지출·투자·수입 탭) ---------- */
 const ASSET_CATS={
-  지출:['식비','모임','세탁','문화생활','유류&교통','이발','기타','경조사','데이트'],
+  지출:['식비','모임1','모임2','세탁','문화생활','유류&교통','이발','기타','경조사'],
   투자:['현금','적금','주식','채권','코인','연금저축','행정공제'],
   수입:['월급','명절수당','성과급','정근수당','연가보상비','여비','기타']
 };
@@ -5591,7 +5603,7 @@ function hmWordsHTML(){
   var l=hmLatest('단어',5);
   return hmTn('단어',hmNav('단어',5,hmAll('단어').length))
     +'<div class="hm-body">'+(l.length?l.map(function(x){
-      return '<div class="hm-row" onclick="zoomWord('+x.id+')"><b style="font-size:17px;letter-spacing:.5px">'+esc(x.term||'')+'</b><span class="sub">'+esc(String(x.date).slice(5))+'</span></div>';
+      return '<div class="hm-row" onclick="zoomWord('+x.id+')"><b style="font-size:18px;letter-spacing:.5px;font-family:\'Nanum Myeongjo\',serif">'+esc(x.term||'')+'</b><span class="sub">'+esc(String(x.date).slice(5))+'</span></div>';
     }).join(''):'<div class="hm-empty">단어가 없습니다.</div>')+'</div>';
 }
 function hmStrip(s){var d=document.createElement('div');d.innerHTML=String(s||'');return (d.textContent||'').replace(/\s+/g,' ').trim();}
@@ -5617,11 +5629,22 @@ function hmEngHTML(){
     +'<div style="font-size:14.5px;font-weight:700;line-height:1.65;color:var(--dark)">'+esc(sent)+'</div>'
     +'</div>';
 }
+function hmStarsRO(v){
+  v=Number(v)||0;if(!v)return '';
+  var o='';
+  for(var i=1;i<=5;i++){
+    var f=v>=i?100:(v>=i-0.5?50:0);
+    o+='<span class="star hm-star"><span class="s-bg">★</span><span class="s-fg" style="width:'+f+'%">★</span></span>';
+  }
+  return '<span class="stars" style="flex:none">'+o+'</span>';
+}
 function hmListCard(title,tab,color){
-  var l=hmLatest(tab,5);
+  var l=hmLatest(tab,5),star=(tab==='문화');
   return hmTn(title,hmNav(tab,5,hmAll(tab).length),color)
     +'<div class="hm-body">'+(l.length?l.map(function(x){
-      return '<div class="hm-row" onclick="goStudy(\''+tab+'\')"><b>'+esc(x.title||x.term||'')+'</b><span class="sub">'+esc(String(x.date).slice(5))+'</span></div>';
+      return '<div class="hm-row" onclick="goStudy(\''+tab+'\')"><b>'+esc(x.title||x.term||'')+'</b>'
+        +(star?hmStarsRO(x.rating):'')
+        +'<span class="sub">'+esc(String(x.date).slice(5))+'</span></div>';
     }).join(''):'<div class="hm-empty">기록이 없습니다.</div>')+'</div>';
 }
 /* 9~11. 지출 */
@@ -5632,7 +5655,8 @@ function addHomeExpense(){
     category:document.getElementById('hmCat').value,item:document.getElementById('hmItem').value.trim(),
     amount:amt,note:''});
   save();renderAssetsAll();renderCal();renderHome();
-  ['hmItem','hmAmt'].forEach(function(i){document.getElementById(i).value='';});
+  ['hmItem','hmAmt'].forEach(function(i){var e=document.getElementById(i);if(e)e.value='';});
+  var f=document.getElementById('hmAmt');if(f)f.focus();
 }
 function hmExpInHTML(){
   var rows=db.assets.filter(function(a){return a.type==='지출';})
@@ -5641,12 +5665,12 @@ function hmExpInHTML(){
     +'<div class="hm-exp-form">'
     +'<input id="hmDate" type="date" class="in" style="flex:none;width:128px" value="'+today()+'">'
     +'<select id="hmCat" class="in" style="flex:1;min-width:90px">'+ASSET_CATS.지출.map(function(c){return '<option>'+esc(c)+'</option>';}).join('')+'</select>'
-    +'<input id="hmItem" class="in" style="flex:1.4;min-width:100px" placeholder="내역">'
-    +'<input id="hmAmt" class="in" inputmode="numeric" style="flex:1;min-width:80px" placeholder="금액" oninput="fmtNum(this)">'
+    +'<input id="hmAmt" class="in" inputmode="numeric" style="flex:1;min-width:80px" placeholder="금액" oninput="fmtNum(this)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addHomeExpense();}">'
+    +'<input id="hmItem" class="in" style="flex:1.4;min-width:100px" placeholder="내역" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addHomeExpense();}">'
     +'<button class="btn y" style="flex:none" onclick="addHomeExpense()">추가</button></div>'
     +'<table class="hm-led">'+(rows.length?rows.map(function(a){
       return '<tr><td style="color:var(--muted)">'+esc(String(a.date).slice(5))+'</td><td>'+esc(a.category||'')+'</td>'
-        +'<td>'+esc(a.item||'')+'</td><td class="amt">'+Number(a.amount||0).toLocaleString()+'</td></tr>';
+        +'<td class="amt">'+Number(a.amount||0).toLocaleString()+'</td><td>'+esc(a.item||'')+'</td></tr>';
     }).join(''):'<tr><td colspan="4"><div class="hm-empty">지출 내역이 없습니다.</div></td></tr>')+'</table>';
 }
 function hmExpChartHTML(){
@@ -5655,8 +5679,23 @@ function hmExpChartHTML(){
     var v=sumAssets(function(a){return a.type==='지출'&&a.category===c&&monthOf(a.date)===mk;});
     if(v)pie[c]=v;spent+=v;
   });
+  var rows='',setT=0,spT=0;
+  ASSET_CATS.지출.forEach(function(c){
+    var set=db.budget[c]||0,v=sumAssets(function(a){return a.type==='지출'&&a.category===c&&monthOf(a.date)===mk;});
+    if(!set&&!v)return;
+    setT+=set;spT+=v;
+    var left=set-v;
+    rows+='<tr><td>'+esc(c)+'</td><td class="amt">'+set.toLocaleString()+'</td>'
+      +'<td class="amt">'+v.toLocaleString()+'</td>'
+      +'<td class="amt"'+(left<0?' style="color:var(--red)"':'')+'>'+left.toLocaleString()+'</td></tr>';
+  });
+  var tbl=rows?'<table class="hm-led hm-bud-t" style="margin-top:12px">'
+    +'<thead><tr><th>카테고리</th><th class="amt">설정액</th><th class="amt">지출액</th><th class="amt">잔액</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'<tfoot><tr><td>합계</td><td class="amt">'+setT.toLocaleString()+'</td><td class="amt">'+spT.toLocaleString()+'</td>'
+    +'<td class="amt"'+((setT-spT)<0?' style="color:var(--red)"':'')+'>'+(setT-spT).toLocaleString()+'</td></tr></tfoot></table>':'';
   return hmT('이번달 지출','자산 →',"go('assets')",'var(--red)')
-    +(spent?donutFromMap(pie,300,true):'<div class="hm-empty">이번달 지출이 없습니다.</div>');
+    +(spent?donutFromMap(pie,300,true):'<div class="hm-empty">이번달 지출이 없습니다.</div>')+tbl;
 }
 function renderHome(){
   var g=document.getElementById('homeGrid');
