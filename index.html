@@ -789,7 +789,8 @@
   .zoom-ic{cursor:pointer;font-size:15px;color:#c3cbc7;margin-top:6px;flex:none;user-select:none}
   .zoom-ic:hover{color:var(--dark)}
   .word-ov{position:fixed;inset:0;background:rgba(18,49,43,.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
-  .word-box{background:var(--card);border-radius:22px;padding:46px 40px;max-width:660px;width:100%;text-align:center;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.3)}
+  .word-box{background:var(--card);border-radius:22px;padding:46px 40px;max-width:660px;width:100%;text-align:center;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.3);
+    max-height:calc(100vh - 40px);overflow-y:auto;overscroll-behavior:contain}
   .word-close{position:absolute;top:14px;right:20px;cursor:pointer;font-size:20px;color:var(--muted);line-height:1}
   .word-close:hover{color:var(--dark)}
   .word-term{font-family:'Nanum Myeongjo',serif;font-size:clamp(36px,7vw,66px);font-weight:700;letter-spacing:-1px;color:var(--dark);line-height:1.3;word-break:keep-all;display:inline-block;padding:4px 20px;border-radius:16px;cursor:pointer}
@@ -806,10 +807,11 @@
 
   /* 독서 발췌 랜덤 + 타이머 */
   .ex-ov{position:fixed;inset:0;background:rgba(18,49,43,.55);display:flex;align-items:center;justify-content:center;z-index:120;padding:20px}
-  .ex-box{background:var(--card);border-radius:22px;padding:46px 42px 34px;max-width:640px;width:100%;text-align:center;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.3)}
+  .ex-box{background:var(--card);border-radius:22px;padding:46px 42px 34px;max-width:640px;width:100%;text-align:center;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.3);
+    max-height:calc(100vh - 40px);overflow-y:auto;overscroll-behavior:contain}
   .ex-close{position:absolute;top:14px;right:20px;cursor:pointer;font-size:20px;color:var(--muted);line-height:1}
   .ex-close:hover{color:var(--dark)}
-  .ex-quote{font-size:clamp(19px,3vw,26px);line-height:1.75;color:var(--dark);font-family:'Nanum Myeongjo',serif;word-break:keep-all}
+  .ex-quote{font-size:clamp(15px,2.3vw,20px);line-height:1.8;color:var(--dark);font-family:'Gowun Dodum',sans-serif;word-break:keep-all}
   .ex-src{margin-top:18px;font-size:14px;color:var(--muted)}
   .ex-timer{margin-top:26px;font-size:46px;font-weight:800;letter-spacing:1px;color:var(--green);font-variant-numeric:tabular-nums;line-height:1}
   .ex-timer.done{color:var(--red)}
@@ -891,8 +893,9 @@
   .hm-led td:nth-child(4){white-space:normal}
   .hm-led tr:last-child td{border-bottom:none}
   .hm-led .amt{text-align:right;font-weight:700}
-  .hm-legend div{flex-wrap:wrap}
-  .hm-lg-sub{width:100%;padding-left:19px;font-size:11px;color:var(--muted);font-weight:700;margin-top:-3px}
+  .hm-lg-set{font-size:11.5px;color:var(--muted);font-weight:700;margin-left:3px}
+  .hm-lg-left{font-size:11.5px;color:var(--muted);font-weight:700;margin-left:4px}
+  .hm-lg-left.over{color:var(--red);font-weight:800}
   /* ===== INBOX 2단 (왼쪽 내용 · 오른쪽 주석) ===== */
   #inboxCard{grid-column:1/-1}
   .inb-quick{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 4px;
@@ -2395,6 +2398,7 @@ function toggleTop(name){
     return;
   }
   topActive=(topActive===name)?'home':name;
+  if(topActive==='cal')calSub={sched:true,tl:true,session:calSub.session,ot:calSub.ot};   /* 달력은 스케줄·타임라인 함께 */
   applyTopState();
   if(topActive===name){
     var id=(name==='cal')?'calCard':(name==='inbox')?'inboxCard':name+'SecCard';
@@ -5703,10 +5707,10 @@ function hmDonut(map,size){
     +'<text x="21" y="22.5" text-anchor="middle" font-size="4.2" font-weight="700" fill="#12312b">'+shortWon(total)+'</text></svg>';
   var legend=entries.map(function(e,i){
     var set=db.budget[e[0]]||0,left=set-e[1];
-    return '<div><span class="sw" style="background:'+PALETTE[i%PALETTE.length]+'"></span> '+esc(e[0])
-      +'<b style="margin-left:auto">'+won(e[1])+'</b>'
-      +'<span class="hm-lg-sub">'+(set?'설정 '+set.toLocaleString()
-        +' · <span'+(left<0?' style="color:var(--red);font-weight:800"':'')+'>잔액 '+left.toLocaleString()+'</span>':'설정 없음')+'</span></div>';
+    return '<div><span class="sw" style="background:'+PALETTE[i%PALETTE.length]+'"></span> '
+      +esc(e[0])+(set?'<span class="hm-lg-set">('+set.toLocaleString()+'원)</span>':'')
+      +'<b style="margin-left:auto">'+e[1].toLocaleString()+'원'
+      +(set?'<span class="hm-lg-left'+(left<0?' over':'')+'">('+left.toLocaleString()+'원)</span>':'')+'</b></div>';
   }).join('');
   return '<div style="text-align:center">'+svg+'</div><div class="legend hm-legend">'+legend+'</div>';
 }
