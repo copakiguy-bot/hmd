@@ -217,6 +217,29 @@
   .b-투자{background:var(--yellow-soft);color:#a9721a}
   .entry .day{font-size:12px;color:var(--muted)}
   .entry .body{font-size:14px;line-height:1.6;white-space:pre-wrap}
+  /* 지식: 본문 + 주석 2단 */
+  .st2{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start;margin-top:2px}
+  .st2 .stnotes{border-left:1px solid var(--line);padding-left:14px}
+  @media(max-width:1000px){.st2{grid-template-columns:1fr}
+    .st2 .stnotes{border-left:none;border-top:1px solid var(--line);padding-left:0;padding-top:12px}}
+  .st2 .body{outline:none}
+  mark.stq{background:var(--yellow-soft);color:inherit;border-radius:3px;padding:0 1px}
+  sup.stm{font-size:10px;font-weight:800;color:var(--red);cursor:pointer;margin-left:1px;user-select:none;vertical-align:super}
+  .stn-list{font-size:12.5px;line-height:1.7;font-family:'Nanum Gothic',sans-serif}
+  .stn-row{display:flex;align-items:flex-start;gap:7px;padding:1px 0}
+  .stn-row .stn-n{flex:none;font-weight:800;color:var(--red);font-size:11.5px;padding-top:2px;min-width:19px;cursor:help}
+  .stn-b{flex:1;min-width:0;cursor:text;word-break:break-word;color:var(--dark);
+    font-family:'Nanum Gothic',sans-serif;min-height:19px}
+  .stn-in{flex:1;min-width:0;outline:none;word-break:break-word;color:var(--dark);
+    font-family:'Nanum Gothic',sans-serif;border-bottom:1px solid var(--yellow);background:#fffdf7;min-height:19px}
+  .stn-act{flex:none;display:flex;align-items:center;gap:5px;opacity:0;transition:opacity .12s}
+  .stn-row:hover .stn-act,.stn-row.editing .stn-act{opacity:1}
+  .stn-act .del{margin-top:0}
+  .stn-btn{font-size:10.5px;font-weight:700;color:var(--muted);cursor:pointer;
+    background:var(--cream);border-radius:999px;padding:2px 9px;white-space:nowrap}
+  .stn-btn:hover{background:var(--line);color:var(--dark)}
+  .stn-btn.save{background:var(--yellow);color:var(--dark)}
+  .stnote-hint{font-size:11.5px;color:var(--muted);line-height:1.7}
   .entry .sub{font-size:12.5px;color:var(--muted);margin-top:6px;white-space:pre-wrap;line-height:1.55}
   .empty{color:var(--muted);font-size:13.5px;text-align:center;padding:26px 0}
   .datehdr{font-size:12px;font-weight:800;color:var(--muted);margin:16px 0 8px;letter-spacing:.3px}
@@ -277,7 +300,9 @@
   .menu-btn{display:none}
   @media(max-width:1000px){.grid,.row2,.two,.g2,.g3{grid-template-columns:1fr}.sidebar{display:none}.main{padding-top:58px}.menu-btn{display:flex;position:fixed;top:12px;left:12px;z-index:60;width:44px;height:44px;border-radius:12px;background:var(--dark);color:#fff;align-items:center;justify-content:center;font-size:20px;border:none;cursor:pointer;box-shadow:var(--shadow)}.sidebar.open{display:flex;position:fixed;left:0;top:0;height:100vh;z-index:59}}
   /* 명조체: 우리는 매일매일 / 스케줄 세부내역 */
-  #studyPane .mask,#studyPane .body,#dashStudyFeed .mask,#dashStudyFeed .body{font-family:'Nanum Myeongjo',serif}
+  #studyPane .mask,#dashStudyFeed .mask{font-family:'Nanum Myeongjo',serif}
+  /* 매일매일 입력내용: 고운돋움 */
+  #studyPane .body,#dashStudyFeed .body{font-family:'Gowun Dodum',sans-serif}
   /* 독서 발췌 표시: 고운돋움 */
   #bookDetail .body,#dashReadFeed .body{font-family:'Gowun Dodum',sans-serif}
   /* 일기: 고운바탕 + 칸(가로 폭) 넓게 + 가운데 정렬. 아래 700px(칸 너비)와 13px(폰트) 숫자만 바꾸면 조절됨 */
@@ -839,16 +864,6 @@
   .inb-date{font-size:10.5px;color:var(--muted);font-weight:700}
   .inb-bury{font-size:10.5px;font-weight:700;color:#fff;background:var(--muted);border:none;border-radius:999px;padding:3px 10px;cursor:pointer}
   .inb-bury:hover{background:var(--dark)}
-  .inb-note{border:1px solid var(--line);border-left:3px solid var(--yellow);border-radius:10px;
-    padding:9px 11px;margin-bottom:9px;background:#fffdf7}
-  .inb-note .nh{display:flex;align-items:center;gap:6px;margin-bottom:5px}
-  .inb-note .no{font-size:10.5px;color:var(--muted);font-weight:700;flex:1;min-width:0;
-    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
-  .inb-note .no:hover{color:var(--dark)}
-  .inb-note .q{font-size:11.5px;color:#8a6412;font-weight:700;line-height:1.55;display:block;margin-bottom:5px}
-  .inb-note .nt{font-size:12.5px;line-height:1.6;color:var(--dark);outline:none;min-height:19px}
-  .inb-note .nt:empty:before{content:'주석 입력…';color:var(--muted)}
-  .inb-hint{font-size:11.5px;color:var(--muted);line-height:1.7;padding:6px 2px}
   .inb-flash{animation:inbFlash 1.1s ease-out}
   @keyframes inbFlash{0%{background:var(--yellow-soft)}100%{background:transparent}}
   /* ===== 보관함 ===== */
@@ -1507,6 +1522,7 @@ function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!
   }
   if(!db.cheonildu.chapters)db.cheonildu.chapters=[];
   (db.inbox||[]).forEach(function(x){if(!x.grp)x.grp=x.long?'long':'short';if(!x.notes)x.notes=[];if(!x.src)x.src='direct';});
+  (db.study||[]).forEach(function(x){if(!x.notes)x.notes=[];});
   /* 일정 세부내용의 앞머리 '- ' 를 가운뎃점으로 한 번 바꿔 준다 */
   if(!db.__dotMigrated){(db.schedules||[]).forEach(function(s){if(s.detail)s.detail=String(s.detail).replace(/^-[ \t]/gm,'· ');});db.__dotMigrated=1;}}
 ensureFields();
@@ -4765,7 +4781,10 @@ function renderStudy(){
         <input class="rowsel" list="studyCatList" value="${escA(x.category||'')}" placeholder="카테고리" onchange="editStudy(${x.id},'category',this.value)">
         <b contenteditable onblur="editStudy(${x.id},'title',this.innerText)" style="flex:1">${esc(x.title||'')}</b>
         <span class="del" onclick="delEntry('study',${x.id},renderStudyAll)">×</span></div>
-      <div class="body" contenteditable onblur="editStudy(${x.id},'content',this.innerText)">${esc(x.content||'')}</div></div>`;});});
+      <div class="st2">
+        <div class="body" data-study="${x.id}" contenteditable onblur="saveStudyBody(${x.id},this)">${stBodyHTML(x)}</div>
+        <div class="stnotes">${stNotesHTML(x)}</div>
+      </div></div>`;});});
   const form=isMemTab(t)?(t==='영어'?`<div class="inrow" style="align-items:flex-start">
       <input id="sdDate" type="date" class="in" style="flex:none;width:150px" value="${today()}">
       <textarea id="sdTerm" class="in" style="flex:1;min-height:60px;resize:vertical" placeholder="영어 문장" onfocus="fwStart('engd',this)"></textarea>
@@ -4789,6 +4808,129 @@ function renderStudy(){
     ${list||'<div class="empty">기록이 없습니다.</div>'}</div>
   ${t==='영어'?cheonilmunPaneHTML():''}`;
 }
+
+/* ---------- 지식 주석: 본문을 드래그하면 1) 표시 + 오른쪽 주석칸 ---------- */
+/* 주석이 걸린 구간을 본문에서 찾아 앞에서부터 번호를 매긴다 (겹치면 앞선 것만) */
+function stRanges(x){
+  var t=String(x.content||''),out=[];
+  (x.notes||[]).forEach(function(n){
+    if(!n.q)return;
+    var i=t.indexOf(n.q);
+    if(i<0)return;
+    out.push({n:n,s:i,e:i+n.q.length});
+  });
+  out.sort(function(a,b){return a.s-b.s;});
+  var res=[],last=-1;
+  out.forEach(function(r){if(r.s>=last){res.push(r);last=r.e;}});
+  return res;
+}
+function stBodyHTML(x){
+  var t=String(x.content||''),rs=stRanges(x);
+  if(!rs.length)return esc(t);
+  var out='',pos=0;
+  rs.forEach(function(r,i){
+    out+=esc(t.slice(pos,r.s))
+      +'<mark class="stq">'+esc(t.slice(r.s,r.e))+'</mark>'
+      +'<sup class="stm" contenteditable="false" onclick="stEditNote('+r.n.id+')">'+(i+1)+')</sup>';
+    pos=r.e;
+  });
+  return out+esc(t.slice(pos));
+}
+var stEditId=null;
+function stNotesHTML(x){
+  var rs=stRanges(x),map={};
+  rs.forEach(function(r,i){map[r.n.id]=i+1;});
+  var ns=(x.notes||[]).slice().sort(function(a,b){return (map[a.id]||9999)-(map[b.id]||9999);});
+  if(!ns.length)return '<div class="stnote-hint">왼쪽 내용을 드래그하면<br>여기에 주석이 생깁니다.</div>';
+  return '<div class="stn-list">'+ns.map(function(n){
+    var num=map[n.id],lbl=(num?num:'—')+')';
+    var qa=n.q?' title="'+escA(n.q)+'"':'';
+    if(stEditId===n.id){
+      return '<div class="stn-row editing" data-stn="'+n.id+'">'
+        +'<span class="stn-n"'+qa+'>'+lbl+'</span>'
+        +'<div class="stn-in" contenteditable data-stn-in="'+n.id+'"'
+        +' onkeydown="stNoteKey(event,'+x.id+','+n.id+')"'
+        +' onblur="stStashNote('+x.id+','+n.id+',this.innerText)">'+esc(n.text||'')+'</div>'
+        +'<span class="stn-act"><span class="stn-btn save" onclick="stSaveNote('+x.id+','+n.id+')">저장</span>'
+        +'<span class="del" onclick="delStNote('+x.id+','+n.id+')">×</span></span></div>';
+    }
+    return '<div class="stn-row" data-stn="'+n.id+'">'
+      +'<span class="stn-n"'+qa+'>'+lbl+'</span>'
+      +'<span class="stn-b'+(n.text?'':' empty')+'" onclick="stEditNote('+n.id+')">'
+      +esc(n.text||'')+'</span>'
+      +'<span class="stn-act"><span class="stn-btn" onclick="stEditNote('+n.id+')">수정</span>'
+      +'<span class="del" onclick="delStNote('+x.id+','+n.id+')">×</span></span></div>';
+  }).join('')+'</div>';
+}
+function stEditNote(nid){
+  stEditId=nid;renderStudy();
+  setTimeout(function(){
+    var f=document.querySelector('[data-stn-in="'+nid+'"]');if(!f)return;
+    f.focus();
+    var r=document.createRange();r.selectNodeContents(f);r.collapse(false);
+    var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+  },40);
+}
+/* 편집칸을 벗어나도 글이 날아가지 않도록 조용히 담아둔다 */
+function stStashNote(sid,nid,val){
+  var x=db.study.find(function(a){return a.id===sid;});if(!x)return;
+  var n=(x.notes||[]).find(function(a){return a.id===nid;});if(!n)return;
+  var v=String(val).trim();
+  if(n.text===v)return;
+  n.text=v;save();
+}
+function stSaveNote(sid,nid){
+  var f=document.querySelector('[data-stn-in="'+nid+'"]');
+  if(f)stStashNote(sid,nid,f.innerText);
+  stEditId=null;renderStudy();
+}
+function stNoteKey(e,sid,nid){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();stSaveNote(sid,nid);}
+  else if(e.key==='Escape'){e.preventDefault();stEditId=null;renderStudy();}
+}
+/* 본문 저장: 번호 표시는 빼고 순수 텍스트만 저장한다 */
+function saveStudyBody(id,el){
+  var x=db.study.find(function(a){return a.id===id;});if(!x)return;
+  var c=el.cloneNode(true);
+  Array.prototype.forEach.call(c.querySelectorAll('.stm'),function(n){n.parentNode.removeChild(n);});
+  var v=c.innerText;
+  if(x.content===v)return;
+  x.content=v;save();renderStudyAll();
+}
+function stSelToNote(){
+  var sel=window.getSelection();if(!sel||sel.isCollapsed)return;
+  var q=String(sel.toString()).replace(/\s+/g,' ').replace(/\s*\d+\)\s*$/,'').trim();
+  if(!q)return;
+  var nd=sel.anchorNode;if(!nd)return;
+  var el=(nd.nodeType===1?nd:nd.parentNode);
+  var host=(el&&el.closest)?el.closest('.body[data-study]'):null;if(!host)return;
+  var x=db.study.find(function(a){return a.id===+host.getAttribute('data-study');});if(!x)return;
+  if(!x.notes)x.notes=[];
+  if(String(x.content||'').indexOf(q)<0){sel.removeAllRanges();return;}
+  if(x.notes.some(function(n){return n.q===q;})){sel.removeAllRanges();return;}
+  var nid=uid();
+  x.notes.push({id:nid,q:q,text:''});
+  save();sel.removeAllRanges();stEditNote(nid);
+}
+function saveStNote(sid,nid,val){
+  var x=db.study.find(function(a){return a.id===sid;});if(!x)return;
+  var n=(x.notes||[]).find(function(a){return a.id===nid;});if(!n)return;
+  n.text=String(val).trim();save();
+}
+function delStNote(sid,nid){
+  var x=db.study.find(function(a){return a.id===sid;});if(!x)return;
+  x.notes=(x.notes||[]).filter(function(a){return a.id!==nid;});
+  if(stEditId===nid)stEditId=null;
+  save();renderStudy();
+}
+document.addEventListener('mouseup',function(e){
+  var el=e.target;
+  if(el&&el.closest&&el.closest('.body[data-study]'))setTimeout(stSelToNote,10);
+});
+document.addEventListener('touchend',function(e){
+  var el=e.target;
+  if(el&&el.closest&&el.closest('.body[data-study]'))setTimeout(stSelToNote,60);
+});
 
 /* ---------- 천일문 (CHAPTER → UNIT 목차 + 유닛별 설명·영문장) ---------- */
 function cheonilChapters(){return db.cheonildu.chapters||(db.cheonildu.chapters=[]);}
