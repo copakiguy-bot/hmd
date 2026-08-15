@@ -366,6 +366,10 @@
   .bkv-ch .cnt{margin-left:auto;font-size:11px;color:var(--muted);font-weight:600}
   .bkv-exs{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;overflow:auto;min-height:0}
   .bkv-ex{font-family:'Gowun Dodum',sans-serif;font-size:14.5px;line-height:1.75;color:var(--dark);padding:9px 12px;background:var(--cream);border-radius:12px;margin-bottom:8px}
+  .bkv-ex-t{cursor:text}
+  .bkv-ex-n{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+  .bkv-ex-n:empty{display:none}
+  .bkv-ex-n .stn-list{font-family:'Nanum Gothic',sans-serif;font-size:12px}
   .bkv-ex .pg{font-family:'Noto Sans KR',sans-serif;font-size:11px;color:var(--muted);font-weight:700;margin-bottom:3px}
   .bkv-note{padding:14px 26px 22px}
   .bkv-note textarea{width:100%;min-height:96px;resize:vertical;font-family:'Nanum Myeongjo',serif;font-size:15px;line-height:1.8;background:var(--cream);border:1px solid transparent;border-radius:14px;padding:13px 15px}
@@ -830,6 +834,36 @@
   .ex-petals{font-size:12px;color:var(--muted);margin-top:10px}
   .mv-btn{cursor:pointer;flex-shrink:0;font-size:15px;font-weight:800;color:var(--green);padding:0 4px}
   .mv-btn:hover{color:var(--dark)}
+  /* ===== Zettelkasten ===== */
+  .zk-perm{padding:13px 2px;border-bottom:1px solid var(--line);border-radius:8px}
+  .zk-perm:last-child{border-bottom:none}
+  .zk-perm.editing{background:var(--yellow-soft)}
+  .zk-perm-h{display:flex;align-items:baseline;gap:9px}
+  .zk-perm-h b{flex:1;min-width:0;font-size:14px;color:var(--dark);line-height:1.5;word-break:break-word}
+  .zk-perm-h .stn-btn,.zk-perm-h .del{opacity:0;transition:opacity .12s}
+  .zk-perm:hover .zk-perm-h .stn-btn,.zk-perm:hover .zk-perm-h .del{opacity:1}
+  .zk-date{flex:none;font-size:10.5px;color:var(--muted);font-weight:700}
+  .zk-perm-b{margin-top:6px;font-size:13px;line-height:1.75;color:var(--dark);white-space:pre-wrap;
+    font-family:'Gowun Dodum',sans-serif;word-break:break-word}
+  .zk-wl{color:var(--green);font-weight:700;cursor:pointer;border-bottom:1px dashed var(--green)}
+  .zk-wl:hover{background:var(--green-soft)}
+  .zk-wl.miss{color:var(--muted);border-bottom-color:var(--line);cursor:help}
+  .zk-perm-f{margin-top:7px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .zk-tag{font-size:10.5px;font-weight:700;color:var(--muted);background:var(--cream);border-radius:999px;padding:2px 9px}
+  .zk-ref{font-size:10.5px;font-weight:700;color:#1f6b4a;background:var(--green-soft);border-radius:999px;padding:2px 9px}
+  .zk-bl{font-size:10.5px;font-weight:700;color:#8a6412;background:var(--yellow-soft);border-radius:999px;padding:2px 9px;cursor:help}
+  #zkRefBox{font-size:12px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:6px}
+  .zk-book{margin-bottom:16px}
+  .zk-book:last-child{margin-bottom:0}
+  .zk-book-h{font-size:13px;font-weight:800;color:var(--dark);padding-bottom:7px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .zk-book-h span{font-weight:700;font-size:11px;color:var(--muted);margin-left:5px}
+  .zk-lit{padding:10px 12px;background:var(--cream);border-radius:12px;margin-bottom:8px}
+  .zk-lit-q{font-family:'Gowun Dodum',sans-serif;font-size:13px;line-height:1.7;color:var(--dark)}
+  .zk-lit-n{margin-top:7px;padding-top:7px;border-top:1px dashed var(--line)}
+  .zk-lit-n div{font-family:'Nanum Gothic',sans-serif;font-size:12px;line-height:1.65;color:var(--dark);padding:1px 0}
+  .zk-lit-f{margin-top:8px;display:flex;align-items:center;gap:8px}
+  .zk-lit-f .zk-src{flex:1;min-width:0;font-size:10.5px;color:var(--muted);font-weight:700;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* ===== 아이디어 연결 그래프 ===== */
   .ig-ov{position:fixed;inset:0;background:rgba(18,49,43,.5);display:flex;align-items:center;justify-content:center;z-index:130;padding:18px}
   .ig-box{background:var(--card);border-radius:20px;width:min(1240px,96vw);height:min(880px,94vh);
@@ -889,6 +923,21 @@
   .hm-row .sub{font-size:11px;color:var(--muted);flex:none}
   .hm-empty{color:var(--muted);font-size:12px;text-align:center;padding:22px 0}
   .hm-row .hm-star{width:12px;height:14px;font-size:12px;line-height:14px}
+  /* 문화 카드 */
+  .hm-cult{padding:7px 0;border-bottom:1px solid var(--line);cursor:pointer}
+  .hm-cult:last-child{border-bottom:none}
+  .hm-cult:hover b{color:var(--green)}
+  .hm-cult-top{display:flex;align-items:baseline;gap:6px}
+  .hm-cult-top b{font-size:12.5px;font-weight:700;color:var(--dark);flex:1;min-width:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .hm-cult-top .sub{font-size:10.5px;color:var(--muted);flex:none}
+  .hm-cult-cat{flex:none;font-size:10px;font-weight:800;color:#5b3fa8;background:#EDE4FF;
+    border-radius:5px;padding:2px 6px;line-height:1.4}
+  .hm-cult-star{display:flex;align-items:center;gap:5px;margin-top:3px}
+  .hm-cult-star .hm-star{width:11px;height:13px;font-size:11px;line-height:13px}
+  .hm-cult-star .n{font-size:10.5px;font-weight:700;color:#b08a2a}
+  .hm-cult-one{margin-top:3px;font-size:11.5px;color:var(--muted);line-height:1.5;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* 주요일정 */
   .hm-sch{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12.5px}
   .hm-sch .tm{font-weight:800;font-size:11.5px;color:var(--muted);flex:none;width:38px}
@@ -958,9 +1007,29 @@
   .inb-quick .btn{padding:7px 15px;font-size:12.5px}
   .inb-quick-l{font-size:12px;font-weight:800;color:var(--dark)}
   .inb-quick-h{font-size:11px;color:var(--muted);margin-left:auto}
-  .inb-go{font-size:13px;font-weight:700;color:var(--dark);background:var(--cream);
-    border-radius:999px;padding:7px 16px;cursor:pointer;flex:none}
-  .inb-go:hover{background:var(--yellow-soft)}
+  /* 조작 버튼: 내용 바로 오른쪽에, 평소엔 숨기고 마우스를 올릴 때만 */
+  .inb-acts{display:inline-flex;align-items:center;gap:4px;vertical-align:middle;margin-left:10px;
+    opacity:0;visibility:hidden;transform:translate(6px,-1px);transition:opacity .13s,transform .13s;white-space:nowrap}
+  .inb-item.acts-on .inb-acts,.inb-item:focus-within .inb-acts{opacity:1;visibility:visible;transform:none}
+  .inb-item{border-radius:10px;transition:background .12s}
+  .inb-item.acts-on{background:var(--cream)}
+  .inb-item .inb-body{cursor:pointer}
+  /* 마우스가 있는 기기에서만 호버로 노출 (터치에서는 눌러서 펼침) */
+  @media(hover:hover) and (pointer:fine){
+    .inb-item:hover .inb-acts{opacity:1;visibility:visible;transform:none}
+    .inb-item:hover{background:var(--cream)}
+  }
+  @media not all and (hover:hover){
+    .inb-acts{transition:none;display:none}
+    .inb-item.acts-on .inb-acts{display:inline-flex}
+    .inb-item .inb-t:after{content:' ⌄';color:var(--muted);font-size:11px}
+    .inb-item.acts-on .inb-t:after{content:' ⌃'}
+  }
+  .inb-go{font-size:11px;font-weight:800;border:none;border-radius:6px;padding:3px 9px;
+    cursor:pointer;flex:none;white-space:nowrap;letter-spacing:-.2px;line-height:1.5}
+  .inb-go:hover{filter:brightness(.94)}
+  .inb-go{background:var(--cream);color:var(--muted);border:1px solid var(--line)}
+  .inb-go:hover{background:var(--dark);color:#fff;border-color:var(--dark);filter:none}
   .inb-arc{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
   .inb-arc-h{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;
     font-size:12.5px;font-weight:800;color:var(--muted);padding:3px 2px}
@@ -1145,7 +1214,7 @@
 
 <main class="main">
   <!-- ===== 상단 고정 섹션 버튼 (모든 메뉴에서 보임) ===== -->
-  <div id="topSecBar"><button id="calToggleBtn" class="lunar-toggle on" onclick="toggleTop('cal')">달력</button><button id="studySecBtn" class="lunar-toggle" onclick="toggleTop('study')">매일매일</button><button id="workSecBtn" class="lunar-toggle" onclick="toggleTop('work')">업무</button><button id="readSecBtn" class="lunar-toggle" onclick="toggleTop('read')">독서</button><button id="assetSecBtn" class="lunar-toggle" onclick="toggleTop('asset')">자산</button><button id="diarySecBtn" class="lunar-toggle" onclick="toggleTop('diary')">일기</button><button id="rtNavBtn" class="lunar-toggle" onclick="go('routiner')">루티머</button><button id="inboxToggleBtn" class="lunar-toggle" onclick="toggleTop('inbox')">인박스</button></div>
+  <div id="topSecBar"><button id="calToggleBtn" class="lunar-toggle on" onclick="toggleTop('cal')">스케줄</button><button id="studySecBtn" class="lunar-toggle" onclick="toggleTop('study')">매일매일</button><button id="workSecBtn" class="lunar-toggle" onclick="toggleTop('work')">업무</button><button id="readSecBtn" class="lunar-toggle" onclick="toggleTop('read')">독서</button><button id="assetSecBtn" class="lunar-toggle" onclick="toggleTop('asset')">자산</button><button id="diarySecBtn" class="lunar-toggle" onclick="toggleTop('diary')">일기</button><button id="zkNavBtn" class="lunar-toggle" onclick="go('zettel')">Zettelkästen</button><button id="inboxToggleBtn" class="lunar-toggle" onclick="toggleTop('inbox')">인박스</button></div>
   <div class="topbar">
     <div></div>
     <div class="right">
@@ -1322,6 +1391,29 @@
       </div>
     </div>
     <div class="card"><div id="tlrStatsPage"></div></div>
+  </section>
+  <!-- ===== Zettelkasten ===== -->
+  <section class="view" id="view-zettel">
+    <div class="page-head"><h1>Zettelkästen</h1><p>문헌 메모에서 생각을 꺼내 영구 메모로 굳힙니다. 영구 메모의 제목은 주장 한 문장으로.</p></div>
+    <div class="card">
+      <h3><span class="dot" style="background:var(--dark)"></span> 영구 메모 <span class="more" id="zkPermCount"></span></h3>
+      <div id="zkPermForm">
+        <input id="zkTitle" class="in" style="width:100%" placeholder="제목 = 주장 한 문장 (예: 형광펜은 익숙함을 이해로 착각하게 만든다)">
+        <textarea id="zkBody" class="in" style="width:100%;min-height:110px;margin-top:8px;resize:vertical;line-height:1.7" placeholder="내 문장으로, 혼자 읽어도 이해되게.  [[다른 영구 메모 제목]] 을 쓰면 연결됩니다."></textarea>
+        <div class="inrow" style="margin-top:8px">
+          <input id="zkTags" class="in" style="flex:1" placeholder="태그 (쉼표로 구분)">
+          <button class="btn y" style="flex:none" onclick="zkSavePerm()">저장</button>
+          <button class="btn ghost" id="zkCancelBtn" style="flex:none;display:none" onclick="zkCancelEdit()">취소</button>
+        </div>
+        <div id="zkRefBox" style="display:none;margin-top:8px"></div>
+      </div>
+      <div id="zkPermList" style="margin-top:16px"></div>
+    </div>
+    <div class="card">
+      <h3><span class="dot" style="background:var(--green)"></span> 문헌 메모 <span class="more" id="zkLitCount"></span></h3>
+      <p style="font-size:12px;color:var(--muted);margin:-6px 0 12px">독서 → 발췌에 주석을 달면 여기로 모입니다 (발췌 1개 = 문헌 메모 1개 · 독서에서만 수정)</p>
+      <div id="zkLitList"></div>
+    </div>
   </section>
   <!-- ===== 설정 ===== -->
   <section class="view" id="view-settings">
@@ -1620,7 +1712,7 @@
       </div>
     </div>
     <div class="bkv-note">
-      <div class="bkv-h">내 생각</div>
+      <div class="bkv-h">문헌 메모</div>
       <textarea id="bkvNote" oninput="bkvNoteSave(this.value)"></textarea>
     </div>
   </div>
@@ -1659,6 +1751,7 @@ function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!
     db.cheonildu={chapters:__chapOrder.map(function(k){return __chapMap[k];})};
   }
   if(!db.cheonildu.chapters)db.cheonildu.chapters=[];
+  if(!db.zk)db.zk=[];
   (db.inbox||[]).forEach(function(x){if(!x.grp)x.grp=x.long?'long':'short';if(!x.notes)x.notes=[];if(!x.src)x.src='direct';if(x.tags==null)x.tags='';if(x.memo==null)x.memo='';});
   (db.study||[]).forEach(function(x){if(!x.notes)x.notes=[];});
   /* 일정 세부내용의 앞머리 '- ' 를 가운뎃점으로 한 번 바꿔 준다 */
@@ -1676,6 +1769,23 @@ function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.work)r
 const BK_KEY='hmd_backups';
 function save(){db.__updated=Date.now();localStorage.setItem(KEY,JSON.stringify(db));backupTick();cloudPushDebounced();}
 /* 하루 한 번, 그리고 덮어쓰기 직전에 로컬 스냅샷을 남긴다 (최대 8개) */
+/* 데이터가 얼마나 들어있는지 (동기화 사고 방지용) */
+function dbSize(d){
+  if(!d)return 0;
+  var n=0;
+  ['schedules','study','reading','assets','inbox','diary','sessions','tlRoutines','tlProjects','work','fixed'].forEach(function(k){
+    if(Array.isArray(d[k]))n+=d[k].length;
+  });
+  try{(d.reading||[]).forEach(function(b){n+=(b.excerpts||[]).length;});}catch(e){}
+  try{(d.cheonildu&&d.cheonildu.chapters||[]).forEach(function(c){n+=(c.units||[]).length;});}catch(e){}
+  try{Object.keys(d.todos||{}).forEach(function(k){n+=(d.todos[k]||[]).length;});}catch(e){}
+  return n;
+}
+function dbBrief(d){
+  return '일정 '+((d.schedules||[]).length)+' · 학습 '+((d.study||[]).length)
+    +' · 독서 '+((d.reading||[]).length)+' · 가계부 '+((d.assets||[]).length)
+    +' · 인박스 '+((d.inbox||[]).length)+' · 일기 '+((d.diary||[]).length);
+}
 function backupList(){try{return JSON.parse(localStorage.getItem(BK_KEY)||'[]');}catch(e){return [];}}
 function backupSave(tag){
   try{
@@ -1702,16 +1812,17 @@ function backupRestore(i){
   ensureFields();db.__updated=Date.now();
   localStorage.setItem(KEY,JSON.stringify(db));
   renderAll();renderBackupUI();
-  alert('복구했습니다.');
+  if(syncCode())cloudPush();          /* 복구본을 클라우드에도 즉시 올려 다른 기기가 되돌려놓지 않게 */
+  alert('복구했습니다.'+(syncCode()?'\n클라우드에도 올렸습니다.':''));
 }
 function renderBackupUI(){
   var el=document.getElementById('bkList');if(!el)return;
   var list=backupList();
   el.innerHTML=list.length?list.map(function(b,i){
-    var n=0;try{n=(JSON.parse(b.data).schedules||[]).length;}catch(e){}
-    return '<div class="bk-row"><span class="bk-t">'+esc(new Date(b.t).toLocaleString('ko-KR'))+'</span>'+
+    var n=0,br='';try{var d=JSON.parse(b.data);n=dbSize(d);br=dbBrief(d);}catch(e){}
+    return '<div class="bk-row" title="'+escA(br)+'"><span class="bk-t">'+esc(new Date(b.t).toLocaleString('ko-KR'))+'</span>'+
       '<span class="bk-tag">'+esc(b.tag||'')+'</span>'+
-      '<span class="bk-n">일정 '+n+'건</span>'+
+      '<span class="bk-n">'+n+'건</span>'+
       '<button class="btn ghost" style="flex:none;padding:5px 11px;font-size:12px" onclick="backupRestore('+i+')">되돌리기</button></div>';
   }).join(''):'<div class="empty" style="padding:10px 0">아직 백업이 없습니다.</div>';
 }
@@ -1874,7 +1985,7 @@ function toggleCalendar(){toggleTop('cal');}
 function toggleSchedPanel(){toggleCalSub('sched');}
 function toggleInboxPanel(){toggleTop('inbox');}
 /* ===== 데일리 타임라인 ===== */
-var TL_START=6, TL_END=23, TL_HW=68;   /* 시작·끝 시각, 시간당 픽셀 */
+var TL_START=6, TL_END=24, TL_HW=68;   /* 시작·끝 시각, 시간당 픽셀 (자정까지) */
 function toggleTimeline(){toggleCalSub('tl');}
 function tlParseMin(t){var m=/^(\d{1,2}):(\d{2})$/.exec(String(t||'').trim());if(!m)return null;var h=+m[1],mm=+m[2];if(h>23||mm>59)return null;return h*60+mm;}
 var tlMode='daily';   /* 'daily'(기본) | 'project' */
@@ -1903,7 +2014,7 @@ function renderTimeline(){
   /* 시간 눈금 06:00 ~ 23:00 */
   var hours='';
   for(var h=TL_START;h<=TL_END;h++){
-    hours+='<span style="left:'+((h-TL_START)*TL_HW)+'px">'+String(h).padStart(2,'0')+':00</span>';
+    hours+='<span style="left:'+((h-TL_START)*TL_HW)+'px">'+String(h===24?24:h).padStart(2,'0')+':00</span>';
   }
   /* 세로 격자 (1시간 간격) */
   var gridBg='repeating-linear-gradient(to right,transparent,transparent '+(TL_HW-1)+'px,rgba(18,49,43,.07) '+(TL_HW-1)+'px,rgba(18,49,43,.07) '+TL_HW+'px)';
@@ -1921,7 +2032,7 @@ function renderTimeline(){
     if(mn==null||mn<TL_START*60||mn>TL_END*60)untimed.push(e);else evs.push(e);
   });
   evs.sort(function(a,b){return a.mn-b.mn;});
-  var lanes=[],html='';
+  var lanes=[],html='',maxRight=0;
   evs.forEach(function(e){
     var left=(e.mn-TL_START*60)/60*TL_HW;
     var lbl=(e.ok?'✓ ':'')+e.title;
@@ -1929,6 +2040,7 @@ function renderTimeline(){
     var occ=Math.max(bw,84);                                        /* 시간표기 폭까지 감안 */
     var li=0;while(li<lanes.length&&lanes[li]>left-4)li++;
     lanes[li]=left+occ+10;
+    if(left+Math.max(bw,occ)>maxRight)maxRight=left+Math.max(bw,occ);
     var endMn=Math.min(e.mn+e.dur,24*60-1);
     var range=tlFmt(e.mn)+'~'+tlFmt(endMn);
     html+='<div class="tl-ev'+(e.k==='r'?' rt':'')+(e.done?' done':'')+(e.ok?' ok':'')+'" data-k="'+e.k+'" data-id="'+e.id+'"'
@@ -1944,9 +2056,10 @@ function renderTimeline(){
       nowLine='<div class="tl-now" title="'+tlFmt(nmn)+'" style="left:'+((nmn-TL_START*60)/60*TL_HW)+'px"></div>';
     }
   }
-  inner.style.width=(W+50)+'px';
+  var TW2=Math.max(W,Math.ceil(maxRight)+16);      /* 마지막 일정이 잘리지 않게 */
+  inner.style.width=(TW2+50)+'px';
   inner.innerHTML='<div class="tl-hours" style="width:'+W+'px">'+hours+'</div>'
-    +'<div class="tl-track" style="width:'+W+'px;height:'+trackH+'px;background-image:'+gridBg+'">'+html+nowLine+'</div>'
+    +'<div class="tl-track" style="width:'+TW2+'px;height:'+trackH+'px;background-image:'+gridBg+'">'+html+nowLine+'</div>'
     +(untimed.length?'<div class="tl-untimed">'+untimed.map(function(e){return '<span>'+esc(e.time?e.time+' · ':'')+esc(e.title)+'</span>';}).join('')+'</div>':'');
   tlBindDrag();
 }
@@ -2521,7 +2634,29 @@ function cloudPush(){var c=syncCode();if(!c)return;if(!db.__updated)db.__updated
 function cloudPull(ask,cb){var c=syncCode();if(!c){if(cb)cb(false);return;}setSyncStatus('불러오는 중…');fetch(SUPA_URL+'/rest/v1/store?key=eq.'+encodeURIComponent(c)+'&select=data',{headers:cloudHeaders()}).then(function(r){return r.json();}).then(function(j){if(Array.isArray(j)&&j.length&&j[0].data){var rd=j[0].data, rt=Number(rd&&rd.__updated)||0, lt=Number(db&&db.__updated)||0;
       if(!ask&&lt>rt){                       /* 이 기기 것이 더 최신이면 덮어쓰지 않고 올린다 */
         setSyncStatus('이 기기가 최신 · 연결됨: '+c);cloudPush();if(cb)cb(true);return;}
-      if(ask&&!confirm('클라우드에 저장된 데이터가 있어요. 이 기기로 불러올까요? (현재 기기의 내용은 대체됩니다)')){setSyncStatus('연결됨: '+c);if(cb)cb(true);return;}
+      var rn=dbSize(rd), ln=dbSize(db);
+      if(ask){
+        if(!confirm('클라우드에 저장된 데이터를 이 기기로 불러올까요?\n\n'
+          +'클라우드 : '+rn+'건  ('+dbBrief(rd)+')\n'
+          +'이 기기  : '+ln+'건  ('+dbBrief(db)+')\n\n'
+          +'⚠ 이 기기의 내용은 클라우드 것으로 대체됩니다.'
+          +(rn<ln?'\n\n※ 클라우드 쪽이 '+(ln-rn)+'건 적습니다. 정말 맞는지 확인하세요.':''))){
+          /* 취소했는데 코드를 물고 있으면, 이후 편집이 클라우드를 덮어써 버린다 → 연결을 끊는다 */
+          localStorage.removeItem(SYNC_KEY);
+          var si=document.getElementById('syncInput');if(si)si.value='';
+          setSyncStatus('불러오지 않아 연결을 해제했습니다 (이 기기 내용 유지)');
+          alert('불러오기를 취소했습니다.\n\n이 상태로 두면 이 기기의 내용이 클라우드를 덮어쓸 수 있어\n동기화 연결을 해제했습니다. 이 기기의 데이터는 그대로입니다.');
+          if(cb)cb(true);return;
+        }
+      }else if(rn+3<ln*0.7){
+        /* 자동 동기화가 데이터를 크게 줄이려 하면 조용히 덮어쓰지 않는다 */
+        backupSave('자동 동기화 차단 시점');
+        setSyncStatus('⚠ 클라우드가 이 기기보다 적어 자동 반영을 멈췄습니다');
+        alert('동기화를 멈췄습니다.\n\n클라우드 : '+rn+'건\n이 기기  : '+ln+'건\n\n'
+          +'클라우드 쪽 데이터가 크게 적어 자동으로 덮어쓰지 않았습니다.\n'
+          +'설정에서 어느 쪽이 맞는지 확인한 뒤 진행하세요.');
+        if(cb)cb(true);return;
+      }
       backupSave('클라우드 불러오기 직전');
       db=rd;ensureFields();localStorage.setItem(KEY,JSON.stringify(db));renderAll();renderBackupUI();setSyncStatus('불러옴 · 연결됨: '+c);if(cb)cb(true);}else{setSyncStatus('연결됨: '+c);if(cb)cb(false);}}).catch(function(){setSyncStatus('오프라인');if(cb)cb(false);});}
 function setSyncCode(){var el=document.getElementById('syncInput');var v=el.value.trim();if(!v){alert('동기화 코드를 입력하세요.');return;}localStorage.setItem(SYNC_KEY,v);cloudPull(true,function(found){if(!found)cloudPush();});}
@@ -3430,18 +3565,34 @@ function inbMarkQuotes(x){
 function inbRowHTML(x,inHold){
   return '<div class="inb-item'+(x.done?' done':'')+'" data-inb="'+x.id+'">'
     +'<div class="chk '+(x.done?'done':'')+'" onclick="toggleInbox('+x.id+')">'+(x.done?'✓':'')+'</div>'
-    +'<div class="inb-body"><div class="inb-t">'+esc(x.t)+'</div>'
+    +'<div class="inb-body" onclick="inbToggleActs(event,this)">'
+    +'<div class="inb-t">'+esc(x.t)
+    +'<span class="inb-acts">'
+    +'<span class="inb-go g-sched" onclick="inbItemTo('+x.id+',\'sched\')" title="오늘 일정으로 (시간 없음)">일정</span>'
+    +'<span class="inb-go g-diary" onclick="inbItemTo('+x.id+',\'diary\')" title="오늘 일기로">일기</span>'
+    +'<span class="inb-go g-idea" onclick="inbItemTo('+x.id+',\'idea\')" title="착상(아이디어) 칸으로">착상</span>'
+    +(inHold
+      ?'<span class="inb-go g-back" onclick="holdToInbox('+x.id+')" title="INBOX로 되돌리기">INBOX</span>'
+      :'<span class="inb-go g-hold" onclick="inbItemTo('+x.id+',\'hold\')" title="보관으로">보관</span>')
+    +'</span></div>'
     +'<div class="inb-meta">'
     +'<span class="inb-date">'+esc(x.date||'')+(x.done&&x.doneAt?' · 완료 '+esc(x.doneAt)+' · '+esc(arcLeftTxt(x)):'')+'</span>'
     +'</div></div>'
-    +'<span class="inb-go" onclick="inbItemTo('+x.id+',\'sched\')" title="오늘 일정으로 (시간 없음)">일정</span>'
-    +'<span class="inb-go" onclick="inbItemTo('+x.id+',\'diary\')" title="오늘 일기로">일기</span>'
-    +'<span class="inb-go" onclick="inbItemTo('+x.id+',\'idea\')" title="착상(아이디어) 칸으로">착상</span>'
-    +(inHold
-      ?'<span class="inb-go" onclick="holdToInbox('+x.id+')" title="INBOX로 되돌리기">INBOX</span>'
-      :'<span class="inb-go" onclick="inbItemTo('+x.id+',\'hold\')" title="보관으로">보관</span>')
     +'<span class="del" onclick="delInbox('+x.id+')">×</span></div>';
 }
+/* 항목을 누르면 그 줄의 버튼만 펼친다 (마우스가 없는 화면용) */
+function inbToggleActs(ev,el){
+  var row=el.closest('.inb-item');if(!row)return;
+  var on=row.classList.contains('acts-on');
+  var box=row.closest('#inbLeft,#holdBody')||document;
+  box.querySelectorAll('.inb-item.acts-on').forEach(function(r){r.classList.remove('acts-on');});
+  if(!on)row.classList.add('acts-on');
+  ev.stopPropagation();
+}
+document.addEventListener('click',function(e){
+  if(e.target.closest&&e.target.closest('.inb-item'))return;
+  document.querySelectorAll('.inb-item.acts-on').forEach(function(r){r.classList.remove('acts-on');});
+});
 function renderInboxSection(){
   var L=document.getElementById('inbLeft');if(!L)return;
   var list=inbList().slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));});
@@ -3467,6 +3618,154 @@ function renderHold(){
   el.innerHTML=list.length?list.map(function(x){return inbRowHTML(x,true);}).join('')
     :'<div class="empty">보관함이 비어 있습니다.</div>';
 }
+/* ================= Zettelkasten: 문헌 메모 + 영구 메모 ================= */
+/* 문헌 메모 = 독서 발췌에서 일방향으로 파생 (발췌 1개 = 문헌 메모 1개, 저장은 독서 쪽에만) */
+function zkLitAll(){
+  var out=[];
+  (db.reading||[]).forEach(function(b){
+    (b.excerpts||[]).forEach(function(e){
+      out.push({key:'ex'+e.id,bid:b.id,eid:e.id,book:b.title||'',chapter:e.chapter||'',page:e.page||'',
+        date:e.date||'',text:String(e.text||''),notes:(e.notes||[]).filter(function(n){return n.q||n.text;})});
+    });
+  });
+  return out.sort(function(a,c){return String(c.date).localeCompare(String(a.date))||c.eid-a.eid;});
+}
+function zkLitByKey(k){return zkLitAll().find(function(l){return l.key===k;});}
+/* ---- 영구 메모 ---- */
+var zkEditId=null, zkRef=null;
+function zkTagsOf(x){return String(x.tags||'').split(/[,\s]+/).map(function(s){return s.replace(/^#/,'').trim();}).filter(Boolean);}
+/* 본문의 [[제목]] → 클릭 가능한 링크 (존재하면 초록, 없으면 회색) */
+function zkBodyHTML(x){
+  var t=String(x.body||''),out='',re=/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g,m,pos=0;
+  while((m=re.exec(t))){
+    out+=esc(t.slice(pos,m.index));
+    var name=m[1].trim();
+    var tgt=(db.zk||[]).find(function(z){return z.id!==x.id&&String(z.title||'').trim().toLowerCase()===name.toLowerCase();});
+    out+=tgt?'<span class="zk-wl" onclick="zkFlash('+tgt.id+')">'+esc(name)+'</span>'
+            :'<span class="zk-wl miss" title="아직 없는 메모">'+esc(name)+'</span>';
+    pos=m.index+m[0].length;
+  }
+  return out+esc(t.slice(pos));
+}
+function zkBacklinks(x){
+  var low=String(x.title||'').trim().toLowerCase();if(!low)return [];
+  return (db.zk||[]).filter(function(z){
+    if(z.id===x.id)return false;
+    var re=/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g,m;
+    while((m=re.exec(String(z.body||'')))){if(m[1].trim().toLowerCase()===low)return true;}
+    return false;
+  });
+}
+function zkSavePerm(){
+  var tt=document.getElementById('zkTitle'),bd=document.getElementById('zkBody'),tg=document.getElementById('zkTags');
+  var title=tt.value.trim();
+  if(!title){alert('제목(주장 한 문장)을 입력하세요.');return;}
+  if(!bd.value.trim()){alert('본문을 입력하세요. 내 문장으로, 혼자 읽어도 이해되게.');return;}
+  var dup=(db.zk||[]).find(function(z){return z.id!==zkEditId&&String(z.title).trim().toLowerCase()===title.toLowerCase();});
+  if(dup){alert('같은 제목의 영구 메모가 이미 있습니다.\n한 장에 한 생각 — 제목을 다르게 하거나 기존 메모를 수정하세요.');return;}
+  if(zkEditId!=null){
+    var x=(db.zk||[]).find(function(z){return z.id===zkEditId;});
+    if(x){x.title=title;x.body=bd.value;x.tags=tg.value.trim();if(zkRef)x.ref=zkRef;}
+  }else{
+    db.zk.push({id:uid(),date:today(),title:title,body:bd.value,tags:tg.value.trim(),ref:zkRef||null});
+  }
+  zkEditId=null;zkRef=null;
+  tt.value='';bd.value='';tg.value='';
+  save();renderZettel();
+}
+function zkCancelEdit(){zkEditId=null;zkRef=null;
+  ['zkTitle','zkBody','zkTags'].forEach(function(i){var e=document.getElementById(i);if(e)e.value='';});
+  renderZettel();}
+function zkEdit(id){
+  var x=(db.zk||[]).find(function(z){return z.id===id;});if(!x)return;
+  zkEditId=id;zkRef=x.ref||null;
+  document.getElementById('zkTitle').value=x.title||'';
+  document.getElementById('zkBody').value=x.body||'';
+  document.getElementById('zkTags').value=x.tags||'';
+  renderZettel();
+  var f=document.getElementById('zkTitle');if(f){f.focus();f.scrollIntoView({behavior:'smooth',block:'center'});}
+}
+function zkDel(id){
+  var x=(db.zk||[]).find(function(z){return z.id===id;});if(!x)return;
+  var bl=zkBacklinks(x);
+  if(!confirm('이 영구 메모를 삭제할까요?\n\n· '+x.title
+    +(bl.length?'\n· 이 메모를 가리키는 메모 '+bl.length+'개의 연결이 끊어집니다.':'')
+    +'\n\n되돌릴 수 없습니다.'))return;
+  db.zk=(db.zk||[]).filter(function(z){return z.id!==id;});
+  if(zkEditId===id)zkCancelEdit();
+  save();renderZettel();
+}
+function zkFlash(id){
+  var el=document.querySelector('.zk-perm[data-zk="'+id+'"]');if(!el)return;
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+  el.classList.remove('inb-flash');void el.offsetWidth;el.classList.add('inb-flash');
+}
+/* 문헌 메모 → 영구 메모로 승격 (출처를 물고 간다) */
+function zkPromote(key){
+  var l=zkLitByKey(key);if(!l)return;
+  zkEditId=null;zkRef={key:l.key,book:l.book,page:l.page,chapter:l.chapter};
+  var bd=document.getElementById('zkBody');
+  if(bd&&!bd.value.trim()){
+    bd.value=(l.notes.length?l.notes.map(function(n){return n.text||n.q;}).filter(Boolean).join('\n'):'');
+  }
+  renderZettel();
+  var f=document.getElementById('zkTitle');
+  if(f){f.focus();f.scrollIntoView({behavior:'smooth',block:'center'});}
+}
+function zkRefHTML(ref){
+  if(!ref)return '';
+  return '<span class="zk-ref" title="문헌 메모에서 승격됨">📖 '+esc(ref.book||'')
+    +(ref.page?' · p.'+esc(String(ref.page)):'')+'</span>';
+}
+function renderZettel(){
+  /* 영구 메모 */
+  var pl=document.getElementById('zkPermList');
+  if(pl){
+    var list=(db.zk||[]).slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date))||b.id-a.id;});
+    var c=document.getElementById('zkPermCount');if(c)c.textContent=list.length?list.length+'장':'';
+    var rb=document.getElementById('zkRefBox');
+    if(rb){rb.style.display=zkRef?'':'none';
+      if(zkRef)rb.innerHTML='출처로 연결됨: '+zkRefHTML(zkRef)+' <span class="del" style="font-size:13px" onclick="zkRef=null;renderZettel()">×</span>';}
+    var cb=document.getElementById('zkCancelBtn');if(cb)cb.style.display=zkEditId!=null?'':'none';
+    pl.innerHTML=list.length?list.map(function(x){
+      var bl=zkBacklinks(x),tags=zkTagsOf(x);
+      return '<div class="zk-perm'+(zkEditId===x.id?' editing':'')+'" data-zk="'+x.id+'">'
+        +'<div class="zk-perm-h"><b>'+esc(x.title||'')+'</b>'
+        +'<span class="zk-date">'+esc(String(x.date||'').slice(5))+'</span>'
+        +'<span class="stn-btn" onclick="zkEdit('+x.id+')">수정</span>'
+        +'<span class="del" onclick="zkDel('+x.id+')">×</span></div>'
+        +'<div class="zk-perm-b">'+zkBodyHTML(x)+'</div>'
+        +'<div class="zk-perm-f">'
+        +tags.map(function(t){return '<span class="zk-tag">#'+esc(t)+'</span>';}).join('')
+        +zkRefHTML(x.ref)
+        +(bl.length?'<span class="zk-bl" title="'+escA(bl.map(function(z){return z.title;}).join('\n'))+'">← 백링크 '+bl.length+'</span>':'')
+        +'</div></div>';
+    }).join(''):'<div class="empty">아직 영구 메모가 없습니다.<br><span style="font-size:12px">아래 문헌 메모에서 «영구 메모로»를 누르거나 위에서 직접 쓰세요.</span></div>';
+  }
+  /* 문헌 메모 */
+  var ll=document.getElementById('zkLitList');
+  if(ll){
+    var lits=zkLitAll();
+    var lc=document.getElementById('zkLitCount');if(lc)lc.textContent=lits.length?lits.length+'장':'';
+    var by={};
+    lits.forEach(function(l){(by[l.book]=by[l.book]||[]).push(l);});
+    ll.innerHTML=lits.length?Object.keys(by).map(function(bk){
+      return '<div class="zk-book"><div class="zk-book-h">'+esc(bk)+' <span>'+by[bk].length+'장</span></div>'
+        +by[bk].map(function(l){
+          return '<div class="zk-lit">'
+            +'<div class="zk-lit-q">“'+esc(l.text)+'”</div>'
+            +(l.notes.length?'<div class="zk-lit-n">'+l.notes.map(function(n,i){
+                return '<div><span class="stn-n">'+(i+1)+')</span> '+esc(n.text||n.q)+'</div>';
+              }).join('')+'</div>':'')
+            +'<div class="zk-lit-f"><span class="zk-src">'+esc(l.chapter||'')+(l.page?' · p.'+esc(String(l.page)):'')+(l.date?' · '+esc(l.date):'')+'</span>'
+            +'<span class="stn-btn" onclick="zkOpenSrc('+l.bid+')">독서에서 보기</span>'
+            +'<span class="stn-btn save" onclick="zkPromote(\''+l.key+'\')">영구 메모로</span></div>'
+            +'</div>';
+        }).join('')+'</div>';
+    }).join(''):'<div class="empty">아직 문헌 메모가 없습니다.<br><span style="font-size:12px">독서 → 책 들여다보기에서 발췌하고 주석을 달면 여기로 모입니다.</span></div>';
+  }
+}
+function zkOpenSrc(bid){go('reading');setTimeout(function(){openBookView(bid);},150);}
 /* ================= 아이디어 연결 그래프 (옵시디언식) ================= */
 var IG_COLOR={idea:'#6a8fd8',short:'#f4b740',long:'#2f6f5e',hold:'#b56fb0',tag:'#8a9490'};
 var IG_LABEL={idea:'아이디어',short:'단기',long:'장기',hold:'보관함'};
@@ -4744,10 +5043,121 @@ function bkvRenderExs(){
   box.style.display='';
   box.innerHTML='<div class="bkv-h">'+esc(bkvCh)+' 발췌</div>'+
     (list.length?list.map(function(e){
-      return '<div class="bkv-ex" title="크게 보기" style="cursor:zoom-in" onclick="openExcerptView('+b.id+','+e.id+')">'
-        +(e.page?'<div class="pg">p.'+esc(String(e.page))+(e.date?' · '+esc(e.date):'')+'</div>':'')+fwR(e.text)+'</div>';
+      return '<div class="bkv-ex" data-ex="'+e.id+'">'
+        +(e.page?'<div class="pg">p.'+esc(String(e.page))+(e.date?' · '+esc(e.date):'')+'</div>':'')
+        +'<div class="bkv-ex-t" data-exq="'+e.id+'">'+exBodyHTML(e)+'</div>'
+        +'<div class="bkv-ex-n">'+exNotesHTML(b,e)+'</div></div>';
     }).join(''):'<div class="empty" style="padding:10px 4px">이 목차에 저장된 발췌가 없습니다.</div>');
 }
+/* ===== 발췌 주석: Knowledge와 같은 방식 (드래그 → 1) 표시 + 오른쪽 주석) ===== */
+var exEditId=null;
+function exRanges(e){
+  var t=String(e.text||''),out=[];
+  (e.notes||[]).forEach(function(n){
+    if(!n.q)return;var i=t.indexOf(n.q);if(i<0)return;
+    out.push({n:n,s:i,e:i+n.q.length});
+  });
+  out.sort(function(a,b){return a.s-b.s;});
+  var res=[],last=-1;
+  out.forEach(function(r){if(r.s>=last){res.push(r);last=r.e;}});
+  return res;
+}
+function exBodyHTML(e){
+  var t=String(e.text||''),rs=exRanges(e);
+  if(!rs.length)return esc(t);
+  var out='',pos=0;
+  rs.forEach(function(r,i){
+    out+=esc(t.slice(pos,r.s))
+      +'<mark class="stq">'+esc(t.slice(r.s,r.e))+'</mark>'
+      +'<sup class="stm" onclick="exEditNote(event,'+r.n.id+')">'+(i+1)+')</sup>';
+    pos=r.e;
+  });
+  return out+esc(t.slice(pos));
+}
+function exNotesHTML(b,e){
+  var rs=exRanges(e),map={};
+  rs.forEach(function(r,i){map[r.n.id]=i+1;});
+  var ns=(e.notes||[]).slice().sort(function(a,c){return (map[a.id]||9999)-(map[c.id]||9999);});
+  if(!ns.length)return '';
+  return '<div class="stn-list">'+ns.map(function(n){
+    var num=map[n.id],lbl=(num?num:'—')+')';
+    var qa=n.q?' title="'+escA(n.q)+'"':'';
+    if(exEditId===n.id){
+      return '<div class="stn-row editing" data-exn="'+n.id+'">'
+        +'<span class="stn-n"'+qa+'>'+lbl+'</span>'
+        +'<div class="stn-in" contenteditable data-exn-in="'+n.id+'"'
+        +' onkeydown="exNoteKey(event,'+b.id+','+e.id+','+n.id+')"'
+        +' onblur="exStashNote('+b.id+','+e.id+','+n.id+',this.innerText)">'+esc(n.text||'')+'</div>'
+        +'<span class="stn-act"><span class="stn-btn save" onclick="exSaveNote('+b.id+','+e.id+','+n.id+')">저장</span>'
+        +'<span class="del" onclick="exDelNote('+b.id+','+e.id+','+n.id+')">×</span></span></div>';
+    }
+    return '<div class="stn-row" data-exn="'+n.id+'">'
+      +'<span class="stn-n"'+qa+'>'+lbl+'</span>'
+      +'<span class="stn-b" onclick="exEditNote(event,'+n.id+')">'+esc(n.text||'')+'</span>'
+      +'<span class="stn-act"><span class="stn-btn" onclick="exEditNote(event,'+n.id+')">수정</span>'
+      +'<span class="del" onclick="exDelNote('+b.id+','+e.id+','+n.id+')">×</span></span></div>';
+  }).join('')+'</div>';
+}
+function exFind(bid,eid){
+  var b=(db.reading||[]).find(function(x){return x.id===bid;});if(!b)return null;
+  var e=(b.excerpts||[]).find(function(x){return x.id===eid;});if(!e)return null;
+  return {b:b,e:e};
+}
+function exEditNote(ev,nid){if(ev)ev.stopPropagation();exEditId=nid;bkvRenderExs();
+  setTimeout(function(){
+    var f=document.querySelector('[data-exn-in="'+nid+'"]');if(!f)return;
+    f.focus();var r=document.createRange();r.selectNodeContents(f);r.collapse(false);
+    var s=window.getSelection();s.removeAllRanges();s.addRange(r);
+  },40);
+}
+function exStashNote(bid,eid,nid,val){
+  var o=exFind(bid,eid);if(!o)return;
+  var n=(o.e.notes||[]).find(function(a){return a.id===nid;});if(!n)return;
+  var v=String(val).trim();if(n.text===v)return;
+  n.text=v;save();
+}
+function exSaveNote(bid,eid,nid){
+  var f=document.querySelector('[data-exn-in="'+nid+'"]');
+  if(f)exStashNote(bid,eid,nid,f.innerText);
+  exEditId=null;bkvRenderExs();
+}
+function exNoteKey(ev,bid,eid,nid){
+  if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();exSaveNote(bid,eid,nid);}
+  else if(ev.key==='Escape'){ev.preventDefault();exEditId=null;bkvRenderExs();}
+}
+function exDelNote(bid,eid,nid){
+  var o=exFind(bid,eid);if(!o)return;
+  var n=(o.e.notes||[]).find(function(a){return a.id===nid;});
+  if(n&&!confirm('이 주석을 삭제할까요?\n\n· '+(String(n.text||'').trim()||'(내용 없음)')+'\n\n되돌릴 수 없습니다.'))return;
+  o.e.notes=(o.e.notes||[]).filter(function(a){return a.id!==nid;});
+  if(exEditId===nid)exEditId=null;
+  save();bkvRenderExs();
+}
+/* 발췌문을 드래그하면 주석 생성 */
+function exSelToNote(){
+  var sel=window.getSelection();if(!sel||sel.isCollapsed)return;
+  var q=String(sel.toString()).replace(/\s+/g,' ').replace(/\s*\d+\)\s*$/,'').trim();
+  if(!q)return;
+  var nd=sel.anchorNode;if(!nd)return;
+  var el=(nd.nodeType===1?nd:nd.parentNode);
+  var host=(el&&el.closest)?el.closest('[data-exq]'):null;if(!host)return;
+  var b=bkvBook();if(!b)return;
+  var e=(b.excerpts||[]).find(function(x){return x.id===+host.getAttribute('data-exq');});if(!e)return;
+  if(!e.notes)e.notes=[];
+  if(String(e.text||'').indexOf(q)<0){sel.removeAllRanges();return;}
+  if(e.notes.some(function(n){return n.q===q;})){sel.removeAllRanges();return;}
+  var nid=uid();
+  e.notes.push({id:nid,q:q,text:''});
+  save();sel.removeAllRanges();exEditNote(null,nid);
+}
+document.addEventListener('mouseup',function(ev){
+  var el=ev.target;
+  if(el&&el.closest&&el.closest('[data-exq]'))setTimeout(exSelToNote,10);
+});
+document.addEventListener('touchend',function(ev){
+  var el=ev.target;
+  if(el&&el.closest&&el.closest('[data-exq]'))setTimeout(exSelToNote,60);
+});
 var bkvNoteTimer=null;
 function bkvNoteSave(v){
   var b=bkvBook();if(!b)return;
@@ -5963,12 +6373,28 @@ function hmStarsRO(v){
   return '<span class="stars" style="flex:none">'+o+'</span>';
 }
 function hmListCard(title,tab,color){
-  var l=hmLatest(tab,5),star=(tab==='문화');
+  var l=hmLatest(tab,5);
+  if(tab==='문화')return hmCultCard(title,color);
   return hmTn(title,hmNav(tab,5,hmAll(tab).length),color)
     +'<div class="hm-body">'+(l.length?l.map(function(x){
       return '<div class="hm-row" onclick="goStudy(\''+tab+'\')"><b>'+esc(x.title||x.term||'')+'</b>'
-        +(star?hmStarsRO(x.rating):'')
         +'<span class="sub">'+esc(String(x.date).slice(5))+'</span></div>';
+    }).join(''):'<div class="hm-empty">기록이 없습니다.</div>')+'</div>';
+}
+/* 문화: 구분(영화·음반…) + 별점 + 한줄평 */
+function hmCultCard(title,color){
+  var l=hmLatest('문화',4);
+  return hmTn(title,hmNav('문화',4,hmAll('문화').length),color)
+    +'<div class="hm-body">'+(l.length?l.map(function(x){
+      var cat=String(x.category||'').trim();
+      return '<div class="hm-cult" onclick="goStudy(\'문화\')">'
+        +'<div class="hm-cult-top">'
+        +(cat?'<span class="hm-cult-cat">'+esc(cat)+'</span>':'')
+        +'<b>'+esc(x.title||'')+'</b>'
+        +'<span class="sub">'+esc(String(x.date).slice(5))+'</span></div>'
+        +(x.rating?'<div class="hm-cult-star">'+hmStarsRO(x.rating)+'<span class="n">'+starTxt(x.rating)+'</span></div>':'')
+        +(x.oneline?'<div class="hm-cult-one">'+esc(x.oneline)+'</div>':'')
+        +'</div>';
     }).join(''):'<div class="hm-empty">기록이 없습니다.</div>')+'</div>';
 }
 /* 9~11. 지출 */
@@ -6271,7 +6697,7 @@ function renderAll(){
   gcalStatus();renderBackupUI();
   renderTop();renderCal();renderSchedule();renderTodos();renderInbox();renderInboxPage();renderSessions();
   renderWork();renderDashWork();renderReading();renderStudy();renderDashStudy();
-  renderAssets();renderDashAsset();renderDiary();renderDiaryPage();renderRoutiner();renderDash();
+  renderAssets();renderDashAsset();renderDiary();renderDiaryPage();renderRoutiner();renderZettel();renderDash();
 }
 renderAll();applyTopState();renderSyncUI();renderBackupUI();backupTick();if(syncCode())cloudPull(false);
 
