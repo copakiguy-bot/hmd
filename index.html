@@ -834,6 +834,23 @@
   .ex-petals{font-size:12px;color:var(--muted);margin-top:10px}
   .mv-btn{cursor:pointer;flex-shrink:0;font-size:15px;font-weight:800;color:var(--green);padding:0 4px}
   .mv-btn:hover{color:var(--dark)}
+  /* 타임라인 빠른 일정 추가 */
+  .tl-track[ondblclick]{cursor:copy}
+  .tlq-ov{position:fixed;inset:0;background:rgba(18,49,43,.42);z-index:136;display:flex;align-items:center;justify-content:center;padding:20px}
+  .tlq-box{background:var(--card);border-radius:18px;width:min(560px,94vw);box-shadow:0 24px 70px rgba(0,0,0,.28);overflow:hidden;
+    animation:qmPop .18s cubic-bezier(.2,.9,.3,1.15)}
+  .tlq-top{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .tlq-top b{font-size:14.5px}
+  .tlq-d{font-size:12px;color:var(--muted);font-weight:700}
+  .tlq-x{margin-left:auto;cursor:pointer;font-size:18px;color:var(--muted);line-height:1}
+  .tlq-x:hover{color:var(--dark)}
+  .tlq-body{padding:16px 18px 18px}
+  .tlq-quick{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+  .tlq-quick span{font-size:11px;font-weight:700;color:var(--muted);background:var(--cream);
+    border-radius:999px;padding:4px 11px;cursor:pointer}
+  .tlq-quick span:hover{background:var(--dark);color:#fff}
+  .tlq-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+  .tlq-foot .btn{flex:none;padding:8px 18px;font-size:13px}
   /* 프로젝트 마인드맵 */
   .tlp-mind{cursor:pointer;color:var(--green);font-weight:800;border-bottom:1px dashed var(--green);padding-bottom:1px}
   .tlp-mind:hover{color:var(--dark);border-bottom-color:var(--dark)}
@@ -2090,7 +2107,7 @@ function renderTimeline(){
   var TW2=Math.max(W,Math.ceil(maxRight)+16);      /* 마지막 일정이 잘리지 않게 */
   inner.style.width=(TW2+50)+'px';
   inner.innerHTML='<div class="tl-hours" style="width:'+W+'px">'+hours+'</div>'
-    +'<div class="tl-track" style="width:'+TW2+'px;height:'+trackH+'px;background-image:'+gridBg+'">'+html+nowLine+'</div>'
+    +'<div class="tl-track" ondblclick="tlQuickAdd(event)" title="빈 곳 더블클릭 → 그 시각으로 일정 추가" style="width:'+TW2+'px;height:'+trackH+'px;background-image:'+gridBg+'">'+html+nowLine+'</div>'
     +(untimed.length?'<div class="tl-untimed">'+untimed.map(function(e){return '<span>'+esc(e.time?e.time+' · ':'')+esc(e.title)+'</span>';}).join('')+'</div>':'');
   tlBindDrag();
 }
@@ -3649,6 +3666,60 @@ function renderHold(){
   if(!holdOpen)return;
   el.innerHTML=list.length?list.map(function(x){return inbRowHTML(x,true);}).join('')
     :'<div class="empty">보관함이 비어 있습니다.</div>';
+}
+/* ================= 타임라인 빈 곳 더블클릭 → 일정 추가 ================= */
+function tlQuickAdd(ev){
+  if(ev.target.closest('.tl-ev'))return;          /* 일정 위는 기존 동작(타이머) 유지 */
+  ev.stopPropagation();                            /* 퀵 메뉴가 뜨지 않게 */
+  var tr=ev.currentTarget.getBoundingClientRect();
+  var mn=Math.round(((ev.clientX-tr.left)/TL_HW*60)/5)*5+TL_START*60;   /* 5분 단위 */
+  mn=Math.max(TL_START*60,Math.min(mn,TL_END*60-5));
+  tlqOpen(tlFmt(mn));
+}
+function tlqClose(){var e=document.getElementById('tlqOv');if(e)e.remove();document.removeEventListener('keydown',tlqEsc);}
+function tlqEsc(e){if(e.key==='Escape')tlqClose();}
+function tlqOpen(time){
+  tlqClose();
+  var d=selDate, dow=['일','월','화','수','목','금','토'][new Date(d+'T00:00:00').getDay()];
+  var lbl=(+d.slice(5,7))+'월 '+(+d.slice(8,10))+'일 ('+dow+')'+(d===today()?' · 오늘':'');
+  var ov=document.createElement('div');ov.className='tlq-ov';ov.id='tlqOv';
+  ov.addEventListener('click',function(e){if(e.target===ov)tlqClose();});
+  ov.innerHTML='<div class="tlq-box">'
+    +'<div class="tlq-top"><b>일정 추가</b><span class="tlq-d">'+esc(lbl)+'</span>'
+    +'<span class="tlq-x" onclick="tlqClose()">✕</span></div>'
+    +'<div class="tlq-body">'
+    +'<div class="inrow">'
+    +'<input id="tlqTime" class="in" style="flex:none;width:92px" value="'+esc(time)+'" placeholder="0900" onblur="this.value=normTime(this.value)">'
+    +'<input id="tlqDur" class="in" style="flex:none;width:96px" inputmode="numeric" value="30" placeholder="소요(분)">'
+    +'<input id="tlqTitle" class="in" style="flex:1" placeholder="일정 제목">'
+    +'</div>'
+    +'<textarea id="tlqDetail" class="in" style="width:100%;min-height:66px;margin-top:8px;resize:vertical" placeholder="세부 내용 (선택)"></textarea>'
+    +'<div class="tlq-quick">'
+    +[15,30,60,90,120].map(function(m){return '<span onclick="tlqSetDur('+m+')">'+(m<60?m+'분':(m/60)+'시간'+(m%60?' '+(m%60)+'분':''))+'</span>';}).join('')
+    +'</div>'
+    +'<div class="tlq-foot"><button class="btn ghost" onclick="tlqClose()">취소</button>'
+    +'<button class="btn y" onclick="tlqSave()">추가</button></div>'
+    +'</div></div>';
+  document.body.appendChild(ov);
+  document.addEventListener('keydown',tlqEsc);
+  var t=document.getElementById('tlqTitle');if(t)t.focus();
+  ['tlqTime','tlqDur','tlqTitle'].forEach(function(i){
+    var e=document.getElementById(i);
+    if(e)e.addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();tlqSave();}});
+  });
+}
+function tlqSetDur(m){var e=document.getElementById('tlqDur');if(e){e.value=m;var t=document.getElementById('tlqTitle');if(t)t.focus();}}
+function tlqSave(){
+  var ti=document.getElementById('tlqTitle'),tm=document.getElementById('tlqTime'),
+      du=document.getElementById('tlqDur'),de=document.getElementById('tlqDetail');
+  var title=ti.value.trim();
+  if(!title){alert('일정 제목을 입력하세요.');ti.focus();return;}
+  var d=parseInt(du.value,10);
+  db.schedules.push({id:uid(),date:selDate,time:normTime(tm.value),dur:(d>0?d:30),
+    title:title,detail:de.value.trim()});
+  save();tlqClose();
+  renderCal();renderSchedule();renderTimeline();
+  if(typeof renderHome==='function')renderHome();
 }
 /* ================= 프로젝트 마인드맵 ================= */
 function pjMindOpen(pid){
