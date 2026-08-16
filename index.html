@@ -834,6 +834,37 @@
   .ex-petals{font-size:12px;color:var(--muted);margin-top:10px}
   .mv-btn{cursor:pointer;flex-shrink:0;font-size:15px;font-weight:800;color:var(--green);padding:0 4px}
   .mv-btn:hover{color:var(--dark)}
+  /* 프로젝트 마인드맵 */
+  .tlp-mind{cursor:pointer;color:var(--green);font-weight:800;border-bottom:1px dashed var(--green);padding-bottom:1px}
+  .tlp-mind:hover{color:var(--dark);border-bottom-color:var(--dark)}
+  .pjm-ov{position:fixed;inset:0;background:rgba(18,49,43,.45);z-index:135;display:flex;align-items:center;justify-content:center;padding:18px}
+  .pjm-box{background:var(--card);border-radius:20px;width:min(1240px,96vw);height:min(880px,94vh);
+    display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.3)}
+  .pjm-top{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--line);flex:none}
+  .pjm-top b{font-size:14px}
+  .pjm-tools{margin-left:auto;display:flex;gap:6px;align-items:center}
+  .pjm-tools .btn{padding:6px 13px;font-size:12.5px;flex:none}
+  .pjm-x{cursor:pointer;font-size:19px;color:var(--muted);line-height:1}
+  .pjm-x:hover{color:var(--dark)}
+  .pjm-hint{flex:none;padding:7px 18px;font-size:11.5px;color:var(--muted);border-bottom:1px solid var(--line)}
+  .pjm-cv{flex:1;min-height:0;overflow:auto;background:#fbfbf8}
+  /* ===== 퀵 메뉴 (빈 화면 더블클릭) ===== */
+  .qm-ov{position:fixed;inset:0;z-index:140;background:rgba(244,242,236,.55);backdrop-filter:blur(2px)}
+  .qm-c{position:fixed;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:50%;
+    background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;
+    font-size:17px;cursor:pointer;box-shadow:0 8px 22px rgba(18,49,43,.25);user-select:none}
+  .qm-c:hover{background:var(--red)}
+  .qm-it{position:fixed;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;
+    background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;
+    cursor:pointer;box-shadow:0 10px 26px rgba(18,49,43,.16);user-select:none;
+    animation:qmPop .22s cubic-bezier(.2,.9,.3,1.2) backwards;transition:transform .1s,box-shadow .1s,background .1s}
+  .qm-it:hover{transform:translate(-50%,-50%) scale(1.1);box-shadow:0 14px 32px rgba(18,49,43,.22);background:var(--dark)}
+  .qm-it:hover .qm-lb{color:#fff}
+  .qm-it:hover .qm-ic{stroke:#fff}
+  .qm-ic{width:22px;height:22px;stroke:var(--dark);fill:none;stroke-width:1.7;
+    stroke-linecap:round;stroke-linejoin:round;display:block;transition:stroke .1s}
+  .qm-lb{font-size:10px;font-weight:800;color:var(--dark);letter-spacing:-.2px;padding:0 5px;line-height:1.2}
+  @keyframes qmPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
   /* ===== Zettelkasten ===== */
   .zk-perm{padding:13px 2px;border-bottom:1px solid var(--line);border-radius:8px}
   .zk-perm:last-child{border-bottom:none}
@@ -933,7 +964,7 @@
   .hm-cult-top .sub{font-size:10.5px;color:var(--muted);flex:none}
   .hm-cult-cat{flex:none;font-size:10px;font-weight:800;color:#5b3fa8;background:#EDE4FF;
     border-radius:5px;padding:2px 6px;line-height:1.4}
-  .hm-cult-star{display:flex;align-items:center;gap:5px;margin-top:3px}
+  .hm-cult-star{display:inline-flex;align-items:center;gap:4px;flex:none;margin-left:auto}
   .hm-cult-star .hm-star{width:11px;height:13px;font-size:11px;line-height:13px}
   .hm-cult-star .n{font-size:10.5px;font-weight:700;color:#b08a2a}
   .hm-cult-one{margin-top:3px;font-size:11.5px;color:var(--muted);line-height:1.5;
@@ -2222,7 +2253,8 @@ function renderTlProject(inner){
   var R=tlProjRange();
   var DW=34,total=R.total,W=total*DW,NW=96,TW=W+34;   /* TW: 연장(+) 버튼 자리 */
   function dAt(i){var d=new Date(R.start.getTime());d.setDate(d.getDate()+i);return d;}
-  if(lab)lab.textContent=fmtMD(R.start)+'~'+fmtMD(dAt(total-1))+' · '+total+'일'+(cur?' · '+cur.name:'');
+  if(lab)lab.innerHTML=esc(fmtMD(R.start)+'~'+fmtMD(dAt(total-1))+' · '+total+'일')
+    +(cur?' · <span class="tlp-mind" onclick="pjMindOpen('+cur.id+')" title="눌러서 마인드맵 열기">'+esc(cur.name)+'</span>':'');
   var hours='';
   for(var i=0;i<total;i++){var dd=dAt(i);var mk=(i===0||dd.getDate()===1);
     hours+='<span style="left:'+(i*DW+DW/2)+'px">'+(mk?(dd.getMonth()+1)+'/':'')+dd.getDate()+'</span>';}
@@ -3618,6 +3650,101 @@ function renderHold(){
   el.innerHTML=list.length?list.map(function(x){return inbRowHTML(x,true);}).join('')
     :'<div class="empty">보관함이 비어 있습니다.</div>';
 }
+/* ================= 프로젝트 마인드맵 ================= */
+function pjMindOpen(pid){
+  var p=(db.tlProjects||[]).find(function(x){return x.id===pid;});if(!p)return;
+  if(!p.mind||!p.mind.length){p.mind=[{id:1,t:p.name||'프로젝트',x:30,y:30,p:0}];save();}
+  pjMindClose();
+  var ov=document.createElement('div');ov.className='pjm-ov';ov.id='pjmOv';
+  ov.addEventListener('click',function(e){if(e.target===ov)pjMindClose();});
+  ov.innerHTML='<div class="pjm-box">'
+    +'<div class="pjm-top"><b>🧠 '+esc(p.name)+' · 마인드맵</b>'
+    +'<span class="pjm-tools">'
+    +'<select class="idea-edit" id="pjmShapeSel" onchange="setMindShape(this.value)"></select>'
+    +'<select class="idea-edit" id="pjmModeSel" onchange="setMindMode(this.value)"></select>'
+    +'<button class="btn y" onclick="mindAddTopic()">＋ 주제 추가</button></span>'
+    +'<span class="pjm-x" onclick="pjMindClose()">✕</span></div>'
+    +'<div class="pjm-hint"><b>Tab</b>=하위 · <b>Enter</b>=대등 · <b>Shift+Enter</b>=줄바꿈 · 칸을 끌어 이동 · ○ 눌러 가지접기</div>'
+    +'<div id="pjmCanvas" class="pjm-cv"></div></div>';
+  document.body.appendChild(ov);
+  window.__mindCtx={obj:p,canvas:'pjmCanvas'};
+  var sh=document.getElementById('pjmShapeSel');
+  if(sh){sh.innerHTML=MIND_SHAPES.map(function(m){return '<option value="'+m[0]+'">'+m[1]+'</option>';}).join('');sh.value=mindShape(p);}
+  var md=document.getElementById('pjmModeSel');
+  if(md){md.innerHTML=MIND_MODES.map(function(m){return '<option value="'+m[0]+'">'+m[1]+'</option>';}).join('');md.value=mindMode(p);}
+  renderMind();
+  document.addEventListener('keydown',pjMindEsc);
+}
+function pjMindEsc(e){if(e.key==='Escape'&&!e.target.closest('.mtext'))pjMindClose();}
+function pjMindClose(){
+  var e=document.getElementById('pjmOv');if(!e)return;
+  e.remove();
+  if(window.__mindCtx&&window.__mindCtx.canvas==='pjmCanvas')window.__mindCtx=null;
+  document.removeEventListener('keydown',pjMindEsc);
+}
+/* ================= 퀵 메뉴: 빈 화면 더블클릭 → 방사형 바로가기 ================= */
+var QM_ICON={
+  home:'<rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/>',
+  cal:'<rect x="3" y="5" width="18" height="16" rx="2.6"/><path d="M8 2.8v4.2M16 2.8v4.2M3 10.2h18"/>',
+  inbox:'<path d="M2.6 9.7 12 4.1l9.4 5.6v10.1a1.2 1.2 0 0 1-1.2 1.2H3.8a1.2 1.2 0 0 1-1.2-1.2z"/><path d="M8.1 21V14.4h7.8V21"/><path d="M8.1 17.7h7.8"/>',
+  read:'<path d="M12 7.2C10.4 5.5 7.9 4.8 3.6 4.8v13.4c4.3 0 6.8.7 8.4 2.4 1.6-1.7 4.1-2.4 8.4-2.4V4.8c-4.3 0-6.8.7-8.4 2.4z"/><path d="M12 7.2v13.4"/>',
+  zettel:'<rect x="3" y="3.6" width="18" height="16.8" rx="2.1"/><path d="M3 9.2h18M3 14.8h18"/><path d="M9.9 6.4h4.2M9.9 12h4.2M9.9 17.6h4.2"/>',
+  idea:'<path d="M12 2.9a6.2 6.2 0 0 0-3.7 11.2c.7.5 1.1 1.3 1.1 2.1h5.2c0-.8.4-1.6 1.1-2.1A6.2 6.2 0 0 0 12 2.9z"/><path d="M9.4 18.6h5.2M10.4 21.2h3.2"/>',
+  work:'<rect x="2.8" y="6.8" width="18.4" height="13.6" rx="2.2"/><path d="M8.4 6.8V5.1a1.4 1.4 0 0 1 1.4-1.4h4.4a1.4 1.4 0 0 1 1.4 1.4v1.7"/><path d="M2.8 12.6h18.4"/><path d="M12 11.4v2.4"/>',
+  diary:'<path d="M16.4 3.2a2.2 2.2 0 0 1 3.1 3.1L8.2 17.6l-4.1 1 1-4.1z"/><path d="M14.6 5l3.1 3.1"/><path d="M4.4 21h15.2"/>'
+};
+function qmSvg(k){return '<svg class="qm-ic" viewBox="0 0 24 24" aria-hidden="true">'+(QM_ICON[k]||'')+'</svg>';}
+var QM_ITEMS=[
+  {k:'home',   lb:'Dashboard'},
+  {k:'cal',    lb:'Schedule'},
+  {k:'inbox',  lb:'Inbox'},
+  {k:'read',   lb:'Reading'},
+  {k:'zettel', lb:'Zettel'},
+  {k:'idea',   lb:'Idea'},
+  {k:'work',   lb:'Work'},
+  {k:'diary',  lb:'Diary'}
+];
+function qmClose(){var e=document.getElementById('qmOv');if(e)e.remove();document.removeEventListener('keydown',qmEsc);}
+function qmEsc(e){if(e.key==='Escape')qmClose();}
+function qmGo(k){
+  qmClose();
+  if(k==='zettel'){go('zettel');return;}
+  if(k==='idea'){go('inbox');return;}          /* IDEA 페이지 */
+  if(k==='home'){go('dashboard');dockApply({top:'home'});window.scrollTo(0,0);return;}
+  if(curView()!=='dashboard')go('dashboard');
+  topActive=k;
+  calSub=(k==='cal')?{sched:true,tl:true,session:false,ot:false}:{sched:false,tl:false,session:false,ot:false};
+  applyTopState();
+  window.scrollTo(0,0);
+}
+function qmOpen(x,y){
+  qmClose();
+  var R=126, PAD=R+56;                          /* 화면 밖으로 나가지 않게 중심을 안쪽으로 */
+  x=Math.max(PAD,Math.min(window.innerWidth-PAD,x));
+  y=Math.max(PAD,Math.min(window.innerHeight-PAD,y));
+  var ov=document.createElement('div');ov.className='qm-ov';ov.id='qmOv';
+  ov.addEventListener('click',function(e){if(e.target===ov)qmClose();});
+  var html='<div class="qm-c" style="left:'+x+'px;top:'+y+'px" onclick="qmClose()" title="닫기">×</div>';
+  QM_ITEMS.forEach(function(it,i){
+    var a=-Math.PI/2+i*(2*Math.PI/QM_ITEMS.length);
+    var ix=x+Math.cos(a)*R, iy=y+Math.sin(a)*R;
+    html+='<div class="qm-it" style="left:'+ix+'px;top:'+iy+'px;animation-delay:'+(i*22)+'ms" onclick="qmGo(\''+it.k+'\')">'
+      +qmSvg(it.k)+'<span class="qm-lb">'+it.lb+'</span></div>';
+  });
+  ov.innerHTML=html;
+  document.body.appendChild(ov);
+  document.addEventListener('keydown',qmEsc);
+}
+/* 빈 곳 판정: 카드·입력·버튼·사이드바·팝업 위가 아니어야 한다 */
+document.addEventListener('dblclick',function(e){
+  var t=e.target;
+  if(!t||!t.closest)return;
+  if(t.closest('.card,button,input,textarea,select,a,[contenteditable],[onclick],.sidebar,#topSecBar,.nav,svg,img,'
+    +'.word-ov,.ex-ov,.ig-ov,.qm-ov,.bkv-back,.fw-back,.exv-back,.wv-graph-ov,.daisy-dim,#memoPad,#memoFab,.mind-backdrop,.tl-ev,li,table'))return;
+  e.preventDefault();
+  var sel=window.getSelection();if(sel)sel.removeAllRanges();   /* 더블클릭이 만든 선택 해제 */
+  qmOpen(e.clientX,e.clientY);
+});
 /* ================= Zettelkasten: 문헌 메모 + 영구 메모 ================= */
 /* 문헌 메모 = 독서 발췌에서 일방향으로 파생 (발췌 1개 = 문헌 메모 1개, 저장은 독서 쪽에만) */
 function zkLitAll(){
@@ -6387,12 +6514,12 @@ function hmCultCard(title,color){
   return hmTn(title,hmNav('문화',4,hmAll('문화').length),color)
     +'<div class="hm-body">'+(l.length?l.map(function(x){
       var cat=String(x.category||'').trim();
-      return '<div class="hm-cult" onclick="goStudy(\'문화\')">'
+      return '<div class="hm-cult" onclick="goStudy(\'문화\')" title="'+escA((cat?'['+cat+'] ':'')+(x.title||'')+(x.oneline?' — '+x.oneline:''))+'">'
         +'<div class="hm-cult-top">'
         +(cat?'<span class="hm-cult-cat">'+esc(cat)+'</span>':'')
         +'<b>'+esc(x.title||'')+'</b>'
-        +'<span class="sub">'+esc(String(x.date).slice(5))+'</span></div>'
-        +(x.rating?'<div class="hm-cult-star">'+hmStarsRO(x.rating)+'<span class="n">'+starTxt(x.rating)+'</span></div>':'')
+        +(x.rating?'<span class="hm-cult-star">'+hmStarsRO(x.rating)+'<span class="n">'+starTxt(x.rating)+'</span></span>':'')
+        +'</div>'
         +(x.oneline?'<div class="hm-cult-one">'+esc(x.oneline)+'</div>':'')
         +'</div>';
     }).join(''):'<div class="hm-empty">기록이 없습니다.</div>')+'</div>';
