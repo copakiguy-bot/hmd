@@ -882,6 +882,82 @@
     stroke-linecap:round;stroke-linejoin:round;display:block;transition:stroke .1s}
   .qm-lb{font-size:10px;font-weight:800;color:var(--dark);letter-spacing:-.2px;padding:0 5px;line-height:1.2}
   @keyframes qmPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+  /* ===== 매일매일 카드: 세로 탭 + 오늘 채움 점 ===== */
+  .sd-grid{display:grid;grid-template-columns:132px 1fr;gap:0;margin-top:16px;align-items:stretch}
+  .sd-pane{min-width:0;border-left:1px solid var(--line);padding-left:20px}
+  .tabs.vtabs{flex-direction:column;gap:4px;padding-right:16px;overflow:visible}
+  .tabs.vtabs .tab{flex:none;display:flex;align-items:center;gap:8px;text-align:left;
+    padding:10px 11px;border:1px solid transparent;background:transparent;font-size:14px;border-radius:10px}
+  .tabs.vtabs .tab:hover{background:#f7f8f7}
+  .tabs.vtabs .tab .n{margin-left:auto;font-size:11px;font-weight:800;color:#b3bcb7;background:#f2f4f2;
+    border-radius:20px;min-width:21px;text-align:center;padding:2px 6px;line-height:1.5;
+    font-variant-numeric:tabular-nums}
+  .tabs.vtabs .tab.has .n{background:var(--red-soft);color:#a33b35}
+  .tabs.vtabs .tab.active{background:var(--red);border-color:var(--red);color:#fff}
+  .tabs.vtabs .tab.active .n{background:rgba(255,255,255,.26);color:#fff}
+  .sfill{display:flex;align-items:center;gap:5px;margin-left:auto}
+  .sfill .fd{width:9px;height:9px;border-radius:50%;background:#e9e6df;flex:none}
+  .sfill .fd.on{background:var(--red)}
+  .sfill .lb{font-size:11px;color:var(--muted);margin-left:5px;font-weight:600;white-space:nowrap}
+  @media(max-width:900px){
+    .sd-grid{grid-template-columns:1fr;gap:12px}
+    .sd-pane{border-left:none;padding-left:0}
+    .tabs.vtabs{flex-direction:row;border-bottom:1px solid var(--line);
+      padding:0 0 12px;overflow-x:auto}
+    .tabs.vtabs .tab{flex:1;justify-content:center}
+    .tabs.vtabs .tab .n{margin-left:6px}
+    .sfill .lb{display:none}
+  }
+  /* ===== 독서 카드: 큰 표지(좌) + 목차·발췌(우) ===== */
+  .rd-grid{display:grid;grid-template-columns:212px 1fr;gap:0;margin-top:16px;align-items:stretch}
+  .rd-cover{display:flex;flex-direction:column;align-items:center;padding-right:18px}
+  .rd-pane{min-width:0;border-left:1px solid var(--line);padding-left:20px}
+  .rd-big{width:100%;display:flex;flex-direction:column;align-items:center}
+  .rd-cv{width:158px;height:224px;border-radius:8px;overflow:hidden;background:#e9ece9;
+    box-shadow:0 5px 18px rgba(18,49,43,.22);display:flex;align-items:center;justify-content:center;
+    cursor:zoom-in;transition:transform .13s}
+  .rd-cv:hover{transform:translateY(-2px)}
+  .rd-cv img{width:100%;height:100%;object-fit:cover;display:block}
+  .rd-cv .ph{font-size:13px;color:#6d7a72;padding:14px;text-align:center;line-height:1.5;word-break:keep-all}
+  .rd-t{margin-top:11px;font-size:13.5px;font-weight:700;text-align:center;line-height:1.35;word-break:keep-all}
+  .rd-a{margin-top:3px;font-size:11.5px;color:var(--muted);text-align:center;word-break:keep-all}
+  .rd-pager{display:flex;align-items:center;gap:8px;margin-top:11px}
+  .rd-pos{font-size:11.5px;color:var(--muted);min-width:46px;text-align:center;
+    font-variant-numeric:tabular-nums}
+  .rd-empty{font-size:12.5px;color:var(--muted);text-align:center;line-height:1.8;padding:38px 6px}
+  .rd-addbk{margin-top:13px;padding:7px 13px}
+  .rd-form{display:grid;grid-template-columns:minmax(120px,1.1fr) minmax(160px,2.4fr) 104px auto;gap:9px}
+  .rd-form .in{min-width:0}
+  /* 왼쪽 썸네일 스트립 */
+  .shelf{display:flex;gap:8px;overflow-x:auto;scroll-behavior:smooth;padding:9px 2px 3px;
+    max-width:194px;margin:0 auto;scrollbar-width:none}
+  .shelf::-webkit-scrollbar{display:none}
+  .shelf-nav{flex:none;width:30px;height:30px;border:1px solid var(--line);background:#fff;border-radius:8px;
+    color:var(--muted);font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .shelf-nav:hover{background:#f3f5f4;color:var(--text)}
+  .shelf-nav[disabled]{opacity:.25;cursor:default}
+  .shelf-bk{flex:none;width:44px;cursor:pointer;text-align:center;user-select:none}
+  .shelf-cv{width:44px;height:62px;border-radius:4px;overflow:hidden;background:#e9ece9;
+    box-shadow:0 1px 4px rgba(0,0,0,.16);display:flex;align-items:center;justify-content:center;
+    border:2px solid transparent;transition:border-color .12s,transform .12s}
+  .shelf-cv img{width:100%;height:100%;object-fit:cover;display:block}
+  .shelf-cv .ph{font-size:8.5px;color:#6d7a72;padding:3px;line-height:1.25;word-break:keep-all;
+    overflow:hidden;max-height:100%}
+  .shelf-bk:hover .shelf-cv{transform:translateY(-2px)}
+  .shelf-bk.on .shelf-cv{border-color:var(--green);box-shadow:0 2px 9px rgba(0,0,0,.24)}
+  .shelf-t{display:none}
+  .shelf-empty{font-size:12px;color:var(--muted);padding:10px 2px}
+  @media(max-width:900px){
+    .rd-grid{grid-template-columns:1fr;gap:14px}
+    .rd-pane{border-left:none;padding-left:0}
+    .rd-cover{padding-right:0}
+    .shelf{max-width:100%}
+    .rd-form{grid-template-columns:1fr 1fr}
+    .rd-form .rd-tx{grid-column:1/-1}
+  }
+  .navsep{height:1px;background:rgba(255,255,255,.13);margin:10px 2px 8px}
+  .nav.xtra{opacity:.55;font-size:12.5px}
+  .nav.xtra:hover{opacity:1}
   /* ===== Zettelkasten ===== */
   .zk-perm{padding:13px 2px;border-bottom:1px solid var(--line);border-radius:8px}
   .zk-perm:last-child{border-bottom:none}
@@ -1244,7 +1320,6 @@
   <div class="logo" id="hmdLogo" title="매일매일 · 독서 · 일기 열기" onclick="showMyThree()">HMD</div>
   <div class="nav active" data-v="dashboard">Dashboard</div>
   <div class="nav" data-v="work">Work</div>
-  <div class="nav" data-v="reading">Reading</div>
   <div class="nav" data-v="study">Study<span class="ca">›</span></div>
   <div class="subnav" id="studySub" style="display:none">
     <div class="nav sub" data-v="study:단어">Words</div>
@@ -1252,17 +1327,21 @@
     <div class="nav sub" data-v="study:지식">Knowledge</div>
     <div class="nav sub" data-v="study:문화">Culture</div>
   </div>
-  <div class="nav" data-v="assets">Assets</div>
+  <div class="nav" data-v="reading">Reading</div>
+  <div class="nav" data-v="inboxcard">Inbox</div>
   <div class="nav" data-v="inbox">Idea</div>
-  <div class="nav" data-v="routines">Routines</div>
-  <div class="nav" data-v="routiner">Rutimer</div>
+  <div class="nav" data-v="zettel">Zettelkasten</div>
   <div class="nav" data-v="diary">Diary</div>
+  <div class="nav" data-v="assets">Assets</div>
   <div class="nav" data-v="settings">Settings</div>
+  <div class="navsep"></div>
+  <div class="nav xtra" data-v="routines">Routines</div>
+  <div class="nav xtra" data-v="routiner">Rutimer</div>
 </aside>
 
 <main class="main">
   <!-- ===== 상단 고정 섹션 버튼 (모든 메뉴에서 보임) ===== -->
-  <div id="topSecBar"><button id="calToggleBtn" class="lunar-toggle on" onclick="toggleTop('cal')">스케줄</button><button id="studySecBtn" class="lunar-toggle" onclick="toggleTop('study')">매일매일</button><button id="workSecBtn" class="lunar-toggle" onclick="toggleTop('work')">업무</button><button id="readSecBtn" class="lunar-toggle" onclick="toggleTop('read')">독서</button><button id="assetSecBtn" class="lunar-toggle" onclick="toggleTop('asset')">자산</button><button id="diarySecBtn" class="lunar-toggle" onclick="toggleTop('diary')">일기</button><button id="zkNavBtn" class="lunar-toggle" onclick="go('zettel')">Zettelkästen</button><button id="inboxToggleBtn" class="lunar-toggle" onclick="toggleTop('inbox')">인박스</button></div>
+  <div id="topSecBar"><button id="calToggleBtn" class="lunar-toggle on" onclick="toggleTop('cal')">스케줄</button><button id="studySecBtn" class="lunar-toggle" onclick="toggleTop('study')">매일매일</button><button id="workSecBtn" class="lunar-toggle" onclick="go('work')">업무</button><button id="readSecBtn" class="lunar-toggle" onclick="toggleTop('read')">독서</button><button id="inboxToggleBtn" class="lunar-toggle" onclick="toggleTop('inbox')">인박스</button><button id="ideaNavBtn" class="lunar-toggle" onclick="go('inbox')">아이디어</button><button id="zkNavBtn" class="lunar-toggle" onclick="go('zettel')">제텔카스텐</button><button id="diarySecBtn" class="lunar-toggle" onclick="toggleTop('diary')">일기</button><button id="assetSecBtn" class="lunar-toggle" onclick="toggleTop('asset')">자산</button></div>
   <div class="topbar">
     <div></div>
     <div class="right">
@@ -1294,11 +1373,6 @@
   <!-- ===== 업무 ===== -->
   <section class="view" id="view-work">
     <div class="page-head"><h1>업무</h1></div>
-    <div class="tabs" id="workTabs">
-      <button class="tab wk" data-t="의회운영" onclick="setDetailWorkTab('의회운영')">의회운영</button>
-      <button class="tab wk" data-t="법규정" onclick="setDetailWorkTab('법규정')">법규정</button>
-      <button class="tab wk" data-t="매뉴얼" onclick="setDetailWorkTab('매뉴얼')">매뉴얼</button>
-    </div>
     <div id="workPane" style="margin-top:16px"></div>
   </section>
 
@@ -1627,11 +1701,6 @@
 
     <div class="card" id="workSecCard" style="display:none">
       <h3><span class="dot" style="background:var(--yellow)"></span> 업무 <span class="more" onclick="go('work')">전체 →</span></h3>
-      <div class="tabs" id="dashWorkTabs">
-        <button class="tab wk" data-t="의회운영" onclick="setDashWorkTab('의회운영')">의회운영</button>
-        <button class="tab wk" data-t="법규정" onclick="setDashWorkTab('법규정')">법규정</button>
-        <button class="tab wk" data-t="매뉴얼" onclick="setDashWorkTab('매뉴얼')">매뉴얼</button>
-      </div>
       <div style="margin-top:14px">
         <input id="wTitle" class="in" style="width:100%" placeholder="제목">
         <textarea id="wContent" class="in" style="width:100%;min-height:90px;margin-top:8px;resize:vertical" placeholder="내용"></textarea>
@@ -1640,26 +1709,43 @@
       <div id="dashWorkFeed" style="margin-top:12px"></div>
     </div>
     <div class="card" id="studySecCard" style="display:none">
-      <h3><span class="dot" style="background:var(--red)"></span> 우리는 매일매일 <span class="more" style="cursor:pointer" onclick="goStudy(dashStudyTab)">전체 →</span></h3>
-      <div class="tabs" id="dashStudyTabs">
-        <button class="tab st" data-t="단어" onclick="setDashStudyTab('단어')">단어</button>
-        <button class="tab st" data-t="영어" onclick="setDashStudyTab('영어')">문장</button>
-        <button class="tab st" data-t="지식" onclick="setDashStudyTab('지식')">지식</button>
-        <button class="tab st" data-t="문화" onclick="setDashStudyTab('문화')">문화</button>
+      <h3><span class="dot" style="background:var(--red)"></span> 우리는 매일매일
+        <span class="sfill" id="dashStudyFill"></span>
+        <span class="more" style="cursor:pointer;margin-left:14px" onclick="goStudy(dashStudyTab)">전체 →</span></h3>
+      <div class="sd-grid">
+        <div class="tabs vtabs" id="dashStudyTabs">
+          <button class="tab st" data-t="단어" onclick="setDashStudyTab('단어')">단어<span class="n">0</span></button>
+          <button class="tab st" data-t="영어" onclick="setDashStudyTab('영어')">문장<span class="n">0</span></button>
+          <button class="tab st" data-t="지식" onclick="setDashStudyTab('지식')">지식<span class="n">0</span></button>
+          <button class="tab st" data-t="문화" onclick="setDashStudyTab('문화')">문화<span class="n">0</span></button>
+        </div>
+        <div class="sd-pane">
+          <div id="dashStudyForm"></div>
+          <div id="dashStudyFeed" style="margin-top:12px"></div>
+        </div>
       </div>
-      <div id="dashStudyForm" style="margin-top:14px"></div>
-      <div id="dashStudyFeed" style="margin-top:12px"></div>
     </div>
     <div class="card" id="readSecCard" style="display:none">
       <h3><span class="dot" style="background:var(--green)"></span> 독서 <span class="more" onclick="go('reading')">독서목록 →</span></h3>
-      <div class="inrow">
-        <select id="exBook" class="in" onchange="fillChapters()" style="flex:1.2"></select>
-        <select id="exChapter" class="in" style="flex:1.2"></select>
-        <input id="exText" class="in" style="flex:2.2" placeholder="발췌" onfocus="fwStart('excerpt',this)">
-        <input id="exPage" class="in" style="flex:none;width:110px" placeholder="페이지 1~3">
-        <button class="btn y" style="flex:none" onclick="addExcerpt()">추가</button>
-      </div>
-      <div style="margin-top:10px"><button class="btn ghost" onclick="toggleBookForm()">＋ 책 추가</button></div>
+      <select id="exBook" onchange="fillChapters()" style="display:none"></select>
+      <div class="rd-grid">
+        <div class="rd-cover" id="shelfWrap">
+          <div class="rd-big" id="rdBig"></div>
+          <div class="rd-pager" id="rdPager">
+            <button class="shelf-nav prev" type="button" onclick="shelfStep(-1)" aria-label="이전 책">‹</button>
+            <span class="rd-pos" id="rdPos"></span>
+            <button class="shelf-nav next" type="button" onclick="shelfStep(1)" aria-label="다음 책">›</button>
+          </div>
+          <div class="shelf" id="bookShelf"></div>
+          <button class="btn ghost rd-addbk" onclick="toggleBookForm()">＋ 책 추가</button>
+        </div>
+        <div class="rd-pane">
+          <div class="rd-form">
+            <select id="exChapter" class="in rd-ch"></select>
+            <input id="exText" class="in rd-tx" placeholder="발췌" onfocus="fwStart('excerpt',this)">
+            <input id="exPage" class="in rd-pg" placeholder="페이지 1~3">
+            <button class="btn y rd-add" onclick="addExcerpt()">추가</button>
+          </div>
       <div id="bookForm" style="display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:14px">
         <div class="form">
           <div class="isbnrow" style="display:flex;gap:8px;align-items:flex-end;margin-bottom:4px">
@@ -1687,7 +1773,9 @@
           <div><button class="btn y" onclick="addBook()">책 등록</button></div>
         </div>
       </div>
-      <div id="dashReadFeed" style="margin-top:12px"></div>
+          <div id="dashReadFeed" style="margin-top:12px"></div>
+        </div>
+      </div>
     </div>
     <div class="card" id="assetSecCard" style="display:none">
       <h3><span class="dot"></span> 자산 <span class="more" onclick="go('assets')">가계부 →</span></h3>
@@ -1955,6 +2043,7 @@ function fmtK(d){if(!d)return'';const[y,m,dd]=d.split('-');return `${m}/${dd}`;}
 /* ---------- routing ---------- */
 function toggleMenu(){var sb=document.querySelector('.sidebar');if(sb)sb.classList.toggle('open');}
 function go(v){
+  if(v==='inboxcard'){goInbox();return;}
   window.__mindCtx=null;
   var stab=null;
   if(v&&v.indexOf('study:')===0){stab=v.slice(6);v='study';}
@@ -1969,12 +2058,13 @@ function go(v){
 }
 function curView(){var el=document.querySelector('.view.on');return el?el.id.replace('view-',''):'dashboard';}
 /* 대시보드 INBOX 카드의 «전체 →» : IDEA 페이지의 INBOX 칸으로 */
-function goInbox(){go('dashboard');topActive='inbox';applyTopState();setTimeout(function(){var c=document.getElementById('inboxCard');if(c)c.scrollIntoView({behavior:'smooth',block:'start'});},90);}
+function goInbox(){go('dashboard');topActive='inbox';applyTopState();syncNav();setTimeout(function(){var c=document.getElementById('inboxCard');if(c)c.scrollIntoView({behavior:'smooth',block:'start'});},90);}
 function syncNav(v){
   v=v||curView();
   document.querySelectorAll('.nav').forEach(function(n){
     var dv=n.dataset.v||'';
-    var act=(dv.indexOf('study:')===0)?(v==='study'&&dv.slice(6)===detailStudyTab):(dv===v);
+    var act=(dv.indexOf('study:')===0)?(v==='study'&&dv.slice(6)===detailStudyTab)
+            :(dv==='inboxcard')?(v==='dashboard'&&topActive==='inbox'):(dv===v);
     n.classList.toggle('active',act);
   });
   var hd=document.querySelector('.nav[data-v="study"]');if(hd)hd.classList.toggle('open',v==='study');
@@ -4334,7 +4424,7 @@ document.querySelectorAll('.segwrap').forEach(w=>w.querySelectorAll('.seg').forE
 
 /* ---------- work ---------- */
 const WORK_TABS=['의회운영','법규정','매뉴얼'];
-let dashWorkTab='의회운영', detailWorkTab='의회운영';
+let dashWorkTab='전체', detailWorkTab='전체';
 function workCatList(){const s=new Set(db.workCats||[]);db.work.forEach(w=>{if(w.category)s.add(w.category);});return [...s].sort();}
 function workCatDatalist(){return `<datalist id="workCatList">${workCatList().map(c=>`<option value="${escA(c)}">`).join('')}</datalist>`;}
 function addWorkCat(c){c=String(c||'').trim();if(!c)return;db.workCats=db.workCats||[];if(!db.workCats.includes(c))db.workCats.push(c);}
@@ -4356,13 +4446,13 @@ function addWorkDash(){
 function renderDashWork(){
   document.querySelectorAll('#dashWorkTabs .tab').forEach(b=>b.classList.toggle('active',b.dataset.t===dashWorkTab));
   const el=document.getElementById('dashWorkFeed');if(!el)return;
-  const list=db.work.filter(w=>w.date===today()&&w.cat===dashWorkTab);
-  el.innerHTML=list.length?('<div class="datehdr">오늘 '+dashWorkTab+' 기록</div>'+list.map(w=>
-    `<div class="entry"><div class="meta"><span class="cat-badge b-work">${esc(w.cat)}</span>
+  const list=db.work.filter(w=>w.date===today());
+  el.innerHTML=list.length?('<div class="datehdr">오늘 업무 기록</div>'+list.map(w=>
+    `<div class="entry"><div class="meta">${w.cat&&w.cat!=='전체'?`<span class="cat-badge b-work">${esc(w.cat)}</span>`:''}
       <b contenteditable onblur="editWork(${w.id},'title',this.innerText)" style="flex:1">${esc(w.title||'')}</b>
       <span class="del" onclick="delWorkEntry(${w.id})">×</span></div>
       <div class="body" contenteditable onblur="editWork(${w.id},'content',this.innerText)">${esc(w.content||'')}</div></div>`).join(''))
-    :'<div class="empty">오늘 '+dashWorkTab+' 기록이 없습니다.</div>';
+    :'<div class="empty">오늘 업무 기록이 없습니다.</div>';
 }
 
 /* 세부: 탭별 누적 + 입력/수정 */
@@ -4395,6 +4485,9 @@ wvUndoInit();wvPostRender();
 
 /* ===== Work Vault (Obsidian-style) ===== */
 const WV_TABS=['의회운영','법규정','매뉴얼'];
+const WV_MAIN='전체';
+const WV_ORDER={'의회운영':0,'매뉴얼':1,'법규정':2};   /* 최상위 폴더 고정 순서 */
+function wvRank(n){return (n.type==='folder'&&WV_ORDER[n.name]!==undefined)?WV_ORDER[n.name]:99;}
 let wvDragId=null;
 function wvUid(){return 'n'+Date.now().toString(36)+Math.floor(Math.random()*1e5).toString(36);}
 function wvA(s){return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -4402,18 +4495,41 @@ function wvBlank(){return {nodes:[],active:null,open:{},mode:'split',q:'',tag:''
 function wvTagify(s){return String(s||'').trim().replace(/\s+/g,'-').replace(/#/g,'');}
 function ensureWorkVault(){
   if(!db.workVault)db.workVault={};
-  WV_TABS.forEach(t=>{if(!db.workVault[t])db.workVault[t]=wvBlank();});
-  if(!db.workVaultMigrated){
-    (db.work||[]).forEach(w=>{
-      const t=w.cat;if(!db.workVault[t])return;
-      const list=db.workVault[t].nodes;
-      const nm=wvUniqueName(list,(w.title&&w.title.trim())||'무제');
-      let body=w.content||'';
-      if(w.category)body='#'+wvTagify(w.category)+'\n\n'+body;
-      list.push({id:wvUid(),type:'file',name:nm,content:body,updated:w.date||today()});
+  if(!db.workVaultMerged){
+    WV_TABS.forEach(t=>{if(!db.workVault[t])db.workVault[t]=wvBlank();});
+    if(!db.workVaultMigrated){
+      (db.work||[]).forEach(w=>{
+        const t=w.cat;if(!db.workVault[t])return;
+        const list=db.workVault[t].nodes;
+        const nm=wvUniqueName(list,(w.title&&w.title.trim())||'무제');
+        let body=w.content||'';
+        if(w.category)body='#'+wvTagify(w.category)+'\n\n'+body;
+        list.push({id:wvUid(),type:'file',name:nm,content:body,updated:w.date||today()});
+      });
+      db.workVaultMigrated=true;
+    }
+    /* 의회운영·법규정·매뉴얼 세 금고를 «전체» 하나로 합침 (각 탭은 폴더로 보존) */
+    if(!db.workVault[WV_MAIN])db.workVault[WV_MAIN]=wvBlank();
+    const M=db.workVault[WV_MAIN];
+    ['의회운영','매뉴얼','법규정'].forEach(function(t){
+      const V=db.workVault[t];
+      M.nodes.push({id:wvUid(),type:'folder',name:wvUniqueName(M.nodes,t),
+                    children:(V&&V.nodes)?V.nodes.slice():[]});
     });
-    db.workVaultMigrated=true;save();
+    WV_TABS.forEach(function(t){delete db.workVault[t];});
+    db.workVaultMerged=true;save();
   }
+  if(!db.workVault[WV_MAIN])db.workVault[WV_MAIN]=wvBlank();
+  /* 이미 합쳐진 데이터: 빠진 기본 폴더를 한 번만 채워 넣는다 */
+  if(!db.workVaultOrdered){
+    const M2=db.workVault[WV_MAIN];
+    ['의회운영','매뉴얼','법규정'].forEach(function(t){
+      if(!M2.nodes.some(function(n){return n.type==='folder'&&n.name===t;}))
+        M2.nodes.push({id:wvUid(),type:'folder',name:t,children:[]});
+    });
+    db.workVaultOrdered=true;save();
+  }
+  detailWorkTab=WV_MAIN;dashWorkTab=WV_MAIN;
 }
 function wvUniqueName(list,name){
   name=(name||'').trim()||'무제';const low=n=>n.toLowerCase();
@@ -4472,7 +4588,7 @@ function wvMatch(node,V){
 function wvSideHTML(V){
   const tags=wvAllTags(V);
   const chips=tags.map(t=>`<span class="wv-tag${V.tag===t?' on':''}" onclick="wvFilterTag('${wvA(t)}')">#${esc(t)}</span>`).join('');
-  return `<div class="wv-tools"><b class="wv-vault">${esc(detailWorkTab)}</b>
+  return `<div class="wv-tools"><b class="wv-vault">업무</b>
     <span class="wv-tbtns"><button onclick="wvNewFile(null)" title="새 노트">＋📝</button><button onclick="wvNewFolder(null)" title="새 폴더">＋📁</button><button onclick="wvGraph()" title="그래프 뷰">🕸</button></span></div>
     <input id="wvq" class="wv-search" placeholder="🔍 노트·내용 검색" value="${escA(V.q||'')}" oninput="wvSearch(this.value)">
     ${chips?`<div class="wv-tags">${chips}</div>`:''}
@@ -4482,7 +4598,10 @@ function wvTreeHTML(V){
   const filtering=!!(V.q||V.tag);
   function rows(nodes,depth){
     let h='';
-    const sorted=nodes.slice().sort((a,b)=>a.type===b.type?a.name.localeCompare(b.name,'ko'):(a.type==='folder'?-1:1));
+    const sorted=nodes.slice().sort(function(a,b){
+      if(depth===0){const ra=wvRank(a),rb=wvRank(b);if(ra!==rb)return ra-rb;}
+      return a.type===b.type?a.name.localeCompare(b.name,'ko'):(a.type==='folder'?-1:1);
+    });
     sorted.forEach(n=>{
       if(filtering&&!wvMatch(n,V))return;
       const pad=6+depth*15;
@@ -5100,6 +5219,69 @@ function addBook(){
   document.getElementById('bookForm').style.display='none';
   renderReading();renderCal();
 }
+/* ---------- 독서 책장: 읽는 중인 책을 표지로 골라 발췌 입력 ---------- */
+function shelfPool(){
+  var live=(db.reading||[]).filter(function(b){return !b.end;});
+  return live.length?live:(db.reading||[]);
+}
+function shelfIndex(pool){
+  var sel=document.getElementById('exBook'),cur=sel?String(sel.value||''):'';
+  for(var i=0;i<pool.length;i++)if(String(pool[i].id)===cur)return i;
+  return 0;
+}
+function renderShelf(){
+  var big=document.getElementById('rdBig'),strip=document.getElementById('bookShelf'),
+      pos=document.getElementById('rdPos'),sel=document.getElementById('exBook');
+  if(!big||!strip)return;
+  var pool=shelfPool();
+  if(!pool.length){
+    big.innerHTML='<div class="rd-empty">읽는 중인 책이 없습니다.<br>아래 «＋ 책 추가»에서 등록하세요.</div>';
+    strip.innerHTML='';if(pos)pos.textContent='';shelfArrows();return;
+  }
+  var i=shelfIndex(pool),b=pool[i];
+  if(sel)sel.value=String(b.id);
+  var cvBig=b.cover?'<img src="'+escA(b.cover)+'" alt="" onerror="this.style.display=\'none\'">'
+                   :'<div class="ph">'+esc(b.title||'')+'</div>';
+  big.innerHTML='<div class="rd-cv" onclick="openBookView('+b.id+')" title="클릭하면 책 들여다보기">'+cvBig+'</div>'
+    +'<div class="rd-t">'+esc(b.title||'')+'</div>'
+    +'<div class="rd-a">'+esc(b.author||'')+(b.publisher?' · '+esc(b.publisher):'')+'</div>';
+  if(pos)pos.textContent=(i+1)+' / '+pool.length;
+  strip.innerHTML=pool.map(function(x){
+    var cv=x.cover?'<img src="'+escA(x.cover)+'" alt="" onerror="this.style.display=\'none\'">'
+                  :'<div class="ph">'+esc((x.title||'').slice(0,6))+'</div>';
+    return '<div class="shelf-bk'+(x.id===b.id?' on':'')+'" data-id="'+x.id+'"'
+      +' onclick="shelfPick('+x.id+')" ondblclick="shelfOpen(event,'+x.id+')"'
+      +' title="'+escA(x.title||'')+' — 클릭: 선택 · 더블클릭: 들여다보기">'
+      +'<div class="shelf-cv">'+cv+'</div><div class="shelf-t">'+esc(x.title||'')+'</div></div>';
+  }).join('');
+  var on=strip.querySelector('.shelf-bk.on');
+  if(on&&on.scrollIntoView)try{on.scrollIntoView({block:'nearest',inline:'nearest'});}catch(e){}
+  shelfArrows();
+}
+function shelfArrows(){
+  var w=document.getElementById('shelfWrap');if(!w)return;
+  var pool=shelfPool(),pg=document.getElementById('rdPager');
+  if(pg)pg.style.display=(pool.length>1)?'':'none';
+  if(pool.length<2)return;
+  var i=shelfIndex(pool);
+  var pv=w.querySelector('.shelf-nav.prev'),nx=w.querySelector('.shelf-nav.next');
+  if(pv)pv.disabled=(i<=0);
+  if(nx)nx.disabled=(i>=pool.length-1);
+}
+/* ‹ › : 앞뒤 책으로 한 권씩 이동 */
+function shelfStep(dir){
+  var pool=shelfPool();if(pool.length<2)return;
+  var i=shelfIndex(pool)+dir;
+  if(i<0)i=0;if(i>pool.length-1)i=pool.length-1;
+  shelfPick(pool[i].id);
+}
+function shelfPick(id){
+  var sel=document.getElementById('exBook');if(!sel)return;
+  sel.value=String(id);
+  fillChapters();
+  renderShelf();
+}
+function shelfOpen(ev,id){if(ev)ev.stopPropagation();openBookView(id);}
 function fillChapters(){
   const b=bookById(Number(document.getElementById('exBook').value));
   const sel=document.getElementById('exChapter');
@@ -5412,7 +5594,7 @@ function renderReadingInputs(){
   const prev=bs.value;
   bs.innerHTML=pool.length?pool.map(b=>`<option value="${b.id}">${esc(b.title)}${b.end?' (완독)':''}</option>`).join('')
     :'<option value="">등록된 책이 없습니다</option>';
-  if(prev&&pool.some(b=>String(b.id)===prev))bs.value=prev;fillChapters();
+  if(prev&&pool.some(b=>String(b.id)===prev))bs.value=prev;fillChapters();renderShelf();
   // 오늘 추가한 발췌 피드
   const td=today(),feed=[];
   db.reading.forEach(b=>(b.excerpts||[]).forEach(e=>{if(e.date===td)feed.push({b,e});}));
@@ -5743,8 +5925,36 @@ function addStudyDash(){
   }
   renderStudyAll();renderCal();
 }
+/* 오늘 종류별 기록 수 */
+function studyTodayCount(t){const d=today();return db.study.filter(x=>x.tab===t&&x.date===d).length;}
+/* 하루라도 기록이 있는 날을 오늘(또는 어제)부터 거꾸로 세어 연속일 */
+function studyStreak(){
+  const days={};db.study.forEach(x=>{if(x.date)days[x.date]=1;});
+  const d=new Date();d.setHours(12,0,0,0);
+  const key=dt=>dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+  if(!days[key(d)])d.setDate(d.getDate()-1);      /* 오늘 아직 안 썼으면 어제부터 */
+  let n=0;
+  while(days[key(d)]&&n<3650){n++;d.setDate(d.getDate()-1);}
+  return n;
+}
+function renderStudyMeter(){
+  const tabs=['단어','영어','지식','문화'];
+  const cnt={};tabs.forEach(t=>cnt[t]=studyTodayCount(t));
+  document.querySelectorAll('#dashStudyTabs .tab').forEach(function(b){
+    const c=cnt[b.dataset.t]||0, n=b.querySelector('.n');
+    if(n)n.textContent=c;
+    b.classList.toggle('has',c>0);
+  });
+  const box=document.getElementById('dashStudyFill');
+  if(box){
+    const done=tabs.filter(t=>cnt[t]>0).length, st=studyStreak();
+    box.innerHTML=tabs.map(t=>'<span class="fd'+(cnt[t]>0?' on':'')+'" title="'+studyKo(t)+' '+(cnt[t]||0)+'"></span>').join('')
+      +'<span class="lb">오늘 '+done+'/4'+(st>1?' · 연속 '+st+'일':'')+'</span>';
+  }
+}
 function renderDashStudy(){
   document.querySelectorAll('#dashStudyTabs .tab').forEach(b=>b.classList.toggle('active',b.dataset.t===dashStudyTab));
+  renderStudyMeter();
   const t=dashStudyTab,form=document.getElementById('dashStudyForm'),feed=document.getElementById('dashStudyFeed');
   if(!form)return;
   form.innerHTML=isMemTab(t)?(t==='영어'?`<div class="inrow" style="align-items:flex-start">
