@@ -1560,6 +1560,18 @@
       </div>
     </div>
     <div class="card">
+      <h3><span class="dot" style="background:var(--yellow)"></span> 아이폰 «뒷면 탭»으로 포스트잇 열기</h3>
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:10px">
+        아래 주소를 복사해 <b>단축어 앱 → URL 열기</b>에 넣고,
+        <b>설정 → 손쉬운 사용 → 터치 → 뒷면 탭</b>에서 그 단축어를 지정하세요.
+        폰 뒷면을 두 번 두드리면 포스트잇이 열립니다.</p>
+      <div class="inrow">
+        <input id="memoUrl" class="in" style="flex:1;font-size:12.5px" readonly onclick="this.select()">
+        <button class="btn y" style="flex:none" onclick="copyMemoUrl()">주소 복사</button>
+      </div>
+      <div id="memoUrlMsg" style="margin-top:8px;font-size:12.5px;color:var(--muted);line-height:1.7"></div>
+    </div>
+    <div class="card">
       <h3><span class="dot" style="background:#4285f4"></span> 구글 캘린더 내보내기</h3>
       <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px">
         자동 전송은 쓰지 않습니다. 아래 <b>버튼을 누를 때만</b> 구글 캘린더로 보냅니다.</p>
@@ -7117,6 +7129,7 @@ function renderAll(){
   renderTop();renderCal();renderSchedule();renderTodos();renderInbox();renderInboxPage();renderSessions();
   renderWork();renderDashWork();renderReading();renderStudy();renderDashStudy();
   renderAssets();renderDashAsset();renderDiary();renderDiaryPage();renderRoutiner();renderZettel();renderDash();
+  renderMemoUrl();
 }
 renderAll();applyTopState();renderSyncUI();renderBackupUI();backupTick();if(syncCode())cloudPull(false);
 
@@ -7317,6 +7330,31 @@ function memoToggle(){
   var p=document.getElementById('memoPad');if(!p)return;
   p.classList.toggle('on');
   if(p.classList.contains('on'))setTimeout(function(){var t=document.getElementById('memoText');if(t)t.focus();},30);
+}
+/* ---------- 설정: 뒷면 탭용 주소 보여주기 ---------- */
+function memoUrlBase(){return location.href.split('#')[0].split('?')[0];}
+function renderMemoUrl(){
+  var el=document.getElementById('memoUrl');if(!el)return;
+  el.value=memoUrlBase()+'#memo';
+  var m=document.getElementById('memoUrlMsg');if(!m)return;
+  if(location.protocol==='file:'){
+    m.innerHTML='<b style="color:var(--red)">지금은 파일로 열려 있어 단축어로는 열 수 없습니다.</b><br>'
+      +'HMD를 웹에 올린 뒤(GitHub Pages·Netlify 등), 그 주소로 접속해서 이 칸을 다시 확인하세요.';
+  }else{
+    m.innerHTML='※ 단축어의 «URL 열기»는 홈 화면 아이콘이 아니라 <b>Safari</b>로 열립니다. '
+      +'아이폰은 홈 화면 앱과 Safari의 저장 공간이 분리돼 있어서, '
+      +'<b>Safari에서도 위 «클라우드 동기화»에 같은 코드를 한 번 넣어두면</b> 양쪽 내용이 합쳐집니다.';
+  }
+}
+function copyMemoUrl(){
+  var el=document.getElementById('memoUrl');if(!el)return;
+  var v=el.value;
+  function done(){var m=document.getElementById('memoUrlMsg');
+    if(m){var old=m.innerHTML;m.innerHTML='<b style="color:var(--green)">복사했습니다 ✓</b>';
+      setTimeout(function(){m.innerHTML=old;},1800);}}
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(v).then(done,function(){el.select();document.execCommand('copy');done();});
+  }else{el.select();try{document.execCommand('copy');}catch(e){}done();}
 }
 /* ---------- 주소 뒤 #memo 로 포스트잇 바로 열기 (아이폰 «뒷면 탭» 단축어용) ----------
    예)  …/hmd.html#memo            → 빈 포스트잇 열고 커서까지
