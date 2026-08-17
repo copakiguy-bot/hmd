@@ -1816,8 +1816,8 @@
   <div class="memo-head">포스트잇 <span class="memo-x" onclick="memoToggle()">×</span></div>
   <textarea id="memoText" placeholder="메모 후 보낼 곳을 고르세요"></textarea>
   <div class="memo-foot"><span id="memoMsg"></span>
-    <button class="btn ghost" onclick="memoSave('inbox')" title="바로 처리할 일 → INBOX">INBOX</button>
-    <button class="btn y" onclick="memoSave('idea')" title="더 굴려볼 생각 → IDEA">IDEA</button></div>
+    <button class="btn ghost" onclick="memoSave('inbox')" title="바로 처리할 일 → 인박스">인박스</button>
+    <button class="btn y" onclick="memoSched()" title="날짜·시간을 정해 일정으로">스케줄</button></div>
 </div>
 
 <div class="exv-back" id="exvBack" onclick="closeExcerptView()">
@@ -3766,34 +3766,40 @@ function tlQuickAdd(ev){
   mn=Math.max(TL_START*60,Math.min(mn,TL_END*60-5));
   tlqOpen(tlFmt(mn));
 }
-function tlqClose(){var e=document.getElementById('tlqOv');if(e)e.remove();document.removeEventListener('keydown',tlqEsc);}
+function tlqClose(){var e=document.getElementById('tlqOv');if(e)e.remove();document.removeEventListener('keydown',tlqEsc);window.__tlqAfter=null;}
 function tlqEsc(e){if(e.key==='Escape')tlqClose();}
-function tlqOpen(time){
+function tlqOpen(time,opt){
+  opt=opt||{};
   tlqClose();
-  var d=selDate, dow=['일','월','화','수','목','금','토'][new Date(d+'T00:00:00').getDay()];
+  window.__tlqAfter=opt.after||null;
+  var d=opt.date||selDate, dow=['일','월','화','수','목','금','토'][new Date(d+'T00:00:00').getDay()];
   var lbl=(+d.slice(5,7))+'월 '+(+d.slice(8,10))+'일 ('+dow+')'+(d===today()?' · 오늘':'');
+  var head=opt.pickDate
+    ? '<input type="date" id="tlqDate" class="in" style="flex:none;width:152px;padding:6px 9px;font-size:12.5px" value="'+esc(d)+'">'
+    : '<span class="tlq-d">'+esc(lbl)+'</span>';
   var ov=document.createElement('div');ov.className='tlq-ov';ov.id='tlqOv';
   ov.addEventListener('click',function(e){if(e.target===ov)tlqClose();});
   ov.innerHTML='<div class="tlq-box">'
-    +'<div class="tlq-top"><b>일정 추가</b><span class="tlq-d">'+esc(lbl)+'</span>'
+    +'<div class="tlq-top"><b>'+esc(opt.head||'일정 추가')+'</b>'+head
     +'<span class="tlq-x" onclick="tlqClose()">✕</span></div>'
     +'<div class="tlq-body">'
     +'<div class="inrow">'
     +'<input id="tlqTime" class="in" style="flex:none;width:92px" value="'+esc(time)+'" placeholder="0900" onblur="this.value=normTime(this.value)">'
     +'<input id="tlqDur" class="in" style="flex:none;width:96px" inputmode="numeric" value="30" placeholder="소요(분)">'
-    +'<input id="tlqTitle" class="in" style="flex:1" placeholder="일정 제목">'
+    +'<input id="tlqTitle" class="in" style="flex:1" placeholder="일정 제목" value="'+escA(opt.title||'')+'">'
     +'</div>'
-    +'<textarea id="tlqDetail" class="in" style="width:100%;min-height:66px;margin-top:8px;resize:vertical" placeholder="세부 내용 (선택)"></textarea>'
+    +'<textarea id="tlqDetail" class="in" style="width:100%;min-height:66px;margin-top:8px;resize:vertical" placeholder="세부 내용 (선택)">'+esc(opt.detail||'')+'</textarea>'
     +'<div class="tlq-quick">'
-    +[15,30,60,90,120].map(function(m){return '<span onclick="tlqSetDur('+m+')">'+(m<60?m+'분':(m/60)+'시간'+(m%60?' '+(m%60)+'분':''))+'</span>';}).join('')
+    +[15,30,60,90,120].map(function(m){return '<span onclick="tlqSetDur('+m+')">'+(m<60?m+'분':Math.floor(m/60)+'시간'+(m%60?' '+(m%60)+'분':''))+'</span>';}).join('')
     +'</div>'
     +'<div class="tlq-foot"><button class="btn ghost" onclick="tlqClose()">취소</button>'
     +'<button class="btn y" onclick="tlqSave()">추가</button></div>'
     +'</div></div>';
   document.body.appendChild(ov);
   document.addEventListener('keydown',tlqEsc);
-  var t=document.getElementById('tlqTitle');if(t)t.focus();
-  ['tlqTime','tlqDur','tlqTitle'].forEach(function(i){
+  var t=document.getElementById('tlqTitle');
+  if(t){t.focus();if(t.value)t.setSelectionRange(t.value.length,t.value.length);}
+  ['tlqDate','tlqTime','tlqDur','tlqTitle'].forEach(function(i){
     var e=document.getElementById(i);
     if(e)e.addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();tlqSave();}});
   });
@@ -3805,11 +3811,16 @@ function tlqSave(){
   var title=ti.value.trim();
   if(!title){alert('일정 제목을 입력하세요.');ti.focus();return;}
   var d=parseInt(du.value,10);
-  db.schedules.push({id:uid(),date:selDate,time:normTime(tm.value),dur:(d>0?d:30),
+  var dEl=document.getElementById('tlqDate');
+  var date=(dEl&&dEl.value)?dEl.value:selDate;
+  db.schedules.push({id:uid(),date:date,time:normTime(tm.value),dur:(d>0?d:30),
     title:title,detail:de.value.trim()});
-  save();tlqClose();
+  save();
+  var after=window.__tlqAfter;window.__tlqAfter=null;
+  tlqClose();
   renderCal();renderSchedule();renderTimeline();
   if(typeof renderHome==='function')renderHome();
+  if(after)after(date,normTime(tm.value));
 }
 /* ================= 프로젝트 마인드맵 ================= */
 function pjMindOpen(pid){
@@ -7307,6 +7318,58 @@ function memoToggle(){
   p.classList.toggle('on');
   if(p.classList.contains('on'))setTimeout(function(){var t=document.getElementById('memoText');if(t)t.focus();},30);
 }
+/* ---------- 주소 뒤 #memo 로 포스트잇 바로 열기 (아이폰 «뒷면 탭» 단축어용) ----------
+   예)  …/hmd.html#memo            → 빈 포스트잇 열고 커서까지
+        …/hmd.html#memo=우유%20사기 → 내용까지 채워서 열기            */
+function memoFromUrl(){
+  var h=location.hash||'', q=location.search||'';
+  var m=/^#memo(?:=([\s\S]*))?$/i.exec(h);
+  var pre='';
+  if(m){pre=m[1]||'';}
+  else{
+    var qm=/[?&]memo(?:=([^&]*))?/i.exec(q);
+    if(!qm)return false;
+    pre=qm[1]||'';
+  }
+  try{pre=decodeURIComponent(pre.replace(/\+/g,' '));}catch(e){}
+  var pad=document.getElementById('memoPad');if(!pad)return false;
+  pad.classList.add('on');
+  var t=document.getElementById('memoText');
+  if(t){if(pre&&pre!=='1')t.value=pre;setTimeout(function(){t.focus();
+    try{t.setSelectionRange(t.value.length,t.value.length);}catch(e){}},140);}
+  /* 주소를 원래대로 되돌려, 다음 «뒷면 탭»에서 다시 열리게 한다 */
+  try{history.replaceState(null,'',location.pathname);}catch(e){}
+  return true;
+}
+window.addEventListener('hashchange',memoFromUrl);
+window.addEventListener('pageshow',memoFromUrl);
+document.addEventListener('visibilitychange',function(){if(!document.hidden)memoFromUrl();});
+setTimeout(memoFromUrl,60);
+/* 안내 문구: 앞선 타이머가 새 문구를 지우지 않도록 */
+function memoFlash(msg,ms){
+  var m=document.getElementById('memoMsg');if(!m)return;
+  clearTimeout(window.__memoMsgT);
+  m.textContent=msg;
+  window.__memoMsgT=setTimeout(function(){m.textContent='';},ms||1800);
+}
+/* 포스트잇 → 스케줄: 날짜·시각을 정해 일정으로 */
+function memoSched(){
+  var t=document.getElementById('memoText');if(!t)return;
+  var v=t.value.trim();
+  if(!v){alert('메모를 입력한 뒤 스케줄로 보내세요.');t.focus();return;}
+  var lines=v.split(/\r?\n/);
+  var title=(lines.shift()||'').trim();
+  var detail=lines.join('\n').trim();
+  /* 기본 시각: 지금 시각을 30분 단위로 올림 */
+  var now=new Date(), mn=now.getHours()*60+now.getMinutes();
+  mn=Math.ceil((mn+1)/30)*30; if(mn>23*60+30)mn=23*60+30;
+  var hh=String(Math.floor(mn/60)).padStart(2,'0'), mm=String(mn%60).padStart(2,'0');
+  tlqOpen(hh+':'+mm,{pickDate:true,date:today(),head:'스케줄로 보내기',title:title,detail:detail,
+    after:function(date,time){
+      var tt=document.getElementById('memoText');if(tt)tt.value='';
+      memoFlash((+date.slice(5,7))+'/'+(+date.slice(8,10))+' '+time+' 저장 ✓',2400);
+    }});
+}
 function memoSave(grp){
   var t=document.getElementById('memoText');if(!t)return;
   var v=t.value.trim();if(!v)return;
@@ -7315,8 +7378,7 @@ function memoSave(grp){
   if(typeof renderInbox==='function')renderInbox();
   if(typeof renderInboxPage==='function')renderInboxPage();
   t.value='';
-  var m=document.getElementById('memoMsg');
-  if(m){m.textContent=(grp==='inbox'?'INBOX로 저장 ✓':'IDEA로 저장 ✓');setTimeout(function(){m.textContent='';},1800);}
+  memoFlash(grp==='inbox'?'인박스로 저장 ✓':'IDEA로 저장 ✓',1800);
 }
 function fwSave(){
   if(!fwCfg)return;
