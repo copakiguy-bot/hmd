@@ -908,6 +908,78 @@
     .tabs.vtabs .tab .n{margin-left:6px}
     .sfill .lb{display:none}
   }
+  #assetSecCard .sfill .lb{margin-left:0}
+  #assetSecCard .sfill .lb b{color:var(--dark);font-weight:800}
+  /* ===== 자산: 왼쪽 세로 큰메뉴 ===== */
+  .as-grid{display:grid;grid-template-columns:150px 1fr;gap:22px;align-items:start}
+  .as-pane{min-width:0}
+  .tabs.vtabs.as-tabs{position:sticky;top:14px;border-right:1px solid var(--line);padding-right:16px}
+  .as-pane .ledger{min-width:430px}
+  .as-pane .g3{grid-template-columns:1.6fr 1fr 1fr}
+  .as-pane .g3 .ledger{min-width:0;width:100%;table-layout:auto}
+  .as-pane .g3 .ledger .del{padding:0 2px}
+  .as-pane .g3 .ledger th,.as-pane .g3 .ledger td{padding-left:6px;padding-right:6px}
+  .as-pane .g3 .ledger input[type=date]{width:92px;min-width:0;font-size:10px;padding:5px 1px}
+  .as-pane .g3 .ledger td{word-break:break-word}
+  .as-pane .g3 .ledger select{font-size:11.5px;padding:5px 4px}
+  /* 표의 최소너비가 옆 칸(그래프)을 밀어내지 않도록 */
+  .as-pane .g2>*,.as-pane .g3>*,.sd-pane .g2>*,.sd-pane .g3>*{min-width:0}
+  .as-pane .tblx,.sd-pane .tblx{min-width:0}
+  .as-pane .donut-wrap,.sd-pane .donut-wrap{flex-wrap:wrap}
+  .as-pane .legend,.sd-pane .legend{min-width:0}
+  .as-pane .card svg,.sd-pane .card svg{max-width:100%;height:auto}
+  .tabs.vtabs.as-tabs .tab{font-size:14.5px;padding:11px 12px}
+  .tabs.vtabs .tab.active.exp{background:var(--red);border-color:var(--red);color:#fff}
+  .tabs.vtabs .tab.active.inv{background:#e0a83a;border-color:#e0a83a;color:#fff}
+  .tabs.vtabs .tab.active.inc{background:var(--green);border-color:var(--green);color:#fff}
+  .tabs.vtabs .tab.inv.has .n{background:#fbe6b8;color:#8a6100}
+  .tabs.vtabs .tab.inc.has .n{background:var(--green-soft);color:var(--green)}
+  @media(max-width:900px){
+    .as-grid{grid-template-columns:1fr;gap:12px}
+    .tabs.vtabs.as-tabs{position:static;border-right:none;padding-right:0}
+  }
+  /* ===== 독서계획 (프로젝트 타임라인 형태) ===== */
+  .rdp-box{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+  .rdp-hd{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+  .rdp-hd b{font-size:13px;font-weight:800;color:var(--dark)}
+  .rdp-hint{font-size:11px;color:var(--muted)}
+  .rdp-per{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:700}
+  .rdp-tl{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+  .rdp-tlin{position:relative}
+  .rdp-r{display:flex;align-items:stretch}
+  .rdp-cs{position:relative;display:flex;flex:none}
+  .rdp-nm{position:sticky;left:0;z-index:4;flex:none;background:var(--card);
+    display:flex;align-items:center;gap:6px;padding:3px 12px 3px 2px;min-width:0}
+  .rdp-nmt{flex:1;font-size:12px;font-weight:700;color:var(--dark);overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .rdp-pg{width:46px;flex:none;border:1px solid var(--line);border-radius:7px;padding:4px 6px;
+    font-size:11.5px;text-align:right;font-family:inherit;color:var(--dark);background:#fff;
+    font-variant-numeric:tabular-nums}
+  .rdp-as{flex:none;width:52px;text-align:right;font-size:10.5px;color:#b3bcb7;font-weight:700;
+    font-variant-numeric:tabular-nums}
+  .rdp-as.done{color:var(--green)}
+  .rdp-as.over{color:var(--red)}
+  .rdp-nh{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:-.2px}
+  .rdp-hr{border-bottom:1px solid var(--line)}
+  .rdp-dh{flex:none;text-align:center;font-size:10px;color:var(--muted);padding:2px 0 5px;
+    font-variant-numeric:tabular-nums;line-height:1.25}
+  .rdp-dh b{display:block;font-size:10.5px;font-weight:800}
+  .rdp-dh i{font-style:normal;font-size:9.5px;opacity:.75}
+  .rdp-dh.sun{color:#c0605a}.rdp-dh.sat{color:#5a7ec0}
+  .rdp-dh.today{color:var(--green)}
+  .rdp-c{flex:none;padding:3px 2px;border-left:1px solid rgba(233,230,223,.9)}
+  .rdp-c.today{background:var(--green-soft)}
+  .rdp-c .rdp-in{width:100%;border:1px solid var(--line);border-radius:6px;padding:4px 3px;
+    font-size:11.5px;text-align:center;font-family:inherit;color:var(--dark);background:#fff;
+    font-variant-numeric:tabular-nums}
+  .rdp-c .rdp-in:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 2px var(--green-soft)}
+  .rdp-ext{position:absolute;top:0;width:22px;height:22px;border-radius:50%;background:#fff;
+    border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:800;cursor:pointer;z-index:2;box-shadow:0 2px 6px rgba(18,49,43,.08)}
+  .rdp-ext:hover{background:var(--green);border-color:var(--green);color:#fff}
+  .rdp-foot{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .rdp-sum{font-size:12px;color:var(--muted)}
+  .rdp-sum b{color:var(--dark)}
   /* ===== 독서 카드: 큰 표지(좌) + 목차·발췌(우) ===== */
   .rd-grid{display:grid;grid-template-columns:212px 1fr;gap:0;margin-top:16px;align-items:stretch}
   .rd-cover{display:flex;flex-direction:column;align-items:center;padding-right:18px}
@@ -1336,7 +1408,7 @@
   <div class="nav" data-v="settings">Settings</div>
   <div class="navsep"></div>
   <div class="nav xtra" data-v="routines">Routines</div>
-  <div class="nav xtra" data-v="routiner">Rutimer</div>
+  <div class="nav xtra" data-v="routiner">Checklist</div>
 </aside>
 
 <main class="main">
@@ -1437,12 +1509,14 @@
   <!-- ===== 자산 (가계부) ===== -->
   <section class="view" id="view-assets">
     <div class="page-head"><h1>자산 · 가계부</h1></div>
-    <div class="tabs" id="assetTabs">
-      <button class="tab exp" data-t="지출" onclick="setDetailAssetTab('지출')">지출</button>
-      <button class="tab inv" data-t="투자" onclick="setDetailAssetTab('투자')">투자</button>
-      <button class="tab inc" data-t="수입" onclick="setDetailAssetTab('수입')">수입</button>
+    <div class="as-grid">
+      <div class="tabs vtabs as-tabs" id="assetTabs">
+        <button class="tab exp" data-t="지출" onclick="setDetailAssetTab('지출')">지출<span class="n">0</span></button>
+        <button class="tab inv" data-t="투자" onclick="setDetailAssetTab('투자')">투자<span class="n">0</span></button>
+        <button class="tab inc" data-t="수입" onclick="setDetailAssetTab('수입')">수입<span class="n">0</span></button>
+      </div>
+      <div class="as-pane"><div id="assetPane"></div></div>
     </div>
-    <div id="assetPane" style="margin-top:16px"></div>
   </section>
 
   <!-- ===== Inbox ===== -->
@@ -1482,9 +1556,9 @@
   </section>
   <!-- ===== 루티머 ===== -->
   <section class="view" id="view-routiner">
-    <div class="page-head"><h1>루티머</h1></div>
+    <div class="page-head"><h1>체크리스트</h1></div>
     <div class="card">
-      <h3><span class="dot" style="background:#e0a83a"></span> 루틴 타이머
+      <h3><span class="dot" style="background:#e0a83a"></span> 타이머
         <span style="margin-left:auto;display:flex;gap:8px">
           <button class="btn y" id="rtAllBtn" onclick="rtStartAll()">▶ 전체 시작</button>
           <button class="btn ghost" id="rtPauseBtn" onclick="rtPause()">⏸ 일시정지</button>
@@ -1788,22 +1862,29 @@
           <div id="dashReadFeed" style="margin-top:12px"></div>
         </div>
       </div>
+      <div id="rdPlan"></div>
     </div>
     <div class="card" id="assetSecCard" style="display:none">
-      <h3><span class="dot"></span> 자산 <span class="more" onclick="go('assets')">가계부 →</span></h3>
-      <div class="tabs" id="dashAssetTabs">
-        <button class="tab exp" data-t="지출" onclick="setDashAssetTab('지출')">지출</button>
-        <button class="tab inv" data-t="투자" onclick="setDashAssetTab('투자')">투자</button>
-        <button class="tab inc" data-t="수입" onclick="setDashAssetTab('수입')">수입</button>
+      <h3><span class="dot"></span> 자산
+        <span class="sfill" id="dashAssetSum"></span>
+        <span class="more" style="margin-left:14px" onclick="go('assets')">가계부 →</span></h3>
+      <div class="sd-grid">
+        <div class="tabs vtabs" id="dashAssetTabs">
+          <button class="tab exp" data-t="지출" onclick="setDashAssetTab('지출')">지출<span class="n">0</span></button>
+          <button class="tab inv" data-t="투자" onclick="setDashAssetTab('투자')">투자<span class="n">0</span></button>
+          <button class="tab inc" data-t="수입" onclick="setDashAssetTab('수입')">수입<span class="n">0</span></button>
+        </div>
+        <div class="sd-pane">
+          <div class="inrow">
+            <select id="dCat" class="in" style="flex:1.1"></select>
+            <input id="dItem" class="in" style="flex:1.6" placeholder="내역">
+            <input id="dAmount" class="in" inputmode="numeric" style="flex:1" placeholder="금액" oninput="fmtNum(this)">
+            <input id="dNote" class="in" style="flex:1" placeholder="비고">
+            <button class="btn y" style="flex:none" onclick="addAssetDash()">추가</button>
+          </div>
+          <div id="dashAssetFeed" style="margin-top:12px"></div>
+        </div>
       </div>
-      <div class="inrow" style="margin-top:14px">
-        <select id="dCat" class="in" style="flex:1.1"></select>
-        <input id="dItem" class="in" style="flex:1.6" placeholder="내역">
-        <input id="dAmount" class="in" inputmode="numeric" style="flex:1" placeholder="금액" oninput="fmtNum(this)">
-        <input id="dNote" class="in" style="flex:1" placeholder="비고">
-        <button class="btn y" style="flex:none" onclick="addAssetDash()">추가</button>
-      </div>
-      <div id="dashAssetFeed" style="margin-top:12px"></div>
     </div>
     <div class="card" id="diarySecCard" style="display:none">
       <h3><span class="dot" style="background:#6a8fd8"></span> 일기 <span class="more" onclick="go('diary')">전체 →</span></h3>
@@ -5259,7 +5340,7 @@ function renderShelf(){
   var pool=shelfPool();
   if(!pool.length){
     big.innerHTML='<div class="rd-empty">읽는 중인 책이 없습니다.<br>아래 «＋ 책 추가»에서 등록하세요.</div>';
-    strip.innerHTML='';if(pos)pos.textContent='';shelfArrows();return;
+    strip.innerHTML='';if(pos)pos.textContent='';shelfArrows();renderRdPlan();return;
   }
   var i=shelfIndex(pool),b=pool[i];
   if(sel)sel.value=String(b.id);
@@ -5280,6 +5361,7 @@ function renderShelf(){
   var on=strip.querySelector('.shelf-bk.on');
   if(on&&on.scrollIntoView)try{on.scrollIntoView({block:'nearest',inline:'nearest'});}catch(e){}
   shelfArrows();
+  renderRdPlan();
 }
 function shelfArrows(){
   var w=document.getElementById('shelfWrap');if(!w)return;
@@ -5308,8 +5390,19 @@ function shelfOpen(ev,id){if(ev)ev.stopPropagation();openBookView(id);}
 function fillChapters(){
   const b=bookById(Number(document.getElementById('exBook').value));
   const sel=document.getElementById('exChapter');
-  sel.innerHTML=b&&b.chapters.length?b.chapters.map(c=>`<option>${esc(c)}</option>`).join('')
-    :'<option value="">(목차 없음 — 자유 입력)</option>';
+  if(!(b&&b.chapters.length)){sel.innerHTML='<option value="">(목차 없음 — 자유 입력)</option>';return;}
+  /* 최근에 발췌를 넣은 목차가 위로 (발췌 없는 목차는 원래 순서대로 뒤에) */
+  const last={};
+  (b.excerpts||[]).forEach(e=>{
+    const k=(e.date||'')+'~'+String(e.id||0).padStart(16,'0');
+    if(!last[e.chapter]||k>last[e.chapter])last[e.chapter]=k;
+  });
+  const chs=b.chapters.slice().sort((a,c)=>{
+    const la=last[a]||'',lc=last[c]||'';
+    if(la!==lc)return lc.localeCompare(la);            /* 최근 것 먼저 */
+    return b.chapters.indexOf(a)-b.chapters.indexOf(c); /* 나머지는 원래 순서 */
+  });
+  sel.innerHTML=chs.map(c=>`<option>${esc(c)}</option>`).join('');
 }
 function addExcerpt(){
   const b=bookById(Number(document.getElementById('exBook').value));
@@ -5739,6 +5832,128 @@ function renderBookDetail(b){
       <div class="addrow" style="margin-top:10px"><input id="chapInput" placeholder="새 챕터 추가 후 Enter" onkeydown="esKey(event,function(){addChapter(${b.id})})">
         <button class="btn" onclick="addChapter(${b.id})">추가</button></div>
     </div>`;
+}
+
+/* ---------- 독서계획: 목차별 페이지수 + 일자별 계획 ---------- */
+function rdPlanEnsure(b){
+  if(!b.plan)b.plan={start:today(),days:30,byDay:{},chPages:{},grid:{}};
+  if(!b.plan.byDay)b.plan.byDay={};
+  if(!b.plan.chPages)b.plan.chPages={};
+  if(!b.plan.grid){
+    b.plan.grid={};
+    /* 이전 «일자별» 입력값을 첫 행으로 옮김 */
+    var ch0=(b.chapters&&b.chapters.length)?b.chapters[0]:'전체';
+    Object.keys(b.plan.byDay).forEach(function(d){b.plan.grid[d+'|'+ch0]=b.plan.byDay[d];});
+  }
+  if(!b.plan.days)b.plan.days=30;
+  if(!b.plan.start)b.plan.start=today();
+  return b.plan;
+}
+function rdPlanDates(pl){
+  const out=[],d=new Date(pl.start+'T12:00:00');
+  for(let i=0;i<pl.days;i++){
+    out.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));
+    d.setDate(d.getDate()+1);
+  }
+  return out;
+}
+function rdPlanChSet(bookId,i,val){
+  const b=bookById(bookId);if(!b)return;
+  const pl=rdPlanEnsure(b),ch=b.chapters[i];if(ch==null)return;
+  val=String(val).trim();
+  if(val)pl.chPages[ch]=val;else delete pl.chPages[ch];
+  save();renderReading();
+}
+function rdPlanDaySet(bookId,date,val){
+  const b=bookById(bookId);if(!b)return;
+  const pl=rdPlanEnsure(b);
+  val=String(val).trim();
+  if(val)pl.byDay[date]=val;else delete pl.byDay[date];
+  save();renderReading();
+}
+function rdPlanAddDays(bookId,n){
+  const b=bookById(bookId);if(!b)return;
+  const pl=rdPlanEnsure(b);
+  pl.days=Math.min(365,(pl.days||30)+n);
+  save();renderRdPlan();
+}
+function rdPlanRows(b){
+  return (b.chapters&&b.chapters.length)?b.chapters.slice():['전체'];
+}
+function rdPlanCell(bookId,date,ch,val){
+  const b=bookById(bookId);if(!b)return;
+  const pl=rdPlanEnsure(b);
+  const k=date+'|'+ch;
+  val=String(val).trim();
+  if(val)pl.grid[k]=val;else delete pl.grid[k];
+  save();renderRdPlan();
+}
+function rdPlanChSetName(bookId,ch,val){
+  const b=bookById(bookId);if(!b)return;
+  const pl=rdPlanEnsure(b);
+  val=String(val).trim();
+  if(val)pl.chPages[ch]=val;else delete pl.chPages[ch];
+  save();renderRdPlan();
+}
+function rdPlanHTML(b){
+  const pl=rdPlanEnsure(b);
+  const rows=rdPlanRows(b), dates=rdPlanDates(pl), td=today();
+  const DW=46, NW=232, AW=dates.length*DW, TW=AW+34;
+  /* 머리글: 날짜 */
+  let head='';
+  dates.forEach(function(d,i){
+    const dt=new Date(d+'T12:00:00'), dow=['일','월','화','수','목','금','토'][dt.getDay()];
+    const mk=(i===0||dt.getDate()===1);
+    head+='<div class="rdp-dh'+(d===td?' today':'')+(dt.getDay()===0?' sun':dt.getDay()===6?' sat':'')
+      +'" style="width:'+DW+'px"><b>'+(mk?(dt.getMonth()+1)+'/':'')+dt.getDate()+'</b><i>'+dow+'</i></div>';
+  });
+  /* 본문 행 */
+  let body='', grand=0;
+  rows.forEach(function(ch){
+    const pg=pl.chPages[ch]||'';
+    let assigned=0, cells='';
+    dates.forEach(function(d){
+      const v=pl.grid[d+'|'+ch]||'';
+      const n=(+v||0); assigned+=n; grand+=n;
+      cells+='<div class="rdp-c'+(d===td?' today':'')+'" style="width:'+DW+'px">'
+        +'<input class="rdp-in" inputmode="numeric" value="'+escA(v)+'"'
+        +' onchange="rdPlanCell('+b.id+',\''+d+'\',\''+escA(ch).replace(/'/g,"&#39;")+'\',this.value)"></div>';
+    });
+    const tgt=+pg||0;
+    const st=tgt?(assigned>tgt?'over':(assigned===tgt?'done':'')):'';
+    body+='<div class="rdp-r">'
+      +'<div class="rdp-nm" style="width:'+NW+'px">'
+        +'<span class="rdp-nmt" title="'+escA(ch)+'">'+esc(ch)+'</span>'
+        +'<input class="rdp-pg" inputmode="numeric" value="'+escA(pg)+'" placeholder="p"'
+        +' title="이 목차의 페이지수" onchange="rdPlanChSetName('+b.id+',\''+escA(ch).replace(/'/g,"&#39;")+'\',this.value)">'
+        +'<span class="rdp-as '+st+'">'+(assigned||0)+(tgt?'/'+tgt:'')+'</span>'
+      +'</div>'
+      +'<div class="rdp-cs" style="width:'+AW+'px">'+cells+'</div></div>';
+  });
+  const total=b.totalPages||0;
+  const foot=total?(grand>=total?'<b style="color:var(--green)">계획 완성 ✓ ('+grand+'p)</b>'
+    :'계획 <b>'+grand+'p</b> / 총 '+total+'p · 남은 '+(total-grand)+'p')
+    :'계획 <b>'+grand+'p</b>';
+  return '<div class="rdp-box">'
+    +'<div class="rdp-hd"><b>독서계획</b>'
+      +'<span class="rdp-hint">목차별 페이지수와 일자별 분량을 적으세요</span>'
+      +'<span class="rdp-per">'+esc(pl.start.slice(5).replace('-','/'))+'부터 '+pl.days+'일</span></div>'
+    +'<div class="rdp-tl"><div class="rdp-tlin" style="width:'+(NW+TW+8)+'px">'
+      +'<div class="rdp-r rdp-hr"><div class="rdp-nm rdp-nh" style="width:'+NW+'px">목차 · 페이지</div>'
+        +'<div class="rdp-cs" style="width:'+TW+'px">'+head
+        +'<div class="rdp-ext" onclick="rdPlanAddDays('+b.id+',30)" title="30일 연장" style="left:'+(AW+6)+'px">＋</div>'
+        +'</div></div>'
+      +body
+    +'</div></div>'
+    +'<div class="rdp-foot"><button class="btn ghost" style="padding:6px 12px" onclick="rdPlanAddDays('+b.id+',7)">＋ 7일</button>'
+      +'<span class="rdp-sum" style="margin-left:auto">'+foot+'</span></div>'
+  +'</div>';
+}
+function renderRdPlan(){
+  const box=document.getElementById('rdPlan');if(!box)return;
+  const sel=document.getElementById('exBook');
+  const b=sel?bookById(Number(sel.value)):null;
+  box.innerHTML=b?rdPlanHTML(b):'';
 }
 
 /* ---------- study (단어·영어·지식·문화) ---------- */
@@ -6508,7 +6723,22 @@ function addAssetDash(){
   renderDashAsset();renderAssets();renderCal();
 }
 function renderDashAsset(){
-  document.querySelectorAll('#dashAssetTabs .tab').forEach(b=>b.classList.toggle('active',b.dataset.t===dashAssetTab));
+  const td0=today();
+  document.querySelectorAll('#dashAssetTabs .tab').forEach(function(b){
+    b.classList.toggle('active',b.dataset.t===dashAssetTab);
+    const c=db.assets.filter(a=>a.type===b.dataset.t&&a.date===td0).length;
+    const n=b.querySelector('.n');if(n)n.textContent=c;
+    b.classList.toggle('has',c>0);
+  });
+  const sm=document.getElementById('dashAssetSum');
+  if(sm){
+    const mk=thisMonth();
+    const ex=sumAssets(a=>a.type==='지출'&&monthOf(a.date)===mk);
+    const iv=sumAssets(a=>a.type==='투자'&&monthOf(a.date)===mk);
+    const ic=sumAssets(a=>a.type==='수입'&&monthOf(a.date)===mk);
+    sm.innerHTML='<span class="lb">이번달 지출 <b>'+shortWon(ex)+'</b> · 투자 <b>'+shortWon(iv)
+      +'</b> · 수입 <b>'+shortWon(ic)+'</b></span>';
+  }
   fillAssetCat('dCat',dashAssetTab);
   const td=today();const list=db.assets.filter(a=>a.type===dashAssetTab&&a.date===td);
   const el=document.getElementById('dashAssetFeed');if(!el)return;
@@ -6668,7 +6898,13 @@ function paneIncome(){
   </div>`;
 }
 function renderAssets(){
-  document.querySelectorAll('#assetTabs .tab').forEach(b=>b.classList.toggle('active',b.dataset.t===detailAssetTab));
+  const mo=thisMonth();
+  document.querySelectorAll('#assetTabs .tab').forEach(function(b){
+    b.classList.toggle('active',b.dataset.t===detailAssetTab);
+    const c=db.assets.filter(a=>a.type===b.dataset.t&&monthOf(a.date)===mo).length;
+    const n=b.querySelector('.n');if(n)n.textContent=c;
+    b.classList.toggle('has',c>0);
+  });
   const pane=document.getElementById('assetPane');if(!pane)return;
   pane.innerHTML=detailAssetTab==='지출'?paneExpense():detailAssetTab==='투자'?paneInvest():paneIncome();
 }
