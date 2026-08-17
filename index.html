@@ -1613,7 +1613,7 @@
   </section>
   <!-- ===== 설정 ===== -->
   <section class="view" id="view-settings">
-    <div class="page-head"><h1>설정</h1></div>
+    <div class="page-head"><h1>설정</h1><p id="buildStamp"></p></div>
     <div class="card">
       <h3><span class="dot" style="background:#6a8fd8"></span> 클라우드 동기화</h3>
       <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px">여러 기기(PC·아이폰)에서 같은 데이터를 보려면, 모든 기기에 <b>같은 동기화 코드</b>를 입력하세요. 이후 입력하는 내용은 자동으로 저장·동기화됩니다.</p>
@@ -1964,6 +1964,7 @@
 
 <script>
 /* ---------- storage ---------- */
+const HMD_BUILD='2026-08-17 · r13';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -1971,8 +1972,19 @@ const SYNC_KEY='dailypage_sync';
 const dstr=(off=0)=>{const t=new Date();t.setDate(t.getDate()-off);
   return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');};
 const today=()=>dstr(0);
+var __boot=true;        /* 첫 로드 중(마이그레이션 구간) */
+var __syncReady=false;  /* 첫 «클라우드 불러오기»가 끝나기 전엔 절대 올리지 않는다 */
+var __seeded=false;     /* 이 기기에 저장된 게 없어 예시 데이터로 시작함 */
 let db=load();
-function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.routines)db.routines=[];if(!db.tlRoutines)db.tlRoutines=[];if(!db.tlrLog)db.tlrLog={};if(!db.tlProjects)db.tlProjects=[];if(!db.overtime)db.overtime={};if(db.otRate==null)db.otRate=12113;if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
+function ensureFields(){
+  if(!db||typeof db!=='object')db=seed();
+  /* 어떤 경로로 들어온 데이터든 기본 뼈대는 반드시 갖춰 둔다 (동기화·백업 복원 대비) */
+  ['work','study','reading','assets','inbox','diary','sessions','schedules',
+   'tlRoutines','tlProjects','routines','fixed','workCats','zk'].forEach(function(k){
+    if(!Array.isArray(db[k]))db[k]=[];});
+  ['todos','budget','overtime','tlrLog','workVault'].forEach(function(k){
+    if(!db[k]||typeof db[k]!=='object'||Array.isArray(db[k]))db[k]={};});
+  if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.routines)db.routines=[];if(!db.tlRoutines)db.tlRoutines=[];if(!db.tlrLog)db.tlrLog={};if(!db.tlProjects)db.tlProjects=[];if(!db.overtime)db.overtime={};if(db.otRate==null)db.otRate=12113;if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
   if(!db.cheonildu||Array.isArray(db.cheonildu)){
     var __oldCd=Array.isArray(db.cheonildu)?db.cheonildu:[];var __chapMap={};var __chapOrder=[];
     __oldCd.forEach(function(x){var cn=x.chapter||'(챕터 미입력)';if(!__chapMap[cn]){__chapMap[cn]={id:uid(),name:cn,units:[]};__chapOrder.push(cn);}
@@ -1994,9 +2006,13 @@ function ensureFields(){if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!
   }
   if(!db.__dotMigrated){(db.schedules||[]).forEach(function(s){if(s.detail)s.detail=String(s.detail).replace(/^-[ \t]/gm,'· ');});db.__dotMigrated=1;}}
 ensureFields();
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.work)return s;}catch(e){}return seed();}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.work)return s;}catch(e){}
+  __seeded=true;return seed();}
 const BK_KEY='hmd_backups';
-function save(){db.__updated=Date.now();localStorage.setItem(KEY,JSON.stringify(db));backupTick();cloudPushDebounced();}
+function save(){
+  /* 첫 로드의 «자동 정리(마이그레이션)»가 최신 시각을 찍어 클라우드를 덮어쓰는 사고를 막는다 */
+  if(!__boot)db.__updated=Date.now();
+  localStorage.setItem(KEY,JSON.stringify(db));backupTick();cloudPushDebounced();}
 /* 하루 한 번, 그리고 덮어쓰기 직전에 로컬 스냅샷을 남긴다 (최대 8개) */
 /* 데이터가 얼마나 들어있는지 (동기화 사고 방지용) */
 function dbSize(d){
@@ -2861,12 +2877,29 @@ function syncCode(){return localStorage.getItem(SYNC_KEY)||'';}
 function cloudHeaders(){return {apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json'};}
 function setSyncStatus(t){var el=document.getElementById('syncStatus');if(el)el.textContent=t;}
 function renderSyncUI(){var inp=document.getElementById('syncInput');if(inp&&!inp.value)inp.value=syncCode();if(syncCode())setSyncStatus('연결됨: '+syncCode());}
-function cloudPushDebounced(){if(!syncCode())return;clearTimeout(__pushT);__pushT=setTimeout(cloudPush,900);}
+function cloudPushDebounced(){if(!syncCode())return;
+  if(!__syncReady){__pushPending=true;return;}          /* 첫 불러오기 전에는 보류 */
+  clearTimeout(__pushT);__pushT=setTimeout(cloudPush,900);}
+var __pushPending=false;
+function syncReady(){
+  if(__syncReady)return;
+  __syncReady=true;
+  if(__pushPending){__pushPending=false;cloudPushDebounced();}
+}
 function cloudPush(){var c=syncCode();if(!c)return;if(!db.__updated)db.__updated=Date.now();fetch(SUPA_URL+'/rest/v1/store?on_conflict=key',{method:'POST',headers:Object.assign({},cloudHeaders(),{Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({key:c,data:db,updated_at:new Date().toISOString()})}).then(function(r){setSyncStatus(r.ok?('저장됨 · '+c):('저장 오류 '+r.status));}).catch(function(){setSyncStatus('오프라인 (로컬만 저장)');});}
 function cloudPull(ask,cb){var c=syncCode();if(!c){if(cb)cb(false);return;}setSyncStatus('불러오는 중…');fetch(SUPA_URL+'/rest/v1/store?key=eq.'+encodeURIComponent(c)+'&select=data',{headers:cloudHeaders()}).then(function(r){return r.json();}).then(function(j){if(Array.isArray(j)&&j.length&&j[0].data){var rd=j[0].data, rt=Number(rd&&rd.__updated)||0, lt=Number(db&&db.__updated)||0;
-      if(!ask&&lt>rt){                       /* 이 기기 것이 더 최신이면 덮어쓰지 않고 올린다 */
-        setSyncStatus('이 기기가 최신 · 연결됨: '+c);cloudPush();if(cb)cb(true);return;}
       var rn=dbSize(rd), ln=dbSize(db);
+      if(__seeded){                          /* 이 기기엔 저장된 게 없었다 → 클라우드 것이 정답 */
+        db=rd;ensureFields();__seeded=false;localStorage.setItem(KEY,JSON.stringify(db));
+        renderAll();renderBackupUI();setSyncStatus('불러옴 · 연결됨: '+c);if(cb)cb(true);return;}
+      if(!ask&&lt>rt){                       /* 이 기기 것이 더 최신이면 덮어쓰지 않고 올린다 */
+        if(ln+3<rn*0.7){                     /* 단, 이 기기가 훨씬 적으면 올리지 않는다 */
+          setSyncStatus('⚠ 이 기기가 클라우드보다 적어 올리지 않았습니다');
+          alert('클라우드에 올리지 않았습니다.\n\n이 기기  : '+ln+'건\n클라우드 : '+rn+'건\n\n'
+            +'이 기기 쪽이 크게 적어 덮어쓰지 않았습니다.\n'
+            +'설정 → 동기화에서 «클라우드에서 불러오기»로 받아오세요.');
+          if(cb)cb(true);return;}
+        setSyncStatus('이 기기가 최신 · 연결됨: '+c);cloudPush();if(cb)cb(true);return;}
       if(ask){
         if(!confirm('클라우드에 저장된 데이터를 이 기기로 불러올까요?\n\n'
           +'클라우드 : '+rn+'건  ('+dbBrief(rd)+')\n'
@@ -7367,7 +7400,14 @@ function renderAll(){
   renderAssets();renderDashAsset();renderDiary();renderDiaryPage();renderRoutiner();renderZettel();renderDash();
   renderMemoUrl();
 }
-renderAll();applyTopState();renderSyncUI();renderBackupUI();backupTick();if(syncCode())cloudPull(false);
+(function(){var e=document.getElementById('buildStamp');
+  if(e)e.textContent='버전 '+HMD_BUILD;})();
+renderAll();applyTopState();renderSyncUI();renderBackupUI();backupTick();
+__boot=false;                                  /* 마이그레이션 구간 끝 */
+if(syncCode()){
+  setTimeout(syncReady,8000);                  /* 응답이 없어도 8초 뒤엔 정상 동작 */
+  cloudPull(false,syncReady);
+}else{__seeded=false;syncReady();}
 
 /* ---------- 집중해서 쓰기 (팝업) ---------- */
 var fwCfg=null;
