@@ -950,18 +950,20 @@
   .rdp-cs{position:relative;display:flex;flex:none}
   .rdp-nm{position:sticky;left:0;z-index:4;flex:none;background:var(--card);
     display:flex;align-items:center;gap:6px;padding:3px 12px 3px 2px;min-width:0}
-  .rdp-nmt{flex:1;font-size:12px;font-weight:700;color:var(--dark);overflow:hidden;
-    text-overflow:ellipsis;white-space:nowrap}
-  .rdp-pg{width:52px;flex:none;border:1px solid var(--line);border-radius:7px;padding:4px 6px;
-    font-size:11.5px;text-align:right;font-family:inherit;color:var(--dark);background:#fff;
+  .rdp-nmt{flex:1;min-width:0;font-size:12px;font-weight:700;color:var(--dark);
+    white-space:normal;word-break:keep-all;line-height:1.35}
+  /* 페이지 입력칸: 오른쪽 일자 칸과 같은 크기 */
+  .rdp-pg{width:34px;flex:none;border:1px solid var(--line);border-radius:6px;padding:4px 2px;
+    font-size:11.5px;text-align:center;font-family:inherit;color:var(--dark);background:#fff;
     font-variant-numeric:tabular-nums}
-  .rdp-tot{flex:none;width:42px;text-align:right;font-size:11.5px;font-weight:800;color:var(--dark);
+  .rdp-sep{flex:none;width:8px;text-align:center;font-size:11px;color:#c3c9c5;line-height:1}
+  .rdp-tot{flex:none;width:36px;text-align:right;font-size:11.5px;font-weight:800;color:var(--dark);
     font-variant-numeric:tabular-nums}
-  .rdp-as{flex:none;width:54px;text-align:right;font-size:10.5px;color:#b3bcb7;font-weight:700;
-    font-variant-numeric:tabular-nums}
-  .rdp-hl{flex:none;width:52px;text-align:center;font-size:10.5px;font-weight:800;color:var(--muted)}
-  .rdp-hl.tot{width:42px;text-align:right}
-  .rdp-hl.as{width:54px;text-align:right}
+  .rdp-tot.done{color:var(--green)}
+  .rdp-tot.over{color:var(--red)}
+  .rdp-hl{flex:none;text-align:center;font-size:10.5px;font-weight:800;color:var(--muted)}
+  .rdp-hl.pg{width:76px}
+  .rdp-hl.tot{width:36px;text-align:right}
   .rdp-as.done{color:var(--green)}
   .rdp-as.over{color:var(--red)}
   .rdp-nh{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:-.2px}
@@ -1975,7 +1977,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-17 · r15';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-17 · r17';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -5971,7 +5973,7 @@ function rdPlanTime(bookId,date,ch){
 function rdPlanHTML(b){
   const pl=rdPlanEnsure(b);
   const rows=rdPlanRows(b), dates=rdPlanDates(pl), td=today();
-  const DW=38, NW=336, AW=dates.length*DW, TW=AW+34;   /* 하루 분량은 세 자리까지 */
+  const DW=38, NW=272, AW=dates.length*DW, TW=AW+34;   /* 하루 분량은 세 자리까지 */
   /* 머리글: 날짜 */
   let head='';
   dates.forEach(function(d,i){
@@ -6002,12 +6004,12 @@ function rdPlanHTML(b){
     body+='<div class="rdp-r">'
       +'<div class="rdp-nm" style="width:'+NW+'px">'
         +'<span class="rdp-nmt" title="'+escA(ch)+'">'+esc(ch)+'</span>'
-        +'<input class="rdp-pg" inputmode="numeric" value="'+escA(pl.chFrom[ch]||'')+'" placeholder="시작"'
+        +'<input class="rdp-pg" inputmode="numeric" value="'+escA(pl.chFrom[ch]||'')+'"'
         +' title="시작 페이지" onchange="rdPlanRange('+b.id+',\''+chA+'\',\'from\',this.value)">'
-        +'<input class="rdp-pg" inputmode="numeric" value="'+escA(pl.chTo[ch]||'')+'" placeholder="종료"'
+        +'<span class="rdp-sep">~</span>'
+        +'<input class="rdp-pg" inputmode="numeric" value="'+escA(pl.chTo[ch]||'')+'"'
         +' title="종료 페이지" onchange="rdPlanRange('+b.id+',\''+chA+'\',\'to\',this.value)">'
-        +'<span class="rdp-tot" title="총 페이지 (종료 − 시작 + 1)">'+(tgt||'–')+'</span>'
-        +'<span class="rdp-as '+st+'">'+(assigned||0)+(tgt?'/'+tgt:'')+'</span>'
+        +'<span class="rdp-tot '+st+'" title="총 '+(tgt||0)+'p · 일자에 배정한 분량 '+assigned+'p">'+(tgt||'–')+'</span>'
       +'</div>'
       +'<div class="rdp-cs" style="width:'+AW+'px">'+cells+'</div></div>';
   });
@@ -6022,8 +6024,8 @@ function rdPlanHTML(b){
     +'<div class="rdp-tl"><div class="rdp-tlin" style="width:'+(NW+TW+8)+'px">'
       +'<div class="rdp-r rdp-hr"><div class="rdp-nm rdp-nh" style="width:'+NW+'px">'
         +'<span class="rdp-nmt">목차</span>'
-        +'<span class="rdp-hl">시작</span><span class="rdp-hl">종료</span>'
-        +'<span class="rdp-hl tot">총</span><span class="rdp-hl as">배정</span></div>'
+        +'<span class="rdp-hl pg" title="시작 ~ 종료 페이지">페이지</span>'
+        +'<span class="rdp-hl tot">총</span></div>'
         +'<div class="rdp-cs" style="width:'+TW+'px">'+head
         +'<div class="rdp-ext" onclick="rdPlanAddDays('+b.id+',30)" title="30일 연장" style="left:'+(AW+6)+'px">＋</div>'
         +'</div></div>'
