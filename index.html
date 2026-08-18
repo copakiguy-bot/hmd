@@ -952,11 +952,16 @@
     display:flex;align-items:center;gap:6px;padding:3px 12px 3px 2px;min-width:0}
   .rdp-nmt{flex:1;font-size:12px;font-weight:700;color:var(--dark);overflow:hidden;
     text-overflow:ellipsis;white-space:nowrap}
-  .rdp-pg{width:46px;flex:none;border:1px solid var(--line);border-radius:7px;padding:4px 6px;
+  .rdp-pg{width:52px;flex:none;border:1px solid var(--line);border-radius:7px;padding:4px 6px;
     font-size:11.5px;text-align:right;font-family:inherit;color:var(--dark);background:#fff;
     font-variant-numeric:tabular-nums}
-  .rdp-as{flex:none;width:52px;text-align:right;font-size:10.5px;color:#b3bcb7;font-weight:700;
+  .rdp-tot{flex:none;width:42px;text-align:right;font-size:11.5px;font-weight:800;color:var(--dark);
     font-variant-numeric:tabular-nums}
+  .rdp-as{flex:none;width:54px;text-align:right;font-size:10.5px;color:#b3bcb7;font-weight:700;
+    font-variant-numeric:tabular-nums}
+  .rdp-hl{flex:none;width:52px;text-align:center;font-size:10.5px;font-weight:800;color:var(--muted)}
+  .rdp-hl.tot{width:42px;text-align:right}
+  .rdp-hl.as{width:54px;text-align:right}
   .rdp-as.done{color:var(--green)}
   .rdp-as.over{color:var(--red)}
   .rdp-nh{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:-.2px}
@@ -969,9 +974,15 @@
   .rdp-dh.today{color:var(--green)}
   .rdp-c{flex:none;padding:3px 2px;border-left:1px solid rgba(233,230,223,.9)}
   .rdp-c.today{background:var(--green-soft)}
-  .rdp-c .rdp-in{width:100%;border:1px solid var(--line);border-radius:6px;padding:4px 3px;
+  .rdp-c .rdp-in{width:100%;border:1px solid var(--line);border-radius:6px;padding:4px 2px;
     font-size:11.5px;text-align:center;font-family:inherit;color:var(--dark);background:#fff;
     font-variant-numeric:tabular-nums}
+  .rdp-c{cursor:default;position:relative}
+  .rdp-c.timed{background:#fff8e6}
+  .rdp-c.timed.today{background:var(--green-soft)}
+  .rdp-tm{display:block;margin-top:2px;font-size:9px;line-height:1.2;text-align:center;color:#8a6100;
+    font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis}
   .rdp-c .rdp-in:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 2px var(--green-soft)}
   .rdp-ext{position:absolute;top:0;width:22px;height:22px;border-radius:50%;background:#fff;
     border:1px solid var(--line);color:var(--muted);display:flex;align-items:center;justify-content:center;
@@ -1964,7 +1975,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-17 · r13';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-17 · r15';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -5872,6 +5883,9 @@ function rdPlanEnsure(b){
   if(!b.plan)b.plan={start:today(),days:30,byDay:{},chPages:{},grid:{}};
   if(!b.plan.byDay)b.plan.byDay={};
   if(!b.plan.chPages)b.plan.chPages={};
+  if(!b.plan.chFrom)b.plan.chFrom={};
+  if(!b.plan.chTo)b.plan.chTo={};
+  if(!b.plan.time)b.plan.time={};
   if(!b.plan.grid){
     b.plan.grid={};
     /* 이전 «일자별» 입력값을 첫 행으로 옮김 */
@@ -5921,17 +5935,43 @@ function rdPlanCell(bookId,date,ch,val){
   if(val)pl.grid[k]=val;else delete pl.grid[k];
   save();renderRdPlan();
 }
-function rdPlanChSetName(bookId,ch,val){
+/* 시작·종료 페이지 → 총 페이지 (둘 다 없으면 예전에 적어둔 값을 그대로 씀) */
+function rdPlanTotal(pl,ch){
+  var f=parseInt(pl.chFrom[ch],10), t=parseInt(pl.chTo[ch],10);
+  if(f>0&&t>0&&t>=f)return t-f+1;
+  return parseInt(pl.chPages[ch],10)||0;
+}
+function rdPlanRange(bookId,ch,which,val){
   const b=bookById(bookId);if(!b)return;
   const pl=rdPlanEnsure(b);
+  const box=(which==='from')?pl.chFrom:pl.chTo;
   val=String(val).trim();
-  if(val)pl.chPages[ch]=val;else delete pl.chPages[ch];
+  if(val)box[ch]=val;else delete box[ch];
+  var f=parseInt(pl.chFrom[ch],10),t=parseInt(pl.chTo[ch],10);
+  if(f>0&&t>0&&t>=f)pl.chPages[ch]=String(t-f+1);      /* 총 페이지도 함께 저장 */
   save();renderRdPlan();
+}
+/* 칸을 더블클릭 → 언제 읽을지 정하고 스케줄에 넣는다 (일정 제목 = 책 제목) */
+function rdPlanTime(bookId,date,ch){
+  const b=bookById(bookId);if(!b)return;
+  const pl=rdPlanEnsure(b), k=date+'|'+ch;
+  const pages=pl.grid[k]||'';
+  const cur=pl.time[k];
+  const bits=[];
+  if(ch&&ch!=='전체')bits.push('· '+ch);
+  var f=parseInt(pl.chFrom[ch],10);
+  if(pages)bits.push('· '+pages+'p');
+  tlqOpen((cur&&cur.t)||'20:00',{pickDate:true,date:date,head:'독서 시간 정하기',
+    title:b.title,detail:bits.join('\n'),
+    after:function(d2,t2){
+      pl.time[k]={d:d2,t:t2};
+      save();renderRdPlan();
+    }});
 }
 function rdPlanHTML(b){
   const pl=rdPlanEnsure(b);
   const rows=rdPlanRows(b), dates=rdPlanDates(pl), td=today();
-  const DW=46, NW=232, AW=dates.length*DW, TW=AW+34;
+  const DW=38, NW=336, AW=dates.length*DW, TW=AW+34;   /* 하루 분량은 세 자리까지 */
   /* 머리글: 날짜 */
   let head='';
   dates.forEach(function(d,i){
@@ -5941,38 +5981,49 @@ function rdPlanHTML(b){
       +'" style="width:'+DW+'px"><b>'+(mk?(dt.getMonth()+1)+'/':'')+dt.getDate()+'</b><i>'+dow+'</i></div>';
   });
   /* 본문 행 */
-  let body='', grand=0;
+  let body='', grand=0, tgtSum=0;
   rows.forEach(function(ch){
-    const pg=pl.chPages[ch]||'';
+    const chA=escA(ch).replace(/'/g,"&#39;");
+    const tgt=rdPlanTotal(pl,ch); tgtSum+=tgt;
     let assigned=0, cells='';
     dates.forEach(function(d){
-      const v=pl.grid[d+'|'+ch]||'';
+      const k=d+'|'+ch, v=pl.grid[k]||'', tm=pl.time[k];
       const n=(+v||0); assigned+=n; grand+=n;
-      cells+='<div class="rdp-c'+(d===td?' today':'')+'" style="width:'+DW+'px">'
-        +'<input class="rdp-in" inputmode="numeric" value="'+escA(v)+'"'
-        +' onchange="rdPlanCell('+b.id+',\''+d+'\',\''+escA(ch).replace(/'/g,"&#39;")+'\',this.value)"></div>';
+      const tmTxt=tm?(tm.d===d?tm.t:((+tm.d.slice(5,7))+'/'+(+tm.d.slice(8,10))+' '+tm.t)):'';
+      cells+='<div class="rdp-c'+(d===td?' today':'')+(tm?' timed':'')+'" style="width:'+DW+'px"'
+        +' ondblclick="event.preventDefault();rdPlanTime('+b.id+',\''+d+'\',\''+chA+'\')"'
+        +' title="더블클릭 → 읽을 시간 정하기'+(tmTxt?' (지금 '+escA(tmTxt)+')':'')+'">'
+        +'<input class="rdp-in" inputmode="numeric" maxlength="3" value="'+escA(v)+'"'
+        +' onchange="rdPlanCell('+b.id+',\''+d+'\',\''+chA+'\',this.value)">'
+        +(tmTxt?'<span class="rdp-tm">'+esc(tmTxt)+'</span>':'')
+        +'</div>';
     });
-    const tgt=+pg||0;
     const st=tgt?(assigned>tgt?'over':(assigned===tgt?'done':'')):'';
     body+='<div class="rdp-r">'
       +'<div class="rdp-nm" style="width:'+NW+'px">'
         +'<span class="rdp-nmt" title="'+escA(ch)+'">'+esc(ch)+'</span>'
-        +'<input class="rdp-pg" inputmode="numeric" value="'+escA(pg)+'" placeholder="p"'
-        +' title="이 목차의 페이지수" onchange="rdPlanChSetName('+b.id+',\''+escA(ch).replace(/'/g,"&#39;")+'\',this.value)">'
+        +'<input class="rdp-pg" inputmode="numeric" value="'+escA(pl.chFrom[ch]||'')+'" placeholder="시작"'
+        +' title="시작 페이지" onchange="rdPlanRange('+b.id+',\''+chA+'\',\'from\',this.value)">'
+        +'<input class="rdp-pg" inputmode="numeric" value="'+escA(pl.chTo[ch]||'')+'" placeholder="종료"'
+        +' title="종료 페이지" onchange="rdPlanRange('+b.id+',\''+chA+'\',\'to\',this.value)">'
+        +'<span class="rdp-tot" title="총 페이지 (종료 − 시작 + 1)">'+(tgt||'–')+'</span>'
         +'<span class="rdp-as '+st+'">'+(assigned||0)+(tgt?'/'+tgt:'')+'</span>'
       +'</div>'
       +'<div class="rdp-cs" style="width:'+AW+'px">'+cells+'</div></div>';
   });
-  const total=b.totalPages||0;
+  const total=Math.max(tgtSum,b.totalPages||0);   /* 목차 합계와 책 총페이지 중 큰 값 */
   const foot=total?(grand>=total?'<b style="color:var(--green)">계획 완성 ✓ ('+grand+'p)</b>'
     :'계획 <b>'+grand+'p</b> / 총 '+total+'p · 남은 '+(total-grand)+'p')
     :'계획 <b>'+grand+'p</b>';
   return '<div class="rdp-box">'
     +'<div class="rdp-hd"><b>독서계획</b>'
-      +'<span class="rdp-hint">목차별 페이지수와 일자별 분량을 적으세요</span>'
+      +'<span class="rdp-hint">시작·종료 페이지를 넣으면 총 페이지가 자동 계산됩니다 · 칸을 더블클릭하면 읽을 시간을 스케줄에 넣습니다</span>'
       +'<span class="rdp-per">'+esc(pl.start.slice(5).replace('-','/'))+'부터 '+pl.days+'일</span></div>'
     +'<div class="rdp-tl"><div class="rdp-tlin" style="width:'+(NW+TW+8)+'px">'
-      +'<div class="rdp-r rdp-hr"><div class="rdp-nm rdp-nh" style="width:'+NW+'px">목차 · 페이지</div>'
+      +'<div class="rdp-r rdp-hr"><div class="rdp-nm rdp-nh" style="width:'+NW+'px">'
+        +'<span class="rdp-nmt">목차</span>'
+        +'<span class="rdp-hl">시작</span><span class="rdp-hl">종료</span>'
+        +'<span class="rdp-hl tot">총</span><span class="rdp-hl as">배정</span></div>'
         +'<div class="rdp-cs" style="width:'+TW+'px">'+head
         +'<div class="rdp-ext" onclick="rdPlanAddDays('+b.id+',30)" title="30일 연장" style="left:'+(AW+6)+'px">＋</div>'
         +'</div></div>'
@@ -6079,15 +6130,29 @@ function renderStudyAll(){renderDashStudy();renderStudy();}
 let editMemId=null;
 function startEditMem(id){editMemId=id;renderStudyAll();}
 function cancelEditMem(){editMemId=null;renderStudyAll();}
-function saveEditMem(id){const x=db.study.find(s=>s.id===id);if(!x)return;
-  x.term=document.getElementById('emTerm').value.trim();
-  x.meaning=document.getElementById('emMean').value.trim();
+/* 같은 기록이 대시보드 카드와 Study 페이지 양쪽에 그려지므로,
+   반드시 «내가 실제로 고친 칸»에서 값을 읽어야 한다 (id 로 찾으면 앞쪽 것이 잡혀 원래대로 돌아감) */
+function memEditEls(el){
+  var row=(el&&el.closest)?el.closest('.memrow'):null;
+  if(!row){
+    var rows=[].slice.call(document.querySelectorAll('.memrow.editing'));
+    row=rows.filter(function(r){return r.offsetParent!==null;})[0]||rows[0];
+  }
+  if(!row)return null;
+  var t=row.querySelector('.em-term'),m=row.querySelector('.em-mean');
+  return (t&&m)?{t:t,m:m}:null;
+}
+function saveEditMem(id,el){const x=db.study.find(s=>s.id===id);if(!x)return;
+  var q=memEditEls(el);if(!q)return;
+  var term=q.t.value.trim();
+  if(!term){alert('단어를 입력하세요.');q.t.focus();return;}
+  x.term=term;x.meaning=q.m.value.trim();
   editMemId=null;save();renderStudyAll();renderCal();}
 function memRow(x){
-  if(editMemId===x.id)return `<div class="memrow">
-    <textarea id="emTerm" class="in" style="flex:1;min-height:56px;resize:vertical">${esc(x.term||'')}</textarea>
-    <textarea id="emMean" class="in" style="flex:1.3;min-height:56px;resize:vertical">${esc(x.meaning||'')}</textarea>
-    <button class="btn y" style="flex:none" onclick="saveEditMem(${x.id})">저장</button>
+  if(editMemId===x.id)return `<div class="memrow editing" data-mid="${x.id}">
+    <textarea class="in em-term" style="flex:1;min-height:56px;resize:vertical">${esc(x.term||'')}</textarea>
+    <textarea class="in em-mean" style="flex:1.3;min-height:56px;resize:vertical">${esc(x.meaning||'')}</textarea>
+    <button class="btn y" style="flex:none" onclick="saveEditMem(${x.id},this)">저장</button>
     <span class="del" onclick="cancelEditMem()">×</span></div>`;
   return `<div class="memrow">
     <span class="zoom-ic" title="크게 보기" onclick="zoomWord(${x.id})">⤢</span>
@@ -7737,7 +7802,7 @@ esSet(['inboxInput2'],function(){addInbox('inboxInput2','idea');});
 esSet(['wTitle','wContent'],function(){addWorkDash();});
 esSet(['sTerm','sMean','sCat','sTitle','sContent'],function(){addStudyDash();});
 esSet(['sdDate','sdTerm','sdMean','sdCat','sdTitle','sdContent'],function(){addStudyDetail();});
-esSet(['emTerm','emMean'],function(){if(editMemId!=null)saveEditMem(editMemId);});
+
 esSet(['exBook','exChapter','exText','exPage'],function(){addExcerpt();});
 esSet(['bTitle','bAuthor','bPub','bPages','bStart','bEnd','bCat','bLink','bChapters'],function(){addBook();});
 esSet(['nTitle','nAuthor','nPub','nPages','nStart','nEnd','nCat','nLink','nChapters'],function(){addBookFromList();});
@@ -7784,6 +7849,8 @@ document.addEventListener('keydown',function(e){
     if(t==='checkbox'||t==='radio'||t==='button'||t==='submit')return;
     var fn=ES_MAP[el.id];
     if(!fn&&el.id&&el.id.indexOf('cuIn')===0){var uid2=Number(el.id.slice(4));fn=function(){cheonilUnitAdd(uid2);};}
+    if(!fn&&el.classList&&(el.classList.contains('em-term')||el.classList.contains('em-mean'))){
+      fn=function(){if(editMemId!=null)saveEditMem(editMemId,el);};}
     if(!fn&&el.classList&&(el.classList.contains('rtNameIn')||el.classList.contains('rtMinIn'))){
       var lid=Number(el.getAttribute('data-l'));fn=function(){addRoutineIn(lid);};}
     if(!fn)return;
