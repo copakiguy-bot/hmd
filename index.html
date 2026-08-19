@@ -2042,7 +2042,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-18 · r22';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-18 · r24';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -2369,7 +2369,7 @@ function renderTimeline(){
     var endMn=Math.min(e.mn+e.dur,24*60-1);
     var range=tlFmt(e.mn)+'~'+tlFmt(endMn);
     html+='<div class="tl-ev'+(e.k==='r'?' rt':'')+(e.done?' done':'')+(e.ok?' ok':'')+'" data-k="'+e.k+'" data-id="'+e.id+'"'
-      +' style="left:'+left+'px;top:'+(8+li*38)+'px;width:'+bw+'px" title="'+escA(e.title+(e.detail?' — '+e.detail:'')+' ('+range+') — 두 번 탭: 타이머')+'">'
+      +' style="left:'+left+'px;top:'+(8+li*38)+'px;width:'+bw+'px" title="'+escA(e.title+(e.detail?' — '+e.detail:'')+' ('+range+') — 두 번 탭: 완료 · 세 번 탭: 타이머')+'">'
       +'<b>'+esc(lbl)+'</b><span class="tl-time">'+range+'</span></div>';
   });
   var trackH=Math.max(110,8+Math.max(1,lanes.length)*38+18);
@@ -2417,10 +2417,21 @@ function tlBindDrag(){
       el.classList.remove('dragging');
       var d=tlDrag;tlDrag=null;
       if(!d.moved){
-        /* 이동 없이 두 번 탭(클릭) → 타이머 (모바일 포함) */
+        /* 이동 없이 탭: 두 번 = 완료 처리 · 세 번 = 타이머 (모바일 포함) */
         var now=Date.now();
-        if(now-(el.__lastTap||0)<450){el.__lastTap=0;tlOpenTimer(d.k,d.id);}
-        else el.__lastTap=now;
+        if(now-(el.__lastTap||0)<450)el.__taps=(el.__taps||1)+1;
+        else el.__taps=1;
+        el.__lastTap=now;
+        clearTimeout(el.__tapT);
+        if(el.__taps>=3){                      /* 세 번째 탭 즉시 타이머 */
+          el.__taps=0;el.__lastTap=0;
+          tlOpenTimer(d.k,d.id);
+        }else if(el.__taps===2){               /* 잠깐 기다렸다 세 번째가 없으면 완료 토글 */
+          el.__tapT=setTimeout(function(){
+            el.__taps=0;el.__lastTap=0;
+            tlToggleDone(d.k,d.id);
+          },430);
+        }
         return;
       }
       var left=parseFloat(el.style.left);
@@ -2456,7 +2467,17 @@ function calOtRecalc(){
   var f=document.getElementById('calOtFoot');
   if(f)f.innerHTML='이번 달 초과근무 합계 <b>'+otFmtH(total)+'</b> 시간';
 }
-/* ----- 스케줄 타이머: 더블클릭 → 별도 창(다른 모니터로 이동 가능)에서 소요시간 카운트다운 ----- */
+/* 타임라인 일정 완료 토글: 일정(s)은 done, 루틴(r)은 그날 체크 */
+function tlToggleDone(kind,id){
+  if(kind==='s'){
+    var s0=db.schedules.find(function(x){return x.id===id;});if(!s0)return;
+    s0.done=!s0.done;save();renderCal();renderSchedule();
+  }else{
+    tlrToggleOk(id);
+  }
+  if(typeof renderHome==='function')renderHome();
+}
+/* ----- 스케줄 타이머: 세 번 클릭 → 별도 창(다른 모니터로 이동 가능)에서 소요시간 카운트다운 ----- */
 function tlOpenTimer(kind,id){
   var it=(kind==='r')?(db.tlRoutines||[]).find(function(x){return x.id===id;}):db.schedules.find(function(x){return x.id===id;});
   if(!it)return;
@@ -6828,6 +6849,7 @@ function saveCheonilDash(){
   u.desc=document.getElementById('cdDesc').value;
   u.sentence=document.getElementById('cdSentence').value.trim();
   if(u.desc||u.sentence)u.date=today();
+  cheonilDashEdit=false;
   save();renderDashStudy();renderStudy();renderCal();
 }
 function toggleCheonilChapterForm(){const f=document.getElementById('cheonilChapterForm');if(!f)return;
@@ -6867,25 +6889,30 @@ function cheonilDashFeedHTML(){
       ${u.sentence?`<div class="cd-sent-full">${esc(u.sentence)}</div>`:''}</div>`).join('');
 }
 /* 작성한 천일문 수정: 해당 챕터·유닛을 선택해 편집기 열기 */
+var cheonilDashEdit=false;   /* ✎ 를 눌러 오늘 작성분을 고치는 중 */
 function editCheonilDash(cid,uid2){
+  cheonilDashEdit=true;
+  renderDashStudy();                                   /* 숨겨졌던 입력 폼을 다시 편다 */
   const cs=document.getElementById('cdChapter');if(!cs)return;
   cs.value=String(cid);fillCheonilDashUnits();
   const us=document.getElementById('cdUnit');if(us)us.value=String(uid2);
   fillCheonilDashUnitFields();
-  fwStart('cheonildesc',document.getElementById('cdDesc'));
+  const se=document.getElementById('cdSentence');
+  if(se){se.focus();se.scrollIntoView({behavior:'smooth',block:'center'});}
 }
 /* 작성한 천일문 삭제: 설명·문장을 비움 (챕터·유닛 목차는 유지) */
 function delCheonilDash(cid,uid2){
   if(!confirm('이 천일문 내용을 삭제할까요? (챕터·유닛 목차는 남습니다)'))return;
   const u=cheonilUnitById(cid,uid2);if(!u)return;
   u.desc='';u.sentence='';delete u.date;
+  cheonilDashEdit=false;
   save();renderDashStudy();renderStudy();renderCal();
   fillCheonilDashUnitFields();
 }
 function cheonilDashHTML(){
   return `<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">
     <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:8px;letter-spacing:.3px">천일문</div>
-    ${(()=>{const t=cheonilTodayItems();const hasEntry=t.length>0;
+    ${(()=>{const t=cheonilTodayItems();const hasEntry=t.length>0&&!cheonilDashEdit;
     return `<div id="cheonilCompose" style="${hasEntry?'display:none':''}">
     <div class="inrow">
       <select id="cdChapter" class="in" style="flex:1" onchange="fillCheonilDashUnits()"></select>
@@ -7613,8 +7640,8 @@ var FW_KINDS={
   diary2:['일기 쓰기',['diaryInput2'],['diaryInput2'],function(){addDiary('diaryInput2');}],
   eng:['문장 쓰기',['sTerm','sMean'],['sTerm','sMean'],function(){addStudyDash();}],
   engd:['문장 쓰기',['sdDate','sdTerm','sdMean'],['sdTerm','sdMean'],function(){addStudyDetail();}],
-  cheonil:['문장 쓰기',['cdChapter','cdUnit','cdSentence'],['cdSentence'],function(){saveCheonilDash();}],
-  cheonildesc:['설명 쓰기',['cdChapter','cdUnit','cdDesc'],['cdDesc'],function(){saveCheonilDash();}],
+  cheonil:['천일문 쓰기',['cdChapter','cdUnit','cdSentence','cdDesc'],['cdDesc'],function(){saveCheonilDash();}],
+  cheonildesc:['천일문 쓰기',['cdChapter','cdUnit','cdSentence','cdDesc'],['cdDesc'],function(){saveCheonilDash();}],
   cmdesc:['설명 쓰기',['cmDescEdit'],['cmDescEdit'],function(){if(cheonilEditKey){var q=String(cheonilEditKey).split('_');saveCheonilDesc(Number(q[0]),Number(q[1]));}}],
   chex:['발췌 쓰기',['chExText','chExPage'],['chExText'],function(){if(readOpenId)addChapterExcerpt(readOpenId);}],
   exedit:['발췌 수정',['exEditChapter','exEditPage','exEditText'],['exEditText'],function(){saveExcerptFull();}],
@@ -7625,7 +7652,7 @@ function fwStart(kind,src){
   if(src&&src.blur)src.blur();
   var c=FW_KINDS[kind];if(c)fwOpen(kind,c[0],c[1],c[2],c[3]);
 }
-var FW_RICH={diary:1,diary2:1,excerpt:1,chex:1,exedit:1,dyedit:1,cheonildesc:1,cmdesc:1};   // 큰화면에서 서식 편집을 쓰는 종류
+var FW_RICH={diary:1,diary2:1,excerpt:1,chex:1,exedit:1,dyedit:1,cheonil:1,cheonildesc:1,cmdesc:1};   // 큰화면에서 서식 편집을 쓰는 종류
 /* 일기 종류: 기록 / 단상 */
 var fwDiaryKind='기록';
 function fwKindSet(k){fwDiaryKind=k;fwKindPaint();}
