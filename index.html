@@ -434,6 +434,25 @@
   #memoPad .memo-foot .btn.ghost{background:#fffdf0;color:#7a6a1e}
   #memoMsg{font-size:11px;color:#8a7b26;flex:1;min-width:0}
   @media(max-width:1000px){#memoFab{right:10px}#memoPad{right:10px;width:220px}}
+  /* ===== 저장된 영구 메모: 제목만 → 펼치면 카드 ===== */
+  .zk-perm-h{cursor:pointer}
+  .zk-ar{flex:none;font-size:11px;color:var(--muted);width:11px}
+  .zkv-wrap{padding:10px 0 4px}
+  .zkv{width:min(560px,100%);aspect-ratio:148/105;background:#FDFBF2;border-radius:6px;
+    box-shadow:0 2px 0 rgba(0,0,0,.04),0 8px 22px rgba(18,49,43,.14);
+    padding:12px 18px 12px 20px;position:relative;display:flex;flex-direction:column;overflow:hidden}
+  .zkv::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+    background:#e8a4a0;border-radius:6px 0 0 6px}
+  .zkv-head{flex:none;display:flex;align-items:center;gap:8px;font-size:10.5px;font-weight:800;color:#b0a889}
+  .zkv-head .k{margin-left:auto;color:#c6bfa4}
+  .zkv-t{flex:none;font-family:'Gowun Dodum',sans-serif;font-size:15.5px;font-weight:700;color:var(--dark);
+    line-height:1.45;padding:3px 0 8px;border-bottom:2px solid #e8a4a0;word-break:break-word}
+  .zkv-b{flex:1;min-height:0;overflow:auto;font-family:'Gowun Dodum',sans-serif;font-size:14.5px;
+    line-height:28px;color:#33322a;white-space:pre-wrap;word-break:break-word;padding-top:2px;
+    background:repeating-linear-gradient(transparent,transparent 27px,#e3ddc6 27px,#e3ddc6 28px);
+    background-attachment:local}
+  .zkv-f{flex:none;display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding-top:8px;
+    border-top:1px dashed #d8d2b8;margin-top:6px}
   /* ===== 제텔카스텐 메모지 (A6 148×105 비율) ===== */
   .zkc-ov{display:none;position:fixed;inset:0;z-index:126;background:rgba(18,49,43,.42);
     align-items:center;justify-content:center;padding:20px}
@@ -452,13 +471,13 @@
   .zkc-x{flex:none;cursor:pointer;color:#b0a889;font-size:15px;line-height:1;padding:2px 4px}
   .zkc-x:hover{color:var(--dark)}
   .zkc-title{flex:none;width:100%;border:none;outline:none;background:transparent;
-    font-family:'Gowun Dodum',sans-serif;font-size:16.5px;font-weight:700;color:var(--dark);
+    font-family:'Gowun Dodum',sans-serif;font-size:17.8px;font-weight:700;color:var(--dark);
     padding:4px 2px 9px;border-bottom:2px solid #e8a4a0}
   .zkc-title::placeholder{color:#c6bfa4;font-weight:400}
   .zkc-body{flex:1;min-height:0;width:100%;border:none;outline:none;resize:none;
-    background:repeating-linear-gradient(transparent,transparent 27px,#e3ddc6 27px,#e3ddc6 28px);
+    background:repeating-linear-gradient(transparent,transparent 29px,#e3ddc6 29px,#e3ddc6 30px);
     background-attachment:local;
-    font-family:'Gowun Dodum',sans-serif;font-size:14.5px;line-height:28px;color:#33322a;
+    font-family:'Gowun Dodum',sans-serif;font-size:15.8px;line-height:30px;color:#33322a;
     padding:2px 2px 0}
   .zkc-body::placeholder{color:#c6bfa4}
   .zkc-foot{flex:none;display:flex;align-items:center;gap:8px;padding-top:10px}
@@ -1163,7 +1182,9 @@
   #zkRefBox{font-size:12px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:6px}
   .zk-book{margin-bottom:16px}
   .zk-book:last-child{margin-bottom:0}
-  .zk-book-h{font-size:13px;font-weight:800;color:var(--dark);padding-bottom:7px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .zk-book-h{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:var(--dark);
+    padding:6px 2px 7px;border-bottom:1px solid var(--line);margin-bottom:8px;cursor:pointer;border-radius:6px}
+  .zk-book-h:hover{background:var(--cream)}
   .zk-book-h span{font-weight:700;font-size:11px;color:var(--muted);margin-left:5px}
   .zk-lit{padding:10px 12px;background:var(--cream);border-radius:12px;margin-bottom:8px}
   .zk-lit-q{font-family:'Gowun Dodum',sans-serif;font-size:13px;line-height:1.7;color:var(--dark)}
@@ -2099,7 +2120,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-18 · r26';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-19 · r27';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4247,6 +4268,14 @@ function zkLitAll(){
 function zkLitByKey(k){return zkLitAll().find(function(l){return l.key===k;});}
 /* ---- 영구 메모 ---- */
 var zkEditId=null, zkRef=null;
+var zkOpen={}, zkBookOpen={};                   /* 펼쳐진 영구 메모 · 책 */
+function zkToggleCard(ev,id){
+  if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.stn-btn,.del'))return;
+  zkOpen[id]=!zkOpen[id];renderZettel();
+}
+var zkBookNames=[];
+function zkToggleBookIdx(i){var bk=zkBookNames[i];if(bk==null)return;
+  zkBookOpen[bk]=!zkBookOpen[bk];renderZettel();}
 function zkTagsOf(x){return String(x.tags||'').split(/[,\s]+/).map(function(s){return s.replace(/^#/,'').trim();}).filter(Boolean);}
 /* 본문의 [[제목]] → 클릭 가능한 링크 (존재하면 초록, 없으면 회색) */
 function zkBodyHTML(x){
@@ -4289,7 +4318,7 @@ function zkSavePerm(){
   return true;
 }
 /* ---------- 영구 메모 카드 팝업 (A6 · 본문 500자) ---------- */
-var ZKC_MAX=500;
+var ZKC_MAX=350;
 function zkCardOpen(src){
   if(src&&src.blur)src.blur();
   var ov=document.getElementById('zkCardOv');if(!ov)return;
@@ -4389,18 +4418,25 @@ function renderZettel(){
       if(zkRef)rb.innerHTML='출처로 연결됨: '+zkRefHTML(zkRef)+' <span class="del" style="font-size:13px" onclick="zkRef=null;renderZettel()">×</span>';}
     var cb=document.getElementById('zkCancelBtn');if(cb)cb.style.display=zkEditId!=null?'':'none';
     pl.innerHTML=list.length?list.map(function(x){
-      var bl=zkBacklinks(x),tags=zkTagsOf(x);
+      var bl=zkBacklinks(x),tags=zkTagsOf(x),open=!!zkOpen[x.id];
       return '<div class="zk-perm'+(zkEditId===x.id?' editing':'')+'" data-zk="'+x.id+'">'
-        +'<div class="zk-perm-h"><b>'+esc(x.title||'')+'</b>'
+        +'<div class="zk-perm-h" onclick="zkToggleCard(event,'+x.id+')">'
+        +'<span class="zk-ar">'+(open?'▾':'▸')+'</span>'
+        +'<b>'+esc(x.title||'')+'</b>'
         +'<span class="zk-date">'+esc(String(x.date||'').slice(5))+'</span>'
-        +'<span class="stn-btn" onclick="zkEdit('+x.id+')">수정</span>'
-        +'<span class="del" onclick="zkDel('+x.id+')">×</span></div>'
-        +'<div class="zk-perm-b">'+zkBodyHTML(x)+'</div>'
-        +'<div class="zk-perm-f">'
-        +tags.map(function(t){return '<span class="zk-tag">#'+esc(t)+'</span>';}).join('')
-        +zkRefHTML(x.ref)
-        +(bl.length?'<span class="zk-bl" title="'+escA(bl.map(function(z){return z.title;}).join('\n'))+'">← 백링크 '+bl.length+'</span>':'')
-        +'</div></div>';
+        +'<span class="stn-btn" onclick="event.stopPropagation();zkEdit('+x.id+')">수정</span>'
+        +'<span class="del" onclick="event.stopPropagation();zkDel('+x.id+')">×</span></div>'
+        +(open?('<div class="zkv-wrap"><div class="zkv">'
+          +'<div class="zkv-head"><span>'+esc(String(x.date||'').replace(/-/g,'.'))+'</span>'
+          +'<span class="k">한 장에 한 생각 · A6</span></div>'
+          +'<div class="zkv-t">'+esc(x.title||'')+'</div>'
+          +'<div class="zkv-b">'+zkBodyHTML(x)+'</div>'
+          +'<div class="zkv-f">'
+          +tags.map(function(t){return '<span class="zk-tag">#'+esc(t)+'</span>';}).join('')
+          +zkRefHTML(x.ref)
+          +(bl.length?'<span class="zk-bl" title="'+escA(bl.map(function(z){return z.title;}).join('\n'))+'">← 백링크 '+bl.length+'</span>':'')
+          +'</div></div></div>'):'')
+        +'</div>';
     }).join(''):'<div class="empty">아직 영구 메모가 없습니다.<br><span style="font-size:12px">아래 문헌 메모에서 «영구 메모로»를 누르거나 위에서 직접 쓰세요.</span></div>';
   }
   /* 문헌 메모 */
@@ -4410,9 +4446,12 @@ function renderZettel(){
     var lc=document.getElementById('zkLitCount');if(lc)lc.textContent=lits.length?lits.length+'장':'';
     var by={};
     lits.forEach(function(l){(by[l.book]=by[l.book]||[]).push(l);});
-    ll.innerHTML=lits.length?Object.keys(by).map(function(bk){
-      return '<div class="zk-book"><div class="zk-book-h">'+esc(bk)+' <span>'+by[bk].length+'장</span></div>'
-        +by[bk].map(function(l){
+    zkBookNames=Object.keys(by);
+    ll.innerHTML=lits.length?zkBookNames.map(function(bk,bi){
+      var bopen=!!zkBookOpen[bk];
+      return '<div class="zk-book"><div class="zk-book-h'+(bopen?' on':'')+'" onclick="zkToggleBookIdx('+bi+')">'
+        +'<span class="zk-ar">'+(bopen?'▾':'▸')+'</span>'+esc(bk)+' <span>'+by[bk].length+'장</span></div>'
+        +(bopen?by[bk].map(function(l){
           return '<div class="zk-lit">'
             +'<div class="zk-lit-q">“'+esc(l.text)+'”</div>'
             +(l.notes.length?'<div class="zk-lit-n">'+l.notes.map(function(n,i){
@@ -4422,7 +4461,7 @@ function renderZettel(){
             +'<span class="stn-btn" onclick="zkOpenSrc('+l.bid+')">독서에서 보기</span>'
             +'<span class="stn-btn save" onclick="zkPromote(\''+l.key+'\')">영구 메모로</span></div>'
             +'</div>';
-        }).join('')+'</div>';
+        }).join(''):'')+'</div>';
     }).join(''):'<div class="empty">아직 문헌 메모가 없습니다.<br><span style="font-size:12px">독서 → 책 들여다보기에서 발췌하고 주석을 달면 여기로 모입니다.</span></div>';
   }
 }
