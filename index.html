@@ -434,6 +434,40 @@
   #memoPad .memo-foot .btn.ghost{background:#fffdf0;color:#7a6a1e}
   #memoMsg{font-size:11px;color:#8a7b26;flex:1;min-width:0}
   @media(max-width:1000px){#memoFab{right:10px}#memoPad{right:10px;width:220px}}
+  /* ===== 제텔카스텐 메모지 (A6 148×105 비율) ===== */
+  .zkc-ov{display:none;position:fixed;inset:0;z-index:126;background:rgba(18,49,43,.42);
+    align-items:center;justify-content:center;padding:20px}
+  .zkc-ov.on{display:flex}
+  .zkc{width:min(680px,96vw);aspect-ratio:148/105;min-height:380px;max-height:92vh;
+    background:#FDFBF2;border-radius:6px;display:flex;flex-direction:column;
+    box-shadow:0 3px 0 rgba(0,0,0,.04),0 26px 60px rgba(18,49,43,.35);
+    padding:14px 20px 14px 22px;position:relative;animation:fwIn .16s ease-out}
+  .zkc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;
+    background:#e8a4a0;border-radius:6px 0 0 6px}   /* 색인카드 왼쪽 빨간 줄 */
+  .zkc-head{display:flex;align-items:center;gap:10px;flex:none;padding-bottom:6px}
+  .zkc-date{font-size:11px;font-weight:800;color:#b0a889;font-variant-numeric:tabular-nums}
+  .zkc-hint{font-size:10.5px;color:#c6bfa4;font-weight:700}
+  .zkc-cnt{margin-left:auto;font-size:11px;font-weight:800;color:#b0a889;font-variant-numeric:tabular-nums}
+  .zkc-cnt.full{color:var(--red)}
+  .zkc-x{flex:none;cursor:pointer;color:#b0a889;font-size:15px;line-height:1;padding:2px 4px}
+  .zkc-x:hover{color:var(--dark)}
+  .zkc-title{flex:none;width:100%;border:none;outline:none;background:transparent;
+    font-family:'Gowun Dodum',sans-serif;font-size:16.5px;font-weight:700;color:var(--dark);
+    padding:4px 2px 9px;border-bottom:2px solid #e8a4a0}
+  .zkc-title::placeholder{color:#c6bfa4;font-weight:400}
+  .zkc-body{flex:1;min-height:0;width:100%;border:none;outline:none;resize:none;
+    background:repeating-linear-gradient(transparent,transparent 27px,#e3ddc6 27px,#e3ddc6 28px);
+    background-attachment:local;
+    font-family:'Gowun Dodum',sans-serif;font-size:14.5px;line-height:28px;color:#33322a;
+    padding:2px 2px 0}
+  .zkc-body::placeholder{color:#c6bfa4}
+  .zkc-foot{flex:none;display:flex;align-items:center;gap:8px;padding-top:10px}
+  .zkc-tags{flex:1;min-width:0;border:none;outline:none;background:transparent;
+    font-size:12px;color:#6b6650;font-family:inherit;border-bottom:1px dashed #d8d2b8;padding:4px 2px}
+  .zkc-tags::placeholder{color:#c6bfa4}
+  .zkc-ref{font-size:10.5px;color:#8a9490;flex:none;max-width:200px;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  @media(max-width:700px){.zkc{aspect-ratio:auto;height:88vh}}
   /* ===== 글쓰기 편집기: 모드(일반/개발자) ===== */
   .fw-modes{display:inline-flex;gap:3px;margin-right:4px}
   .fw-modes button{border:1px solid var(--line);background:#fff;border-radius:7px;font-size:10.5px;
@@ -562,7 +596,9 @@
   #calOtFoot b{font-size:15px;color:var(--dark)}
   .tl-ev.rt{background:#DDF5E6}.tl-ev.rt b{color:#1f6b4a}
   .tl-ev.ok{background:#bfe9cf}
-  .tl-ev.done{opacity:.5}.tl-ev.done b{text-decoration:line-through}
+  .tl-ev.done{opacity:.5;text-decoration:line-through}
+  .tl-ev.done b{text-decoration:line-through;text-decoration-thickness:1.5px}
+  .tl-ev.done .tl-time{text-decoration:line-through}
   .tl-ev.dragging{opacity:.8;cursor:grabbing;z-index:5;box-shadow:0 8px 20px rgba(18,49,43,.2)}
   .tl-now{position:absolute;top:0;bottom:0;width:2px;background:var(--red);z-index:3;pointer-events:none}
   .tl-now::before{content:'';position:absolute;top:0;left:-3px;width:8px;height:8px;border-radius:50%;background:var(--red)}
@@ -1196,7 +1232,9 @@
   .hm-empty{color:var(--muted);font-size:12px;text-align:center;padding:22px 0}
   .hm-row .hm-star{width:12px;height:14px;font-size:12px;line-height:14px}
   /* 문화 카드 */
-  .hm-cult{padding:7px 0;border-bottom:1px solid var(--line);cursor:pointer}
+  .hm-cult{padding:7px 0;border-bottom:1px solid var(--line);cursor:pointer;
+    display:flex;align-items:flex-start;gap:6px}
+  .hm-cult-main{flex:1;min-width:0}
   .hm-cult:last-child{border-bottom:none}
   .hm-cult:hover b{color:var(--green)}
   .hm-cult-top{display:flex;align-items:baseline;gap:6px}
@@ -1204,11 +1242,11 @@
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .hm-cult-top .sub{font-size:10.5px;color:var(--muted);flex:none}
   .hm-cult-cat{flex:none;font-size:10px;font-weight:800;color:#5b3fa8;background:#EDE4FF;
-    border-radius:5px;padding:2px 6px;line-height:1.4}
+    border-radius:5px;padding:2px 6px;line-height:1.4;margin-top:1px}
   .hm-cult-star{display:inline-flex;align-items:center;gap:4px;flex:none;margin-left:auto}
   .hm-cult-star .hm-star{width:11px;height:13px;font-size:11px;line-height:13px}
   .hm-cult-star .n{font-size:10.5px;font-weight:700;color:#b08a2a}
-  .hm-cult-one{margin-top:3px;font-size:11.5px;color:var(--muted);line-height:1.5;
+  .hm-cult-one{margin-top:2px;font-size:11.5px;color:var(--muted);line-height:1.5;
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* 주요일정 */
   .hm-sch{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12.5px}
@@ -1672,8 +1710,8 @@
     <div class="card">
       <h3><span class="dot" style="background:var(--dark)"></span> 영구 메모 <span class="more" id="zkPermCount"></span></h3>
       <div id="zkPermForm">
-        <input id="zkTitle" class="in" style="width:100%" placeholder="제목 = 주장 한 문장 (예: 형광펜은 익숙함을 이해로 착각하게 만든다)">
-        <textarea id="zkBody" class="in" style="width:100%;min-height:110px;margin-top:8px;resize:vertical;line-height:1.7" placeholder="내 문장으로, 혼자 읽어도 이해되게.  [[다른 영구 메모 제목]] 을 쓰면 연결됩니다."></textarea>
+        <input id="zkTitle" class="in" style="width:100%" placeholder="제목 = 주장 한 문장 — 누르면 메모지가 열립니다" onfocus="zkCardOpen(this)" readonly>
+        <textarea id="zkBody" class="in" style="width:100%;min-height:64px;margin-top:8px;resize:vertical;line-height:1.7" placeholder="내 문장으로, 혼자 읽어도 이해되게." onfocus="zkCardOpen(this)" readonly></textarea>
         <div class="inrow" style="margin-top:8px">
           <input id="zkTags" class="in" style="flex:1" placeholder="태그 (쉼표로 구분)">
           <button class="btn y" style="flex:none" onclick="zkSavePerm()">저장</button>
@@ -2025,6 +2063,25 @@
   </div>
 </div>
 
+<!-- ===== 제텔카스텐 메모지 (A6 카드) — X 를 눌러야만 닫힘 ===== -->
+<div class="zkc-ov" id="zkCardOv">
+  <div class="zkc" onclick="event.stopPropagation()">
+    <div class="zkc-head">
+      <span class="zkc-date" id="zkcDate"></span>
+      <span class="zkc-hint">한 장에 한 생각 · A6</span>
+      <span class="zkc-cnt" id="zkcCnt">0/500</span>
+      <span class="zkc-x" onclick="zkCardClose()" title="닫기 (쓰던 내용은 남습니다)">✕</span>
+    </div>
+    <input id="zkcTitle" class="zkc-title" maxlength="80" placeholder="주장 한 문장">
+    <textarea id="zkcBody" class="zkc-body" spellcheck="false" placeholder="내 문장으로, 혼자 읽어도 이해되게.&#10;[[다른 영구 메모 제목]] 을 쓰면 연결됩니다."></textarea>
+    <div class="zkc-foot">
+      <input id="zkcTags" class="zkc-tags" placeholder="태그 (쉼표로 구분)">
+      <span class="zkc-ref" id="zkcRef"></span>
+      <button class="btn y" style="flex:none;padding:7px 16px" onclick="zkCardSave()">저장</button>
+    </div>
+  </div>
+</div>
+
 <div class="fw-back" id="fwBack" onclick="fwBackClick()">
   <div class="fw" onclick="event.stopPropagation()">
     <div class="fw-head"><span class="fw-traffic" id="fwTraffic"><i onclick="fwClose()" title="닫기"></i><i onclick="fwResize(-1)" title="창 작게"></i><i onclick="fwResize(1)" title="창 크게"></i></span><span class="dot" style="background:var(--yellow)"></span><b id="fwTitle"></b><span class="fw-kind" id="fwKind"><button type="button" data-k="기록" onclick="fwKindSet('기록')">기록</button><button type="button" data-k="단상" onclick="fwKindSet('단상')">단상</button></span><span style="margin-left:auto;display:inline-flex;gap:5px;align-items:center"><span class="fw-modes"><button type="button" data-m="normal" onclick="fwThemeSet('normal')">일반</button><button type="button" data-m="dev" onclick="fwThemeSet('dev')">개발자</button></span><button id="fwMindBtn" class="lunar-toggle" onclick="fwToggleMind()">마인드맵</button><button class="lunar-toggle" onclick="fwResize(-1)" title="창 작게">－</button><button class="lunar-toggle" onclick="fwResize(1)" title="창 크게">＋</button></span><span class="fw-x" style="margin-left:12px" onclick="fwClose()">×</span></div>
@@ -2042,7 +2099,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-18 · r24';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-18 · r26';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -2360,7 +2417,7 @@ function renderTimeline(){
   var lanes=[],html='',maxRight=0;
   evs.forEach(function(e){
     var left=(e.mn-TL_START*60)/60*TL_HW;
-    var lbl=(e.ok?'✓ ':'')+e.title;
+    var lbl=((e.ok||e.done)?'✓ ':'')+e.title;
     var bw=Math.min(Math.max(Math.ceil(tlTextW(lbl))+17,26),252);   /* 글자에 딱 맞는 폭 */
     var occ=Math.max(bw,84);                                        /* 시간표기 폭까지 감안 */
     var li=0;while(li<lanes.length&&lanes[li]>left-4)li++;
@@ -2368,8 +2425,10 @@ function renderTimeline(){
     if(left+Math.max(bw,occ)>maxRight)maxRight=left+Math.max(bw,occ);
     var endMn=Math.min(e.mn+e.dur,24*60-1);
     var range=tlFmt(e.mn)+'~'+tlFmt(endMn);
+    var det=tlPlain(e.detail);
+    var tip=det||(e.title+' ('+range+')');       /* 마우스를 올리면 세부정보 */
     html+='<div class="tl-ev'+(e.k==='r'?' rt':'')+(e.done?' done':'')+(e.ok?' ok':'')+'" data-k="'+e.k+'" data-id="'+e.id+'"'
-      +' style="left:'+left+'px;top:'+(8+li*38)+'px;width:'+bw+'px" title="'+escA(e.title+(e.detail?' — '+e.detail:'')+' ('+range+') — 두 번 탭: 완료 · 세 번 탭: 타이머')+'">'
+      +' style="left:'+left+'px;top:'+(8+li*38)+'px;width:'+bw+'px" title="'+escA(tip)+'">'
       +'<b>'+esc(lbl)+'</b><span class="tl-time">'+range+'</span></div>';
   });
   var trackH=Math.max(110,8+Math.max(1,lanes.length)*38+18);
@@ -2409,7 +2468,7 @@ function tlBindDrag(){
       if(!tlDrag||tlDrag.el!==el)return;
       var nl=tlDrag.origLeft+(e.clientX-tlDrag.startX);
       nl=Math.max(0,Math.min(nl,(TL_END-TL_START)*TL_HW-12));
-      if(Math.abs(nl-tlDrag.origLeft)>2)tlDrag.moved=true;
+      if(Math.abs(nl-tlDrag.origLeft)>5)tlDrag.moved=true;   /* 더블클릭 중의 손떨림은 이동으로 보지 않는다 */
       el.style.left=nl+'px';
     });
     function finish(){
@@ -2437,6 +2496,18 @@ function tlBindDrag(){
       var left=parseFloat(el.style.left);
       var mn=Math.round((left/TL_HW*60)/5)*5+TL_START*60;   /* 5분 단위 스냅 */
       mn=Math.max(TL_START*60,Math.min(mn,TL_END*60));
+      var mn0=Math.round((d.origLeft/TL_HW*60)/5)*5+TL_START*60;
+      if(mn===mn0){                      /* 조금 밀렸지만 같은 시각 → 탭으로 취급 */
+        el.style.left=d.origLeft+'px';
+        var now2=Date.now();
+        if(now2-(el.__lastTap||0)<450)el.__taps=(el.__taps||1)+1; else el.__taps=1;
+        el.__lastTap=now2;
+        clearTimeout(el.__tapT);
+        if(el.__taps>=3){el.__taps=0;el.__lastTap=0;tlOpenTimer(d.k,d.id);}
+        else if(el.__taps===2){el.__tapT=setTimeout(function(){
+          el.__taps=0;el.__lastTap=0;tlToggleDone(d.k,d.id);},430);}
+        return;
+      }
       var t=tlFmt(mn);
       if(d.k==='s'){var s=db.schedules.find(function(x){return x.id===d.id;});if(s)s.time=t;}
       else{var r=(db.tlRoutines||[]).find(function(x){return x.id===d.id;});if(r)r.time=t;}
@@ -2478,6 +2549,14 @@ function tlToggleDone(kind,id){
   if(typeof renderHome==='function')renderHome();
 }
 /* ----- 스케줄 타이머: 세 번 클릭 → 별도 창(다른 모니터로 이동 가능)에서 소요시간 카운트다운 ----- */
+/* 세부정보를 툴팁용 평문으로: 서식(HTML)·빈 줄 정리 */
+function tlPlain(t){
+  var v=String(t==null?'':t);
+  if(!v.trim())return '';
+  v=v.replace(/<br\s*\/?>/gi,'\n').replace(/<\/(div|p|li)>/gi,'\n').replace(/<[^>]*>/g,'');
+  var d=document.createElement('textarea');d.innerHTML=v;v=d.value;
+  return v.split(/\n/).map(function(x){return x.trim();}).filter(Boolean).join('\n');
+}
 function tlOpenTimer(kind,id){
   var it=(kind==='r')?(db.tlRoutines||[]).find(function(x){return x.id===id;}):db.schedules.find(function(x){return x.id===id;});
   if(!it)return;
@@ -4194,10 +4273,10 @@ function zkBacklinks(x){
 function zkSavePerm(){
   var tt=document.getElementById('zkTitle'),bd=document.getElementById('zkBody'),tg=document.getElementById('zkTags');
   var title=tt.value.trim();
-  if(!title){alert('제목(주장 한 문장)을 입력하세요.');return;}
-  if(!bd.value.trim()){alert('본문을 입력하세요. 내 문장으로, 혼자 읽어도 이해되게.');return;}
+  if(!title){alert('제목(주장 한 문장)을 입력하세요.');return false;}
+  if(!bd.value.trim()){alert('본문을 입력하세요. 내 문장으로, 혼자 읽어도 이해되게.');return false;}
   var dup=(db.zk||[]).find(function(z){return z.id!==zkEditId&&String(z.title).trim().toLowerCase()===title.toLowerCase();});
-  if(dup){alert('같은 제목의 영구 메모가 이미 있습니다.\n한 장에 한 생각 — 제목을 다르게 하거나 기존 메모를 수정하세요.');return;}
+  if(dup){alert('같은 제목의 영구 메모가 이미 있습니다.\n한 장에 한 생각 — 제목을 다르게 하거나 기존 메모를 수정하세요.');return false;}
   if(zkEditId!=null){
     var x=(db.zk||[]).find(function(z){return z.id===zkEditId;});
     if(x){x.title=title;x.body=bd.value;x.tags=tg.value.trim();if(zkRef)x.ref=zkRef;}
@@ -4207,7 +4286,54 @@ function zkSavePerm(){
   zkEditId=null;zkRef=null;
   tt.value='';bd.value='';tg.value='';
   save();renderZettel();
+  return true;
 }
+/* ---------- 영구 메모 카드 팝업 (A6 · 본문 500자) ---------- */
+var ZKC_MAX=500;
+function zkCardOpen(src){
+  if(src&&src.blur)src.blur();
+  var ov=document.getElementById('zkCardOv');if(!ov)return;
+  document.getElementById('zkcTitle').value=document.getElementById('zkTitle').value||'';
+  document.getElementById('zkcBody').value=document.getElementById('zkBody').value||'';
+  document.getElementById('zkcTags').value=document.getElementById('zkTags').value||'';
+  var d=document.getElementById('zkcDate');
+  if(d)d.textContent=today().replace(/-/g,'.');
+  var rf=document.getElementById('zkcRef');
+  if(rf)rf.textContent=zkRef?('출처: '+(zkRef.book||'')+(zkRef.page?' p.'+zkRef.page:'')):'';
+  zkcCount();
+  ov.classList.add('on');
+  setTimeout(function(){
+    var t=document.getElementById('zkcTitle');
+    var f=t.value?document.getElementById('zkcBody'):t;
+    f.focus();
+    if(f.setSelectionRange)try{f.setSelectionRange(f.value.length,f.value.length);}catch(e){}
+  },40);
+}
+function zkcSyncBack(){   /* 카드 → 인라인 폼 (닫아도 쓰던 내용은 남긴다) */
+  document.getElementById('zkTitle').value=document.getElementById('zkcTitle').value;
+  document.getElementById('zkBody').value=document.getElementById('zkcBody').value;
+  document.getElementById('zkTags').value=document.getElementById('zkcTags').value;
+}
+function zkCardClose(){
+  zkcSyncBack();
+  var ov=document.getElementById('zkCardOv');if(ov)ov.classList.remove('on');
+}
+function zkCardSave(){
+  zkcSyncBack();
+  if(zkSavePerm()===true){          /* 진짜 저장됐을 때만 닫는다 */
+    var ov=document.getElementById('zkCardOv');if(ov)ov.classList.remove('on');
+  }
+}
+function zkcCount(){
+  var b=document.getElementById('zkcBody'),c=document.getElementById('zkcCnt');
+  if(!b||!c)return;
+  if(b.value.length>ZKC_MAX)b.value=b.value.slice(0,ZKC_MAX);   /* 실제 메모지처럼 칸이 차면 끝 */
+  c.textContent=b.value.length+'/'+ZKC_MAX;
+  c.classList.toggle('full',b.value.length>=ZKC_MAX);
+}
+document.addEventListener('input',function(e){
+  if(e.target&&e.target.id==='zkcBody')zkcCount();
+});
 function zkCancelEdit(){zkEditId=null;zkRef=null;
   ['zkTitle','zkBody','zkTags'].forEach(function(i){var e=document.getElementById(i);if(e)e.value='';});
   renderZettel();}
@@ -4218,7 +4344,7 @@ function zkEdit(id){
   document.getElementById('zkBody').value=x.body||'';
   document.getElementById('zkTags').value=x.tags||'';
   renderZettel();
-  var f=document.getElementById('zkTitle');if(f){f.focus();f.scrollIntoView({behavior:'smooth',block:'center'});}
+  zkCardOpen(null);
 }
 function zkDel(id){
   var x=(db.zk||[]).find(function(z){return z.id===id;});if(!x)return;
@@ -7309,15 +7435,16 @@ function hmCultCard(title,color){
     +'<div class="hm-body">'+(l.length?l.map(function(x){
       var cat=String(x.category||'').trim();
       return '<div class="hm-cult" onclick="goStudy(\'문화\')" title="'+escA((cat?'['+cat+'] ':'')+(x.title||'')+(x.oneline?' — '+x.oneline:''))+'">'
-        +'<div class="hm-cult-top">'
         +(cat?'<span class="hm-cult-cat">'+esc(cat)+'</span>':'')
+        +'<div class="hm-cult-main">'
+        +'<div class="hm-cult-top">'
         +'<b>'+esc(x.title||'')+'</b>'
         +(cat==='음악'
           ? (x.artist?'<span class="hm-cult-art">'+esc(x.artist)+'</span>':'')
           : (x.rating?'<span class="hm-cult-star">'+hmStarsRO(x.rating)+'<span class="n">'+starTxt(x.rating)+'</span></span>':''))
         +'</div>'
         +(x.oneline?'<div class="hm-cult-one">'+esc(x.oneline)+'</div>':'')
-        +'</div>';
+        +'</div></div>';
     }).join(''):'<div class="hm-empty">기록이 없습니다.</div>')+'</div>';
 }
 /* 9~11. 지출 */
