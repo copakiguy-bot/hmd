@@ -457,6 +457,12 @@
     background-attachment:local}
   .zkv-f{flex:none;display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding-top:8px;
     border-top:1px dashed #d8d2b8;margin-top:6px}
+  /* 실시간 반영 알림 */
+  .live-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(14px);
+    background:var(--dark);color:#eaf3ef;font-size:12.5px;font-weight:700;border-radius:999px;
+    padding:9px 18px;box-shadow:0 10px 28px rgba(18,49,43,.3);z-index:200;
+    opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
+  .live-toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
   /* ===== 제텔카스텐 메모지 (A6 148×105 비율) ===== */
   .zkc-ov{display:none;position:fixed;inset:0;z-index:126;background:rgba(18,49,43,.42);
     align-items:center;justify-content:center;padding:20px}
@@ -2124,7 +2130,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-19 · r28';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-19 · r29';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -3087,15 +3093,18 @@ var __pushPending=false;
 function syncReady(){
   if(__syncReady)return;
   __syncReady=true;
+  __seeded=false;        /* 첫 불러오기가 끝나면 «예시 데이터로 시작» 상태는 해제 */
   if(__pushPending){__pushPending=false;cloudPushDebounced();}
 }
 function cloudPush(){var c=syncCode();if(!c)return;if(!db.__updated)db.__updated=Date.now();fetch(SUPA_URL+'/rest/v1/store?on_conflict=key',{method:'POST',headers:Object.assign({},cloudHeaders(),{Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({key:c,data:db,updated_at:new Date().toISOString()})}).then(function(r){setSyncStatus(r.ok?('저장됨 · '+c):('저장 오류 '+r.status));}).catch(function(){setSyncStatus('오프라인 (로컬만 저장)');});}
-function cloudPull(ask,cb){var c=syncCode();if(!c){if(cb)cb(false);return;}setSyncStatus('불러오는 중…');fetch(SUPA_URL+'/rest/v1/store?key=eq.'+encodeURIComponent(c)+'&select=data',{headers:cloudHeaders()}).then(function(r){return r.json();}).then(function(j){if(Array.isArray(j)&&j.length&&j[0].data){var rd=j[0].data, rt=Number(rd&&rd.__updated)||0, lt=Number(db&&db.__updated)||0;
+function cloudPull(ask,cb,quiet){var c=syncCode();if(!c){if(cb)cb(false);return;}
+  if(!quiet)setSyncStatus('불러오는 중…');fetch(SUPA_URL+'/rest/v1/store?key=eq.'+encodeURIComponent(c)+'&select=data',{headers:cloudHeaders()}).then(function(r){return r.json();}).then(function(j){if(Array.isArray(j)&&j.length&&j[0].data){var rd=j[0].data, rt=Number(rd&&rd.__updated)||0, lt=Number(db&&db.__updated)||0;
       var rn=dbSize(rd), ln=dbSize(db);
       if(__seeded){                          /* 이 기기엔 저장된 게 없었다 → 클라우드 것이 정답 */
         db=rd;ensureFields();__seeded=false;localStorage.setItem(KEY,JSON.stringify(db));
         renderAll();renderBackupUI();setSyncStatus('불러옴 · 연결됨: '+c);if(cb)cb(true);return;}
       if(!ask&&lt>rt){                       /* 이 기기 것이 더 최신이면 덮어쓰지 않고 올린다 */
+        if(quiet){if(cb)cb(true);return;}    /* 자동 확인일 땐 조용히 넘어간다 */
         if(ln+3<rn*0.7){                     /* 단, 이 기기가 훨씬 적으면 올리지 않는다 */
           setSyncStatus('⚠ 이 기기가 클라우드보다 적어 올리지 않았습니다');
           alert('클라우드에 올리지 않았습니다.\n\n이 기기  : '+ln+'건\n클라우드 : '+rn+'건\n\n'
@@ -3126,7 +3135,10 @@ function cloudPull(ask,cb){var c=syncCode();if(!c){if(cb)cb(false);return;}setSy
         if(cb)cb(true);return;
       }
       backupSave('클라우드 불러오기 직전');
-      db=rd;ensureFields();localStorage.setItem(KEY,JSON.stringify(db));renderAll();renderBackupUI();setSyncStatus('불러옴 · 연결됨: '+c);if(cb)cb(true);}else{setSyncStatus('연결됨: '+c);if(cb)cb(false);}}).catch(function(){setSyncStatus('오프라인');if(cb)cb(false);});}
+      db=rd;ensureFields();localStorage.setItem(KEY,JSON.stringify(db));renderAll();renderBackupUI();
+      setSyncStatus('불러옴 · 연결됨: '+c);
+      if(quiet)liveFlash('다른 기기의 변경 내용을 반영했습니다');
+      if(cb)cb(true);}else{setSyncStatus('연결됨: '+c);if(cb)cb(false);}}).catch(function(){setSyncStatus('오프라인');if(cb)cb(false);});}
 function setSyncCode(){var el=document.getElementById('syncInput');var v=el.value.trim();if(!v){alert('동기화 코드를 입력하세요.');return;}localStorage.setItem(SYNC_KEY,v);cloudPull(true,function(found){if(!found)cloudPush();});}
 function clearSyncCode(){localStorage.removeItem(SYNC_KEY);var inp=document.getElementById('syncInput');if(inp)inp.value='';setSyncStatus('연결 해제됨 (이 기기)');}
 let curIdea=null;
@@ -7965,6 +7977,56 @@ function fwRefresh(exceptId){
   });
 }
 function fwClose(){var back=document.getElementById('fwBack');if(back)back.classList.remove('on');fwCfg=null;fwMindReset();}
+/* ================= 실시간 반영 (다른 창·다른 기기) ================= */
+var __livePending=false, __livePollAt=0;
+function liveFlash(msg){
+  var el=document.getElementById('liveToast');
+  if(!el){el=document.createElement('div');el.id='liveToast';el.className='live-toast';document.body.appendChild(el);}
+  el.textContent=msg;el.classList.add('on');
+  clearTimeout(el.__t);el.__t=setTimeout(function(){el.classList.remove('on');},2600);
+}
+/* 지금 화면을 갈아끼우면 안 되는 상황 (쓰던 글이 날아가지 않게) */
+function liveBusy(){
+  if(typeof fwCfg!=='undefined'&&fwCfg)return true;                 /* 글쓰기 편집기 */
+  var zk=document.getElementById('zkCardOv');
+  if(zk&&zk.classList.contains('on'))return true;                   /* 제텔 메모지 */
+  if(document.getElementById('tlqOv'))return true;                  /* 일정 추가 팝업 */
+  var a=document.activeElement;
+  if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.isContentEditable))return true;
+  return false;
+}
+/* 같은 브라우저의 다른 탭이 저장했을 때 */
+function liveApplyLocal(){
+  if(liveBusy()){__livePending=true;return;}
+  var fresh=null;
+  try{fresh=JSON.parse(localStorage.getItem(KEY));}catch(e){}
+  if(!fresh||!fresh.work)return;
+  if(Number(fresh.__updated||0)<=Number(db&&db.__updated||0))return;
+  db=fresh;ensureFields();renderAll();renderBackupUI();
+  liveFlash('다른 창의 변경 내용을 반영했습니다');
+}
+window.addEventListener('storage',function(e){
+  if(e.key!==KEY)return;
+  liveApplyLocal();
+});
+/* 다른 기기: 주기적으로 클라우드를 확인 */
+function livePoll(force){
+  if(!syncCode()||!__syncReady)return;
+  if(document.hidden)return;
+  if(liveBusy()){__livePending=true;return;}
+  var now=Date.now();
+  if(!force&&now-__livePollAt<20000)return;
+  __livePollAt=now;
+  cloudPull(false,null,true);
+}
+setInterval(function(){livePoll(false);},20000);
+setInterval(function(){                       /* 편집이 끝나면 미뤄둔 반영을 처리 */
+  if(!__livePending||liveBusy())return;
+  __livePending=false;liveApplyLocal();livePoll(true);
+},2500);
+document.addEventListener('visibilitychange',function(){if(!document.hidden){liveApplyLocal();livePoll(true);}});
+window.addEventListener('focus',function(){liveApplyLocal();livePoll(true);});
+
 /* ---------- 편집기 모드: 일반 / 개발자(코드 에디터) ---------- */
 var FW_THEME_KEY='hmd_fw_theme';
 function fwTheme(){var v=localStorage.getItem(FW_THEME_KEY);return v==='dev'?'dev':'normal';}
