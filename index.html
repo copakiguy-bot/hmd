@@ -72,10 +72,39 @@
 
   .view{display:none}.view.on{display:block}
   .page-head{margin-bottom:18px}
-  #topSecBar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+  #topSecBar{display:block;margin-bottom:18px}
   #secDock{margin-top:20px}
   .page-head h1{font-size:24px}
   .page-head p{color:var(--muted);font-size:13.5px;margin-top:4px}
+
+  /* 상단 「지금 일정」 창 + 카운트다운 */
+  .nowbar{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:16px;
+    padding:13px 18px;box-shadow:var(--shadow);cursor:pointer;min-height:66px;
+    border-left:6px solid var(--line);transition:transform .13s,box-shadow .13s}
+  .nowbar:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(18,49,43,.11)}
+  .nowbar.live{border-left-color:var(--red)}
+  .nowbar.soon{border-left-color:var(--yellow)}
+  .nowbar.idle{border-left-color:var(--line);cursor:pointer}
+  .nowbar .lb{flex:none;font-size:11px;font-weight:800;letter-spacing:.4px;color:#fff;
+    background:var(--muted);border-radius:20px;padding:4px 11px;white-space:nowrap}
+  .nowbar.live .lb{background:var(--red);animation:nowpulse 1.9s ease-in-out infinite}
+  .nowbar.soon .lb{background:var(--yellow);color:var(--dark)}
+  @keyframes nowpulse{0%,100%{opacity:1}50%{opacity:.5}}
+  .nowbar .tt{flex:1;min-width:0;font-size:21px;font-weight:800;color:var(--text);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.4px}
+  .nowbar.idle .tt{font-size:17px;font-weight:700;color:var(--muted)}
+  .nowbar .rg{flex:none;font-size:12.5px;font-weight:700;color:var(--muted);white-space:nowrap}
+  .nowbar .cd{flex:none;text-align:right;line-height:1.15}
+  .nowbar .cd>span{display:block;font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.2px}
+  .nowbar .cd>b{display:block;font-size:23px;font-weight:800;letter-spacing:-.6px;
+    font-variant-numeric:tabular-nums;font-feature-settings:"tnum";color:var(--dark)}
+  .nowbar.live .cd>b{color:var(--red)}
+  .nowbar.idle .cd>b{color:var(--line)}
+  /* 제목·날짜 바로가기 */
+  .page-head h1.go-sched{cursor:pointer;display:inline-block;transition:color .13s}
+  .page-head h1.go-sched:hover{color:var(--green)}
+  .date b.go-daily{cursor:pointer;transition:color .13s}
+  .date b.go-daily:hover{color:var(--green)}
 
   .grid{display:grid;grid-template-columns:1.75fr 1fr;gap:20px;align-items:stretch}
   .grid>.card{display:flex;flex-direction:column;margin:0}
@@ -1072,14 +1101,17 @@
   /* ===== 매일매일: 탭마다 다른 색 ===== */
   .tabs.vtabs .tab[data-t="단어"].active{background:#e8615a;border-color:#e8615a;color:#fff}
   .tabs.vtabs .tab[data-t="영어"].active{background:#d99a2b;border-color:#d99a2b;color:#fff}
+  .tabs.vtabs .tab[data-t="언어"].active{background:#4a7ec7;border-color:#4a7ec7;color:#fff}
   .tabs.vtabs .tab[data-t="지식"].active{background:#2f6f5e;border-color:#2f6f5e;color:#fff}
   .tabs.vtabs .tab[data-t="문화"].active{background:#6f5aa8;border-color:#6f5aa8;color:#fff}
   .tabs.vtabs .tab[data-t="단어"].has .n{background:#f7d3d1;color:#a33b35}
   .tabs.vtabs .tab[data-t="영어"].has .n{background:#fbe6b8;color:#8a6100}
+  .tabs.vtabs .tab[data-t="언어"].has .n{background:#dbe6f7;color:#2f5c96}
   .tabs.vtabs .tab[data-t="지식"].has .n{background:#dbeee6;color:#2f6f5e}
   .tabs.vtabs .tab[data-t="문화"].has .n{background:#e4e0f3;color:#5c4b8a}
   .tabs.vtabs .tab[data-t="단어"]:not(.active):hover{background:#fdf3f2}
   .tabs.vtabs .tab[data-t="영어"]:not(.active):hover{background:#fdf6e8}
+  .tabs.vtabs .tab[data-t="언어"]:not(.active):hover{background:#eef4fc}
   .tabs.vtabs .tab[data-t="지식"]:not(.active):hover{background:#eef7f3}
   .tabs.vtabs .tab[data-t="문화"]:not(.active):hover{background:#f4f1fb}
   .tabs.vtabs .tab.active .n{background:rgba(255,255,255,.26)!important;color:#fff!important}
@@ -1516,6 +1548,16 @@
     .topbar .date{font-size:12px;text-align:right;line-height:1.35}
     .avatar{width:32px;height:32px}
 
+    /* 「지금 일정」 창: 좁은 화면에 맞게 (☰ 버튼과 겹치지 않게) */
+    #topSecBar{margin:8px 0 12px}
+    .nowbar{gap:9px;padding:10px 13px;min-height:56px;border-radius:14px;border-left-width:5px}
+    .nowbar .lb{font-size:9.5px;padding:3px 8px}
+    .nowbar .tt{font-size:16px}
+    .nowbar.idle .tt{font-size:13.5px}
+    .nowbar .rg{display:none}
+    .nowbar .cd>span{font-size:9px}
+    .nowbar .cd>b{font-size:17px}
+
     /* 손가락으로 누를 수 있는 크기 확보 */
     .btn{padding:11px 15px;font-size:13.5px}
     .in{padding:11px 12px;font-size:16px}      /* 16px 미만이면 iOS가 화면을 확대함 */
@@ -1592,6 +1634,7 @@
   <div class="subnav" id="studySub" style="display:none">
     <div class="nav sub" data-v="study:단어">Words</div>
     <div class="nav sub" data-v="study:영어">Sentences</div>
+    <div class="nav sub" data-v="study:언어">Language</div>
     <div class="nav sub" data-v="study:지식">Knowledge</div>
     <div class="nav sub" data-v="study:문화">Culture</div>
   </div>
@@ -1610,18 +1653,18 @@
 
 <main class="main">
   <!-- ===== 상단 고정 섹션 버튼 (모든 메뉴에서 보임) ===== -->
-  <div id="topSecBar"><button id="calToggleBtn" class="lunar-toggle on" onclick="toggleTop('cal')">스케줄</button><button id="studySecBtn" class="lunar-toggle" onclick="toggleTop('study')">매일매일</button><button id="workSecBtn" class="lunar-toggle" onclick="go('work')">업무</button><button id="readSecBtn" class="lunar-toggle" onclick="toggleTop('read')">독서</button><button id="inboxToggleBtn" class="lunar-toggle" onclick="toggleTop('inbox')">인박스</button><button id="ideaNavBtn" class="lunar-toggle" onclick="go('inbox')">아이디어</button><button id="zkNavBtn" class="lunar-toggle" onclick="go('zettel')">제텔카스텐</button><button id="diarySecBtn" class="lunar-toggle" onclick="toggleTop('diary')">일기</button><button id="assetSecBtn" class="lunar-toggle" onclick="toggleTop('asset')">자산</button></div>
+  <div id="topSecBar"><div id="nowBar" class="nowbar idle" title="누르면 스케줄로 이동" onclick="goTop('cal')"><span class="lb" id="nowLb">지금</span><b class="tt" id="nowTitle">—</b><span class="rg" id="nowRange"></span><span class="cd"><span id="nowCdLb">&nbsp;</span><b id="nowCount">--:--:--</b></span></div></div>
   <div class="topbar">
     <div></div>
     <div class="right">
-      <div class="date"><b id="dtFull"></b></div>
+      <div class="date"><b id="dtFull" class="go-daily" title="누르면 매일매일로 이동" onclick="goTop('study')"></b></div>
       <div class="avatar" title="독서 발췌 랜덤" onclick="daisyClick()"><svg class="mandala" id="headFlower" viewBox="0 0 100 100" aria-hidden="true"></svg></div>
     </div>
   </div>
 
   <!-- ===== DASHBOARD (오늘) ===== -->
   <section class="view on" id="view-dashboard">
-    <div class="page-head"><h1>Hello, My day!</h1></div>
+    <div class="page-head"><h1 class="go-sched" title="누르면 스케줄로 이동" onclick="goTop('cal')">Hello, My day!</h1></div>
     <div id="homeTlSlot"></div>
     <div id="homeGrid" style="display:none">
       <div class="hm-grid">
@@ -1698,6 +1741,7 @@
       <div class="tabs vtabs as-tabs" id="studyTabs">
         <button class="tab st" data-t="단어" onclick="setDetailStudyTab('단어')">Words<span class="n">0</span></button>
         <button class="tab st" data-t="영어" onclick="setDetailStudyTab('영어')">Sentences<span class="n">0</span></button>
+        <button class="tab st" data-t="언어" onclick="setDetailStudyTab('언어')">Language<span class="n">0</span></button>
         <button class="tab st" data-t="지식" onclick="setDetailStudyTab('지식')">Knowledge<span class="n">0</span></button>
         <button class="tab st" data-t="문화" onclick="setDetailStudyTab('문화')">Culture<span class="n">0</span></button>
       </div>
@@ -2031,6 +2075,7 @@
         <div class="tabs vtabs" id="dashStudyTabs">
           <button class="tab st" data-t="단어" onclick="setDashStudyTab('단어')">단어<span class="n">0</span></button>
           <button class="tab st" data-t="영어" onclick="setDashStudyTab('영어')">문장<span class="n">0</span></button>
+          <button class="tab st" data-t="언어" onclick="setDashStudyTab('언어')">언어<span class="n">0</span></button>
           <button class="tab st" data-t="지식" onclick="setDashStudyTab('지식')">지식<span class="n">0</span></button>
           <button class="tab st" data-t="문화" onclick="setDashStudyTab('문화')">문화<span class="n">0</span></button>
         </div>
@@ -2247,7 +2292,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-19 · r34';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-20 · r39';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -2471,6 +2516,7 @@ function renderTop(){
   const days=['일','월','화','수','목','금','토'];
   const t=new Date();
   document.getElementById('dtFull').textContent=`${t.getFullYear()}년 ${t.getMonth()+1}월 ${t.getDate()}일 (${days[t.getDay()]})`;
+  if(typeof renderNowBar==='function')renderNowBar();
 }
 
 /* ---------- calendar ---------- */
@@ -2596,6 +2642,67 @@ function renderTimeline(){
   tlBindDrag();
 }
 function tlFmt(mn){return String(Math.floor(mn/60)).padStart(2,'0')+':'+String(mn%60).padStart(2,'0');}
+
+/* ===== 상단 「지금 일정」 창 · 카운트다운 (타임라인과 같은 자료) ===== */
+/* 오늘의 시간 있는 일정 + 켜져 있는 루틴을 시간순으로 */
+function nowEvents(){
+  var td=today(),out=[];
+  schedOf(td).forEach(function(s){
+    var mn=tlParseMin(s.time);if(mn==null)return;
+    out.push({k:'s',id:s.id,mn:mn,dur:(s.dur>0?s.dur:30),title:s.title||'',done:!!s.done});
+  });
+  (db.tlRoutines||[]).forEach(function(r){
+    if(r.active===false)return;
+    var mn=tlParseMin(r.time);if(mn==null)return;
+    out.push({k:'r',id:r.id,mn:mn,dur:(r.dur>0?r.dur:30),title:r.title||'',done:tlrOk(r.id,td)});
+  });
+  return out.sort(function(a,b){return a.mn-b.mn;});
+}
+/* 지금 진행 중인 일정 → 없으면 다음 일정 */
+function nowPick(){
+  var d=new Date(),sec=d.getHours()*3600+d.getMinutes()*60+d.getSeconds();
+  var evs=nowEvents(),cur=null,nxt=null;
+  for(var i=0;i<evs.length;i++){
+    var e=evs[i],s0=e.mn*60,e1=s0+e.dur*60;
+    if(sec>=s0&&sec<e1){if(!cur||e1<cur.e1)cur={e:e,s0:s0,e1:e1};}
+    else if(s0>sec){if(!nxt||s0<nxt.s0)nxt={e:e,s0:s0,e1:e1};}
+  }
+  if(cur)return {mode:'now',e:cur.e,left:cur.e1-sec};
+  if(nxt)return {mode:'next',e:nxt.e,left:nxt.s0-sec};
+  return null;
+}
+function hhmmss(s){
+  s=Math.max(0,Math.round(s));
+  return String(Math.floor(s/3600)).padStart(2,'0')+':'
+        +String(Math.floor(s%3600/60)).padStart(2,'0')+':'
+        +String(s%60).padStart(2,'0');
+}
+function renderNowBar(){
+  var bar=document.getElementById('nowBar');if(!bar)return;
+  if(typeof db==='undefined'||!db||!db.schedules)return;
+  var lb=document.getElementById('nowLb'),tt=document.getElementById('nowTitle'),
+      rg=document.getElementById('nowRange'),cl=document.getElementById('nowCdLb'),
+      cd=document.getElementById('nowCount');
+  var p=nowPick();
+  if(!p){
+    bar.className='nowbar idle';
+    if(lb)lb.textContent='지금';
+    if(tt)tt.textContent='남은 일정이 없습니다';
+    if(rg)rg.textContent='';
+    if(cl)cl.innerHTML='&nbsp;';
+    if(cd)cd.textContent='--:--:--';
+    return;
+  }
+  var e=p.e,end=Math.min(e.mn+e.dur,24*60-1);
+  bar.className='nowbar '+(p.mode==='now'?'live':'soon');
+  if(lb)lb.textContent=(p.mode==='now'?'지금':'다음')+(e.k==='r'?' · 루틴':'');
+  if(tt)tt.textContent=(e.done?'✓ ':'')+(e.title||'(제목 없음)');
+  if(rg)rg.textContent=tlFmt(e.mn)+' ~ '+tlFmt(end);
+  if(cl)cl.textContent=(p.mode==='now'?'종료까지':'시작까지');
+  if(cd)cd.textContent=hhmmss(p.left);
+}
+setInterval(renderNowBar,1000);
+
 var __tlCv=null;
 function tlTextW(t){
   if(!__tlCv)__tlCv=document.createElement('canvas');
@@ -3148,6 +3255,16 @@ function toggleTop(name){
     var id=(name==='cal')?'calCard':(name==='inbox')?'inboxCard':name+'SecCard';
     var el=document.getElementById(id);if(el)secScroll(el);
   }
+}
+/* 토글이 아니라 「항상 그 화면으로」 — 상단 제목·날짜·지금창의 바로가기 */
+function goTop(name){
+  if(curView()!=='dashboard')go('dashboard');
+  topActive=name;
+  calSub=(name==='cal')?{sched:true,tl:true,session:calSub.session,ot:calSub.ot}
+                       :{sched:false,tl:false,session:false,ot:false};
+  applyTopState();syncNav();
+  var id=(name==='cal')?'calCard':(name==='inbox')?'inboxCard':name+'SecCard';
+  var el=document.getElementById(id);if(el)secScroll(el);
 }
 function toggleCalSub(k){
   calSub[k]=!calSub[k];
@@ -4417,13 +4534,13 @@ function renderChrono(){
   if(chState.c==null)chState.c=chNowT();
   if(chState.ppy==null)chState.ppy=innerW/CH_SPAN[chState.unit];
   var ppy=chState.ppy,t0=chState.c-innerW/2/ppy,t1=chState.c+innerW/2/ppy;
-  var fine=(chState.unit==='일'||chState.unit==='주'||chState.unit==='월');
-  var rows=fine?CH_CATS:['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  /* 세로축 = 카테고리 레인 (필터로 끈 레인은 사라진다) */
+  var rows=chFilter.length?CH_CATS.filter(function(c){return chFilter.indexOf(c)>=0;}):CH_CATS.slice();
   var rowH=innerH/rows.length,i,s='';
   rows.forEach(function(r,ri){
     var y=GT+ri*rowH;
     s+='<line x1="'+GL+'" y1="'+(y+rowH).toFixed(1)+'" x2="'+W+'" y2="'+(y+rowH).toFixed(1)+'" stroke="#eeece5"/>';
-    s+='<text x="'+(GL-8)+'" y="'+(y+rowH/2+3.5).toFixed(1)+'" text-anchor="end" font-size="10.5" font-weight="700" fill="'+(fine?CH_COLOR[r]:'#8a9490')+'">'+r+'</text>';
+    s+='<text x="'+(GL-8)+'" y="'+(y+rowH/2+3.5).toFixed(1)+'" text-anchor="end" font-size="10.5" font-weight="700" fill="'+CH_COLOR[r]+'">'+r+'</text>';
   });
   function vline(t,label,strong){
     var x=GL+(t-t0)*ppy;if(x<GL-1||x>W+1)return;
@@ -4453,27 +4570,37 @@ function renderChrono(){
   var tn=chNowT();
   if(tn>=t0&&tn<=t1){var xn=GL+(tn-t0)*ppy;
     s+='<line x1="'+xn.toFixed(1)+'" y1="'+GT+'" x2="'+xn.toFixed(1)+'" y2="'+(GT+innerH)+'" stroke="#e8615a" stroke-width="1.4" stroke-dasharray="3 3" opacity=".7"/>';}
-  /* 사건 점 */
+  /* 사건 점: 카테고리 레인마다 점을 찍고, 중복 선택은 세로 연결선으로 잇는다 */
   var evs=(db.chrono||[]).filter(function(e){return !chFilter.length||(e.cats||[]).some(function(c){return chFilter.indexOf(c)>=0;});});
-  var pts=[];
+  var groups=[];
   evs.forEach(function(e){
     var t=chT(e.y,e.m,e.d),x=GL+(t-t0)*ppy;
     if(x<GL-40||x>W+120)return;
-    var row=fine?Math.max(0,CH_CATS.indexOf((e.cats&&e.cats[0])||'나')):(e.m-1);
-    pts.push({e:e,x:x,row:row});
+    var cs=((e.cats&&e.cats.length)?e.cats:['나']).filter(function(c){return rows.indexOf(c)>=0;});
+    if(!cs.length)return;
+    var lanes=cs.map(function(c){return rows.indexOf(c);}).sort(function(a,b){return a-b;});
+    groups.push({e:e,x:x,lanes:lanes});
   });
-  pts.sort(function(a,b){return a.x-b.x;});
+  groups.sort(function(a,b){return a.x-b.x;});
   var cell={};
-  pts.forEach(function(q){
-    var k=q.row+'|'+Math.round(q.x/26),n=cell[k]||0;cell[k]=n+1;
-    q.dy=(n%2?-1:1)*Math.ceil(n/2)*15;
+  groups.forEach(function(g){
+    g.ys=g.lanes.map(function(li){
+      var k=li+'|'+Math.round(g.x/26),n=cell[k]||0;cell[k]=n+1;
+      var cy=GT+li*rowH+rowH/2+(n%2?-1:1)*Math.ceil(n/2)*15;
+      return Math.max(GT+8,Math.min(GT+innerH-8,cy));
+    });
   });
-  pts.forEach(function(q){
-    var cy=GT+q.row*rowH+rowH/2+q.dy;
-    cy=Math.max(GT+8,Math.min(GT+innerH-8,cy));
-    var col=CH_COLOR[(q.e.cats&&q.e.cats[0])||'나']||'#12312b';
-    s+='<circle data-id="'+q.e.id+'" cx="'+q.x.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="5.5" fill="'+col+'" stroke="#fff" stroke-width="1.5" style="cursor:pointer"/>';
-    s+='<text x="'+(q.x+9).toFixed(1)+'" y="'+(cy+3.5).toFixed(1)+'" font-size="10.5" font-weight="700" fill="#3a4a44" style="pointer-events:none">'+esc(q.e.title)+'</text>';
+  groups.forEach(function(g){                         /* 연결선은 점 아래에 깔린다 */
+    if(g.ys.length>1)
+      s+='<line x1="'+g.x.toFixed(1)+'" y1="'+Math.min.apply(null,g.ys).toFixed(1)+'" x2="'+g.x.toFixed(1)+'" y2="'+Math.max.apply(null,g.ys).toFixed(1)+'" stroke="#b9c2bc" stroke-width="1.3"/>';
+  });
+  groups.forEach(function(g){
+    g.lanes.forEach(function(li,gi){
+      var cat=rows[li],cy=g.ys[gi];
+      s+='<circle data-id="'+g.e.id+'" cx="'+g.x.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="5.5" fill="'+(CH_COLOR[cat]||'#12312b')+'" stroke="#fff" stroke-width="1.5" style="cursor:pointer"/>';
+      if(gi===0)
+        s+='<text x="'+(g.x+9).toFixed(1)+'" y="'+(cy+3.5).toFixed(1)+'" font-size="10.5" font-weight="700" fill="#3a4a44" style="pointer-events:none">'+esc(g.e.title)+'</text>';
+    });
   });
   if(!(db.chrono||[]).length)
     s+='<text x="'+(GL+innerW/2)+'" y="'+(GT+innerH/2)+'" text-anchor="middle" font-size="13" fill="#b3bcb7">아직 기록된 사건이 없습니다. 위에서 첫 사건을 추가해 보세요.</text>';
@@ -6741,7 +6868,7 @@ function renderRdPlan(){
 }
 
 /* ---------- study (단어·영어·지식·문화) ---------- */
-const STUDY_TABS=['단어','영어','지식','문화'];
+const STUDY_TABS=['단어','영어','언어','지식','문화'];
 const isMemTab=t=>t==='단어'||t==='영어';
 let dashStudyTab='단어', detailStudyTab='단어';
 function studyCatList(tab){const s=new Set((db.studyCats&&db.studyCats[tab])||[]);
@@ -6751,10 +6878,10 @@ function addStudyCat(tab,c){c=String(c||'').trim();if(!c)return;
   db.studyCats=db.studyCats||{};db.studyCats[tab]=db.studyCats[tab]||[];
   if(!db.studyCats[tab].includes(c))db.studyCats[tab].push(c);}
 /* ---------- 문화 (영화·음악·직접입력 / 별점·한줄평·리뷰·태그·비고) ---------- */
-const STUDY_EN={단어:'Words',영어:'Sentences',지식:'Knowledge',문화:'Culture'};
-const STUDY_KO={단어:'단어',영어:'문장',지식:'지식',문화:'문화'};
+const STUDY_EN={단어:'Words',영어:'Sentences',언어:'Language',지식:'Knowledge',문화:'Culture'};
+const STUDY_KO={단어:'단어',영어:'문장',언어:'언어',지식:'지식',문화:'문화'};
 const studyKo=t=>STUDY_KO[t]||t;
-const STUDY_COLOR={'단어':'#e8615a','영어':'#d99a2b','지식':'#2f6f5e','문화':'#6f5aa8'};
+const STUDY_COLOR={'단어':'#e8615a','영어':'#d99a2b','언어':'#4a7ec7','지식':'#2f6f5e','문화':'#6f5aa8'};
 const studyColor=t=>STUDY_COLOR[t]||'#e8615a';
 const CULT_KINDS=['영화','음악'];
 var cultRating={};
@@ -6993,7 +7120,8 @@ function addStudyDash(){
   renderStudyAll();renderCal();
 }
 /* 오늘 종류별 기록 수 */
-function studyTodayCount(t){const d=today();return db.study.filter(x=>x.tab===t&&x.date===d).length;}
+function studyTodayCount(t){if(t==='언어')return cheonilTodayItems().length;
+  const d=today();return db.study.filter(x=>x.tab===t&&x.date===d).length;}
 /* 하루라도 기록이 있는 날을 오늘(또는 어제)부터 거꾸로 세어 연속일 */
 function studyStreak(){
   const days={};db.study.forEach(x=>{if(x.date)days[x.date]=1;});
@@ -7005,7 +7133,7 @@ function studyStreak(){
   return n;
 }
 function renderStudyMeter(){
-  const tabs=['단어','영어','지식','문화'];
+  const tabs=STUDY_TABS;
   const cnt={};tabs.forEach(t=>cnt[t]=studyTodayCount(t));
   document.querySelectorAll('#dashStudyTabs .tab').forEach(function(b){
     const c=cnt[b.dataset.t]||0, n=b.querySelector('.n');
@@ -7017,7 +7145,7 @@ function renderStudyMeter(){
     const done=tabs.filter(t=>cnt[t]>0).length, st=studyStreak();
     box.innerHTML=tabs.map(t=>'<span class="fd'+(cnt[t]>0?' on':'')+'" title="'+studyKo(t)+' '+(cnt[t]||0)+'"'
       +(cnt[t]>0?' style="background:'+studyColor(t)+'"':'')+'></span>').join('')
-      +'<span class="lb">오늘 '+done+'/4'+(st>1?' · 연속 '+st+'일':'')+'</span>';
+      +'<span class="lb">오늘 '+done+'/'+tabs.length+(st>1?' · 연속 '+st+'일':'')+'</span>';
   }
 }
 function renderDashStudy(){
@@ -7025,6 +7153,7 @@ function renderDashStudy(){
   renderStudyMeter();
   const t=dashStudyTab,form=document.getElementById('dashStudyForm'),feed=document.getElementById('dashStudyFeed');
   if(!form)return;
+  if(t!=='언어')
   form.innerHTML=isMemTab(t)?(t==='영어'?`<div class="inrow" style="align-items:flex-start">
       <textarea id="sTerm" class="in" style="flex:1;min-height:60px;resize:vertical" placeholder="문장" onfocus="fwStart('eng',this)"></textarea>
       <textarea id="sMean" class="in" style="flex:1.3;min-height:60px;resize:vertical" placeholder="해석" onfocus="fwStart('eng',this)"></textarea>
@@ -7039,7 +7168,12 @@ function renderDashStudy(){
       <input id="sTitle" class="in" style="flex:2" placeholder="제목"></div>
       <textarea id="sContent" class="in" style="width:100%;min-height:90px;margin-top:8px;resize:vertical" placeholder="내용"></textarea>
       <div style="margin-top:10px"><button class="btn y" onclick="addStudyDash()">＋ 추가</button></div>`;
-  if(t==='영어'){form.innerHTML+=cheonilDashHTML();fillCheonilDashSelectors();fillCheonilChapterFormSelectors();}
+  if(t==='언어'){
+    form.innerHTML=cheonilDashHTML(true);
+    fillCheonilDashSelectors();fillCheonilChapterFormSelectors();
+    if(feed)feed.innerHTML='';
+    return;
+  }
   const list=db.study.filter(x=>x.tab===t&&x.date===today());
   feed.innerHTML=list.length?(`<div class="datehdr">오늘 ${studyKo(t)}${isMemTab(t)?' (뜻을 눌러 확인)':''}</div>`+
     (isMemTab(t)?list.map(memRow).join(''):t==='문화'?list.map(cultureRow).join(''):list.map(x=>
@@ -7075,12 +7209,14 @@ function addStudyDetail(){
 function renderStudy(){
   document.querySelectorAll('#studyTabs .tab').forEach(function(b){
     b.classList.toggle('active',b.dataset.t===detailStudyTab);
-    var c=db.study.filter(function(x){return x.tab===b.dataset.t;}).length;
+    var c=(b.dataset.t==='언어')?cheonilWrittenCount():db.study.filter(function(x){return x.tab===b.dataset.t;}).length;
     var n=b.querySelector('.n');if(n)n.textContent=c;
     b.classList.toggle('has',c>0);
   });
   const pane=document.getElementById('studyPane');if(!pane)return;
-  const t=detailStudyTab,rows=db.study.filter(x=>x.tab===t),g=groupByDate(rows);
+  const t=detailStudyTab;
+  if(t==='언어'){renderLanguagePane(pane);return;}
+  const rows=db.study.filter(x=>x.tab===t),g=groupByDate(rows);
   syncCultBg();
   const h1=document.getElementById('studyH1');
   if(h1){h1.textContent=STUDY_EN[t]||t;h1.style.color=studyColor(t);}
@@ -7117,7 +7253,7 @@ function renderStudy(){
   <div class="card"><h3><span class="dot" style="background:${studyColor(t)}"></span> 입력</h3>${form}</div>
   <div class="card"><h3><span class="dot" style="background:${studyColor(t)}"></span> 누적 <span class="more">${rows.length}건</span></h3>
     ${list||'<div class="empty">기록이 없습니다.</div>'}</div>
-  ${t==='영어'?cheonilmunPaneHTML():''}`;
+  `;
 }
 
 /* ---------- 지식 주석: 본문을 드래그하면 1) 표시 + 오른쪽 주석칸 ---------- */
@@ -7378,7 +7514,7 @@ var cheonilMgOpen=false;
 function toggleCheonilMg(){cheonilMgOpen=!cheonilMgOpen;renderStudy();}
 function cheonilmunPaneHTML(){
   return `<div class="card">
-    <h3><span class="dot" style="background:var(--red)"></span> 천일문 내용 <span class="more">${cheonilUnitCount()}건</span></h3>
+    <h3><span class="dot" style="background:${studyColor('언어')}"></span> 천일문 내용 <span class="more">${cheonilWrittenCount()}/${cheonilUnitCount()} 유닛</span></h3>
     ${cheonilContentHTML()}
     <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
       <button class="btn ghost" onclick="toggleCheonilMg()">${cheonilMgOpen?'목차 관리 접기 ▴':'목차 관리 ▾'}</button>
@@ -7393,9 +7529,39 @@ function cheonilmunPaneHTML(){
   </div>`;
 }
 
-/* 대시보드 빠른 입력(챕터·유닛 선택 후 설명·영문장 저장) */
-function fillCheonilDashSelectors(){
-  const cs=document.getElementById('cdChapter');if(!cs)return;
+/* ---------- Language(언어) 상세: 챕터·유닛 선택 → 유닛 설명 → 목차·작성 내용 ---------- */
+function cheonilWrittenCount(){
+  return cheonilChapters().reduce((s,c)=>s+((c.units||[]).filter(u=>u.desc||u.sentence).length),0);
+}
+function renderLanguagePane(pane){
+  const col=studyColor('언어');
+  const h1=document.getElementById('studyH1');
+  if(h1){h1.textContent='Language';h1.style.color=col;}
+  const h1s=document.getElementById('studyH1Sub');if(h1s)h1s.textContent='우리는 매일매일 · 언어';
+  const has=cheonilChapters().length>0;
+  pane.innerHTML=`
+  <div class="card"><h3><span class="dot" style="background:${col}"></span> 천일문 입력
+    <span class="more">${cheonilWrittenCount()}/${cheonilUnitCount()} 유닛</span></h3>
+    ${has?`<div class="inrow">
+      <select id="ldChapter" class="in" style="flex:1" onchange="fillCheonilUnits('ld')"></select>
+      <select id="ldUnit" class="in" style="flex:1" onchange="fillCheonilUnitFields('ld')"></select>
+    </div>
+    <textarea id="ldDesc" class="in" style="display:block;width:100%;margin-top:8px;min-height:150px;font-family:'Gowun Dodum',sans-serif;line-height:1.75" placeholder="" onfocus="fwStart('cheonilLdesc',this)"></textarea>
+    <div style="margin-top:10px"><button class="btn y" onclick="saveCheonil('ld')">저장</button></div>`
+    :`<div class="empty">등록된 CHAPTER가 없습니다. 아래 「목차 관리」에서 CHAPTER·UNIT을 먼저 추가하세요.</div>`}
+  </div>
+  ${cheonilmunPaneHTML()}`;
+  if(has)fillCheonilSelectors('ld');
+}
+
+/* 빠른 입력(챕터·유닛 선택 후 설명·영문장 저장) — p='cd'(대시보드) | 'ld'(언어 상세) */
+function fillCheonilDashSelectors(){return fillCheonilSelectors('cd');}
+function fillCheonilDashUnits(){return fillCheonilUnits('cd');}
+function fillCheonilDashUnitFields(){return fillCheonilUnitFields('cd');}
+function saveCheonilDash(){return saveCheonil('cd');}
+function fillCheonilSelectors(p){
+  p=p||'cd';
+  const cs=document.getElementById(p+'Chapter');if(!cs)return;
   const chapters=cheonilChapters();const prevC=cs.value;
   cs.innerHTML=chapters.length?chapters.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join(''):'<option value="">No CHAPTER</option>';
   const t0=cheonilTodayItems();
@@ -7406,36 +7572,40 @@ function fillCheonilDashSelectors(){
     outer:for(const c of chapters){for(const u of (c.units||[])){if(!u.desc&&!u.sentence){nc=c;nu=u;break outer;}}}
     if(nc)cs.value=String(nc.id);
     else if(prevC&&chapters.some(c=>String(c.id)===prevC))cs.value=prevC;
-    fillCheonilDashUnits();
-    if(nu){const us=document.getElementById('cdUnit');
-      if(us&&Array.prototype.some.call(us.options,o=>o.value===String(nu.id))){us.value=String(nu.id);fillCheonilDashUnitFields();}}
+    fillCheonilUnits(p);
+    if(nu){const us=document.getElementById(p+'Unit');
+      if(us&&Array.prototype.some.call(us.options,o=>o.value===String(nu.id))){us.value=String(nu.id);fillCheonilUnitFields(p);}}
     return;
   }
-  fillCheonilDashUnits();
-  if(t0.length){const us=document.getElementById('cdUnit');
-    if(us&&Array.prototype.some.call(us.options,o=>o.value===String(t0[0].u.id))){us.value=String(t0[0].u.id);fillCheonilDashUnitFields();}}
+  fillCheonilUnits(p);
+  if(t0.length){const us=document.getElementById(p+'Unit');
+    if(us&&Array.prototype.some.call(us.options,o=>o.value===String(t0[0].u.id))){us.value=String(t0[0].u.id);fillCheonilUnitFields(p);}}
 }
-function fillCheonilDashUnits(){
-  const cs=document.getElementById('cdChapter'),us=document.getElementById('cdUnit');if(!cs||!us)return;
+function fillCheonilUnits(p){
+  p=p||'cd';
+  const cs=document.getElementById(p+'Chapter'),us=document.getElementById(p+'Unit');if(!cs||!us)return;
   const c=cheonilChapterById(Number(cs.value));const units=(c&&c.units)||[];
   const prevU=us.value;
   us.innerHTML=units.length?units.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join(''):'<option value="">No UNIT</option>';
   if(prevU&&units.some(u=>String(u.id)===prevU))us.value=prevU;
-  fillCheonilDashUnitFields();
+  fillCheonilUnitFields(p);
 }
-function fillCheonilDashUnitFields(){
-  const cs=document.getElementById('cdChapter'),us=document.getElementById('cdUnit');if(!cs||!us)return;
+function fillCheonilUnitFields(p){
+  p=p||'cd';
+  const cs=document.getElementById(p+'Chapter'),us=document.getElementById(p+'Unit');if(!cs||!us)return;
   const u=cheonilUnitById(Number(cs.value),Number(us.value));
-  const de=document.getElementById('cdDesc'),se=document.getElementById('cdSentence');
+  const de=document.getElementById(p+'Desc'),se=document.getElementById(p+'Sentence');
   if(de)de.value=(u&&u.desc)||'';if(se)se.value=(u&&u.sentence)||'';
-  cheonilLivePreview('cdDesc','cdDescLive');
+  cheonilLivePreview(p+'Desc',p+'DescLive');
 }
-function saveCheonilDash(){
-  const cs=document.getElementById('cdChapter'),us=document.getElementById('cdUnit');
-  if(!cs||!us||!cs.value||!us.value){alert('먼저 「＋ CHAPTER/UNIT 추가」로 CHAPTER와 UNIT을 등록하세요.');return;}
+function saveCheonil(p){
+  p=p||'cd';
+  const cs=document.getElementById(p+'Chapter'),us=document.getElementById(p+'Unit');
+  if(!cs||!us||!cs.value||!us.value){alert('먼저 CHAPTER와 UNIT을 등록하세요. (언어 → 목차 관리)');return;}
   const u=cheonilUnitById(Number(cs.value),Number(us.value));if(!u)return;
-  u.desc=document.getElementById('cdDesc').value;
-  u.sentence=document.getElementById('cdSentence').value.trim();
+  const de=document.getElementById(p+'Desc'),se=document.getElementById(p+'Sentence');
+  u.desc=de?de.value:(u.desc||'');
+  u.sentence=se?se.value.trim():(u.sentence||'');
   if(u.desc||u.sentence)u.date=today();
   cheonilDashEdit=false;
   save();renderDashStudy();renderStudy();renderCal();
@@ -7485,8 +7655,8 @@ function editCheonilDash(cid,uid2){
   cs.value=String(cid);fillCheonilDashUnits();
   const us=document.getElementById('cdUnit');if(us)us.value=String(uid2);
   fillCheonilDashUnitFields();
-  const se=document.getElementById('cdSentence');
-  if(se){se.focus();se.scrollIntoView({behavior:'smooth',block:'center'});}
+  const de=document.getElementById('cdDesc');
+  if(de){de.focus();de.scrollIntoView({behavior:'smooth',block:'center'});}
 }
 /* 작성한 천일문 삭제: 설명·문장을 비움 (챕터·유닛 목차는 유지) */
 function delCheonilDash(cid,uid2){
@@ -7497,8 +7667,8 @@ function delCheonilDash(cid,uid2){
   save();renderDashStudy();renderStudy();renderCal();
   fillCheonilDashUnitFields();
 }
-function cheonilDashHTML(){
-  return `<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--line)">
+function cheonilDashHTML(solo){
+  return `<div style="${solo?'':'margin-top:18px;padding-top:14px;border-top:1px solid var(--line)'}">
     <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:8px;letter-spacing:.3px">천일문</div>
     ${(()=>{const t=cheonilTodayItems();const hasEntry=t.length>0&&!cheonilDashEdit;
     return `<div id="cheonilCompose" style="${hasEntry?'display:none':''}">
@@ -7506,8 +7676,7 @@ function cheonilDashHTML(){
       <select id="cdChapter" class="in" style="flex:1" onchange="fillCheonilDashUnits()"></select>
       <select id="cdUnit" class="in" style="flex:1" onchange="fillCheonilDashUnitFields()"></select>
     </div>
-    <textarea id="cdSentence" class="in cd-sent-in" style="display:block;width:100%;margin-top:8px;min-height:44px;resize:vertical" placeholder="오늘의 문장" onfocus="fwStart('cheonil',this)"></textarea>
-    <textarea id="cdDesc" class="in" style="display:block;width:100%;margin-top:8px;min-height:84px;font-family:'Gowun Dodum',sans-serif" placeholder="유닛 내용 (눌러서 편집기)" onfocus="fwStart('cheonildesc',this)"></textarea>
+    <textarea id="cdDesc" class="in" style="display:block;width:100%;margin-top:8px;min-height:84px;font-family:'Gowun Dodum',sans-serif" placeholder="" onfocus="fwStart('cheonildesc',this)"></textarea>
     <div style="margin-top:10px;display:flex;gap:8px">
       <button class="btn y" onclick="saveCheonilDash()">저장</button>
       <button class="btn ghost" onclick="toggleCheonilChapterForm()">＋ CHAPTER/UNIT 추가</button>
@@ -8229,8 +8398,10 @@ var FW_KINDS={
   diary2:['일기 쓰기',['diaryInput2'],['diaryInput2'],function(){addDiary('diaryInput2');}],
   eng:['문장 쓰기',['sTerm','sMean'],['sTerm','sMean'],function(){addStudyDash();}],
   engd:['문장 쓰기',['sdDate','sdTerm','sdMean'],['sdTerm','sdMean'],function(){addStudyDetail();}],
-  cheonil:['천일문 쓰기',['cdChapter','cdUnit','cdSentence','cdDesc'],['cdDesc'],function(){saveCheonilDash();}],
-  cheonildesc:['천일문 쓰기',['cdChapter','cdUnit','cdSentence','cdDesc'],['cdDesc'],function(){saveCheonilDash();}],
+  cheonil:['천일문 쓰기',['cdChapter','cdUnit','cdDesc'],['cdDesc'],function(){saveCheonilDash();}],
+  cheonildesc:['천일문 쓰기',['cdChapter','cdUnit','cdDesc'],['cdDesc'],function(){saveCheonilDash();}],
+  cheonilL:['천일문 쓰기',['ldChapter','ldUnit','ldDesc'],['ldDesc'],function(){saveCheonil('ld');}],
+  cheonilLdesc:['천일문 쓰기',['ldChapter','ldUnit','ldDesc'],['ldDesc'],function(){saveCheonil('ld');}],
   cmdesc:['설명 쓰기',['cmDescEdit'],['cmDescEdit'],function(){if(cheonilEditKey){var q=String(cheonilEditKey).split('_');saveCheonilDesc(Number(q[0]),Number(q[1]));}}],
   chex:['발췌 쓰기',['chExText','chExPage'],['chExText'],function(){if(readOpenId)addChapterExcerpt(readOpenId);}],
   exedit:['발췌 수정',['exEditChapter','exEditPage','exEditText'],['exEditText'],function(){saveExcerptFull();}],
@@ -8241,7 +8412,7 @@ function fwStart(kind,src){
   if(src&&src.blur)src.blur();
   var c=FW_KINDS[kind];if(c)fwOpen(kind,c[0],c[1],c[2],c[3]);
 }
-var FW_RICH={diary:1,diary2:1,excerpt:1,chex:1,exedit:1,dyedit:1,cheonil:1,cheonildesc:1,cmdesc:1};   // 큰화면에서 서식 편집을 쓰는 종류
+var FW_RICH={diary:1,diary2:1,excerpt:1,chex:1,exedit:1,dyedit:1,cheonil:1,cheonildesc:1,cheonilL:1,cheonilLdesc:1,cmdesc:1};   // 큰화면에서 서식 편집을 쓰는 종류
 /* 일기 종류: 기록 / 단상 */
 var fwDiaryKind='기록';
 function fwKindSet(k){fwDiaryKind=k;fwKindPaint();}
