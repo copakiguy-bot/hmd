@@ -491,6 +491,33 @@
   .dy-date .dy-arrow{margin-left:auto;font-size:11px;color:var(--muted)}
   #diaryPage .entry{margin-top:10px}
   .exv-body.dy{font-family:'Gowun Dodum',sans-serif;font-size:11pt}
+  /* ===== 키보드 단축키 ===== */
+  .hk-chip{position:fixed;left:50%;bottom:26px;transform:translate(-50%,10px);z-index:2400;
+    background:var(--dark);color:#fff;font-size:12.5px;font-weight:700;letter-spacing:.3px;
+    padding:8px 15px;border-radius:20px;box-shadow:0 10px 26px rgba(18,49,43,.24);
+    opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s,transform .12s}
+  .hk-chip.on{opacity:1;visibility:visible;transform:translate(-50%,0)}
+  .hk-ov{position:fixed;inset:0;z-index:2500;background:rgba(18,49,43,.34);
+    display:flex;align-items:center;justify-content:center;padding:24px;
+    -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+  .hk-box{background:#fff;border-radius:20px;padding:20px 24px 16px;width:min(760px,100%);
+    max-height:86vh;overflow:auto;box-shadow:0 24px 60px rgba(18,49,43,.28)}
+  .hk-head{display:flex;align-items:center;margin-bottom:14px}
+  .hk-head b{font-size:17px}
+  .hk-x{margin-left:auto;cursor:pointer;color:var(--muted);font-size:16px;padding:2px 6px}
+  .hk-x:hover{color:var(--text)}
+  .hk-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}
+  .hk-g h4{font-size:12px;color:var(--muted);font-weight:800;letter-spacing:.3px;
+    margin-bottom:7px;display:flex;align-items:center;gap:6px}
+  .hk-r{display:flex;align-items:center;gap:9px;font-size:13.5px;padding:3px 0}
+  .hk-r>span{flex:none;display:flex;gap:3px}
+  .hk-box kbd{display:inline-flex;align-items:center;justify-content:center;
+    min-width:20px;height:20px;padding:0 5px;border:1px solid var(--line);border-bottom-width:2px;
+    border-radius:5px;background:var(--cream);font-family:inherit;font-size:11.5px;
+    font-weight:800;color:var(--dark)}
+  .hk-foot{margin-top:15px;padding-top:11px;border-top:1px solid var(--line);
+    font-size:12px;color:var(--muted);line-height:1.9}
+
   /* ===== 포스트잇 메모 (화면 오른쪽에 따라다님) ===== */
   #memoFab{position:fixed;right:16px;top:45%;z-index:117;width:44px;height:44px;border-radius:12px;border:none;cursor:pointer;background:#FFE066;box-shadow:0 6px 18px rgba(18,49,43,.22);font-size:21px;display:flex;align-items:center;justify-content:center;transition:transform .12s}
   #memoFab:hover{transform:scale(1.08)}
@@ -2335,7 +2362,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-20 · r50';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-20 · r51';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -9014,6 +9041,92 @@ function fwMindReset(){
   if(w)w.style.display='none';if(b)b.classList.remove('on');
   if(window.__mindCtx&&window.__mindCtx.canvas==='fwMindCanvas')window.__mindCtx=null;
 }
+/* ================= 키보드 단축키 (연속 키: g 누르고 d) =================
+   글을 쓰는 중에는 꺼진다. ? 를 누르면 목록이 뜬다. */
+var HK={
+  g:{lb:'가기',m:[
+    ['h','대시보드',function(){go('dashboard');}],
+    ['s','스케줄',function(){goTop('cal');}],
+    ['m','매일매일',function(){goTop('study');}],
+    ['w','업무',function(){go('work');}],
+    ['r','독서 · 책장',function(){goRead();}],
+    ['i','인박스',function(){goInbox();}],
+    ['d','아이디어',function(){go('inbox');}],
+    ['z','제텔카스텐',function(){go('zettel');}],
+    ['c','연대기',function(){go('chrono');}],
+    ['j','일기',function(){goTop('diary');}],
+    ['a','자산',function(){go('assets');}],
+    [',','설정',function(){go('settings');}]
+  ]},
+  n:{lb:'새로 쓰기',m:[
+    ['j','일기 쓰기',function(){qmGo('diary');}],
+    ['z','제텔 메모',function(){qmGo('zettel');}],
+    ['w','업무 적기',function(){qmGo('work');}],
+    ['k','지식 적기',function(){qmGo('know');}],
+    ['s','일정 추가',function(){var d=new Date();
+      tlqOpen(String(d.getHours()).padStart(2,'0')+':'+String(Math.floor(d.getMinutes()/5)*5).padStart(2,'0'),
+              {pickDate:true,date:today()});}],
+    ['p','포스트잇',function(){memoToggle();}]
+  ]},
+  t:{lb:'여닫기',m:[
+    ['n','지금 일정 접기/펴기',function(){nowToggleHide();}],
+    ['q','바로가기 메뉴',function(){qmOpen(window.innerWidth/2,window.innerHeight/2);}],
+    ['t','타임라인으로',function(){goTop('cal');var el=document.getElementById('timelineCard');if(el)secScroll(el);}]
+  ]}
+};
+var hkLead=null,hkTimer=null;
+/* 지금 글을 쓰는 중인가 (그러면 단축키를 쓰지 않는다) */
+function hkTyping(){
+  if(typeof fwCfg!=='undefined'&&fwCfg)return true;
+  var a=document.activeElement;
+  if(!a)return false;
+  var t=(a.tagName||'').toLowerCase();
+  if(t==='input'||t==='textarea'||t==='select')return true;
+  if(a.isContentEditable)return true;
+  return false;
+}
+function hkChip(txt){
+  var e=document.getElementById('hkChip');
+  if(!txt){if(e)e.classList.remove('on');return;}
+  if(!e){e=document.createElement('div');e.id='hkChip';e.className='hk-chip';document.body.appendChild(e);}
+  e.textContent=txt;e.classList.add('on');
+}
+function hkReset(){hkLead=null;clearTimeout(hkTimer);hkChip('');}
+function hkHelp(){
+  if(document.getElementById('hkOv')){hkHelpClose();return;}
+  var ov=document.createElement('div');ov.id='hkOv';ov.className='hk-ov';
+  ov.innerHTML='<div class="hk-box"><div class="hk-head"><b>단축키</b>'
+    +'<span class="hk-x" onclick="hkHelpClose()">✕</span></div><div class="hk-cols">'
+    +Object.keys(HK).map(function(L){var g=HK[L];
+      return '<div class="hk-g"><h4><kbd>'+esc(L)+'</kbd> '+esc(g.lb)+'</h4>'
+        +g.m.map(function(r){
+          return '<div class="hk-r"><span><kbd>'+esc(L)+'</kbd><kbd>'+esc(r[0])+'</kbd></span>'
+            +esc(r[1])+'</div>';}).join('')+'</div>';}).join('')
+    +'</div><p class="hk-foot"><kbd>g</kbd> 를 누르고 이어서 <kbd>d</kbd> 를 누르는 식입니다 · '
+    +'글을 쓰는 중에는 작동하지 않습니다 · <kbd>?</kbd> 로 이 창 열고 닫기</p></div>';
+  ov.addEventListener('click',function(e){if(e.target===ov)hkHelpClose();});
+  document.body.appendChild(ov);
+}
+function hkHelpClose(){var e=document.getElementById('hkOv');if(e)e.remove();}
+document.addEventListener('keydown',function(e){
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.key==='Escape'){hkReset();hkHelpClose();return;}
+  if(hkTyping())return;
+  if(e.key==='?'){e.preventDefault();hkReset();hkHelp();return;}
+  var k=String(e.key||'').toLowerCase();
+  if(hkLead){
+    var g=HK[hkLead],hit=null;
+    g.m.forEach(function(r){if(r[0]===k)hit=r;});
+    hkReset();
+    if(hit){e.preventDefault();hkHelpClose();try{hit[2]();}catch(err){}}
+    return;
+  }
+  if(HK[k]){
+    e.preventDefault();
+    hkLead=k;hkChip(k.toUpperCase()+' · '+HK[k].lb+' …');
+    hkTimer=setTimeout(hkReset,1600);
+  }
+});
 /* ---------- 포스트잇 메모: 저장하면 인박스로 ---------- */
 function memoToggle(){
   var p=document.getElementById('memoPad');if(!p)return;
