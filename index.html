@@ -446,6 +446,10 @@
   .fw-tools select,.fw-tools button{border:1px solid var(--line);background:#fff;border-radius:8px;font-size:12.5px;padding:5px 8px;cursor:pointer;color:var(--text);font-family:inherit}
   .fw-tools button{min-width:32px;font-weight:700}
   .fw-tools button:hover,.fw-tools select:hover{border-color:var(--yellow)}
+  /* 지금 켜져 있는 서식 (진하게·기울임·밑줄·윗첨자·아래첨자) */
+  .fw-tools button.on{background:var(--dark);color:#fff;border-color:var(--dark)}
+  .fw-tools .fw-sup,.fw-tools .fw-sub{letter-spacing:-.3px}
+  .fw-tools .fw-sup sup,.fw-tools .fw-sub sub{font-size:.7em}
   .fw-tools .fw-col{width:26px;height:26px;min-width:26px;border-radius:50%;padding:0;font-size:0;border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}
   .fw-tools .fw-col:hover{box-shadow:0 0 0 2px var(--yellow)}
   .fw-tools .fw-sep{width:1px;height:20px;background:var(--line);margin:0 2px}
@@ -456,6 +460,10 @@
     border-radius:20px;padding:4px 11px;white-space:nowrap;flex:none}
   .fw-rich{width:100%;min-height:46vh;font-family:'Gowun Dodum',sans-serif;font-size:11pt;line-height:1.85;background:var(--cream);border:1px solid transparent;border-radius:14px;padding:15px 17px;outline:none;overflow:auto;white-space:pre-wrap;word-break:break-word}
   .fw-rich:focus{border-color:var(--yellow);background:#fff}
+  /* 제곱(윗첨자)·아래첨자: 줄 간격을 밀지 않게 */
+  sup,sub{font-size:.68em;line-height:0;position:relative;vertical-align:baseline}
+  sup{top:-.5em}
+  sub{bottom:-.25em}
   .fw-foot .btn{margin-left:auto;flex:none}
   .fw-kind{display:none;align-items:center;gap:4px;margin-left:10px}
   .fw-kind.on{display:inline-flex}
@@ -1660,7 +1668,7 @@
     <div class="nav sub" data-v="study:지식">Knowledge</div>
     <div class="nav sub" data-v="study:문화">Culture</div>
   </div>
-  <div class="nav" data-v="reading">Reading</div>
+  <div class="nav" data-v="readcard">Reading</div>
   <div class="nav" data-v="inboxcard">Inbox</div>
   <div class="nav" data-v="inbox">Idea</div>
   <div class="nav" data-v="zettel">Zettelkasten</div>
@@ -1722,6 +1730,7 @@
       <div class="page-head"><h1>독서목록</h1></div>
       <div class="card">
         <h3><span class="dot" style="background:var(--green)"></span> 독서목록 <span class="more" id="readCnt"></span>
+          <span class="more" style="margin-left:12px;cursor:pointer" onclick="goRead()">← 책장</span>
           <button class="btn ghost" style="margin-left:auto;padding:7px 12px" onclick="toggleNewBook()">＋ 책 추가</button></h3>
         <div id="newBookForm" style="display:none;margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:16px">
           <div class="form">
@@ -2319,7 +2328,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-20 · r43';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-20 · r45';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -2508,6 +2517,7 @@ function fmtK(d){if(!d)return'';const[y,m,dd]=d.split('-');return `${m}/${dd}`;}
 function toggleMenu(){var sb=document.querySelector('.sidebar');if(sb)sb.classList.toggle('open');}
 function go(v){
   if(v==='inboxcard'){goInbox();return;}
+  if(v==='readcard'){goRead();return;}
   window.__mindCtx=null;
   var stab=null;
   if(v&&v.indexOf('study:')===0){stab=v.slice(6);v='study';}
@@ -2523,12 +2533,16 @@ function go(v){
 function curView(){var el=document.querySelector('.view.on');return el?el.id.replace('view-',''):'dashboard';}
 /* 대시보드 INBOX 카드의 «전체 →» : IDEA 페이지의 INBOX 칸으로 */
 function goInbox(){go('dashboard');topActive='inbox';applyTopState();syncNav();setTimeout(function(){var c=document.getElementById('inboxCard');if(c)c.scrollIntoView({behavior:'smooth',block:'start'});},90);}
+/* 왼쪽 메뉴 Reading: 책장·발췌 화면부터 (독서목록은 그 안의 「독서목록 →」로) */
+function goRead(){go('dashboard');topActive='read';applyTopState();syncNav();setTimeout(function(){var c=document.getElementById('readSecCard');if(c)c.scrollIntoView({behavior:'smooth',block:'start'});},90);}
 function syncNav(v){
   v=v||curView();
   document.querySelectorAll('.nav').forEach(function(n){
     var dv=n.dataset.v||'';
     var act=(dv.indexOf('study:')===0)?(v==='study'&&dv.slice(6)===detailStudyTab)
-            :(dv==='inboxcard')?(v==='dashboard'&&topActive==='inbox'):(dv===v);
+            :(dv==='inboxcard')?(v==='dashboard'&&topActive==='inbox')
+            :(dv==='readcard')?(v==='reading'||(v==='dashboard'&&topActive==='read'))
+            :(dv===v);
     n.classList.toggle('active',act);
   });
   var hd=document.querySelector('.nav[data-v="study"]');if(hd)hd.classList.toggle('open',v==='study');
@@ -8491,6 +8505,30 @@ function fwR(t){t=String(t==null?'':t);return fwLooksHtml(t)?t:esc(t);}   // 저
 var FW_FONT_KO={'Gowun Batang':'고운바탕','Gowun Dodum':'고운돋움','Nanum Myeongjo':'나눔명조',
   'Nanum Gothic':'나눔고딕','Nanum Pen Script':'나눔손글씨','Noto Sans KR':'노토산스',
   'Noto Serif KR':'노토명조','Pretendard':'프리텐다드','serif':'바탕','sans-serif':'돋움'};
+/* ---- 제곱(윗첨자)·아래첨자 ----
+   크롬은 글자를 친 뒤 queryCommandState 가 풀려 버려서, 실제로 <sup> 안에 있는지를
+   커서 위치로 직접 확인한다. 안에 있는데 상태가 꺼져 있으면 한 번 켰다가 끈다. */
+function fwScriptNode(ed,tag){
+  var s;try{s=window.getSelection();}catch(e){return null;}
+  if(!s||!s.rangeCount)return null;
+  var n=s.getRangeAt(0).startContainer;
+  if(n&&n.nodeType===3)n=n.parentNode;
+  while(n&&n!==ed&&n.nodeType===1){if(n.nodeName===tag)return n;n=n.parentNode;}
+  return null;
+}
+function fwScriptState(ed,cmd){
+  var tag=(cmd==='superscript')?'SUP':'SUB';
+  if(fwScriptNode(ed,tag))return true;
+  try{return !!document.queryCommandState(cmd);}catch(e){return false;}
+}
+function fwScriptToggle(ed,cmd){
+  var tag=(cmd==='superscript')?'SUP':'SUB';
+  var inside=!!fwScriptNode(ed,tag),st=false;
+  try{document.execCommand('styleWithCSS',false,false);}catch(e){}   /* <sup> 태그로 */
+  try{st=document.queryCommandState(cmd);}catch(e){}
+  if(inside&&!st)document.execCommand(cmd,false,null);               /* 내부 상태를 실제와 맞춤 */
+  document.execCommand(cmd,false,null);
+}
 function fwToolbar(ed){
   var bar=document.createElement('div');bar.className='fw-tools';
   bar.innerHTML='<select data-c="fontName" title="글씨체"><option value="">글씨체</option>'
@@ -8506,9 +8544,11 @@ function fwToolbar(ed){
     +'<option value="1">8pt</option><option value="2">10pt</option><option value="3">12pt</option>'
     +'<option value="4">14pt</option><option value="5">18pt</option><option value="6">24pt</option>'
     +'<option value="7">36pt</option></select>'
-    +'<button type="button" data-c="bold" title="진하게"><b>B</b></button>'
-    +'<button type="button" data-c="italic" title="기울임"><i>I</i></button>'
-    +'<button type="button" data-c="underline" title="밑줄"><u>U</u></button>'
+    +'<button type="button" data-c="bold" title="진하게 (Ctrl+B)"><b>B</b></button>'
+    +'<button type="button" data-c="italic" title="기울임 (Ctrl+I)"><i>I</i></button>'
+    +'<button type="button" data-c="underline" title="밑줄 (Ctrl+U)"><u>U</u></button>'
+    +'<button type="button" class="fw-sup" data-c="superscript" title="제곱·윗첨자 (Ctrl+Shift+=)  예) 10<sup>6</sup>">X<sup>2</sup></button>'
+    +'<button type="button" class="fw-sub" data-c="subscript" title="아래첨자 (Ctrl+=)  예) H<sub>2</sub>O">X<sub>2</sub></button>'
     +'<button type="button" class="fw-col" data-col="#111111" title="검정" style="background:#111;color:#111">가</button>'
     +'<button type="button" class="fw-col" data-col="#d0342c" title="빨강" style="background:#d0342c;color:#d0342c">가</button>'
     +'<button type="button" class="fw-col" data-col="#2b5fd9" title="파랑" style="background:#2b5fd9;color:#2b5fd9">가</button>'
@@ -8523,8 +8563,13 @@ function fwToolbar(ed){
     +'<span class="fw-now" title="지금 쓰는 글씨체·크기">고운돋움 · 11pt</span>';
   var now=bar.querySelector('.fw-now');
   var selFont=bar.querySelector('select[data-c="fontName"]'), selSize=bar.querySelector('select[data-c="fontSize"]');
-  function run(cmd,val){ed.focus();try{document.execCommand('styleWithCSS',false,true);}catch(e){}
+  /* 윗첨자·아래첨자는 CSS가 아니라 <sup>·<sub> 태그로 넣어야 글자가 작아진다 */
+  var FW_TAGCMD={superscript:1,subscript:1};
+  function run(cmd,val){ed.focus();
+    if(FW_TAGCMD[cmd]){fwScriptToggle(ed,cmd);setTimeout(upd,0);return;}
+    try{document.execCommand('styleWithCSS',false,true);}catch(e){}
     document.execCommand(cmd,false,val||null);setTimeout(upd,0);}
+  ed.__fwRun=run;                                   /* 단축키에서도 같은 경로를 쓴다 */
   /* 커서 위치의 실제 글씨체·크기를 읽어서 표시 (드롭다운에도 현재값 반영) */
   var FW_PTS=[8,10,12,14,18,24,36];
   function upd(){
@@ -8542,8 +8587,20 @@ function fwToolbar(ed){
     if(selSize){var hit=-1;for(var j=0;j<FW_PTS.length;j++){if(Math.abs(FW_PTS[j]-pt)<0.6){hit=j;break;}}
       if(hit>=0){selSize.options[0].text='크기';selSize.value=String(hit+1);}
       else{selSize.options[0].text=pt+'pt';selSize.value='';}}
+    /* 지금 커서에 걸린 서식을 버튼에 표시 */
+    ['bold','italic','underline','superscript','subscript'].forEach(function(c){
+      var b=bar.querySelector('button[data-c="'+c+'"]');if(!b)return;
+      var on=false;
+      try{on=(c==='superscript'||c==='subscript')?fwScriptState(ed,c):document.queryCommandState(c);}catch(e){}
+      b.classList.toggle('on',!!on);
+    });
   }
   bar.__upd=upd;
+  /* 단축키: Ctrl/⌘+Shift+=  제곱(윗첨자) · Ctrl/⌘+=  아래첨자 */
+  ed.addEventListener('keydown',function(e){
+    if(!(e.ctrlKey||e.metaKey)||e.altKey)return;
+    if(e.key==='='||e.key==='+'){e.preventDefault();run(e.shiftKey?'superscript':'subscript');}
+  });
   ['keyup','mouseup','focus','input'].forEach(function(ev){ed.addEventListener(ev,function(){setTimeout(upd,0);});});
   document.addEventListener('selectionchange',function(){if(document.activeElement===ed)upd();});
   bar.querySelectorAll('button').forEach(function(btn){
@@ -8559,6 +8616,46 @@ function fwToolbar(ed){
     sel.addEventListener('change',function(){if(this.value){run(sel.getAttribute('data-c'),this.value);}});
   });
   return bar;
+}
+/* ---- 서식 없는 칸(그냥 입력칸)에서의 제곱: 유니코드 윗첨자 글자로 바꾼다 ---- */
+var FW_SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹',
+  '+':'⁺','-':'⁻','=':'⁼','(':'⁽',')':'⁾','n':'ⁿ','i':'ⁱ','a':'ᵃ','b':'ᵇ','c':'ᶜ','x':'ˣ','y':'ʸ'};
+var FW_SUB={'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉',
+  '+':'₊','-':'₋','=':'₌','(':'₍',')':'₎','n':'ₙ','a':'ₐ','x':'ₓ'};
+function fwInvMap(m){var o={};Object.keys(m).forEach(function(k){o[m[k]]=k;});return o;}
+var FW_SUP_R=fwInvMap(FW_SUP), FW_SUB_R=fwInvMap(FW_SUB);
+/* 선택한 글자(없으면 커서 바로 앞의 숫자)를 윗첨자/아래첨자로 토글 */
+function fwUniScript(el,sub){
+  if(!el||typeof el.selectionStart!=='number')return false;
+  var v=String(el.value||''), a=el.selectionStart, b=el.selectionEnd;
+  if(a===b){                                   /* 선택이 없으면 커서 앞의 숫자 뭉치를 잡는다 */
+    var s=a;while(s>0&&/[0-9⁰¹²³⁴⁵⁶⁷⁸⁹₀₁₂₃₄₅₆₇₈₉]/.test(v.charAt(s-1)))s--;
+    if(s===a)return false;
+    a=s;
+  }
+  var seg=v.slice(a,b), map=sub?FW_SUB:FW_SUP, rev=sub?FW_SUB_R:FW_SUP_R;
+  var plain=function(c){                       /* 어떤 첨자든 먼저 보통 글자로 */
+    if(FW_SUP_R[c]!==undefined)return FW_SUP_R[c];
+    if(FW_SUB_R[c]!==undefined)return FW_SUB_R[c];
+    return c;
+  };
+  var already=seg.length>0&&seg.split('').every(function(c){return rev[c]!==undefined;});
+  var out=seg.split('').map(function(c){
+    var q=plain(c);
+    if(already)return q;                       /* 이미 그 첨자면 되돌린다 */
+    return map[q]!==undefined?map[q]:q;
+  }).join('');
+  el.value=v.slice(0,a)+out+v.slice(b);
+  el.selectionStart=a;el.selectionEnd=a+out.length;
+  if(typeof el.oninput==='function')el.oninput();
+  el.dispatchEvent(new Event('input',{bubbles:true}));
+  return true;
+}
+function fwBindPlainScript(el){
+  el.addEventListener('keydown',function(e){
+    if(!(e.ctrlKey||e.metaKey)||e.altKey)return;
+    if(e.key==='='||e.key==='+'){e.preventDefault();fwUniScript(el,!e.shiftKey);}
+  });
 }
 function fwOpen(kind,title,ids,mains,saveFn){
   var back=document.getElementById('fwBack'),body=document.getElementById('fwBody');
@@ -8602,7 +8699,8 @@ function fwOpen(kind,title,ids,mains,saveFn){
     if(main){
       var wrap=document.createElement('div');
       if(fwCfg.rich){wrap.appendChild(fwToolbar(el));}          // 서식 툴바 (라벨·안내문 없음)
-      else{var lb=document.createElement('div');lb.className='fw-lbl';lb.textContent=src.placeholder||'';wrap.appendChild(lb);}
+      else{var lb=document.createElement('div');lb.className='fw-lbl';lb.textContent=src.placeholder||'';wrap.appendChild(lb);
+        fwBindPlainScript(el);}                                // 서식 없는 칸도 Ctrl+Shift+= 로 제곱
       wrap.appendChild(el);body.appendChild(wrap);
     }else{el.style.flex='1';el.style.minWidth='120px';row.appendChild(el);}
   });
