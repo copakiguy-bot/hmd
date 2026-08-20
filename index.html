@@ -87,34 +87,30 @@
   #nowWrap.hide #nowClip{max-height:0;opacity:0}
   #nowBar{transition:transform .34s cubic-bezier(.4,0,.2,1)}
   #nowWrap.hide #nowBar{transform:translateY(-16px)}
-  /* 스르륵 여닫는 손잡이 */
+  /* 스르륵 여닫는 손잡이 (일정 · 시간 위) */
   #nowHandle{width:190px;max-width:60%;height:4px;border-radius:4px;background:var(--line);
-    margin-top:9px;cursor:pointer;flex:none;transition:background .13s,width .2s,transform .13s}
+    margin:0 0 9px;cursor:pointer;flex:none;transition:background .13s,width .2s,transform .13s}
   #nowHandle:hover{background:#c2cac5;transform:scaleY(1.5)}
-  #nowWrap.hide #nowHandle{margin-top:2px;width:120px;background:#d9d5cc}
+  #nowWrap.hide #nowHandle{margin-bottom:2px;width:120px;background:#d9d5cc}
   #nowWrap.hide #nowHandle:hover{background:#bfc7c2}
 
-  .nowbar{display:flex;align-items:center;gap:12px;min-width:0;cursor:pointer;
+  .nowbar{display:flex;align-items:center;gap:10px;min-width:0;cursor:pointer;
     background:none;border:none;box-shadow:none;padding:0}
-  /* 상태를 알리는 얇은 세로 색막대 (박스 대신) */
-  .nowbar .nb-bar{flex:none;width:3px;height:42px;border-radius:3px;background:var(--line);
-    cursor:pointer;transition:background .13s}
-  .nowbar.live .nb-bar{background:var(--red)}
-  .nowbar.soon .nb-bar{background:var(--yellow)}
-  .nowbar.past .nb-bar{background:#c9d0cc}
-  .nowbar.idle .nb-bar{height:22px}
-  .nowbar.browsing .nb-bar{opacity:.45}
-  .nowbar.browsing .nb-bar:hover{opacity:1}
   /* ‹ › 앞뒤 일정 넘기기 */
   .nowbar .arw{flex:none;width:20px;height:20px;border-radius:50%;display:flex;
     align-items:center;justify-content:center;font-size:19px;line-height:1;
     color:#b4bdb8;cursor:pointer;user-select:none;transition:.12s}
   .nowbar .arw:hover{color:var(--dark);background:rgba(18,49,43,.06)}
   .nowbar .arw.off{opacity:.28;pointer-events:none}
-  /* 시간대(위) + 일정 제목(아래) */
+  /* 시간대(위) + 일정 제목(아래) · 색으로 상태를 알린다 */
   .nowbar .nb-stack{display:flex;flex-direction:column;align-items:center;gap:0;min-width:0;flex:none}
   .nowbar .rg{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;
-    font-variant-numeric:tabular-nums;letter-spacing:.1px;line-height:1.3}
+    font-variant-numeric:tabular-nums;letter-spacing:.1px;line-height:1.3;cursor:pointer}
+  .nowbar.live .rg{color:var(--red)}
+  .nowbar.soon .rg{color:#c58f1e}
+  .nowbar.past .rg{color:#b3bab6}
+  .nowbar.browsing .rg{opacity:.6}
+  .nowbar.browsing .rg:hover{opacity:1}
   .nowbar .tt{max-width:44vw;font-size:20px;font-weight:800;color:var(--text);
     letter-spacing:-.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     cursor:pointer;line-height:1.25}
@@ -445,7 +441,23 @@
   .fw-main:focus{border-color:var(--yellow);background:#fff}
   .fw-foot{display:flex;align-items:center;gap:10px;padding:14px 22px 18px}
   .fw-hint{font-size:11.5px;color:var(--muted)}
-  .fw-tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 0 8px}
+  .fw-tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 0 8px;position:relative}
+  /* 특수기호 판 */
+  .fw-tools .fw-symbtn{font-family:'Noto Serif KR','Nanum Myeongjo',serif;font-size:13px;letter-spacing:-1px}
+  .fw-sym{display:none;position:absolute;z-index:20;top:calc(100% - 4px);left:0;
+    width:min(430px,94%);max-height:min(340px,52vh);overflow:auto;
+    background:#fff;border:1px solid var(--line);border-radius:14px;padding:11px 13px;
+    box-shadow:0 14px 34px rgba(18,49,43,.16)}
+  .fw-sym.on{display:block}
+  .fw-symg{margin-bottom:9px}
+  .fw-symg:last-child{margin-bottom:0}
+  .fw-symg>b{display:block;font-size:10.5px;font-weight:800;color:var(--muted);
+    letter-spacing:.4px;margin-bottom:5px}
+  .fw-symg>div{display:flex;flex-wrap:wrap;gap:4px}
+  .fw-sym button{min-width:31px;height:31px;padding:0 5px;border:1px solid var(--line);
+    background:#fff;border-radius:8px;cursor:pointer;font-size:15px;line-height:1;color:var(--text);
+    font-family:'Noto Serif KR','Nanum Myeongjo',serif}
+  .fw-sym button:hover{background:var(--dark);color:#fff;border-color:var(--dark)}
   .fw-tools select,.fw-tools button{border:1px solid var(--line);background:#fff;border-radius:8px;font-size:12.5px;padding:5px 8px;cursor:pointer;color:var(--text);font-family:inherit}
   .fw-tools button{min-width:32px;font-weight:700}
   .fw-tools button:hover,.fw-tools select:hover{border-color:var(--yellow)}
@@ -1583,8 +1595,6 @@
     #nowClip{max-height:70px}
     #nowHandle{width:150px;height:5px;margin-top:8px}
     .nowbar{gap:9px}
-    .nowbar .nb-bar{height:38px}
-    .nowbar.idle .nb-bar{height:20px}
     .nowbar .arw{width:24px;height:24px;font-size:18px}
     .nowbar .tt{font-size:17px;max-width:56vw}
     .nowbar.idle .tt{font-size:13.5px}
@@ -1685,7 +1695,7 @@
 
 <main class="main">
   <!-- 맨 위 가운데: 지금 일정 (손잡이를 누르면 스르륵 숨는다) -->
-  <div id="topSecBar"><div id="nowWrap"><div id="nowClip"><div id="nowBar" class="nowbar idle" title="누르면 스케줄로 이동" onclick="goTop('cal')"><span class="arw" id="nowPrev" title="이전 일정" onclick="nowStep(-1,event)">‹</span><span class="nb-bar" id="nowLb" title="지금 일정으로" onclick="nowBackToNow(event)"></span><span class="nb-stack"><span class="rg" id="nowRange">&nbsp;</span><b class="tt" id="nowTitle" title="두 번 누르면 완료 표시" onclick="event.stopPropagation()" ondblclick="nowToggleDone(event)">—</b></span><span class="arw" id="nowNext" title="다음 일정" onclick="nowStep(1,event)">›</span></div></div><div id="nowHandle" title="일정 숨기기" onclick="nowToggleHide(event)"></div></div></div>
+  <div id="topSecBar"><div id="nowWrap"><div id="nowHandle" title="일정 숨기기" onclick="nowToggleHide(event)"></div><div id="nowClip"><div id="nowBar" class="nowbar idle" title="누르면 스케줄로 이동" onclick="goTop('cal')"><span class="arw" id="nowPrev" title="이전 일정" onclick="nowStep(-1,event)">‹</span><span class="nb-stack"><span class="rg" id="nowRange" onclick="nowBackToNow(event)">&nbsp;</span><b class="tt" id="nowTitle" title="두 번 누르면 완료 표시" onclick="event.stopPropagation()" ondblclick="nowToggleDone(event)">—</b></span><span class="arw" id="nowNext" title="다음 일정" onclick="nowStep(1,event)">›</span></div></div></div></div>
   <div class="topbar">
     <div></div>
     <div class="right">
@@ -2325,7 +2335,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-20 · r48';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-20 · r50';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -2365,7 +2375,25 @@ function ensureFields(){
         db.budget[__ren[k]]=(db.budget[__ren[k]]||0)+db.budget[k];delete db.budget[k];}});
     db.__catMigrated=1;
   }
-  if(!db.__dotMigrated){(db.schedules||[]).forEach(function(s){if(s.detail)s.detail=String(s.detail).replace(/^-[ \t]/gm,'· ');});db.__dotMigrated=1;}}
+  if(!db.__dotMigrated){(db.schedules||[]).forEach(function(s){if(s.detail)s.detail=String(s.detail).replace(/^-[ \t]/gm,'· ');});db.__dotMigrated=1;}
+  /* <일리아드> 처럼 꺾쇠를 쓴 글이 겹겹이 이스케이프돼 저장된 것 되돌리기 (한 번만) */
+  if(!db.__escFixed&&typeof fwUnEsc==='function'){
+    var U=function(o,k){if(o&&typeof o[k]==='string')o[k]=fwUnEsc(o[k]);};
+    (db.diary||[]).forEach(function(x){U(x,'text');});
+    (db.schedules||[]).forEach(function(x){U(x,'detail');});
+    (db.work||[]).forEach(function(x){U(x,'memo');U(x,'detail');});
+    (db.study||[]).forEach(function(x){U(x,'mean');U(x,'memo');U(x,'detail');});
+    (db.reading||[]).forEach(function(bk){
+      U(bk,'thought');
+      (bk.excerpts||[]).forEach(function(e){U(e,'text');(e.notes||[]).forEach(function(n){U(n,'text');});});
+    });
+    (db.zk||[]).forEach(function(z){U(z,'body');});
+    (db.inbox||[]).forEach(function(x){U(x,'memo');(x.notes||[]).forEach(function(n){U(n,'text');});});
+    (((db.cheonildu||{}).chapters)||[]).forEach(function(c){
+      (c.units||[]).forEach(function(u){U(u,'desc');U(u,'sentence');});});
+    (db.chrono||[]).forEach(function(x){U(x,'detail');});
+    db.__escFixed=1;
+  }}
 ensureFields();
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.work)return s;}catch(e){}
   __seeded=true;return seed();}
@@ -2757,7 +2785,7 @@ function nowToggleDone(ev){
 function renderNowBar(){
   var bar=document.getElementById('nowBar');if(!bar)return;
   if(typeof db==='undefined'||!db||!db.schedules)return;
-  var lb=document.getElementById('nowLb'),tt=document.getElementById('nowTitle'),
+  var tt=document.getElementById('nowTitle'),
       rg=document.getElementById('nowRange'),
       pv=document.getElementById('nowPrev'),nx=document.getElementById('nowNext');
   var evs=nowEvents(),auto=nowAutoIdx(evs);
@@ -2768,9 +2796,8 @@ function renderNowBar(){
   if(nx)nx.classList.toggle('off',!(evs.length&&i>=0&&i<evs.length-1));
   if(i<0||!evs[i]){
     bar.className='nowbar idle';
-    if(lb)lb.title='';
     if(tt){tt.textContent=evs.length?'오늘 일정을 넘겨 보세요':'남은 일정이 없습니다';tt.classList.remove('done');tt.title='';}
-    if(rg)rg.innerHTML='&nbsp;';
+    if(rg){rg.innerHTML='&nbsp;';rg.title='';}
     if(pv)pv.classList.toggle('off',!evs.length);
     if(nx)nx.classList.toggle('off',!evs.length);
     return;
@@ -2780,13 +2807,15 @@ function renderNowBar(){
   var browsing=(nowIdx!=null&&nowIdx!==auto);
   bar.className='nowbar '+state+(browsing?' browsing':'');
   var word=(state==='live'?'지금':state==='soon'?'예정':'지남');
-  if(lb)lb.title=word+(e.k==='r'?' · 루틴':'')+(browsing?' · 눌러서 지금 일정으로':'');
   if(tt){
     tt.textContent=e.title||'(제목 없음)';
     tt.classList.toggle('done',!!e.done);
     tt.title=(e.done?'완료됨 · ':'')+'두 번 누르면 완료 표시';
   }
-  if(rg)rg.textContent=tlFmt(e.mn)+' ~ '+tlFmt(Math.min(e.mn+e.dur,24*60-1));
+  if(rg){
+    rg.textContent=tlFmt(e.mn)+' ~ '+tlFmt(Math.min(e.mn+e.dur,24*60-1));
+    rg.title=word+(e.k==='r'?' · 루틴':'')+(browsing?' · 눌러서 지금 일정으로':'');
+  }
 }
 setInterval(renderNowBar,1000);
 
@@ -4529,7 +4558,11 @@ function pjMindClose(){
 }
 /* ================= 연대기 (Chronicle): 시간 위에 점 찍기 ================= */
 var CH_CATS=['나','인물','역사','철학','과학','문학','음악','예술'];
-var CH_COLOR={'나':'#e8615a','인물':'#d99a2b','역사':'#8a6d3b','철학':'#6f5aa8','과학':'#2f6f5e','문학':'#3f7fb5','음악':'#c05a8e','예술':'#5aa85f'};
+var CH_COLOR={'나':'#a35f5a','인물':'#8a7340','역사':'#6f7a41','철학':'#5f6f86','과학':'#3f6f57','문학':'#3f5f9c','음악':'#7a7369','예술':'#4a7d9e'};
+/* 세로축 표기: 번호 + 영문 (세리프 · 자간 넓은 대문자) */
+var CH_AXIS={'나':'ME','인물':'FIGURES','역사':'HISTORY','철학':'PHILOSOPHY',
+  '과학':'SCIENCE','문학':'LITERATURE','음악':'MUSIC','예술':'ART'};
+function chAxisNo(c){var i=CH_CATS.indexOf(c);return i<0?'':String(i+1).padStart(2,'0');}
 var CH_UNITS=['일','주','월','연','10년','100년'];
 var CH_SPAN={'일':14/365,'주':77/365,'월':0.5,'연':1.5,'10년':15,'100년':150};   /* 화면에 보이는 기간(년) */
 var chState={unit:'연',c:null,ppy:null}, chEditId=null, chSelCats=[], chFilter=[], chPopId=null;
@@ -4617,7 +4650,7 @@ function renderChrono(){
   var wrap=document.getElementById('chWrap'),svg=document.getElementById('chSvg');
   if(!wrap||!svg)return;
   var W=wrap.clientWidth||1000,H=wrap.clientHeight||540;
-  var GL=52,GT=8,GB=24,innerW=W-GL-8,innerH=H-GT-GB;
+  var GL=118,GT=8,GB=24,innerW=W-GL-8,innerH=H-GT-GB;
   if(chState.c==null)chState.c=chNowT();
   if(chState.ppy==null)chState.ppy=innerW/CH_SPAN[chState.unit];
   var ppy=chState.ppy,t0=chState.c-innerW/2/ppy,t1=chState.c+innerW/2/ppy;
@@ -4626,9 +4659,15 @@ function renderChrono(){
   var rowH=innerH/rows.length,i,s='';
   rows.forEach(function(r,ri){
     var y=GT+ri*rowH;
-    s+='<line x1="'+GL+'" y1="'+(y+rowH).toFixed(1)+'" x2="'+W+'" y2="'+(y+rowH).toFixed(1)+'" stroke="#eeece5"/>';
-    s+='<text x="'+(GL-8)+'" y="'+(y+rowH/2+3.5).toFixed(1)+'" text-anchor="end" font-size="10.5" font-weight="700" fill="'+CH_COLOR[r]+'">'+r+'</text>';
+    s+='<line x1="0" y1="'+(y+rowH).toFixed(1)+'" x2="'+W+'" y2="'+(y+rowH).toFixed(1)+'" stroke="#eeece5"/>';
+    s+='<text x="10" y="'+(y+rowH/2+3.5).toFixed(1)+'" text-anchor="start"'
+      +' font-family="\'Noto Serif KR\',\'Nanum Myeongjo\',Georgia,serif">'
+      +'<tspan font-size="7.5" fill="#c2beb3" letter-spacing="0.5">'+chAxisNo(r)+'</tspan>'
+      +'<tspan font-size="10.5" fill="'+CH_COLOR[r]+'" letter-spacing="1.9" dx="5">'
+      +(CH_AXIS[r]||r)+'</tspan></text>';
   });
+  /* 라벨 칸과 그래프를 가르는 세로선 */
+  s+='<line x1="'+GL+'" y1="0" x2="'+GL+'" y2="'+(GT+innerH).toFixed(1)+'" stroke="#eeece5"/>';
   function vline(t,label,strong){
     var x=GL+(t-t0)*ppy;if(x<GL-1||x>W+1)return;
     s+='<line x1="'+x.toFixed(1)+'" y1="'+GT+'" x2="'+x.toFixed(1)+'" y2="'+(GT+innerH)+'" stroke="'+(strong?'#ddd9cf':'#f2f0e9')+'"/>';
@@ -8504,8 +8543,22 @@ var FW_RICH={diary:1,diary2:1,excerpt:1,chex:1,exedit:1,dyedit:1,cheonil:1,cheon
 var fwDiaryKind='기록';
 function fwKindSet(k){fwDiaryKind=k;fwKindPaint();}
 function fwKindPaint(){document.querySelectorAll('#fwKind button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-k')===fwDiaryKind);});}
-function fwLooksHtml(t){return /<[a-z][\s\S]*>/i.test(String(t||''));}
+/* 저장된 값이 편집기에서 나온 HTML인지 판별.
+   서식 태그가 하나도 없어도 <일리아드> 처럼 꺾쇠를 쓰면 &lt;…&gt; 로만 남는데,
+   이때도 HTML 이므로 다시 이스케이프하면 &amp;lt; 로 겹쳐 깨진다. 엔티티도 함께 본다. */
+function fwLooksHtml(t){
+  t=String(t||'');
+  return /<[a-z!\/][\s\S]*>/i.test(t)||/&(lt|gt|amp|quot|apos|nbsp|#\d+);/i.test(t);
+}
 function fwR(t){t=String(t==null?'':t);return fwLooksHtml(t)?t:esc(t);}   // 저장된 서식(HTML)은 그대로, 일반 글은 이스케이프
+/* 예전에 겹겹이 이스케이프돼 저장된 글(&amp;lt; …)을 한 번 되돌린다 */
+function fwUnEsc(t){
+  var s=String(t==null?'':t),n=0;
+  while(n<8&&/&amp;(lt|gt|amp|quot|apos|nbsp|#\d+);/i.test(s)){
+    s=s.replace(/&amp;(lt|gt|amp|quot|apos|nbsp|#\d+);/gi,'&$1;');n++;
+  }
+  return s;
+}
 var FW_FONT_KO={'Gowun Batang':'고운바탕','Gowun Dodum':'고운돋움','Nanum Myeongjo':'나눔명조',
   'Nanum Gothic':'나눔고딕','Nanum Pen Script':'나눔손글씨','Noto Sans KR':'노토산스',
   'Noto Serif KR':'노토명조','Pretendard':'프리텐다드','serif':'바탕','sans-serif':'돋움'};
@@ -8532,6 +8585,72 @@ function fwScriptToggle(ed,cmd){
   try{st=document.queryCommandState(cmd);}catch(e){}
   if(inside&&!st)document.execCommand(cmd,false,null);               /* 내부 상태를 실제와 맞춤 */
   document.execCommand(cmd,false,null);
+}
+/* ===== 특수기호 (논문·책 쓰기용) =====
+   두 글자짜리는 짝기호 — 글을 선택하고 누르면 감싸고, 아니면 사이에 커서가 놓인다 */
+var FW_SYMS=[
+  {n:'인용·제목', s:['『』','「」','《》','〈〉','“”','‘’','〔〕','［］','（）','｛｝']},
+  {n:'문장부호', s:['·','ㆍ','‥','…','—','–','∼','※','§','¶','†','‡','＊','〃']},
+  {n:'수식', s:['×','÷','±','∓','≠','≒','≤','≥','≪','≫','√','∛','∑','∏','∫','∂','∇','∞','∴','∵','≡','∝','∈','∉','⊂','⊃','∪','∩','∅','∠','⊥','∥','°','′','″']},
+  {n:'화살표', s:['→','←','↑','↓','↔','↕','⇒','⇐','⇔','⇨','↘','↗','⟶','⟵']},
+  {n:'도형·표시', s:['○','●','◎','◇','◆','□','■','△','▲','▽','▼','☆','★','▶','◀','✓','✔','✕','✖','◦','▪','▫','☞','☜']},
+  {n:'단위·기호', s:['℃','℉','㎜','㎝','㎞','㎡','㎥','㎏','㎎','㎖','％','‰','№','℡','©','®','™','₩','＄','€','£','¥','¤']},
+  {n:'그리스', s:['α','β','γ','δ','ε','ζ','η','θ','ι','κ','λ','μ','ν','ξ','π','ρ','σ','τ','υ','φ','χ','ψ','ω','Γ','Δ','Θ','Λ','Ξ','Π','Σ','Φ','Ψ','Ω']},
+  {n:'번호', s:['①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩','㉠','㉡','㉢','㉣','ⅰ','ⅱ','ⅲ','ⅳ','Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ']}
+];
+/* 편집칸(서식·일반 모두)에 기호를 넣는다 */
+function fwInsertSym(ed,ch){
+  if(!ed)return;
+  ed.focus();
+  var pair=(ch.length===2);
+  if(ed.tagName==='TEXTAREA'||ed.tagName==='INPUT'){
+    var v=String(ed.value||''),a=ed.selectionStart,b=ed.selectionEnd,sel=v.slice(a,b);
+    var out=pair?(ch.charAt(0)+sel+ch.charAt(1)):ch;
+    ed.value=v.slice(0,a)+out+v.slice(b);
+    var c=pair?(a+1+sel.length):(a+ch.length);
+    ed.selectionStart=ed.selectionEnd=c;
+    ed.dispatchEvent(new Event('input',{bubbles:true}));
+    return;
+  }
+  var sel2='';try{sel2=String(window.getSelection()||'');}catch(e){}
+  if(pair){
+    document.execCommand('insertText',false,ch.charAt(0)+sel2+ch.charAt(1));
+    try{   /* 닫는 기호 앞으로 커서를 옮긴다 */
+      var s=window.getSelection(),r=s.getRangeAt(0);
+      if(r.startOffset>0){r.setStart(r.startContainer,r.startOffset-1);r.collapse(true);
+        s.removeAllRanges();s.addRange(r);}
+    }catch(e){}
+  }else{
+    document.execCommand('insertText',false,ch);
+  }
+  ed.dispatchEvent(new Event('input',{bubbles:true}));
+}
+function fwSymBind(bar,ed){
+  var btn=bar.querySelector('.fw-symbtn');if(!btn)return;
+  var pan=document.createElement('div');pan.className='fw-sym';
+  pan.innerHTML=FW_SYMS.map(function(g){
+    return '<div class="fw-symg"><b>'+esc(g.n)+'</b><div>'+g.s.map(function(c){
+      return '<button type="button" data-s="'+escA(c)+'" title="'+escA(c)+'">'+esc(c)+'</button>';
+    }).join('')+'</div></div>';
+  }).join('');
+  bar.appendChild(pan);
+  function close(){pan.classList.remove('on');btn.classList.remove('on');}
+  btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    var on=!pan.classList.contains('on');
+    pan.classList.toggle('on',on);btn.classList.toggle('on',on);
+    if(on)setTimeout(function(){ed.focus();},0);
+  });
+  pan.addEventListener('mousedown',function(e){e.preventDefault();});
+  pan.addEventListener('click',function(e){
+    var b=e.target.closest('button[data-s]');if(!b)return;
+    e.stopPropagation();
+    fwInsertSym(ed,b.getAttribute('data-s'));
+  });
+  document.addEventListener('click',function(e){
+    if(pan.classList.contains('on')&&!pan.contains(e.target)&&e.target!==btn)close();
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
 }
 function fwToolbar(ed){
   var bar=document.createElement('div');bar.className='fw-tools';
@@ -8564,6 +8683,8 @@ function fwToolbar(ed){
     +'<button type="button" class="fw-hl" data-hl="#EDE4FF" title="음영 · 라벤더" style="background:#EDE4FF"></button>'
     +'<button type="button" class="fw-hl" data-hl="#FFE8D1" title="음영 · 살구" style="background:#FFE8D1"></button>'
     +'<button type="button" class="fw-hl fw-hl-off" data-hl="transparent" title="음영 지우기">×</button>'
+    +'<span class="fw-sep"></span>'
+    +'<button type="button" class="fw-symbtn" title="특수기호 (낫표·화살괄호·수식 …)">『』</button>'
     +'<span class="fw-now" title="지금 쓰는 글씨체·크기">고운돋움 · 11pt</span>';
   var now=bar.querySelector('.fw-now');
   var selFont=bar.querySelector('select[data-c="fontName"]'), selSize=bar.querySelector('select[data-c="fontSize"]');
@@ -8609,6 +8730,7 @@ function fwToolbar(ed){
   document.addEventListener('selectionchange',function(){if(document.activeElement===ed)upd();});
   bar.querySelectorAll('button').forEach(function(btn){
     btn.addEventListener('mousedown',function(e){e.preventDefault();});   // 선택 유지
+    if(btn.classList.contains('fw-symbtn'))return;                        // 특수기호는 따로 처리
     btn.addEventListener('click',function(){
       var col=btn.getAttribute('data-col'), hl=btn.getAttribute('data-hl');
       if(col)run('foreColor',col);
@@ -8616,6 +8738,7 @@ function fwToolbar(ed){
       else run(btn.getAttribute('data-c'));
     });
   });
+  fwSymBind(bar,ed);
   bar.querySelectorAll('select').forEach(function(sel){
     sel.addEventListener('change',function(){if(this.value){run(sel.getAttribute('data-c'),this.value);}});
   });
