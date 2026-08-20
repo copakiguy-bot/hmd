@@ -58,42 +58,46 @@
 
   /* Main */
   .main{flex:1;padding:26px 30px;overflow:auto;max-width:1180px;width:100%;margin:0 auto}
-  /* 날짜·꽃 줄: 맨 위로 올리고 존재감을 낮춘다 */
-  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-  .topbar .right{display:flex;align-items:center;gap:10px}
+  /* 날짜·꽃 줄 (오른쪽) */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .topbar .right{display:flex;align-items:center;gap:12px}
   .bell{width:44px;height:44px;border-radius:50%;background:#fff;box-shadow:var(--shadow);
     display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px}
-  .avatar{width:26px;height:26px;background:none;border-radius:0;box-shadow:none;
-    display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;transition:transform .1s}
+  .avatar{width:34px;height:34px;background:none;border-radius:0;box-shadow:none;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;transition:transform .12s}
   .avatar .mandala{width:100%;height:100%;display:block}
-  .avatar:hover{transform:scale(1.1)}
+  .avatar:hover{transform:scale(1.12) rotate(12deg)}
   .hello{font-size:14px;color:var(--muted)}
   .hello b{display:block;font-size:22px;color:var(--text)}
   .date{text-align:right}
-  .date b{font-size:14px;font-weight:700;color:var(--muted);letter-spacing:-.2px}
+  .date b{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.2px}
   .date span{color:var(--muted);font-size:13px}
 
   .view{display:none}.view.on{display:block}
   .page-head{margin-bottom:18px}
-  #topSecBar{display:none}
   #secDock{margin-top:20px}
   .page-head h1{font-size:24px}
   .page-head p{color:var(--muted);font-size:13.5px;margin-top:4px}
-  /* 제목 줄: 왼쪽 Hello, My day! · 오른쪽 지금 일정 */
-  .page-head.hd-row{display:flex;align-items:center;justify-content:space-between;gap:26px}
-  .page-head.hd-row h1{flex:none}
-  .page-head.hd-row #nowBar{flex:0 1 auto;min-width:0;max-width:58%}
-  /* 데이지꽃은 느낌표 옆에 (제목 글자보다 크게) */
-  .page-head h1 .dz-a{display:inline-block;width:1.23em;height:1.23em;vertical-align:-.33em;
-    margin-left:.16em;cursor:pointer;transition:transform .12s}
-  .page-head h1 .dz-a:hover{transform:scale(1.12) rotate(12deg)}
-  .page-head h1 .dz-a .mandala{width:100%;height:100%;display:block}
 
-  /* ===== 지금 일정 (박스 없이 제목 줄에 얹는다) ===== */
-  .nowbar{display:flex;align-items:center;gap:13px;min-width:0;cursor:pointer;
+  /* ===== 맨 위 가운데 「지금 일정」 (박스 없이) ===== */
+  #topSecBar{display:block;margin-bottom:4px}
+  #nowWrap{display:flex;flex-direction:column;align-items:center;width:100%}
+  #nowClip{overflow:hidden;max-height:80px;opacity:1;
+    transition:max-height .34s cubic-bezier(.4,0,.2,1),opacity .26s ease}
+  #nowWrap.hide #nowClip{max-height:0;opacity:0}
+  #nowBar{transition:transform .34s cubic-bezier(.4,0,.2,1)}
+  #nowWrap.hide #nowBar{transform:translateY(-16px)}
+  /* 스르륵 여닫는 손잡이 */
+  #nowHandle{width:190px;max-width:60%;height:4px;border-radius:4px;background:var(--line);
+    margin-top:9px;cursor:pointer;flex:none;transition:background .13s,width .2s,transform .13s}
+  #nowHandle:hover{background:#c2cac5;transform:scaleY(1.5)}
+  #nowWrap.hide #nowHandle{margin-top:2px;width:120px;background:#d9d5cc}
+  #nowWrap.hide #nowHandle:hover{background:#bfc7c2}
+
+  .nowbar{display:flex;align-items:center;gap:12px;min-width:0;cursor:pointer;
     background:none;border:none;box-shadow:none;padding:0}
   /* 상태를 알리는 얇은 세로 색막대 (박스 대신) */
-  .nowbar .nb-bar{flex:none;width:3px;height:44px;border-radius:3px;background:var(--line);
+  .nowbar .nb-bar{flex:none;width:3px;height:42px;border-radius:3px;background:var(--line);
     cursor:pointer;transition:background .13s}
   .nowbar.live .nb-bar{background:var(--red)}
   .nowbar.soon .nb-bar{background:var(--yellow)}
@@ -107,30 +111,17 @@
     color:#b4bdb8;cursor:pointer;user-select:none;transition:.12s}
   .nowbar .arw:hover{color:var(--dark);background:rgba(18,49,43,.06)}
   .nowbar .arw.off{opacity:.28;pointer-events:none}
-  /* 왼쪽에 일정 제목 · 오른쪽에 시간대(위) + 타이머(아래) */
-  .nowbar .nb-stack{display:flex;flex-direction:column;align-items:flex-end;gap:0;
-    min-width:0;flex:none;margin-left:2px}
-  .nowbar .rg{font-size:11.5px;font-weight:700;color:var(--muted);white-space:nowrap;
-    font-variant-numeric:tabular-nums;letter-spacing:.1px;line-height:1.35}
-  .nowbar .cnt{font-size:20px;font-weight:800;letter-spacing:-.6px;color:var(--dark);
-    font-variant-numeric:tabular-nums;font-feature-settings:"tnum";white-space:nowrap;line-height:1.15}
-  .nowbar.live .cnt{color:var(--red)}
-  .nowbar.past .cnt{color:var(--muted)}
-  /* 일시정지 · 재생 */
-  .nowbar .nb-pp{flex:none;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);
-    background:#fff;color:var(--muted);display:flex;align-items:center;justify-content:center;
-    padding:0;cursor:pointer;transition:.12s}
-  .nowbar .nb-pp svg{fill:currentColor;display:block}
-  .nowbar .nb-pp:hover{background:var(--dark);border-color:var(--dark);color:#fff}
-  .nowbar.paused .cnt{opacity:.55}
-  .nowbar.paused .nb-pp{background:var(--yellow);border-color:var(--yellow);color:var(--dark)}
-  .nowbar .tt{flex:0 1 auto;min-width:0;font-size:19px;font-weight:800;color:var(--text);
+  /* 시간대(위) + 일정 제목(아래) */
+  .nowbar .nb-stack{display:flex;flex-direction:column;align-items:center;gap:0;min-width:0;flex:none}
+  .nowbar .rg{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;
+    font-variant-numeric:tabular-nums;letter-spacing:.1px;line-height:1.3}
+  .nowbar .tt{max-width:44vw;font-size:20px;font-weight:800;color:var(--text);
     letter-spacing:-.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-    cursor:pointer;padding-right:6px}
+    cursor:pointer;line-height:1.25}
   .nowbar .tt.done{text-decoration:line-through;text-decoration-thickness:2px;color:var(--muted)}
   .nowbar.past .tt{color:var(--muted)}
-  .nowbar.idle .tt{font-size:15px;font-weight:700;color:var(--muted);cursor:default;padding-right:0}
-  .nowbar.idle .nb-stack,.nowbar.idle .nb-pp{display:none}
+  .nowbar.idle .tt{font-size:15px;font-weight:700;color:var(--muted);cursor:default}
+  .nowbar.idle .rg{display:none}
   /* 제목·날짜 바로가기 */
   .page-head h1.go-sched{cursor:pointer;display:inline-block;transition:color .13s}
   .page-head h1.go-sched:hover{color:var(--green)}
@@ -1581,26 +1572,23 @@
     .page-head h1{font-size:22px}
     .menu-btn{top:calc(10px + env(safe-area-inset-top))}
 
-    /* 상단바: 날짜만 오른쪽 끝에 (꽃은 제목 옆으로 옮김) */
-    .topbar{margin-bottom:8px;padding-left:52px;min-height:34px}
-    .topbar .right{gap:8px}
-    .topbar .date b{font-size:12px}
-    .avatar{width:23px;height:23px}
+    /* 상단바: 날짜와 꽃을 오른쪽 끝에 */
+    .topbar{margin-bottom:12px;padding-left:52px;min-height:34px}
+    .topbar .right{gap:9px}
+    .topbar .date b{font-size:13px}
+    .avatar{width:27px;height:27px}
 
-    /* 지금 일정: 좁은 화면에서는 제목 아래로 내려 한 줄 가득 */
-    .page-head.hd-row{flex-wrap:wrap;gap:10px}
-    .page-head.hd-row h1{flex:1 1 100%}
-    .page-head.hd-row #nowBar{flex:1 1 100%;max-width:100%;gap:10px}
+    /* 지금 일정: 맨 위 가운데 · ☰ 버튼과 겹치지 않게 */
+    #topSecBar{margin:6px 0 4px}
+    #nowClip{max-height:70px}
+    #nowHandle{width:150px;height:5px;margin-top:8px}
     .nowbar{gap:9px}
-    .nowbar .nb-bar{height:40px}
+    .nowbar .nb-bar{height:38px}
     .nowbar.idle .nb-bar{height:20px}
-    .nowbar .arw{width:22px;height:22px;font-size:18px}
-    .nowbar .tt{flex:1 1 auto;font-size:16px;padding-right:4px}
+    .nowbar .arw{width:24px;height:24px;font-size:18px}
+    .nowbar .tt{font-size:17px;max-width:56vw}
     .nowbar.idle .tt{font-size:13.5px}
-    .nowbar .nb-stack{margin-left:0}
-    .nowbar .rg{font-size:10.5px}
-    .nowbar .cnt{font-size:17px}
-    .nowbar .nb-pp{width:22px;height:22px}
+    .nowbar .rg{font-size:11px}
 
     /* 손가락으로 누를 수 있는 크기 확보 */
     .btn{padding:11px 15px;font-size:13.5px}
@@ -1696,21 +1684,19 @@
 </aside>
 
 <main class="main">
-  <!-- (옛 상단 섹션 버튼 자리 · 지금은 비어 있음) -->
-  <div id="topSecBar"></div>
+  <!-- 맨 위 가운데: 지금 일정 (손잡이를 누르면 스르륵 숨는다) -->
+  <div id="topSecBar"><div id="nowWrap"><div id="nowClip"><div id="nowBar" class="nowbar idle" title="누르면 스케줄로 이동" onclick="goTop('cal')"><span class="arw" id="nowPrev" title="이전 일정" onclick="nowStep(-1,event)">‹</span><span class="nb-bar" id="nowLb" title="지금 일정으로" onclick="nowBackToNow(event)"></span><span class="nb-stack"><span class="rg" id="nowRange">&nbsp;</span><b class="tt" id="nowTitle" title="두 번 누르면 완료 표시" onclick="event.stopPropagation()" ondblclick="nowToggleDone(event)">—</b></span><span class="arw" id="nowNext" title="다음 일정" onclick="nowStep(1,event)">›</span></div></div><div id="nowHandle" title="일정 숨기기" onclick="nowToggleHide(event)"></div></div></div>
   <div class="topbar">
     <div></div>
     <div class="right">
       <div class="date"><b id="dtFull" class="go-daily" title="누르면 매일매일로 이동" onclick="goTop('study')"></b></div>
+      <div class="avatar" title="독서 발췌 랜덤" onclick="daisyClick()"><svg class="mandala" id="headFlower" viewBox="0 0 100 100" aria-hidden="true"></svg></div>
     </div>
   </div>
 
   <!-- ===== DASHBOARD (오늘) ===== -->
   <section class="view on" id="view-dashboard">
-    <div class="page-head hd-row">
-      <h1 class="go-sched" title="누르면 스케줄로 이동" onclick="goTop('cal')">Hello, My Day!<span class="dz-a" title="독서 발췌 랜덤" onclick="event.stopPropagation();daisyClick()"><svg class="mandala" id="headFlower" viewBox="0 0 100 100" aria-hidden="true"></svg></span></h1>
-      <div id="nowBar" class="nowbar idle" title="누르면 스케줄로 이동" onclick="goTop('cal')"><span class="arw" id="nowPrev" title="이전 일정" onclick="nowStep(-1,event)">‹</span><span class="nb-bar" id="nowLb" title="지금 일정으로" onclick="nowBackToNow(event)"></span><b class="tt" id="nowTitle" title="두 번 누르면 완료 표시" onclick="event.stopPropagation()" ondblclick="nowToggleDone(event)">—</b><span class="nb-stack"><span class="rg" id="nowRange">&nbsp;</span><b class="cnt" id="nowCount">--:--:--</b></span><button type="button" class="nb-pp" id="nowPP" title="일시정지" onclick="nowTogglePause(event)"></button><span class="arw" id="nowNext" title="다음 일정" onclick="nowStep(1,event)">›</span></div>
-    </div>
+    <div class="page-head"><h1 class="go-sched" title="누르면 스케줄로 이동" onclick="goTop('cal')">Hello, My Day!</h1></div>
     <div id="homeTlSlot"></div>
     <div id="homeGrid" style="display:none">
       <div class="hm-grid">
@@ -2339,7 +2325,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-20 · r47';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-20 · r48';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -2569,6 +2555,7 @@ function renderTop(){
   const t=new Date();
   document.getElementById('dtFull').textContent=`${t.getFullYear()}년 ${t.getMonth()+1}월 ${t.getDate()}일 (${days[t.getDay()]})`;
   if(typeof renderNowBar==='function')renderNowBar();
+  if(typeof nowApplyHide==='function')nowApplyHide();
 }
 
 /* ---------- calendar ---------- */
@@ -2711,21 +2698,24 @@ function nowEvents(){
   return out.sort(function(a,b){return a.mn-b.mn;});
 }
 function nowSec(){var d=new Date();return d.getHours()*3600+d.getMinutes()*60+d.getSeconds();}
-/* ---- 타이머 일시정지 ----
-   멈춘 동안은 시계가 흐르지 않은 것처럼 다루고, 다시 재생하면 멈춘 지점에서 이어 간다 */
-var nowPauseAt=null;   /* 멈춘 순간의 유효 시각(초) · null 이면 흐르는 중 */
-var nowShift=0;        /* 그동안 멈춰 있던 총 시간(초) */
-function nowEffSec(){return (nowPauseAt!=null)?nowPauseAt:(nowSec()-nowShift);}
-function nowTogglePause(ev){
-  if(ev&&ev.stopPropagation)ev.stopPropagation();
-  if(nowPauseAt==null)nowPauseAt=nowSec()-nowShift;        /* 그 자리에서 얼린다 */
-  else{nowShift=nowSec()-nowPauseAt;nowPauseAt=null;}      /* 멈춘 지점에서 이어 간다 */
-  renderNowBar();
+/* ---- 손잡이를 눌러 스르륵 숨기기 (이 기기에만 기억) ---- */
+var NOW_HIDE_KEY='hmd_nowHide';
+function nowHidden(){try{return localStorage.getItem(NOW_HIDE_KEY)==='1';}catch(e){return false;}}
+function nowApplyHide(){
+  var w=document.getElementById('nowWrap'),h=document.getElementById('nowHandle');
+  if(!w)return;
+  var off=nowHidden();
+  w.classList.toggle('hide',off);
+  if(h)h.title=off?'일정 보이기':'일정 숨기기';
 }
-function nowResetClock(){nowPauseAt=null;nowShift=0;}
+function nowToggleHide(ev){
+  if(ev&&ev.stopPropagation)ev.stopPropagation();
+  try{localStorage.setItem(NOW_HIDE_KEY,nowHidden()?'0':'1');}catch(e){}
+  nowApplyHide();
+}
 /* 지금 진행 중인 일정의 자리 → 없으면 다음 일정의 자리 (없으면 -1) */
 function nowAutoIdx(evs){
-  evs=evs||nowEvents();var sec=nowEffSec(),cur=-1,nxt=-1;
+  evs=evs||nowEvents();var sec=nowSec(),cur=-1,nxt=-1;
   for(var i=0;i<evs.length;i++){
     var e=evs[i],s0=e.mn*60,e1=s0+e.dur*60;
     if(sec>=s0&&sec<e1){if(cur<0||e1<evs[cur].mn*60+evs[cur].dur*60)cur=i;}
@@ -2744,10 +2734,10 @@ function nowStep(d,ev){
   nowIdx=(n===nowAutoIdx(evs))?null:n;    /* 지금 일정으로 돌아오면 다시 자동 추적 */
   renderNowBar();
 }
-/* 지금 일정으로 되돌아오기 (멈춰 둔 타이머도 실시간으로 되돌린다) */
+/* 지금 일정으로 되돌아오기 */
 function nowBackToNow(ev){
   if(ev&&ev.stopPropagation)ev.stopPropagation();
-  nowIdx=null;nowResetClock();renderNowBar();
+  nowIdx=null;renderNowBar();
 }
 /* 제목 더블클릭 → 완료(취소선) 표시 · 언제나 「오늘」 기준 */
 function nowToggleDone(ev){
@@ -2764,29 +2754,15 @@ function nowToggleDone(ev){
   if(typeof renderHome==='function')renderHome();
   renderNowBar();
 }
-function hhmmss(s){
-  s=Math.max(0,Math.round(s));
-  return String(Math.floor(s/3600)).padStart(2,'0')+':'
-        +String(Math.floor(s%3600/60)).padStart(2,'0')+':'
-        +String(s%60).padStart(2,'0');
-}
-var NB_PAUSE='<svg viewBox="0 0 12 12" width="9" height="9" aria-hidden="true"><rect x="2.2" y="1.6" width="2.8" height="8.8" rx="1"/><rect x="7" y="1.6" width="2.8" height="8.8" rx="1"/></svg>';
-var NB_PLAY='<svg viewBox="0 0 12 12" width="9" height="9" aria-hidden="true"><path d="M3.4 1.6 10.2 6 3.4 10.4z"/></svg>';
 function renderNowBar(){
   var bar=document.getElementById('nowBar');if(!bar)return;
   if(typeof db==='undefined'||!db||!db.schedules)return;
   var lb=document.getElementById('nowLb'),tt=document.getElementById('nowTitle'),
-      rg=document.getElementById('nowRange'),cd=document.getElementById('nowCount'),
-      pp=document.getElementById('nowPP'),
+      rg=document.getElementById('nowRange'),
       pv=document.getElementById('nowPrev'),nx=document.getElementById('nowNext');
   var evs=nowEvents(),auto=nowAutoIdx(evs);
   if(nowIdx!=null&&(nowIdx<0||nowIdx>=evs.length))nowIdx=null;   /* 일정이 지워지면 자동으로 복귀 */
   var i=(nowIdx==null)?auto:nowIdx;
-  var paused=(nowPauseAt!=null);
-  if(pp){
-    pp.innerHTML=paused?NB_PLAY:NB_PAUSE;
-    pp.title=paused?'재생':'일시정지';
-  }
   /* 화살표 켜짐/꺼짐 */
   if(pv)pv.classList.toggle('off',!(evs.length&&i>0));
   if(nx)nx.classList.toggle('off',!(evs.length&&i>=0&&i<evs.length-1));
@@ -2795,25 +2771,22 @@ function renderNowBar(){
     if(lb)lb.title='';
     if(tt){tt.textContent=evs.length?'오늘 일정을 넘겨 보세요':'남은 일정이 없습니다';tt.classList.remove('done');tt.title='';}
     if(rg)rg.innerHTML='&nbsp;';
-    if(cd)cd.textContent='--:--:--';
     if(pv)pv.classList.toggle('off',!evs.length);
     if(nx)nx.classList.toggle('off',!evs.length);
     return;
   }
-  var e=evs[i],sec=nowEffSec(),s0=e.mn*60,e1=s0+e.dur*60;
+  var e=evs[i],sec=nowSec(),s0=e.mn*60,e1=s0+e.dur*60;
   var state=(sec>=s0&&sec<e1)?'live':(s0>sec?'soon':'past');
-  var left=(state==='live')?(e1-sec):(state==='soon')?(s0-sec):(sec-e1);
   var browsing=(nowIdx!=null&&nowIdx!==auto);
-  bar.className='nowbar '+state+(browsing?' browsing':'')+(paused?' paused':'');
+  bar.className='nowbar '+state+(browsing?' browsing':'');
   var word=(state==='live'?'지금':state==='soon'?'예정':'지남');
-  if(lb)lb.title=word+(e.k==='r'?' · 루틴':'')+((browsing||paused)?' · 눌러서 지금 일정으로':'');
+  if(lb)lb.title=word+(e.k==='r'?' · 루틴':'')+(browsing?' · 눌러서 지금 일정으로':'');
   if(tt){
     tt.textContent=e.title||'(제목 없음)';
     tt.classList.toggle('done',!!e.done);
     tt.title=(e.done?'완료됨 · ':'')+'두 번 누르면 완료 표시';
   }
   if(rg)rg.textContent=tlFmt(e.mn)+' ~ '+tlFmt(Math.min(e.mn+e.dur,24*60-1));
-  if(cd)cd.textContent=hhmmss(left);
 }
 setInterval(renderNowBar,1000);
 
