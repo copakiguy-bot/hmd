@@ -406,8 +406,25 @@
   .bkv-ch.on{background:var(--green-soft);color:var(--green);font-weight:700}
   .bkv-ch .cnt{margin-left:auto;font-size:11px;color:var(--muted);font-weight:600}
   .bkv-exs{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;overflow:auto;min-height:0}
-  .bkv-ex{font-family:'Gowun Dodum',sans-serif;font-size:14.5px;line-height:1.75;color:var(--dark);padding:9px 12px;background:var(--cream);border-radius:12px;margin-bottom:8px}
+  .bkv-ex{font-family:'Gowun Dodum',sans-serif;font-size:14.5px;line-height:1.75;color:var(--dark);padding:9px 12px;background:var(--cream);border-radius:12px;margin-bottom:8px;
+    border:1.5px solid transparent;cursor:pointer;transition:border-color .13s,background .13s}
+  .bkv-ex:hover{border-color:#e3e0d7}
+  .bkv-ex.on{border-color:var(--yellow);background:#fffdf4}
+  .bkv-ex .pg{display:flex;align-items:center;gap:6px}
+  .bkv-ex .pg .pen-ic{opacity:0;transition:opacity .13s;font-size:13px}
+  .bkv-ex:hover .pg .pen-ic{opacity:1}
   .bkv-ex-t{cursor:text}
+  /* 발췌 1개 = 문헌 메모 1장 */
+  .lit-ref{font-weight:600;color:var(--muted);margin-left:7px;font-size:12px}
+  .lit-one{margin-left:auto;font-size:10px;font-weight:800;color:var(--green);background:var(--green-soft);
+    border-radius:20px;padding:2px 9px;letter-spacing:.2px}
+  .bkv-note .bkv-h{display:flex;align-items:center}
+  .lit-ann{margin:2px 0 8px;display:flex;flex-direction:column;gap:3px}
+  .lit-ann-r{display:flex;gap:7px;align-items:baseline;font-size:12.5px;line-height:1.55}
+  .lit-ann-r .q{color:var(--muted);text-decoration:underline;text-decoration-color:#e0c98f;text-underline-offset:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:38%;flex:none}
+  .lit-ann-r .t{color:var(--text)}
+  .lit-ann-r .t.none{color:#c0c7c3}
   .bkv-ex-n{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
   .bkv-ex-n:empty{display:none}
   .bkv-ex-n .stn-list{font-family:'Nanum Gothic',sans-serif;font-size:12px}
@@ -1024,6 +1041,23 @@
   .ex-box{background:var(--card);border-radius:22px;padding:46px 42px 34px;max-width:640px;width:100%;text-align:center;position:relative;box-shadow:0 24px 70px rgba(0,0,0,.3);
     max-height:calc(100vh - 40px);overflow-y:auto;overscroll-behavior:contain}
   .ex-close{position:absolute;top:14px;right:20px;cursor:pointer;font-size:20px;color:var(--muted);line-height:1}
+  .ex-edit{position:absolute;top:15px;right:52px;cursor:pointer;font-size:15px;color:var(--muted)}
+  .ex-edit:hover{color:var(--dark)}
+  .ex-notes{text-align:left;margin-top:12px}
+  .ex-notes:empty{display:none}
+  .ex-lit{text-align:left;margin-top:14px;border-top:1px dashed var(--line);padding-top:11px}
+  .ex-lit-h{display:flex;align-items:center;font-size:11.5px;font-weight:800;color:var(--muted);
+    letter-spacing:.3px;margin-bottom:7px}
+  .ex-lit-h .lit-one{margin-left:8px}
+  .ex-lit-hint{margin-left:auto;font-size:10.5px;font-weight:600;color:#b8beba}
+  .ex-lit-src{margin-left:auto;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;
+    border:1px solid var(--line);border-radius:8px;padding:3px 9px;transition:.12s}
+  .ex-lit-src:hover{background:var(--dark);border-color:var(--dark);color:#fff}
+  .ex-edit.on{color:var(--dark)}
+  .ex-lit textarea{width:100%;min-height:64px;resize:vertical;font-family:'Nanum Myeongjo',serif;
+    font-size:14px;line-height:1.75;background:var(--cream);border:1px solid transparent;
+    border-radius:12px;padding:10px 13px;outline:none}
+  .ex-lit textarea:focus{border-color:var(--yellow);background:#fff}
   .ex-close:hover{color:var(--dark)}
   .ex-quote{font-size:clamp(15px,2.3vw,20px);line-height:1.8;color:var(--dark);font-family:'Gowun Dodum',sans-serif;word-break:keep-all}
   .ex-src{margin-top:18px;font-size:14px;color:var(--muted)}
@@ -2287,8 +2321,9 @@
       </div>
     </div>
     <div class="bkv-note">
-      <div class="bkv-h">문헌 메모</div>
-      <textarea id="bkvNote" oninput="bkvNoteSave(this.value)"></textarea>
+      <div class="bkv-h" id="bkvNoteHead">책 메모</div>
+      <div id="bkvNoteAnn"></div>
+      <textarea id="bkvNote"></textarea>
     </div>
   </div>
 </div>
@@ -2362,7 +2397,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-20 · r51';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-20 · r53';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4587,8 +4622,8 @@ function pjMindClose(){
 var CH_CATS=['나','인물','역사','철학','과학','문학','음악','예술'];
 var CH_COLOR={'나':'#a35f5a','인물':'#8a7340','역사':'#6f7a41','철학':'#5f6f86','과학':'#3f6f57','문학':'#3f5f9c','음악':'#7a7369','예술':'#4a7d9e'};
 /* 세로축 표기: 번호 + 영문 (세리프 · 자간 넓은 대문자) */
-var CH_AXIS={'나':'ME','인물':'FIGURES','역사':'HISTORY','철학':'PHILOSOPHY',
-  '과학':'SCIENCE','문학':'LITERATURE','음악':'MUSIC','예술':'ART'};
+var CH_AXIS={'나':'ME','인물':'FIG','역사':'HIS','철학':'PHIL',
+  '과학':'SCI','문학':'LIT','음악':'MUSIC','예술':'ART'};
 function chAxisNo(c){var i=CH_CATS.indexOf(c);return i<0?'':String(i+1).padStart(2,'0');}
 var CH_UNITS=['일','주','월','연','10년','100년'];
 var CH_SPAN={'일':14/365,'주':77/365,'월':0.5,'연':1.5,'10년':15,'100년':150};   /* 화면에 보이는 기간(년) */
@@ -6511,24 +6546,23 @@ function saveExcerptFull(){
   e.page=document.getElementById('exEditPage').value.trim();
   exvBook=null;exvId=null;
   save();renderReading();renderCal();
-  if(typeof bkvId!=='undefined'&&bkvId!=null)bkvRenderChs();
+  if(typeof bkvId!=='undefined'&&bkvId!=null){bkvRenderChs();bkvRenderNote();}
 }
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&(exvId!=null||dvId!=null))closeExcerptView();});
 
 /* ---------- 책 표지 확대 보기 ---------- */
-var bkvId=null, bkvCh=null;
+var bkvId=null, bkvCh=null, bkvExSel=null;   /* bkvExSel = 지금 선택한 발췌 (문헌 메모가 따라온다) */
 function openBookView(id){
   var b=db.reading.find(function(x){return x.id===id;});if(!b)return;
-  bkvId=id;bkvCh=null;
+  bkvId=id;bkvCh=null;bkvExSel=null;
   document.getElementById('bkvCover').innerHTML=
     (b.cover?'<img src="'+escA(b.cover)+'" onerror="this.style.display=\'none\'">':'')+
     '<div class="bkv-t">'+esc(b.title||'')+'</div>'+
     '<div class="bkv-a">'+esc(b.author||'')+(b.publisher?' · '+esc(b.publisher):'')+'</div>';
-  var nt=document.getElementById('bkvNote');if(nt)nt.value=b.thought||'';
-  bkvRenderChs();
+  bkvRenderChs();bkvRenderNote();
   document.getElementById('bkvBack').classList.add('on');
 }
-function closeBookView(){var el=document.getElementById('bkvBack');if(el)el.classList.remove('on');bkvId=null;bkvCh=null;}
+function closeBookView(){var el=document.getElementById('bkvBack');if(el)el.classList.remove('on');bkvId=null;bkvCh=null;bkvExSel=null;}
 function bkvBook(){return db.reading.find(function(x){return x.id===bkvId;});}
 function bkvRenderChs(){
   var b=bkvBook();if(!b)return;
@@ -6541,20 +6575,47 @@ function bkvRenderChs(){
   }).join(''):'<div class="empty" style="padding:14px 4px">등록된 목차가 없습니다. 상세 화면의 «목차 관리»에서 추가하세요.</div>';
   bkvRenderExs();
 }
-function bkvPick(el){var c=el.getAttribute('data-ch');bkvCh=(bkvCh===c?null:c);bkvRenderChs();}
+function bkvPick(el){var c=el.getAttribute('data-ch');bkvCh=(bkvCh===c?null:c);bkvExSel=null;bkvRenderChs();bkvRenderNote();}
 function bkvRenderExs(){
   var box=document.getElementById('bkvExs'), b=bkvBook();if(!box||!b)return;
   if(!bkvCh){box.style.display='none';box.innerHTML='';return;}
   var list=b.excerpts.filter(function(e){return e.chapter===bkvCh;})
     .sort(function(a,c){return String(a.date||'').localeCompare(String(c.date||''));});
   box.style.display='';
-  box.innerHTML='<div class="bkv-h">'+esc(bkvCh)+' 발췌</div>'+
+  box.innerHTML='<div class="bkv-h">'+esc(bkvCh)+' 발췌 <span style="font-weight:600">· 누르면 그 발췌의 문헌 메모가 아래에 열립니다</span></div>'+
     (list.length?list.map(function(e){
-      return '<div class="bkv-ex" data-ex="'+e.id+'">'
-        +(e.page?'<div class="pg">p.'+esc(String(e.page))+(e.date?' · '+esc(e.date):'')+'</div>':'')
-        +'<div class="bkv-ex-t" data-exq="'+e.id+'">'+exBodyHTML(e)+'</div>'
-        +'<div class="bkv-ex-n">'+exNotesHTML(b,e)+'</div></div>';
+      return '<div class="bkv-ex'+(bkvExSel===e.id?' on':'')+'" data-ex="'+e.id+'" onclick="bkvExPick(event,'+e.id+')">'
+        +'<div class="pg">'+(e.page?'p.'+esc(String(e.page)):'')+(e.date?(e.page?' · ':'')+esc(e.date):'')
+        +'<span class="pen-ic" style="margin-left:auto" title="발췌 원문 고치기" onclick="event.stopPropagation();editExcerptFull('+b.id+','+e.id+')">✎</span></div>'
+        +'<div class="bkv-ex-t" data-exq="'+e.id+'" data-exb="'+b.id+'">'+exBodyHTML(e)+'</div></div>';
     }).join(''):'<div class="empty" style="padding:10px 4px">이 목차에 저장된 발췌가 없습니다.</div>');
+}
+/* 발췌 클릭 → 그 발췌의 문헌 메모 활성화 (드래그 중이면 무시) */
+function bkvExPick(ev,eid){
+  var s=window.getSelection();if(s&&!s.isCollapsed)return;
+  if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.stn-row,.stm,.pen-ic,.del,.stn-btn'))return;
+  bkvExSel=(bkvExSel===eid?null:eid);
+  bkvRenderExs();bkvRenderNote();
+}
+/* 아래 칸: 발췌를 고르면 그 발췌의 문헌 메모 · 아니면 책 전체 메모 */
+function bkvRenderNote(){
+  var hd=document.getElementById('bkvNoteHead'),ann=document.getElementById('bkvNoteAnn'),
+      ta=document.getElementById('bkvNote'),b=bkvBook();
+  if(!hd||!ta||!b)return;
+  var e=bkvExSel!=null?(b.excerpts||[]).find(function(x){return x.id===bkvExSel;}):null;
+  if(e){
+    hd.innerHTML='문헌 메모 <span class="lit-ref">'+esc(e.chapter||bkvCh||'')+(e.page?' · p.'+esc(String(e.page)):'')+'</span>';
+    if(ann)ann.innerHTML=exNotesHTML(b,e);        /* 주석은 번호를 달고 여기(문헌 메모)에 들어간다 */
+    ta.value=e.memo||'';
+    ta.placeholder='이 발췌를 내 말로 옮겨 적기 · 왜 담아두는지 한 줄';
+    ta.oninput=function(){exMemoSave(b.id,e.id,this.value);};
+  }else{
+    hd.innerHTML='책 메모 <span class="lit-ref">'+esc(b.title||'')+'</span>';
+    if(ann)ann.innerHTML='';
+    ta.value=b.thought||'';
+    ta.placeholder='책 전체에 대한 생각';
+    ta.oninput=function(){bkvNoteSave(this.value);};
+  }
 }
 /* ===== 발췌 주석: Knowledge와 같은 방식 (드래그 → 1) 표시 + 오른쪽 주석) ===== */
 var exEditId=null;
@@ -6610,7 +6671,12 @@ function exFind(bid,eid){
   var e=(b.excerpts||[]).find(function(x){return x.id===eid;});if(!e)return null;
   return {b:b,e:e};
 }
-function exEditNote(ev,nid){if(ev)ev.stopPropagation();exEditId=nid;bkvRenderExs();
+/* 주석·문헌메모가 보이는 화면(책 들여다보기 · 데이지 발췌)을 함께 갱신 */
+function exViewRerender(){
+  if(typeof bkvId!=='undefined'&&bkvId!=null){bkvRenderExs();bkvRenderNote();}
+  if(document.getElementById('exOv')&&typeof daisyRefresh==='function')daisyRefresh();
+}
+function exEditNote(ev,nid){if(ev)ev.stopPropagation();exEditId=nid;exViewRerender();
   setTimeout(function(){
     var f=document.querySelector('[data-exn-in="'+nid+'"]');if(!f)return;
     f.focus();var r=document.createRange();r.selectNodeContents(f);r.collapse(false);
@@ -6626,11 +6692,11 @@ function exStashNote(bid,eid,nid,val){
 function exSaveNote(bid,eid,nid){
   var f=document.querySelector('[data-exn-in="'+nid+'"]');
   if(f)exStashNote(bid,eid,nid,f.innerText);
-  exEditId=null;bkvRenderExs();
+  exEditId=null;exViewRerender();
 }
 function exNoteKey(ev,bid,eid,nid){
   if(ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();exSaveNote(bid,eid,nid);}
-  else if(ev.key==='Escape'){ev.preventDefault();exEditId=null;bkvRenderExs();}
+  else if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();exEditId=null;exViewRerender();}
 }
 function exDelNote(bid,eid,nid){
   var o=exFind(bid,eid);if(!o)return;
@@ -6638,9 +6704,9 @@ function exDelNote(bid,eid,nid){
   if(n&&!confirm('이 주석을 삭제할까요?\n\n· '+(String(n.text||'').trim()||'(내용 없음)')+'\n\n되돌릴 수 없습니다.'))return;
   o.e.notes=(o.e.notes||[]).filter(function(a){return a.id!==nid;});
   if(exEditId===nid)exEditId=null;
-  save();bkvRenderExs();
+  save();exViewRerender();
 }
-/* 발췌문을 드래그하면 주석 생성 */
+/* 발췌문을 드래그하면 주석 생성 (책 들여다보기 · 데이지 발췌 공용) */
 function exSelToNote(){
   var sel=window.getSelection();if(!sel||sel.isCollapsed)return;
   var q=String(sel.toString()).replace(/\s+/g,' ').replace(/\s*\d+\)\s*$/,'').trim();
@@ -6648,14 +6714,23 @@ function exSelToNote(){
   var nd=sel.anchorNode;if(!nd)return;
   var el=(nd.nodeType===1?nd:nd.parentNode);
   var host=(el&&el.closest)?el.closest('[data-exq]'):null;if(!host)return;
-  var b=bkvBook();if(!b)return;
+  var bid=host.hasAttribute('data-exb')?+host.getAttribute('data-exb'):(bkvId!=null?bkvId:null);
+  var b=(db.reading||[]).find(function(x){return x.id===bid;});if(!b)return;
   var e=(b.excerpts||[]).find(function(x){return x.id===+host.getAttribute('data-exq');});if(!e)return;
   if(!e.notes)e.notes=[];
   if(String(e.text||'').indexOf(q)<0){sel.removeAllRanges();return;}
   if(e.notes.some(function(n){return n.q===q;})){sel.removeAllRanges();return;}
   var nid=uid();
   e.notes.push({id:nid,q:q,text:''});
+  if(typeof bkvId!=='undefined'&&bkvId!=null&&bkvId===bid)bkvExSel=e.id;   /* 주석 편집칸은 문헌 메모에 열린다 */
   save();sel.removeAllRanges();exEditNote(null,nid);
+}
+/* ---- 발췌마다 하나씩 붙는 문헌 메모 (내 말로 옮겨 적는 곳) ---- */
+var exMemoTimer=null;
+function exMemoSave(bid,eid,v){
+  var o=exFind(bid,eid);if(!o)return;
+  o.e.memo=v;
+  clearTimeout(exMemoTimer);exMemoTimer=setTimeout(save,400);
 }
 document.addEventListener('mouseup',function(ev){
   var el=ev.target;
@@ -8319,32 +8394,76 @@ function resetAll(){if(!confirm('모든 데이터를 삭제하고 초기 예시 
   db=seed();save();renderAll();}
 
 /* ---------- 독서 발췌 랜덤 + 5분 타이머 ---------- */
-var exTimer=null;
+var exTimer=null, daisyPick=null, daisyPanelOn=false;   /* daisyPick = {bid,eid} 지금 떠 있는 발췌 */
+function daisyFindPick(){
+  if(!daisyPick)return null;
+  return exFind(daisyPick.bid,daisyPick.eid);
+}
+/* 팝업 속을 다시 그린다 · 주석 표시는 ✎ 로 켰을 때만 */
+function daisyRefresh(){
+  var o=daisyFindPick();if(!o)return;
+  var q=document.getElementById('dzQuote'),n=document.getElementById('dzNotes'),
+      pn=document.getElementById('dzPanel');
+  if(q)q.innerHTML=(daisyPanelOn&&!fwLooksHtml(o.e.text))
+    ?('“<span data-exq="'+o.e.id+'" data-exb="'+o.b.id+'">'+exBodyHTML(o.e)+'</span>”')
+    :('“'+fwR(o.e.text)+'”');
+  if(n)n.innerHTML=daisyPanelOn?exNotesHTML(o.b,o.e):'';
+  if(pn)pn.style.display=daisyPanelOn?'':'none';
+}
+/* ✎ = 주석·문헌 메모 켜고 끄기 */
+function daisyPanelToggle(){
+  daisyPanelOn=!daisyPanelOn;
+  var pen=document.querySelector('#exOv .ex-edit');
+  if(pen)pen.classList.toggle('on',daisyPanelOn);
+  daisyRefresh();
+}
 function showExcerpt(){
   var pool=[];
-  (db.reading||[]).forEach(function(b){(b.excerpts||[]).forEach(function(e){if(e.text&&String(e.text).trim())pool.push({text:e.text,book:b.title,page:e.page});});});
+  (db.reading||[]).forEach(function(b){(b.excerpts||[]).forEach(function(e){if(e.text&&String(e.text).trim())pool.push({bid:b.id,eid:e.id});});});
   if(!pool.length){alert('독서에서 발췌한 문장이 없습니다.');return;}
-  var pick=pool[Math.floor(Math.random()*pool.length)];
   closeExcerpt();
+  daisyPick=pool[Math.floor(Math.random()*pool.length)];
+  daisyPanelOn=false;
+  var o=daisyFindPick();if(!o)return;
   var ov=document.createElement('div');ov.className='ex-ov';ov.id='exOv';
   ov.onclick=function(e){if(e.target===ov)closeExcerpt();};
-  ov.innerHTML='<div class="ex-box"><span class="ex-close" onclick="closeExcerpt()" title="닫기">✕</span>'
-    +'<div class="ex-quote">\u201c'+fwR(pick.text)+'\u201d</div>'
-    +'<div class="ex-src">\u2014 '+esc(pick.book||'')+(pick.page?(' \u00b7 '+esc(String(pick.page))+'p'):'')+'</div>'
-    +'<div class="ex-timer" id="exTimer">05:00</div>'
-    +'<div class="ex-timer-label" id="exTimerLabel">남은 시간</div></div>';
+  ov.innerHTML='<div class="ex-box">'
+    +'<span class="pen-ic ex-edit" title="주석·문헌 메모 열기" onclick="daisyPanelToggle()">✎</span>'
+    +'<span class="ex-close" onclick="closeExcerpt()" title="닫기">✕</span>'
+    +'<div class="ex-quote" id="dzQuote"></div>'
+    +'<div class="ex-src">— '+esc(o.b.title||'')+(o.e.page?(' · '+esc(String(o.e.page))+'p'):'')+'</div>'
+    +'<div id="dzPanel" style="display:none">'
+    +'<div class="ex-notes" id="dzNotes"></div>'
+    +'<div class="ex-lit"><div class="ex-lit-h">문헌 메모'
+    +'<span class="ex-lit-src" onclick="daisyEdit()">원문 고치기</span></div>'
+    +'<textarea id="dzMemo" placeholder="이 발췌를 내 말로 옮겨 적기"'
+    +' oninput="exMemoSave('+o.b.id+','+o.e.id+',this.value)">'+esc(o.e.memo||'')+'</textarea></div>'
+    +'</div>'
+    +'<div class="ex-timer" id="exTimer">05:00</div></div>';
   document.body.appendChild(ov);
+  daisyRefresh();
   document.addEventListener('keydown',exEsc);
   var left=300, tEl=document.getElementById('exTimer');
   exTimer=setInterval(function(){
     left--;
     var m=Math.floor(left/60), sc=left%60;
     if(tEl)tEl.textContent=(m<10?'0':'')+m+':'+(sc<10?'0':'')+sc;
-    if(left<=0){clearInterval(exTimer);exTimer=null;if(tEl){tEl.textContent='00:00';tEl.classList.add('done');}var lb=document.getElementById('exTimerLabel');if(lb)lb.textContent='시간 종료';}
+    if(left<=0){clearInterval(exTimer);exTimer=null;if(tEl){tEl.textContent='00:00';tEl.classList.add('done');}}
   },1000);
 }
-function exEsc(e){if(e.key==='Escape')closeExcerpt();}
-function closeExcerpt(){if(exTimer){clearInterval(exTimer);exTimer=null;}var e=document.getElementById('exOv');if(e)e.remove();document.removeEventListener('keydown',exEsc);}
+/* 원문 고치기 → 발췌 수정 편집기 */
+function daisyEdit(){
+  var p=daisyPick;if(!p)return;
+  closeExcerpt();
+  editExcerptFull(p.bid,p.eid);
+}
+function exEsc(e){
+  if(e.key!=='Escape')return;
+  var a=document.activeElement;                      /* 메모나 주석을 쓰는 중이면 초점만 뺀다 */
+  if(a&&(a.id==='dzMemo'||(a.closest&&a.closest('#exOv .stn-row')))){a.blur();return;}
+  closeExcerpt();
+}
+function closeExcerpt(){if(exTimer){clearInterval(exTimer);exTimer=null;}var e=document.getElementById('exOv');if(e)e.remove();document.removeEventListener('keydown',exEsc);daisyPick=null;daisyPanelOn=false;}
 
 /* ---------- 데이지 마크: 날아와서 꽃잎 지고 발췌가 뜨는 연출 ---------- */
 var DAISY_N=8, daisyDropped=[], daisyAnimating=false;
@@ -8436,10 +8555,6 @@ function daisyClick(){
       else{
         fly.remove();dim.remove();
         showExcerpt();
-        var box=document.querySelector('#exOv .ex-box');
-        if(box){var pd=document.createElement('div');pd.className='ex-petals';
-          pd.textContent=daisyRemaining()>0?('남은 꽃잎 '+daisyRemaining()+'장'):'마지막 잎까지 졌어요 · 다음에 다시 핍니다';
-          box.appendChild(pd);}
         daisyAnimating=false;
       }
     }
@@ -9041,40 +9156,16 @@ function fwMindReset(){
   if(w)w.style.display='none';if(b)b.classList.remove('on');
   if(window.__mindCtx&&window.__mindCtx.canvas==='fwMindCanvas')window.__mindCtx=null;
 }
-/* ================= 키보드 단축키 (연속 키: g 누르고 d) =================
-   글을 쓰는 중에는 꺼진다. ? 를 누르면 목록이 뜬다. */
-var HK={
-  g:{lb:'가기',m:[
-    ['h','대시보드',function(){go('dashboard');}],
-    ['s','스케줄',function(){goTop('cal');}],
-    ['m','매일매일',function(){goTop('study');}],
-    ['w','업무',function(){go('work');}],
-    ['r','독서 · 책장',function(){goRead();}],
-    ['i','인박스',function(){goInbox();}],
-    ['d','아이디어',function(){go('inbox');}],
-    ['z','제텔카스텐',function(){go('zettel');}],
-    ['c','연대기',function(){go('chrono');}],
-    ['j','일기',function(){goTop('diary');}],
-    ['a','자산',function(){go('assets');}],
-    [',','설정',function(){go('settings');}]
-  ]},
-  n:{lb:'새로 쓰기',m:[
-    ['j','일기 쓰기',function(){qmGo('diary');}],
-    ['z','제텔 메모',function(){qmGo('zettel');}],
-    ['w','업무 적기',function(){qmGo('work');}],
-    ['k','지식 적기',function(){qmGo('know');}],
-    ['s','일정 추가',function(){var d=new Date();
-      tlqOpen(String(d.getHours()).padStart(2,'0')+':'+String(Math.floor(d.getMinutes()/5)*5).padStart(2,'0'),
-              {pickDate:true,date:today()});}],
-    ['p','포스트잇',function(){memoToggle();}]
-  ]},
-  t:{lb:'여닫기',m:[
-    ['n','지금 일정 접기/펴기',function(){nowToggleHide();}],
-    ['q','바로가기 메뉴',function(){qmOpen(window.innerWidth/2,window.innerHeight/2);}],
-    ['t','타임라인으로',function(){goTop('cal');var el=document.getElementById('timelineCard');if(el)secScroll(el);}]
-  ]}
-};
-var hkLead=null,hkTimer=null;
+/* ================= 키보드 단축키: d 로 시작 · f 를 누를 때마다 화면이 넘어간다 =================
+   대시보드 → 인박스 → 아이디어 → 연대기 → 제텔카스텐 순환. 글을 쓰는 중에는 꺼진다. */
+var DF_SEQ=[
+  ['대시보드',function(){go('dashboard');}],
+  ['인박스',function(){goInbox();}],
+  ['아이디어',function(){go('inbox');}],
+  ['연대기',function(){go('chrono');}],
+  ['제텔카스텐',function(){go('zettel');}]
+];
+var dfArmed=false,dfIdx=-1,dfTimer=null;
 /* 지금 글을 쓰는 중인가 (그러면 단축키를 쓰지 않는다) */
 function hkTyping(){
   if(typeof fwCfg!=='undefined'&&fwCfg)return true;
@@ -9091,41 +9182,28 @@ function hkChip(txt){
   if(!e){e=document.createElement('div');e.id='hkChip';e.className='hk-chip';document.body.appendChild(e);}
   e.textContent=txt;e.classList.add('on');
 }
-function hkReset(){hkLead=null;clearTimeout(hkTimer);hkChip('');}
-function hkHelp(){
-  if(document.getElementById('hkOv')){hkHelpClose();return;}
-  var ov=document.createElement('div');ov.id='hkOv';ov.className='hk-ov';
-  ov.innerHTML='<div class="hk-box"><div class="hk-head"><b>단축키</b>'
-    +'<span class="hk-x" onclick="hkHelpClose()">✕</span></div><div class="hk-cols">'
-    +Object.keys(HK).map(function(L){var g=HK[L];
-      return '<div class="hk-g"><h4><kbd>'+esc(L)+'</kbd> '+esc(g.lb)+'</h4>'
-        +g.m.map(function(r){
-          return '<div class="hk-r"><span><kbd>'+esc(L)+'</kbd><kbd>'+esc(r[0])+'</kbd></span>'
-            +esc(r[1])+'</div>';}).join('')+'</div>';}).join('')
-    +'</div><p class="hk-foot"><kbd>g</kbd> 를 누르고 이어서 <kbd>d</kbd> 를 누르는 식입니다 · '
-    +'글을 쓰는 중에는 작동하지 않습니다 · <kbd>?</kbd> 로 이 창 열고 닫기</p></div>';
-  ov.addEventListener('click',function(e){if(e.target===ov)hkHelpClose();});
-  document.body.appendChild(ov);
-}
-function hkHelpClose(){var e=document.getElementById('hkOv');if(e)e.remove();}
+function dfReset(){dfArmed=false;dfIdx=-1;clearTimeout(dfTimer);hkChip('');}
+function dfTick(){clearTimeout(dfTimer);dfTimer=setTimeout(dfReset,3000);}
 document.addEventListener('keydown',function(e){
   if(e.ctrlKey||e.metaKey||e.altKey)return;
-  if(e.key==='Escape'){hkReset();hkHelpClose();return;}
+  if(e.key==='Escape'){dfReset();return;}
   if(hkTyping())return;
-  if(e.key==='?'){e.preventDefault();hkReset();hkHelp();return;}
   var k=String(e.key||'').toLowerCase();
-  if(hkLead){
-    var g=HK[hkLead],hit=null;
-    g.m.forEach(function(r){if(r[0]===k)hit=r;});
-    hkReset();
-    if(hit){e.preventDefault();hkHelpClose();try{hit[2]();}catch(err){}}
-    return;
-  }
-  if(HK[k]){
+  if(k==='d'&&!dfArmed){
     e.preventDefault();
-    hkLead=k;hkChip(k.toUpperCase()+' · '+HK[k].lb+' …');
-    hkTimer=setTimeout(hkReset,1600);
+    dfArmed=true;dfIdx=-1;
+    hkChip('D · 이제 F 를 누를 때마다 화면이 넘어갑니다');
+    dfTick();return;
   }
+  if(dfArmed&&k==='f'){
+    e.preventDefault();
+    dfIdx=(dfIdx+1)%DF_SEQ.length;
+    var it=DF_SEQ[dfIdx];
+    hkChip('D·F → '+it[0]);
+    try{it[1]();}catch(err){}
+    dfTick();return;
+  }
+  if(dfArmed&&k!=='d')dfReset();      /* 다른 키를 누르면 풀린다 (d 연타는 유지) */
 });
 /* ---------- 포스트잇 메모: 저장하면 인박스로 ---------- */
 function memoToggle(){
