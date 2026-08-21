@@ -2053,7 +2053,7 @@
       <div class="gcal-sec">
         <div class="gcal-t">방법 2 · 버튼 한 번으로 바로 반영 <span class="gcal-badge">최초 1회 설치</span></div>
         <div class="gcal-d">구글 Apps Script 웹앱을 한 번 만들어 두면, 아래 «구글 캘린더로 보내기»를 누를 때마다 일정이 캘린더에 반영됩니다. 이미 보낸 일정은 덮어쓰고, 앱에서 지운 일정은 캘린더에서도 지웁니다.<br>
-        루틴은 <b>반복 일정 1건</b>으로 등록되고, <b>바뀐 것이 없는 항목은 건너뛰므로</b> 여러 번 눌러도 구글 호출이 늘어나지 않습니다.</div>
+        루틴은 구글이 쓰기를 차단하지 않도록 <b>오늘·내일 이틀치만</b> 등록합니다(다음 날 다시 누르면 하루치가 이어집니다). <b>바뀐 것이 없는 항목은 건너뛰므로</b> 여러 번 눌러도 구글 호출이 늘어나지 않습니다.</div>
         <div class="inrow">
           <input id="gcalUrl" class="in" style="flex:1" placeholder="Apps Script 웹앱 URL (https://script.google.com/…/exec)">
           <button class="btn y" style="flex:none" onclick="gcalConnect()">연결 확인</button>
@@ -2416,7 +2416,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-20 · r54';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-20 · r55';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4016,14 +4016,21 @@ function gcalPushAll(futureOnly){
   var list=db.schedules.filter(function(s){return s.date&&(!futureOnly||s.date>=tk);});
   var rts=(db.tlRoutines||[]).filter(function(r){return r.active!==false;});
   if(!list.length&&!rts.length){alert('보낼 일정이 없습니다.');return;}
-  /* 루틴은 낱개 30일치가 아니라 「반복 일정」 1건으로 보낸다 (구글 호출 수 30분의 1) */
-  var rtEvents=rts.map(function(r){
-    return {series:true,uid:'hmd-rt-'+r.id,date:tk,
-      time:(/^\d{2}:\d{2}$/.test(r.time||'')?r.time:''),
-      dur:(r.dur>0?r.dur:30),title:'[루틴] '+r.title,detail:''};
+  /* 루틴은 「오늘·내일 이틀치」 낱개 일정으로만 보낸다.
+     반복 일정(series) 방식은 루틴이 많으면 구글이 쓰기를 차단해서 접었다.
+     uid 를 hmd-rtd-{id}-{날짜} 로 두면 날마다 내일치 하나만 새로 만들면 된다. */
+  var tm=nextDay(tk);
+  var rtEvents=[];
+  rts.forEach(function(r){
+    [tk,tm].forEach(function(d){
+      rtEvents.push({uid:'hmd-rtd-'+r.id+'-'+d,date:d,
+        time:(/^\d{2}:\d{2}$/.test(r.time||'')?r.time:''),
+        dur:(r.dur>0?r.dur:30),title:'[루틴] '+r.title,detail:''});
+    });
   });
-  var msg='일정 '+list.length+'건'+(rts.length?' + 루틴 '+rts.length+'개(각 반복 일정 1건)':'')+'를 구글 캘린더로 보낼까요?'
-    +'\n\n※ 지난번과 달라진 것이 없는 항목은 구글을 호출하지 않고 건너뜁니다.';
+  var msg='일정 '+list.length+'건'+(rts.length?' + 루틴 '+rts.length+'개(오늘·내일 이틀치 = '+rtEvents.length+'건)':'')+'를 구글 캘린더로 보낼까요?'
+    +'\n\n※ 지난번과 달라진 것이 없는 항목은 구글을 호출하지 않고 건너뜁니다.'
+    +'\n※ 예전 방식으로 만들어 둔 «반복 일정» 루틴은 이번 전송에서 자동으로 정리됩니다.';
   if(!confirm(msg))return;
   gcalSend({type:'bulk',sync:true,from:futureOnly?tk:'',
     events:list.map(function(s){return gcalEventPayload(s,'upsert');}).concat(rtEvents)},
