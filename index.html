@@ -1134,6 +1134,18 @@
   .chp-cats{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
   .chp-cats span{font-size:11px;font-weight:800;color:#fff;padding:3px 9px;border-radius:999px}
   .chp-body{font-size:13.5px;line-height:1.75;margin-top:10px;white-space:pre-wrap;max-height:40vh;overflow:auto}
+  /* 이어진 사건 목록 */
+  .chp-lk-h{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.3px;margin:12px 0 5px}
+  .chp-lk{display:flex;align-items:center;gap:8px;font-size:13px;padding:4px 0;border-top:1px dashed var(--line)}
+  .chp-lk span:first-child{flex:1}
+  /* 날짜 없는 사건 (그래프 아래) */
+  .ch-nd-h{font-size:11.5px;font-weight:800;color:var(--muted);letter-spacing:.3px;margin:12px 0 7px}
+  .ch-nd-h span{font-weight:600;margin-left:6px}
+  .ch-nd-list{display:flex;flex-wrap:wrap;gap:7px}
+  .ch-nd{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--dark);
+    background:var(--cream);border:1px solid var(--line);border-radius:20px;padding:5px 12px;cursor:pointer;transition:.12s}
+  .ch-nd:hover{border-color:var(--yellow);background:#fffdf4}
+  .ch-nd i{width:8px;height:8px;border-radius:50%;flex:none}
   .chp-foot{display:flex;gap:6px;justify-content:flex-end;margin-top:14px}
   .chp-foot .btn{flex:none;padding:6px 14px;font-size:12px}
   /* ===== 퀵 메뉴 (빈 화면 더블클릭) — 모노톤 가로 일렬 ===== */
@@ -1967,6 +1979,7 @@
         <input id="chY" class="in" type="number" style="flex:none;width:120px" placeholder="년 (기원전 -)">
         <select id="chM" class="in" style="flex:none;width:76px"></select>
         <select id="chD" class="in" style="flex:none;width:76px"></select>
+        <button class="btn ghost" id="chNoDateBtn" type="button" style="flex:none;padding:7px 12px;font-size:12px" onclick="chNoDateTgl()" title="날짜를 모르는 사건은 그래프 아래에 따로 모입니다">날짜 없음</button>
         <input id="chTitle" class="in" style="flex:1;min-width:200px" placeholder="사건명">
       </div>
       <textarea id="chDetail" class="in" style="width:100%;min-height:64px;margin-top:8px;resize:vertical" placeholder="세부 내용"></textarea>
@@ -1985,6 +1998,7 @@
         <div class="ch-filter" id="chFilter"></div>
       </div>
       <div id="chWrap"><svg id="chSvg"></svg><div class="ch-tip" id="chTip"></div></div>
+      <div id="chNoDates"></div>
       <p style="font-size:12px;color:var(--muted);margin-top:8px">끌어서 이동 · 휠로 확대/축소 · 점 한 번 = 날짜 · 두 번 = 세부 내용</p>
     </div>
   </section>
@@ -2307,6 +2321,9 @@
   <input id="exEditPage" style="display:none" placeholder="페이지">
   <input id="exEditText" style="display:none">
   <input id="dyEditText" style="display:none">
+  <input id="stEditCat" style="display:none" placeholder="카테고리">
+  <input id="stEditTitle" style="display:none" placeholder="제목">
+  <textarea id="stEditContent" style="display:none" placeholder="내용"></textarea>
 </div>
 
 <div class="bkv-back" id="bkvBack" onclick="closeBookView()">
@@ -2354,7 +2371,9 @@
     <div class="chp-date" id="chpDate"></div>
     <div class="chp-cats" id="chpCats"></div>
     <div class="chp-body" id="chpBody"></div>
+    <div class="chp-links" id="chpLinks"></div>
     <div class="chp-foot">
+      <button class="btn ghost" onclick="chPopLink()">선 잇기</button>
       <button class="btn ghost" onclick="chPopEdit()">수정</button>
       <button class="btn ghost" onclick="chPopDel()">삭제</button>
     </div>
@@ -2397,7 +2416,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-20 · r53';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-20 · r54';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -2413,7 +2432,7 @@ function ensureFields(){
   if(!db||typeof db!=='object')db=seed();
   /* 어떤 경로로 들어온 데이터든 기본 뼈대는 반드시 갖춰 둔다 (동기화·백업 복원 대비) */
   ['work','study','reading','assets','inbox','diary','sessions','schedules',
-   'tlRoutines','tlProjects','routines','fixed','workCats','zk','chrono'].forEach(function(k){
+   'tlRoutines','tlProjects','routines','fixed','workCats','zk','chrono','chronoLinks'].forEach(function(k){
     if(!Array.isArray(db[k]))db[k]=[];});
   ['todos','budget','overtime','tlrLog','workVault'].forEach(function(k){
     if(!db[k]||typeof db[k]!=='object'||Array.isArray(db[k]))db[k]={};});
@@ -4628,6 +4647,14 @@ function chAxisNo(c){var i=CH_CATS.indexOf(c);return i<0?'':String(i+1).padStart
 var CH_UNITS=['일','주','월','연','10년','100년'];
 var CH_SPAN={'일':14/365,'주':77/365,'월':0.5,'연':1.5,'10년':15,'100년':150};   /* 화면에 보이는 기간(년) */
 var chState={unit:'연',c:null,ppy:null}, chEditId=null, chSelCats=[], chFilter=[], chPopId=null;
+var chNoDate=false, chLinkFrom=null;   /* chLinkFrom = 선 잇기 시작 사건 id */
+function chNoDateTgl(){chNoDate=!chNoDate;chNoDatePaint();}
+function chNoDatePaint(){
+  var b=document.getElementById('chNoDateBtn');
+  if(b){b.classList.toggle('y',chNoDate);b.classList.toggle('ghost',!chNoDate);}
+  ['chY','chM','chD'].forEach(function(i){var el=document.getElementById(i);
+    if(el){el.disabled=chNoDate;el.style.opacity=chNoDate?'.4':'';}});
+}
 function chDim(y,m){if(m===2)return ((y%4===0&&y%100!==0)||y%400===0)?29:28;return [31,28,31,30,31,30,31,31,30,31,30,31][m-1];}
 function chDiy(y){var t=0,i;for(i=1;i<=12;i++)t+=chDim(y,i);return t;}
 function chT(y,m,d){var doy=0,i;for(i=1;i<m;i++)doy+=chDim(y,i);doy+=(d-1);return y+doy/chDiy(y);}
@@ -4649,15 +4676,17 @@ function chCatPickRender(){
 }
 function chCatTgl(c){var i=chSelCats.indexOf(c);if(i>=0)chSelCats.splice(i,1);else chSelCats.push(c);chCatPickRender();}
 function chAdd(){
+  if(!db.chrono)db.chrono=[];if(!db.chronoLinks)db.chronoLinks=[];
   var y=parseInt(document.getElementById('chY').value,10),
       m=parseInt(document.getElementById('chM').value,10)||1,
       d=parseInt(document.getElementById('chD').value,10)||1,
       title=document.getElementById('chTitle').value.trim(),
       detail=document.getElementById('chDetail').value.trim();
-  if(isNaN(y)){alert('년도를 입력하세요. (기원전은 음수로: -384)');return;}
+  if(chNoDate){y=null;m=0;d=0;}
+  else if(isNaN(y)){alert('년도를 입력하세요. (기원전은 음수로: -384) · 모르면 «날짜 없음»');return;}
   if(!title){alert('사건명을 입력하세요.');return;}
   if(!chSelCats.length){alert('카테고리를 하나 이상 선택하세요.');return;}
-  if(d>chDim(y,m))d=chDim(y,m);
+  if(y!=null&&d>chDim(y,m))d=chDim(y,m);
   if(chEditId!=null){
     var x=(db.chrono||[]).find(function(v){return v.id===chEditId;});
     if(x){x.y=y;x.m=m;x.d=d;x.title=title;x.detail=detail;x.cats=chSelCats.slice();}
@@ -4666,11 +4695,11 @@ function chAdd(){
   }
   save();
   chCancelEdit();
-  chState.c=chT(y,m,d);          /* 방금 넣은 사건이 화면에 보이게 이동 */
+  if(y!=null)chState.c=chT(y,m,d);   /* 방금 넣은 사건이 화면에 보이게 이동 */
   renderChrono();
 }
 function chCancelEdit(){
-  chEditId=null;chSelCats=[];
+  chEditId=null;chSelCats=[];chNoDate=false;chNoDatePaint();
   document.getElementById('chTitle').value='';document.getElementById('chDetail').value='';
   document.getElementById('chAddBtn').textContent='추가';
   document.getElementById('chCancel').style.display='none';
@@ -4681,7 +4710,9 @@ function chCancelEdit(){
 function chEdit(id){
   var x=(db.chrono||[]).find(function(v){return String(v.id)===String(id);});if(!x)return;
   chEditId=x.id;chSelCats=(x.cats||[]).slice();
-  document.getElementById('chY').value=x.y;document.getElementById('chM').value=x.m;document.getElementById('chD').value=x.d;
+  chNoDate=(x.y==null);chNoDatePaint();
+  document.getElementById('chY').value=(x.y==null?'':x.y);
+  document.getElementById('chM').value=x.m||1;document.getElementById('chD').value=x.d||1;
   document.getElementById('chTitle').value=x.title;document.getElementById('chDetail').value=x.detail||'';
   document.getElementById('chAddBtn').textContent='저장';
   document.getElementById('chAddBtn').style.marginLeft='0';
@@ -4759,7 +4790,9 @@ function renderChrono(){
   if(tn>=t0&&tn<=t1){var xn=GL+(tn-t0)*ppy;
     s+='<line x1="'+xn.toFixed(1)+'" y1="'+GT+'" x2="'+xn.toFixed(1)+'" y2="'+(GT+innerH)+'" stroke="#e8615a" stroke-width="1.4" stroke-dasharray="3 3" opacity=".7"/>';}
   /* 사건 점: 카테고리 레인마다 점을 찍고, 중복 선택은 세로 연결선으로 잇는다 */
-  var evs=(db.chrono||[]).filter(function(e){return !chFilter.length||(e.cats||[]).some(function(c){return chFilter.indexOf(c)>=0;});});
+  var pass=(db.chrono||[]).filter(function(e){return !chFilter.length||(e.cats||[]).some(function(c){return chFilter.indexOf(c)>=0;});});
+  var evs=pass.filter(function(e){return e.y!=null;});
+  chRenderNoDates(pass.filter(function(e){return e.y==null;}));
   var groups=[];
   evs.forEach(function(e){
     var t=chT(e.y,e.m,e.d),x=GL+(t-t0)*ppy;
@@ -4778,6 +4811,15 @@ function renderChrono(){
       return Math.max(GT+8,Math.min(GT+innerH-8,cy));
     });
   });
+  /* 사건끼리 이은 선 (팝업의 «선 잇기») */
+  var anchor={};
+  groups.forEach(function(g){anchor[g.e.id]={x:g.x,y:g.ys[0]};});
+  (db.chronoLinks||[]).forEach(function(L){
+    var A=anchor[L.a],B=anchor[L.b];if(!A||!B)return;
+    var mx=(A.x+B.x)/2, my=Math.min(A.y,B.y)-Math.min(46,Math.abs(A.x-B.x)*.18+14);
+    s+='<path d="M'+A.x.toFixed(1)+' '+A.y.toFixed(1)+' Q'+mx.toFixed(1)+' '+my.toFixed(1)
+      +' '+B.x.toFixed(1)+' '+B.y.toFixed(1)+'" fill="none" stroke="#caa04c" stroke-width="1.4" stroke-dasharray="5 4" opacity=".85"/>';
+  });
   groups.forEach(function(g){                         /* 연결선은 점 아래에 깔린다 */
     if(g.ys.length>1)
       s+='<line x1="'+g.x.toFixed(1)+'" y1="'+Math.min.apply(null,g.ys).toFixed(1)+'" x2="'+g.x.toFixed(1)+'" y2="'+Math.max.apply(null,g.ys).toFixed(1)+'" stroke="#b9c2bc" stroke-width="1.3"/>';
@@ -4795,6 +4837,40 @@ function renderChrono(){
   svg.setAttribute('viewBox','0 0 '+W+' '+H);
   svg.innerHTML=s;
 }
+/* 날짜 없는 사건: 그래프 아래에 칩으로 모아 둔다 */
+function chRenderNoDates(list){
+  var el=document.getElementById('chNoDates');if(!el)return;
+  if(!list||!list.length){el.innerHTML='';return;}
+  el.innerHTML='<div class="ch-nd-h">날짜 없는 사건 <span>'+list.length+'건 · 누르면 세부 내용</span></div>'
+    +'<div class="ch-nd-list">'+list.map(function(e){
+      var c=(e.cats&&e.cats[0])||'나';
+      return '<span class="ch-nd" onclick="chPopOpen(\''+e.id+'\')">'
+        +'<i style="background:'+(CH_COLOR[c]||'#12312b')+'"></i>'+esc(e.title)+'</span>';
+    }).join('')+'</div>';
+}
+/* ---- 사건과 사건을 선으로 잇기 ---- */
+function chPopLink(){
+  var id=chPopId;if(id==null)return;
+  chPopClose();
+  chLinkFrom=id;
+  hkChip('선 잇기 · 이을 사건의 점을 누르세요 (Esc 취소)');
+}
+function chLinkCancel(){chLinkFrom=null;hkChip('');}
+function chLinkTo(idB){
+  var a=chLinkFrom,b=idB;chLinkCancel();
+  if(a==null||b==null||String(a)===String(b))return;
+  if(!db.chronoLinks)db.chronoLinks=[];
+  var dup=db.chronoLinks.some(function(L){return (String(L.a)===String(a)&&String(L.b)===String(b))||(String(L.a)===String(b)&&String(L.b)===String(a));});
+  if(dup)return;
+  db.chronoLinks.push({id:uid(),a:a,b:b});
+  save();renderChrono();
+}
+function chUnlink(lid){
+  db.chronoLinks=(db.chronoLinks||[]).filter(function(L){return L.id!==lid;});
+  save();renderChrono();
+  if(chPopId!=null)chPopOpen(chPopId);   /* 목록 갱신 */
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&chLinkFrom!=null)chLinkCancel();});
 /* ---- 그래프 조작: 끌기 = 이동, 휠 = 확대/축소, 클릭 = 날짜, 더블클릭 = 내용 ---- */
 (function(){
   var wrap=document.getElementById('chWrap');if(!wrap)return;
@@ -4821,6 +4897,7 @@ function renderChrono(){
   wrap.addEventListener('click',function(e){
     if(moved)return;
     var c=e.target.closest?e.target.closest('circle[data-id]'):null;
+    if(chLinkFrom!=null){if(c)chLinkTo(c.getAttribute('data-id'));else chLinkCancel();return;}
     if(!c){chTipHide();return;}
     var x=(db.chrono||[]).find(function(v){return String(v.id)===c.getAttribute('data-id');});if(!x)return;
     var tip=document.getElementById('chTip');
@@ -4839,9 +4916,19 @@ function chPopOpen(id){
   var x=(db.chrono||[]).find(function(v){return String(v.id)===String(id);});if(!x)return;
   chPopId=x.id;
   document.getElementById('chpTitle').textContent=x.title;
-  document.getElementById('chpDate').textContent=chDateStr(x.y,x.m,x.d);
+  document.getElementById('chpDate').textContent=(x.y==null)?'날짜 없음':chDateStr(x.y,x.m,x.d);
   document.getElementById('chpCats').innerHTML=(x.cats||[]).map(function(c){return '<span style="background:'+(CH_COLOR[c]||'#12312b')+'">'+esc(c)+'</span>';}).join('');
   document.getElementById('chpBody').textContent=x.detail||'(세부 내용 없음)';
+  var lk=document.getElementById('chpLinks');
+  if(lk){
+    var mine=(db.chronoLinks||[]).filter(function(L){return String(L.a)===String(x.id)||String(L.b)===String(x.id);});
+    lk.innerHTML=mine.length?('<div class="chp-lk-h">이어진 사건</div>'+mine.map(function(L){
+      var oid=String(L.a)===String(x.id)?L.b:L.a;
+      var o=(db.chrono||[]).find(function(v){return String(v.id)===String(oid);});
+      return '<div class="chp-lk"><span>'+esc(o?o.title:'(삭제된 사건)')+'</span>'
+        +'<span class="del" onclick="chUnlink('+L.id+')">×</span></div>';
+    }).join('')):'';
+  }
   document.getElementById('chpOv').classList.add('on');
   document.addEventListener('keydown',chPopEsc);
 }
@@ -4854,6 +4941,7 @@ function chPopEdit(){var id=chPopId;chPopClose();chEdit(id);}
 function chPopDel(){
   if(!confirm('이 사건을 삭제할까요?'))return;
   db.chrono=(db.chrono||[]).filter(function(v){return v.id!==chPopId;});
+  db.chronoLinks=(db.chronoLinks||[]).filter(function(L){return String(L.a)!==String(chPopId)&&String(L.b)!==String(chPopId);});
   save();chPopClose();renderChrono();
 }
 /* ================= 퀵 메뉴: 빈 화면 더블클릭 → 방사형 바로가기 ================= */
@@ -7407,6 +7495,7 @@ function renderDashStudy(){
     (isMemTab(t)?list.map(memRow).join(''):t==='문화'?list.map(cultureRow).join(''):list.map(x=>
       `<div class="entry"><div class="meta">${x.category?`<span class="cat-badge b-study">${esc(x.category)}</span>`:''}
         <b contenteditable onblur="editStudy(${x.id},'title',this.innerText)" style="flex:1">${esc(x.title||'')}</b>
+        <span class="pen-ic" title="편집기로 수정" onclick="editStudyFull(${x.id})">✎</span>
         <span class="del" onclick="delStudyEntry(${x.id})">×</span></div>
         <div class="body" contenteditable onblur="editStudy(${x.id},'content',this.innerText)">${esc(x.content||'')}</div></div>`).join('')))
     :`<div class="empty">오늘 ${studyKo(t)} 기록이 없습니다.</div>`;
@@ -7455,6 +7544,7 @@ function renderStudy(){
       <div class="meta">
         <input class="rowsel" list="studyCatList" value="${escA(x.category||'')}" placeholder="카테고리" onchange="editStudy(${x.id},'category',this.value)">
         <b contenteditable onblur="editStudy(${x.id},'title',this.innerText)" style="flex:1">${esc(x.title||'')}</b>
+        <span class="pen-ic" title="편집기로 수정" onclick="editStudyFull(${x.id})">✎</span>
         <span class="del" onclick="delStudyEntry(${x.id})">×</span></div>
       <div class="st2">
         <div class="body" data-study="${x.id}" contenteditable onblur="saveStudyBody(${x.id},this)">${stBodyHTML(x)}</div>
@@ -7484,6 +7574,26 @@ function renderStudy(){
   `;
 }
 
+/* 지식 누적 ✎ → 글쓰기 편집기로 수정 */
+var stFullId=null;
+function editStudyFull(id){
+  var x=db.study.find(function(a){return a.id===id;});if(!x)return;
+  stFullId=id;
+  document.getElementById('stEditCat').value=x.category||'';
+  document.getElementById('stEditTitle').value=x.title||'';
+  document.getElementById('stEditContent').value=x.content||'';
+  fwStart('stedit');
+}
+function saveStudyFull(){
+  var x=db.study.find(function(a){return a.id===stFullId;});if(!x){stFullId=null;return;}
+  var t=document.getElementById('stEditTitle').value.trim();
+  if(!t){alert('제목을 입력하세요.');return;}
+  x.category=document.getElementById('stEditCat').value.trim();
+  x.title=t;
+  x.content=document.getElementById('stEditContent').value;
+  stFullId=null;
+  save();renderStudyAll();
+}
 /* ---------- 지식 주석: 본문을 드래그하면 1) 표시 + 오른쪽 주석칸 ---------- */
 /* 주석이 걸린 구간을 본문에서 찾아 앞에서부터 번호를 매긴다 (겹치면 앞선 것만) */
 function stRanges(x){
@@ -8673,6 +8783,7 @@ var FW_KINDS={
   cmdesc:['설명 쓰기',['cmDescEdit'],['cmDescEdit'],function(){if(cheonilEditKey){var q=String(cheonilEditKey).split('_');saveCheonilDesc(Number(q[0]),Number(q[1]));}}],
   chex:['발췌 쓰기',['chExText','chExPage'],['chExText'],function(){if(readOpenId)addChapterExcerpt(readOpenId);}],
   exedit:['발췌 수정',['exEditChapter','exEditPage','exEditText'],['exEditText'],function(){saveExcerptFull();}],
+  stedit:['지식 수정',['stEditCat','stEditTitle','stEditContent'],['stEditContent'],function(){saveStudyFull();}],
   dyedit:['일기 수정',['dyEditText'],['dyEditText'],function(){saveDiaryFull();}]
 };
 function fwStart(kind,src){
@@ -9339,8 +9450,8 @@ esSet(['tlpiTitle','tlpiStart','tlpiDur'],function(){tlAddProjItem();});
 esSet(['inboxInput'],function(){addInbox();});
 esSet(['inboxInput2'],function(){addInbox('inboxInput2','idea');});
 esSet(['wTitle','wContent'],function(){addWorkDash();});
-esSet(['sTerm','sMean','sCat','sTitle','sContent'],function(){addStudyDash();});
-esSet(['sdDate','sdTerm','sdMean','sdCat','sdTitle','sdContent'],function(){addStudyDetail();});
+esSet(['sTerm','sMean'],function(){addStudyDash();});   /* 지식(sCat·sTitle·sContent)은 Enter로 저장하지 않는다 */
+esSet(['sdDate','sdTerm','sdMean'],function(){addStudyDetail();});
 
 esSet(['exBook','exChapter','exText','exPage'],function(){addExcerpt();});
 esSet(['bTitle','bAuthor','bPub','bPages','bStart','bEnd','bCat','bLink','bChapters'],function(){addBook();});
