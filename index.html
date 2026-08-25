@@ -419,6 +419,45 @@
   @keyframes chOpen{from{opacity:0;max-height:0;transform:translateY(-4px)}to{opacity:1;max-height:1200px;transform:none}}
   .ch-add{display:flex;gap:8px;align-items:flex-start;margin-top:10px}
   .ch-add textarea{flex:1;min-height:44px;resize:vertical}
+  /* 의회 일정 흐름표 */
+  #ccTplChips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .cc-tpl{padding:7px 14px;border:1px solid var(--line);border-radius:20px;background:#fff;font-size:12px;
+    font-weight:700;color:var(--muted);cursor:pointer;transition:.12s}
+  .cc-tpl:hover{color:var(--dark)}
+  .cc-tpl.on{background:var(--dark);border-color:var(--dark);color:#fff}
+  #ccSessChips{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 14px}
+  .cc-sess{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border:1px solid var(--line);
+    border-radius:20px;background:#fff;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;transition:.12s}
+  .cc-sess.on{background:var(--green);border-color:var(--green);color:#fff}
+  .cc-sess .del{font-size:13px}
+  .cc-sess.on .del{color:#dbeee6}
+  .cc-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px 0 6px}
+  .cc-in{position:relative}
+  .cc-hd{display:flex;margin-left:74px;border-bottom:1px solid var(--line)}
+  .cc-hd span{flex:none;text-align:center;font-size:9.5px;color:var(--muted);padding-bottom:5px}
+  .cc-hd span.we{color:#c98a86}
+  .cc-row{display:flex;align-items:center;min-height:44px;border-bottom:1px dashed #f0ede6;position:relative}
+  .cc-row:last-child{border-bottom:none}
+  .cc-tk{flex:none;width:74px;font-size:11px;font-weight:800;padding-left:12px;display:flex;align-items:center;gap:6px}
+  .cc-tk i{width:8px;height:8px;border-radius:2px;flex:none}
+  .cc-cells{position:relative;flex:none;height:44px}
+  .cc-bar{position:absolute;top:8px;height:28px;border-radius:8px;display:flex;align-items:center;
+    padding:0 8px;font-size:11px;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;box-shadow:0 1px 4px rgba(18,49,43,.14);transition:.12s}
+  .cc-bar:hover{filter:brightness(1.08)}
+  .cc-bar.sel{outline:2px solid var(--dark);outline-offset:1px}
+  .cc-bar .td{margin-left:6px;font-size:10px;opacity:.9;font-weight:600}
+  .cc-today{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed var(--red);opacity:.55;pointer-events:none}
+  .cc-today em{position:absolute;bottom:2px;left:3px;font-style:normal;font-size:9px;color:var(--red);font-weight:800}
+  .cc-det{margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fffdf8}
+  .cc-det .rowx{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .cc-todo{display:flex;gap:9px;align-items:center;font-size:12.5px;padding:6px 2px;border-bottom:1px dashed var(--line)}
+  .cc-todo:last-child{border-bottom:none}
+  .cc-todo.done .nm{text-decoration:line-through;color:var(--muted)}
+  .cc-todo .dd{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:12px;background:var(--green-soft);color:var(--green);flex:none}
+  .cc-todo .dd.soon{background:#fdeaea;color:var(--red)}
+  .cc-todo .dd.past{background:#eee;color:#999}
+  .cc-todo input[type=checkbox]{accent-color:var(--green);width:15px;height:15px;flex:none}
   /* 독서 그래프 (독서계획 자리에서 버튼으로 전환) */
   .rdp-switch{display:flex;gap:8px;margin:16px 0 0}
   .rdp-switch button{padding:7px 16px;border:1px solid var(--line);border-radius:20px;background:#fff;
@@ -1865,6 +1904,7 @@
   <div class="logo" id="hmdLogo" title="매일매일 · 독서 · 일기 열기" onclick="showMyThree()">HMD</div>
   <div class="nav active" data-v="dashboard">Dashboard</div>
   <div class="nav" data-v="work">Work</div>
+  <div class="nav" data-v="council">Council</div>
   <div class="nav" data-v="study">Study<span class="ca">›</span></div>
   <div class="subnav" id="studySub" style="display:none">
     <div class="nav sub" data-v="study:단어">Words</div>
@@ -1922,6 +1962,29 @@
   <section class="view" id="view-work">
     <div class="page-head"><h1>업무</h1></div>
     <div id="workPane" style="margin-top:16px"></div>
+  </section>
+
+  <!-- ===== 의회 일정 흐름표 ===== -->
+  <section class="view" id="view-council">
+    <div class="page-head"><h1>의회 일정</h1></div>
+    <div class="card">
+      <h3><span class="dot" style="background:#2f6f5e"></span> 회기 흐름표 <span class="more" id="ccCnt"></span>
+        <button class="btn ghost" style="margin-left:auto;padding:7px 12px" onclick="ccNewTgl()">＋ 회기 추가</button></h3>
+      <div id="ccNewForm" style="display:none;margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:16px">
+        <div class="form">
+          <div class="two">
+            <div class="field"><label>회기 이름</label><input id="ccName" placeholder="예: 제3회 정례회"></div>
+            <div class="field"><label>개회일</label><input type="date" id="ccStart"></div>
+          </div>
+          <div class="field"><label>틀 고르기 <span style="font-weight:400;color:var(--muted)">· 표준 단계가 채워지고, 날짜는 만들어진 뒤 자유롭게 조정</span></label>
+            <div id="ccTplChips"></div></div>
+          <div><button class="btn y" onclick="ccAddSession()">회기 만들기</button></div>
+        </div>
+      </div>
+      <div id="ccSessChips"></div>
+      <div id="ccGantt"></div>
+      <div id="ccPhase"></div>
+    </div>
   </section>
 
   <!-- ===== 독서 ===== -->
@@ -2597,7 +2660,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-25 · r62';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-25 · r63';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -2617,7 +2680,7 @@ function ensureFields(){
     if(!Array.isArray(db[k]))db[k]=[];});
   ['todos','budget','overtime','tlrLog','workVault','rtCheck'].forEach(function(k){
     if(!db[k]||typeof db[k]!=='object'||Array.isArray(db[k]))db[k]={};});
-  if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.articles)db.articles=[];if(!db.rdLog)db.rdLog=[];if(!db.routines)db.routines=[];if(!db.tlRoutines)db.tlRoutines=[];if(!db.tlrLog)db.tlrLog={};if(!db.tlProjects)db.tlProjects=[];if(!db.overtime)db.overtime={};if(db.otRate==null)db.otRate=12113;if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
+  if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.articles)db.articles=[];if(!db.rdLog)db.rdLog=[];if(!db.council)db.council={sessions:[],active:null};if(!db.routines)db.routines=[];if(!db.tlRoutines)db.tlRoutines=[];if(!db.tlrLog)db.tlrLog={};if(!db.tlProjects)db.tlProjects=[];if(!db.overtime)db.overtime={};if(db.otRate==null)db.otRate=12113;if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
   if(!db.cheonildu||Array.isArray(db.cheonildu)){
     var __oldCd=Array.isArray(db.cheonildu)?db.cheonildu:[];var __chapMap={};var __chapOrder=[];
     __oldCd.forEach(function(x){var cn=x.chapter||'(챕터 미입력)';if(!__chapMap[cn]){__chapMap[cn]={id:uid(),name:cn,units:[]};__chapOrder.push(cn);}
@@ -9287,6 +9350,207 @@ function renderRtLists(){
   el.innerHTML=head+body;
 }
 function renderRoutiner(){renderRtLists();}
+/* ================= 의회 일정 흐름표 ================= */
+var CC_TRACKS=['본회의','상임위','특위','실무'];
+var CC_TCOL={'본회의':'#2f6f5e','상임위':'#2a78d6','특위':'#c98500','실무':'#8a9490'};
+/* 틀: [단계명, 트랙, 개회일로부터 며칠째, 며칠간] — 만들어진 뒤 날짜는 자유 조정 */
+var CC_TPLS={
+  '정례회 (예산)':[
+    ['개회·회기 결정','본회의',0,1],
+    ['시정질문·5분 자유발언','본회의',1,2],
+    ['상임위 안건 심사','상임위',3,4],
+    ['예산안 제안설명','본회의',7,1],
+    ['예산결산특위 심사','특위',8,4],
+    ['본회의 의결','본회의',13,1],
+    ['폐회','본회의',14,1]],
+  '정례회 (행정사무감사)':[
+    ['개회·회기 결정','본회의',0,1],
+    ['행정사무감사','상임위',1,5],
+    ['상임위 안건 심사','상임위',7,3],
+    ['본회의 의결','본회의',11,1],
+    ['폐회','본회의',12,1]],
+  '임시회':[
+    ['개회·회기 결정','본회의',0,1],
+    ['상임위 안건 심사','상임위',1,2],
+    ['본회의 의결·폐회','본회의',4,1]],
+  '빈 틀':[]
+};
+var ccTpl='정례회 (예산)', ccSel=null;
+function ccData(){if(!db.council)db.council={sessions:[],active:null};return db.council;}
+function ccActive(){
+  var c=ccData();
+  return c.sessions.find(function(s){return s.id===c.active;})||c.sessions[0]||null;
+}
+function ccPh(id){var s=ccActive();return s?(s.phases||[]).find(function(p){return p.id===id;}):null;}
+function ccNewTgl(){
+  var f=document.getElementById('ccNewForm');if(!f)return;
+  var show=f.style.display==='none';f.style.display=show?'':'none';
+  if(show){var d=document.getElementById('ccStart');if(d&&!d.value)d.value=today();ccPaintTpl();
+    var n=document.getElementById('ccName');if(n)n.focus();}
+}
+function ccPaintTpl(){
+  var w=document.getElementById('ccTplChips');if(!w)return;
+  w.innerHTML=Object.keys(CC_TPLS).map(function(k){
+    return '<span class="cc-tpl'+(ccTpl===k?' on':'')+'" onclick="ccTplPick(\''+k+'\')">'+k+'</span>';}).join('');
+}
+function ccTplPick(k){ccTpl=k;ccPaintTpl();}
+function ccAddSession(){
+  var nm=(document.getElementById('ccName')||{}).value||'',st=(document.getElementById('ccStart')||{}).value||'';
+  nm=nm.trim();
+  if(!nm){document.getElementById('ccName').focus();return;}
+  if(!st)st=today();
+  var phases=(CC_TPLS[ccTpl]||[]).map(function(t){
+    return {id:uid()+Math.floor(Math.random()*97),name:t[0],track:t[1],
+      s:shiftDayStr(st,t[2]),e:shiftDayStr(st,t[2]+t[3]-1),todos:[]};
+  });
+  var c=ccData(),sid=uid();
+  c.sessions.push({id:sid,name:nm,start:st,phases:phases});
+  c.active=sid;ccSel=null;
+  document.getElementById('ccName').value='';
+  document.getElementById('ccNewForm').style.display='none';
+  save();renderCouncil();
+}
+function ccPickSess(id){ccData().active=id;ccSel=null;save();renderCouncil();}
+function ccDelSess(id,ev){
+  if(ev)ev.stopPropagation();
+  if(!confirm('이 회기 흐름표를 지울까요?'))return;
+  var c=ccData();
+  c.sessions=c.sessions.filter(function(s){return s.id!==id;});
+  if(c.active===id)c.active=c.sessions.length?c.sessions[0].id:null;
+  ccSel=null;save();renderCouncil();
+}
+function ccSelPh(id){ccSel=(ccSel===id?null:id);renderCouncil();}
+function ccPhSet(field,val){
+  var p=ccPh(ccSel);if(!p)return;
+  if(field==='name'){val=String(val).trim();if(val)p.name=val;}
+  else if(field==='track'){if(CC_TRACKS.indexOf(val)>=0)p.track=val;}
+  else if(field==='s'){if(val){p.s=val;if(p.e<val)p.e=val;}}
+  else if(field==='e'){if(val){p.e=val;if(p.s>val)p.s=val;}}
+  save();renderCouncil();
+}
+function ccPhAdd(){
+  var s=ccActive();if(!s)return;
+  var p={id:uid()+Math.floor(Math.random()*97),name:'새 단계',track:'본회의',s:s.start,e:s.start,todos:[]};
+  s.phases.push(p);ccSel=p.id;save();renderCouncil();
+}
+function ccPhDel(){
+  var s=ccActive();if(!s||ccSel==null)return;
+  if(!confirm('이 단계를 지울까요? 딸린 마감 체크도 함께 지워집니다.'))return;
+  s.phases=s.phases.filter(function(p){return p.id!==ccSel;});
+  ccSel=null;save();renderCouncil();
+}
+function ccTodoAdd(){
+  var p=ccPh(ccSel);if(!p)return;
+  var nmEl=document.getElementById('ccTdName'),dEl=document.getElementById('ccTdDate');
+  var nm=nmEl?nmEl.value.trim():'';
+  if(!nm){if(nmEl)nmEl.focus();return;}
+  p.todos=p.todos||[];
+  p.todos.push({id:uid()+Math.floor(Math.random()*97),name:nm,d:(dEl?dEl.value:'')||'',done:false});
+  if(nmEl)nmEl.value='';if(dEl)dEl.value='';
+  save();renderCouncil();
+  setTimeout(function(){var e=document.getElementById('ccTdName');if(e)e.focus();},40);
+}
+function ccTodoTgl(tid){
+  var p=ccPh(ccSel);if(!p)return;
+  var t=(p.todos||[]).find(function(x){return x.id===tid;});
+  if(t){t.done=!t.done;save();renderCouncil();}
+}
+function ccTodoDel(tid){
+  var p=ccPh(ccSel);if(!p)return;
+  p.todos=(p.todos||[]).filter(function(x){return x.id!==tid;});
+  save();renderCouncil();
+}
+function ccDday(d){
+  if(!d)return '';
+  var n=Math.round((new Date(d+'T00:00:00')-new Date(today()+'T00:00:00'))/86400000);
+  var cls=n<0?'past':(n<=3?'soon':'');
+  var txt=n===0?'D-DAY':(n>0?'D-'+n:'지남');
+  return '<span class="dd '+cls+'">'+txt+'</span>';
+}
+function renderCouncil(){
+  var chips=document.getElementById('ccSessChips');if(!chips)return;
+  var c=ccData(),act=ccActive();
+  var cnt=document.getElementById('ccCnt');if(cnt)cnt.textContent=c.sessions.length?c.sessions.length+'개 회기':'';
+  ccPaintTpl();
+  chips.innerHTML=c.sessions.map(function(s){
+    var on=act&&s.id===act.id;
+    return '<span class="cc-sess'+(on?' on':'')+'" onclick="ccPickSess('+s.id+')">'+esc(s.name)
+      +'<span class="del" onclick="ccDelSess('+s.id+',event)">×</span></span>';
+  }).join('');
+  var g=document.getElementById('ccGantt'),det=document.getElementById('ccPhase');
+  if(!act){
+    if(g)g.innerHTML='<div class="empty">「＋ 회기 추가」로 첫 흐름표를 만들어 보세요.<br><span style="font-size:12px">틀을 고르면 표준 단계가 채워지고, 날짜는 막대를 눌러 조정합니다.</span></div>';
+    if(det)det.innerHTML='';
+    return;
+  }
+  /* 날짜 범위: 단계 최소~최대 ± 1일 */
+  var ds=[act.start],de=[act.start];
+  (act.phases||[]).forEach(function(p){ds.push(p.s);de.push(p.e);});
+  var d0=shiftDayStr(ds.sort()[0],-1),d1=shiftDayStr(de.sort().reverse()[0],1);
+  var days=[],d=d0,guard=0;
+  while(d<=d1&&guard<120){days.push(d);d=shiftDayStr(d,1);guard++;}
+  var CW=36,di={};days.forEach(function(x,i){di[x]=i;});
+  var wd=['일','월','화','수','목','금','토'];
+  var hd=days.map(function(x){
+    var w=new Date(x+'T00:00:00').getDay();
+    return '<span style="width:'+CW+'px" class="'+(w===0||w===6?'we':'')+'">'+Number(x.slice(8))+'<br>'+wd[w]+'</span>';
+  }).join('');
+  var tracks=CC_TRACKS.filter(function(t){return (act.phases||[]).some(function(p){return p.track===t;});});
+  if(!tracks.length)tracks=['본회의'];
+  var W=days.length*CW;
+  var rows=tracks.map(function(t){
+    var bars=(act.phases||[]).filter(function(p){return p.track===t;}).map(function(p){
+      var i0=di[p.s]!=null?di[p.s]:0,i1=di[p.e]!=null?di[p.e]:i0;
+      var tds=(p.todos||[]),left=tds.filter(function(x){return !x.done;}).length;
+      return '<div class="cc-bar'+(ccSel===p.id?' sel':'')+'" style="left:'+(i0*CW+2)+'px;width:'+((i1-i0+1)*CW-4)
+        +'px;background:'+CC_TCOL[t]+'" onclick="ccSelPh('+p.id+')" title="'+escA(p.name+' · '+p.s.slice(5)+'~'+p.e.slice(5))+'">'
+        +esc(p.name)+(tds.length?'<span class="td">☑ '+(tds.length-left)+'/'+tds.length+'</span>':'')+'</div>';
+    }).join('');
+    return '<div class="cc-row"><div class="cc-tk"><i style="background:'+CC_TCOL[t]+'"></i>'+t+'</div>'
+      +'<div class="cc-cells" style="width:'+W+'px">'+bars+'</div></div>';
+  }).join('');
+  var tdLine='';
+  if(di[today()]!=null)
+    tdLine='<div class="cc-today" style="left:'+(74+di[today()]*CW+CW/2)+'px"><em>오늘</em></div>';
+  if(g)g.innerHTML='<div class="cc-wrap"><div class="cc-in" style="min-width:'+(W+74)+'px">'
+    +'<div class="cc-hd">'+hd+'</div>'+rows+tdLine+'</div></div>';
+  /* 단계 상세 */
+  if(det){
+    var p=ccPh(ccSel);
+    if(!p){
+      det.innerHTML='<div style="display:flex;align-items:center;gap:10px;margin-top:12px">'
+        +'<span style="font-size:12px;color:var(--muted)">막대를 누르면 날짜를 조정하고 마감 체크를 달 수 있습니다</span>'
+        +'<button class="btn ghost" style="margin-left:auto;padding:6px 12px" onclick="ccPhAdd()">＋ 단계 추가</button></div>';
+    }else{
+      var todos=(p.todos||[]).slice().sort(function(a,b){return String(a.d||'9999').localeCompare(String(b.d||'9999'));});
+      det.innerHTML='<div class="cc-det">'
+        +'<div class="rowx">'
+        +'<input class="in" style="flex:2;min-width:160px;font-weight:700" value="'+escA(p.name)+'" onchange="ccPhSet(\'name\',this.value)">'
+        +'<select class="rowsel" onchange="ccPhSet(\'track\',this.value)">'
+          +CC_TRACKS.map(function(t){return '<option'+(p.track===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select>'
+        +'<input type="date" class="in" style="flex:none" value="'+p.s+'" onchange="ccPhSet(\'s\',this.value)">'
+        +'<span class="rdp-sep">~</span>'
+        +'<input type="date" class="in" style="flex:none" value="'+p.e+'" onchange="ccPhSet(\'e\',this.value)">'
+        +'<span class="del" style="font-size:16px" onclick="ccPhDel()">×</span></div>'
+        +'<div class="rdp-hd" style="margin:12px 0 4px"><b>마감 체크</b>'
+          +'<span class="rdp-hint">자료요구 회신, 질의서 제출 같은 실무 마감을 달아두세요</span></div>'
+        +(todos.length?todos.map(function(t){
+          return '<div class="cc-todo'+(t.done?' done':'')+'">'
+            +'<input type="checkbox"'+(t.done?' checked':'')+' onchange="ccTodoTgl('+t.id+')">'
+            +'<span class="nm">'+esc(t.name)+'</span>'
+            +(t.d?'<span style="font-size:11px;color:var(--muted)">'+esc(t.d.slice(5))+'</span>'+ccDday(t.d):'')
+            +'<span class="del" style="margin-left:auto" onclick="ccTodoDel('+t.id+')">×</span></div>';
+        }).join(''):'<div style="font-size:12px;color:var(--muted);padding:6px 0">아직 마감이 없습니다.</div>')
+        +'<div class="rowx" style="margin-top:10px">'
+        +'<input id="ccTdName" class="in" style="flex:2;min-width:140px" placeholder="마감 내용" onkeydown="if(event.key===\'Enter\')ccTodoAdd()">'
+        +'<input id="ccTdDate" type="date" class="in" style="flex:none">'
+        +'<button class="btn y" style="flex:none" onclick="ccTodoAdd()">추가</button>'
+        +'<button class="btn ghost" style="flex:none;margin-left:auto" onclick="ccPhAdd()">＋ 단계 추가</button></div>'
+      +'</div>';
+    }
+  }
+}
+
 /* ================= 아티클 (기사 아카이브) ================= */
 var ART_MEDIA={'chosun.com':'조선일보','joongang.co.kr':'중앙일보','donga.com':'동아일보','hani.co.kr':'한겨레',
   'khan.co.kr':'경향신문','mk.co.kr':'매일경제','hankyung.com':'한국경제','yna.co.kr':'연합뉴스','ytn.co.kr':'YTN',
@@ -9552,7 +9816,7 @@ function renderAll(){
   renderTop();renderCal();renderSchedule();renderTodos();renderInbox();renderInboxPage();renderSessions();
   renderWork();renderDashWork();renderReading();renderStudy();renderDashStudy();
   renderAssets();renderDashAsset();renderDiary();renderDiaryPage();renderRoutiner();renderZettel();renderDash();
-  renderMemoUrl();renderChrono();renderArticle();
+  renderMemoUrl();renderChrono();renderArticle();renderCouncil();
 }
 (function(){var e=document.getElementById('buildStamp');
   if(e)e.textContent='버전 '+HMD_BUILD;})();
