@@ -2659,8 +2659,28 @@
 </div>
 
 <script>
+/* 어떤 오류든 조용히 죽지 않고 화면에 알려준다 (원인 파악용) */
+window.addEventListener('error',function(ev){
+  try{
+    var box=document.getElementById('hmdErrBar');
+    if(!box){
+      box=document.createElement('div');box.id='hmdErrBar';
+      box.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#7a2e2a;color:#fff;'
+        +'padding:10px 40px 10px 14px;border-radius:10px;font-size:12px;line-height:1.5;font-family:inherit;'
+        +'box-shadow:0 8px 24px rgba(0,0,0,.3);word-break:break-all';
+      var x=document.createElement('span');x.textContent='×';
+      x.style.cssText='position:absolute;right:12px;top:8px;cursor:pointer;font-size:16px';
+      x.onclick=function(){box.remove();};
+      box.appendChild(x);
+      var body=document.body||document.documentElement;body.appendChild(box);
+    }
+    var m=document.createElement('div');
+    m.textContent='⚠ 오류: '+(ev.message||'?')+(ev.lineno?(' (줄 '+ev.lineno+')'):'');
+    box.insertBefore(m,box.lastChild&&box.lastChild.tagName==='SPAN'?null:box.firstChild);
+  }catch(_){}
+});
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-25 · r64';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-25 · r65';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -2678,26 +2698,38 @@ function ensureFields(){
   ['work','study','reading','assets','inbox','diary','sessions','schedules',
    'tlRoutines','tlProjects','routines','fixed','workCats','zk','chrono','chronoLinks'].forEach(function(k){
     if(!Array.isArray(db[k]))db[k]=[];});
+  /* null·문자열 같은 깨진 항목이 섞여 있으면 부팅이 그 자리에서 죽는다 — 목록에서 걸러낸다 */
+  ['work','study','reading','assets','inbox','diary','sessions','schedules',
+   'tlRoutines','tlProjects','routines','fixed','zk','chrono','chronoLinks','articles','rdLog'].forEach(function(k){
+    if(Array.isArray(db[k]))db[k]=db[k].filter(function(x){return x&&typeof x==='object';});
+  });
   ['todos','budget','overtime','tlrLog','workVault','rtCheck'].forEach(function(k){
     if(!db[k]||typeof db[k]!=='object'||Array.isArray(db[k]))db[k]={};});
   if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.articles)db.articles=[];if(!db.rdLog)db.rdLog=[];if(!db.council)db.council={sessions:[],active:null};
-  /* 배열 필드가 빠진 옛 데이터가 화면 전체를 멈추지 않게 (매 로드마다, 멱등) */
-  if(!Array.isArray(db.reading))db.reading=[];
-  db.reading.forEach(function(bk){
-    if(!bk||typeof bk!=='object')return;
-    if(!Array.isArray(bk.chapters))bk.chapters=[];
-    if(!Array.isArray(bk.excerpts))bk.excerpts=[];
-    bk.excerpts.forEach(function(e){if(e&&!Array.isArray(e.notes))e.notes=[];});
-  });
-  db.reading=db.reading.filter(function(bk){return bk&&typeof bk==='object';});
-  if(!Array.isArray(db.articles))db.articles=[];
-  db.articles.forEach(function(a){if(a&&!Array.isArray(a.excerpts))a.excerpts=[];});
-  if(!Array.isArray(db.rdLog))db.rdLog=[];
-  if(!Array.isArray(db.council.sessions))db.council.sessions=[];
-  db.council.sessions.forEach(function(s){
-    if(!Array.isArray(s.phases))s.phases=[];
-    s.phases.forEach(function(p){if(p&&!Array.isArray(p.todos))p.todos=[];});
-  });if(!db.routines)db.routines=[];if(!db.tlRoutines)db.tlRoutines=[];if(!db.tlrLog)db.tlrLog={};if(!db.tlProjects)db.tlProjects=[];if(!db.overtime)db.overtime={};if(db.otRate==null)db.otRate=12113;if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
+  /* 배열 필드가 빠진 옛 데이터가 화면 전체를 멈추지 않게 (매 로드마다, 멱등)
+     — 정리 자체가 실패해도 앱은 반드시 뜬다 */
+  try{
+    if(!Array.isArray(db.reading))db.reading=[];
+    db.reading=db.reading.filter(function(bk){return bk&&typeof bk==='object';});
+    db.reading.forEach(function(bk){
+      if(!Array.isArray(bk.chapters))bk.chapters=[];
+      if(!Array.isArray(bk.excerpts))bk.excerpts=[];
+      bk.excerpts=bk.excerpts.filter(function(e){return e&&typeof e==='object';});
+      bk.excerpts.forEach(function(e){if(!Array.isArray(e.notes))e.notes=[];});
+    });
+    if(!Array.isArray(db.articles))db.articles=[];
+    db.articles=db.articles.filter(function(a){return a&&typeof a==='object';});
+    db.articles.forEach(function(a){if(!Array.isArray(a.excerpts))a.excerpts=[];});
+    if(!Array.isArray(db.rdLog))db.rdLog=[];
+    if(!db.council||typeof db.council!=='object')db.council={sessions:[],active:null};
+    if(!Array.isArray(db.council.sessions))db.council.sessions=[];
+    db.council.sessions=db.council.sessions.filter(function(s){return s&&typeof s==='object';});
+    db.council.sessions.forEach(function(s){
+      if(!Array.isArray(s.phases))s.phases=[];
+      s.phases=s.phases.filter(function(p){return p&&typeof p==='object';});
+      s.phases.forEach(function(p){if(!Array.isArray(p.todos))p.todos=[];});
+    });
+  }catch(e){try{console.error('ensureFields 정리 실패:',e);}catch(_){}}if(!db.routines)db.routines=[];if(!db.tlRoutines)db.tlRoutines=[];if(!db.tlrLog)db.tlrLog={};if(!db.tlProjects)db.tlProjects=[];if(!db.overtime)db.overtime={};if(db.otRate==null)db.otRate=12113;if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
   if(!db.cheonildu||Array.isArray(db.cheonildu)){
     var __oldCd=Array.isArray(db.cheonildu)?db.cheonildu:[];var __chapMap={};var __chapOrder=[];
     __oldCd.forEach(function(x){var cn=x.chapter||'(챕터 미입력)';if(!__chapMap[cn]){__chapMap[cn]={id:uid(),name:cn,units:[]};__chapOrder.push(cn);}
@@ -9840,7 +9872,9 @@ function renderAll(){
 }
 (function(){var e=document.getElementById('buildStamp');
   if(e)e.textContent='버전 '+HMD_BUILD;})();
-renderAll();applyTopState();renderSyncUI();renderBackupUI();backupTick();
+[renderAll,applyTopState,renderSyncUI,renderBackupUI,backupTick].forEach(function(f){
+  try{f();}catch(e){try{console.error('boot · '+(f.name||'?')+':',e);}catch(_){}}
+});
 __boot=false;                                  /* 마이그레이션 구간 끝 */
 if(syncCode()){
   setTimeout(syncReady,8000);                  /* 응답이 없어도 8초 뒤엔 정상 동작 */
