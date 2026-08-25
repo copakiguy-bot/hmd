@@ -2660,7 +2660,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-25 · r63';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-25 · r64';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -2680,7 +2680,24 @@ function ensureFields(){
     if(!Array.isArray(db[k]))db[k]=[];});
   ['todos','budget','overtime','tlrLog','workVault','rtCheck'].forEach(function(k){
     if(!db[k]||typeof db[k]!=='object'||Array.isArray(db[k]))db[k]={};});
-  if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.articles)db.articles=[];if(!db.rdLog)db.rdLog=[];if(!db.council)db.council={sessions:[],active:null};if(!db.routines)db.routines=[];if(!db.tlRoutines)db.tlRoutines=[];if(!db.tlrLog)db.tlrLog={};if(!db.tlProjects)db.tlProjects=[];if(!db.overtime)db.overtime={};if(db.otRate==null)db.otRate=12113;if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
+  if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.articles)db.articles=[];if(!db.rdLog)db.rdLog=[];if(!db.council)db.council={sessions:[],active:null};
+  /* 배열 필드가 빠진 옛 데이터가 화면 전체를 멈추지 않게 (매 로드마다, 멱등) */
+  if(!Array.isArray(db.reading))db.reading=[];
+  db.reading.forEach(function(bk){
+    if(!bk||typeof bk!=='object')return;
+    if(!Array.isArray(bk.chapters))bk.chapters=[];
+    if(!Array.isArray(bk.excerpts))bk.excerpts=[];
+    bk.excerpts.forEach(function(e){if(e&&!Array.isArray(e.notes))e.notes=[];});
+  });
+  db.reading=db.reading.filter(function(bk){return bk&&typeof bk==='object';});
+  if(!Array.isArray(db.articles))db.articles=[];
+  db.articles.forEach(function(a){if(a&&!Array.isArray(a.excerpts))a.excerpts=[];});
+  if(!Array.isArray(db.rdLog))db.rdLog=[];
+  if(!Array.isArray(db.council.sessions))db.council.sessions=[];
+  db.council.sessions.forEach(function(s){
+    if(!Array.isArray(s.phases))s.phases=[];
+    s.phases.forEach(function(p){if(p&&!Array.isArray(p.todos))p.todos=[];});
+  });if(!db.routines)db.routines=[];if(!db.tlRoutines)db.tlRoutines=[];if(!db.tlrLog)db.tlrLog={};if(!db.tlProjects)db.tlProjects=[];if(!db.overtime)db.overtime={};if(db.otRate==null)db.otRate=12113;if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
   if(!db.cheonildu||Array.isArray(db.cheonildu)){
     var __oldCd=Array.isArray(db.cheonildu)?db.cheonildu:[];var __chapMap={};var __chapOrder=[];
     __oldCd.forEach(function(x){var cn=x.chapter||'(챕터 미입력)';if(!__chapMap[cn]){__chapMap[cn]={id:uid(),name:cn,units:[]};__chapOrder.push(cn);}
@@ -6901,7 +6918,7 @@ function shelfOpen(ev,id){if(ev)ev.stopPropagation();openBookView(id);}
 function fillChapters(){
   const b=bookById(Number(document.getElementById('exBook').value));
   const sel=document.getElementById('exChapter');
-  if(!(b&&b.chapters.length)){sel.innerHTML='<option value="">(목차 없음 — 자유 입력)</option>';return;}
+  if(!(b&&(b.chapters||[]).length)){sel.innerHTML='<option value="">(목차 없음 — 자유 입력)</option>';return;}
   /* 최근에 발췌를 넣은 목차가 위로 (발췌 없는 목차는 원래 순서대로 뒤에) */
   const last={};
   (b.excerpts||[]).forEach(e=>{
@@ -7290,7 +7307,7 @@ function renderReading(){
     }else period=b.start?`${fmtK(b.start)}~ 읽는중`:'읽는중';
     return `<tr>
       <td><div style="display:flex;align-items:center;gap:9px">${b.cover?`<img src="${escA(b.cover)}" title="표지 크게 보기" style="height:44px;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.18);cursor:zoom-in" onerror="this.style.display='none'" onclick="event.stopPropagation();openBookView(${b.id})">`:''}<div><b style="color:var(--green);cursor:pointer" onclick="openBook(${b.id})">${esc(b.title)}</b>
-        <div style="font-size:11px;color:var(--muted)">발췌 ${b.excerpts.length}개</div></div></div></td>
+        <div style="font-size:11px;color:var(--muted)">발췌 ${(b.excerpts||[]).length}개</div></div></div></td>
       <td>${esc(b.author||'')}</td><td>${esc(b.publisher||'')}</td>
       <td class="amt">${b.totalPages||''}</td><td style="font-size:12px;white-space:nowrap">${period}</td>
       <td style="white-space:nowrap">${b.category?`<span class="cat-badge b-read">${esc(b.category)}</span>`:''}</td>
@@ -9812,11 +9829,14 @@ function artExRender(){
 }
 
 function renderAll(){
-  gcalStatus();renderBackupUI();
-  renderTop();renderCal();renderSchedule();renderTodos();renderInbox();renderInboxPage();renderSessions();
-  renderWork();renderDashWork();renderReading();renderStudy();renderDashStudy();
-  renderAssets();renderDashAsset();renderDiary();renderDiaryPage();renderRoutiner();renderZettel();renderDash();
-  renderMemoUrl();renderChrono();renderArticle();renderCouncil();
+  /* 한 칸이 죽어도 나머지 화면과 버튼은 살아 있게, 하나씩 감싸서 그린다 */
+  [gcalStatus,renderBackupUI,
+   renderTop,renderCal,renderSchedule,renderTodos,renderInbox,renderInboxPage,renderSessions,
+   renderWork,renderDashWork,renderReading,renderStudy,renderDashStudy,
+   renderAssets,renderDashAsset,renderDiary,renderDiaryPage,renderRoutiner,renderZettel,renderDash,
+   renderMemoUrl,renderChrono,renderArticle,renderCouncil].forEach(function(f){
+    try{f();}catch(e){try{console.error('renderAll · '+(f.name||'?')+':',e);}catch(_){}}
+  });
 }
 (function(){var e=document.getElementById('buildStamp');
   if(e)e.textContent='버전 '+HMD_BUILD;})();
