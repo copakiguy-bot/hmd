@@ -294,19 +294,22 @@
   .donut-wrap{display:flex;align-items:center;gap:20px}
   .legend div{display:flex;align-items:center;gap:8px;font-size:13px;margin:6px 0}
   .legend .sw{width:11px;height:11px;border-radius:3px}
-  .ledger{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
-  .ledger th{text-align:left;color:var(--muted);font-weight:600;font-size:10.5px;padding:6px 6px;border-bottom:1px solid var(--line)}
-  .ledger td{padding:7px 6px;border-bottom:1px solid var(--line)}
-  .ledger{table-layout:fixed}
-  .ledger .rowdate{font-size:11px;padding:4px 2px;width:100%;max-width:112px}
-  .ledger th:nth-child(1){width:58px}
-  .ledger th:nth-child(2){width:86px}
-  .ledger th.amt{width:74px}
-  .ledger th:last-child{width:48px}
-  .ledger td:last-child{white-space:nowrap;overflow:visible}
-  .ledger td.ro{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .ledger .rowsel{max-width:100%}
-  .ledger tr.editing td{overflow:visible}
+  .ledger{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  .ledger th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;padding:7px 8px;border-bottom:1px solid var(--line)}
+  .ledger td{padding:9px 8px;border-bottom:1px solid var(--line)}
+  /* 가계부 전용: 고정 폭 + 작은 글씨 (led-fix 를 단 표에만) */
+  .ledger.led-fix{table-layout:fixed;font-size:12px}
+  .ledger.led-fix th{font-size:10.5px;padding:6px 6px}
+  .ledger.led-fix td{padding:7px 6px}
+  .ledger.led-fix .rowdate{font-size:11px;padding:4px 2px;width:100%;max-width:112px}
+  .ledger.led-fix th:nth-child(1){width:58px}
+  .ledger.led-fix th:nth-child(2){width:86px}
+  .ledger.led-fix th.amt{width:74px}
+  .ledger.led-fix th:last-child{width:48px}
+  .ledger.led-fix td:last-child{white-space:nowrap;overflow:visible}
+  .ledger.led-fix td.ro{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ledger.led-fix .rowsel{max-width:100%}
+  .ledger.led-fix tr.editing td{overflow:visible}
   .led-edit{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
   .led-edit .rowdate{flex:none;width:118px;max-width:118px}
   .led-edit .rowsel{flex:none;max-width:96px}
@@ -2477,7 +2480,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-25 · r57';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-25 · r58';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -7099,8 +7102,8 @@ function renderReading(){
       <td><div style="display:flex;align-items:center;gap:9px">${b.cover?`<img src="${escA(b.cover)}" title="표지 크게 보기" style="height:44px;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.18);cursor:zoom-in" onerror="this.style.display='none'" onclick="event.stopPropagation();openBookView(${b.id})">`:''}<div><b style="color:var(--green);cursor:pointer" onclick="openBook(${b.id})">${esc(b.title)}</b>
         <div style="font-size:11px;color:var(--muted)">발췌 ${b.excerpts.length}개</div></div></div></td>
       <td>${esc(b.author||'')}</td><td>${esc(b.publisher||'')}</td>
-      <td class="amt">${b.totalPages||''}</td><td style="font-size:12px">${period}</td>
-      <td>${b.category?`<span class="cat-badge b-read">${esc(b.category)}</span>`:''}</td>
+      <td class="amt">${b.totalPages||''}</td><td style="font-size:12px;white-space:nowrap">${period}</td>
+      <td style="white-space:nowrap">${b.category?`<span class="cat-badge b-read">${esc(b.category)}</span>`:''}</td>
       <td><span class="del" onclick="delBook(${b.id})">×</span></td></tr>`;}).join('');
 }
 function renderBookDetail(b){
@@ -8409,7 +8412,7 @@ function paneExpense(){
   <div class="g2">
     <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 가계부 <span class="more">이번달 ${won(spentSum)}</span></h3>
       <div class="inrow" style="margin-bottom:8px"><input id="expSearch" class="in" style="flex:1" placeholder="내역·카테고리 검색" value="${escA(expSearch)}" oninput="expSearchInput(this.value)"></div>
-      <div class="tblx"><table class="ledger"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th>비고</th><th></th></tr></thead>
+      <div class="tblx"><table class="ledger led-fix"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th>비고</th><th></th></tr></thead>
       <tbody id="expLedgerBody">${assetLedger('지출')}</tbody></table></div><div id="expPager">${expPagerHTML()}</div></div>
     <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 이번달 지출</h3>${donutFromMap(pieMap,300,true)}</div>
   </div>
@@ -8433,7 +8436,7 @@ function paneInvest(){
   <div class="card"><h3><span class="dot" style="background:#e0a83a"></span> 투자 입력</h3>${assetInputRow('투자')}</div>
   <div class="g3">
     <div class="card"><h3><span class="dot" style="background:#e0a83a"></span> 투자 내역 <span class="more">총 ${won(total)}</span></h3>
-      <div class="tblx"><table class="ledger"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th></th></tr></thead>
+      <div class="tblx"><table class="ledger led-fix"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th></th></tr></thead>
       <tbody>${assetLedgerSlim('투자')}</tbody></table></div></div>
     <div class="card"><h3><span class="dot" style="background:#e0a83a"></span> 자산 포트폴리오</h3>${donutFromMap(port,240,true)}</div>
     <div class="card"><h3><span class="dot" style="background:#e0a83a"></span> 주식별 투자 현황</h3>${donutFromMap(stock,240,true)}</div>
@@ -8445,7 +8448,7 @@ function paneIncome(){
   <div class="card"><h3><span class="dot" style="background:var(--green)"></span> 수입 입력</h3>${assetInputRow('수입')}</div>
   <div class="g2">
     <div class="card"><h3><span class="dot" style="background:var(--green)"></span> 수입 내역 <span class="more">총 ${won(total)}</span></h3>
-      <div class="tblx"><table class="ledger"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th></th></tr></thead>
+      <div class="tblx"><table class="ledger led-fix"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th></th></tr></thead>
       <tbody>${assetLedgerSlim('수입')}</tbody></table></div></div>
     <div class="card"><h3><span class="dot" style="background:var(--green)"></span> 월별 수입 추이 <span class="more">최근 6개월</span></h3>${incomeTrendSVG()}</div>
   </div>`;
