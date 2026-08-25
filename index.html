@@ -419,6 +419,31 @@
   @keyframes chOpen{from{opacity:0;max-height:0;transform:translateY(-4px)}to{opacity:1;max-height:1200px;transform:none}}
   .ch-add{display:flex;gap:8px;align-items:flex-start;margin-top:10px}
   .ch-add textarea{flex:1;min-height:44px;resize:vertical}
+  /* 독서 그래프 (독서계획 자리에서 버튼으로 전환) */
+  .rdp-switch{display:flex;gap:8px;margin:16px 0 0}
+  .rdp-switch button{padding:7px 16px;border:1px solid var(--line);border-radius:20px;background:#fff;
+    font-family:inherit;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;transition:.12s}
+  .rdp-switch button:hover{color:var(--dark)}
+  .rdp-switch button.on{background:var(--dark);border-color:var(--dark);color:#fff}
+  .rdg-box{margin-top:10px}
+  .rdg-ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .rdg-seg{display:flex;gap:0;border:1px solid var(--line);border-radius:20px;overflow:hidden;background:#fff}
+  .rdg-seg span{padding:6px 14px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;transition:.12s}
+  .rdg-seg span:hover{color:var(--dark)}
+  .rdg-seg span.on{background:var(--dark);color:#fff}
+  .rdg-title{font-size:12.5px;color:var(--muted);margin:12px 2px 6px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .rdg-title b{color:var(--dark)}
+  .rdg-lg{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text)}
+  .rdg-lg i{width:10px;height:10px;border-radius:3px;flex:none}
+  #rdgChart{border:1px solid var(--line);border-radius:12px;background:#fff;padding:8px 6px 4px;overflow-x:auto}
+  #rdgChart .empty{padding:36px 0}
+  .rdg-form{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 12px}
+  .rdg-fl{font-size:12px;color:var(--muted);font-weight:700;margin-left:4px}
+  .rdg-rec{display:flex;gap:10px;align-items:center;font-size:12.5px;padding:7px 4px;border-bottom:1px solid var(--line)}
+  .rdg-rec:last-child{border-bottom:none}
+  .rdg-rec .d{color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
+  .rdg-rec .bk{font-weight:700;color:var(--dark)}
+  .rdg-rec .sum{color:var(--muted);margin-left:auto;white-space:nowrap}
   /* 아티클 (기사 아카이브) */
   .art-pop{width:min(680px,100%);padding:22px 26px 24px;overflow:auto}
   .art-pop .bkv-headrow{padding:0 0 12px;margin:0 0 4px;border-bottom:1px solid var(--line)}
@@ -440,6 +465,17 @@
   .art-ex-memo .k{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:5px}
   .art-link{cursor:pointer;color:#4a7d9e;font-weight:800;padding:0 3px}
   .art-link:hover{color:var(--dark)}
+  .art-body{font-size:13.5px;line-height:1.85;color:var(--text);max-height:340px;overflow:auto;
+    padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fffdf8;
+    user-select:text;-webkit-user-select:text;white-space:normal}
+  .art-body .art-mk{background:#fdf0c8;border-radius:3px;padding:1px 0;color:var(--text)}
+  .art-body-empty{font-size:12.5px;color:var(--muted);padding:14px;border:1px dashed var(--line);
+    border-radius:10px;background:#fffdf8;line-height:1.7}
+  #artSelChip{display:none;position:fixed;z-index:220;background:var(--dark);color:#fff;font-family:inherit;
+    font-size:12px;font-weight:800;padding:6px 12px;border-radius:20px;cursor:pointer;
+    box-shadow:0 6px 18px rgba(18,49,43,.32);white-space:nowrap}
+  #artSelChip.on{display:block}
+  #artSelChip:hover{background:#0d2b25}
   .bkv-back{display:none;position:fixed;inset:0;z-index:118;background:rgba(18,49,43,.5);align-items:center;justify-content:center;padding:24px}
   .bkv-back.on{display:flex}
   .bkv{background:var(--card);border-radius:20px;box-shadow:0 26px 60px rgba(18,49,43,.28);width:min(880px,100%);max-height:90vh;display:flex;flex-direction:column;overflow:hidden;animation:fwIn .16s ease-out}
@@ -1959,7 +1995,7 @@
       <div class="inrow" style="margin-bottom:8px"><input id="artSearch" class="in" style="flex:1" placeholder="제목·매체·카테고리·한줄평 검색" oninput="artSearchInput(this.value)"></div>
       <div class="tblx"><table class="ledger">
         <thead><tr><th>제목</th><th>매체</th><th>읽은 날</th><th>카테고리</th><th>한줄평</th><th></th></tr></thead>
-        <tbody id="artBody"></tbody>
+        <tbody id="artRows"></tbody>
       </table></div>
     </div>
   </section>
@@ -2447,6 +2483,11 @@
       <textarea id="artMemo" class="art-ta" placeholder="기사를 읽고 든 생각을 자유롭게" oninput="artMemoSave(this.value)"></textarea>
     </div>
     <div class="art-sec">
+      <div class="bkv-h">본문 <span style="font-weight:600" id="artBodyHint">· 스크랩한 기사 본문</span>
+        <span class="stn-btn" style="margin-left:auto" id="artBodyBtn" onclick="artBodyTgl()">본문 넣기</span></div>
+      <div id="artBodyWrap"></div>
+    </div>
+    <div class="art-sec">
       <div class="bkv-h">발췌 <span style="font-weight:600">· 문장을 고르면 문헌 메모를 쓸 수 있습니다</span></div>
       <div class="inrow" style="margin:8px 0 10px">
         <textarea id="artExIn" class="art-ta" style="min-height:56px;flex:1" placeholder="기억해 둘 문장을 옮겨 적기"></textarea>
@@ -2456,6 +2497,7 @@
     </div>
   </div>
 </div>
+<div id="artSelChip" onclick="artSelExcerpt()">＋ 발췌</div>
 
 <div class="bkv-back" id="bkvBack" onclick="closeBookView()">
   <div class="bkv" onclick="event.stopPropagation()">
@@ -2555,7 +2597,7 @@
 
 <script>
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-25 · r59';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-25 · r62';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -2575,7 +2617,7 @@ function ensureFields(){
     if(!Array.isArray(db[k]))db[k]=[];});
   ['todos','budget','overtime','tlrLog','workVault','rtCheck'].forEach(function(k){
     if(!db[k]||typeof db[k]!=='object'||Array.isArray(db[k]))db[k]={};});
-  if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.articles)db.articles=[];if(!db.routines)db.routines=[];if(!db.tlRoutines)db.tlRoutines=[];if(!db.tlrLog)db.tlrLog={};if(!db.tlProjects)db.tlProjects=[];if(!db.overtime)db.overtime={};if(db.otRate==null)db.otRate=12113;if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
+  if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.articles)db.articles=[];if(!db.rdLog)db.rdLog=[];if(!db.routines)db.routines=[];if(!db.tlRoutines)db.tlRoutines=[];if(!db.tlrLog)db.tlrLog={};if(!db.tlProjects)db.tlProjects=[];if(!db.overtime)db.overtime={};if(db.otRate==null)db.otRate=12113;if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
   if(!db.cheonildu||Array.isArray(db.cheonildu)){
     var __oldCd=Array.isArray(db.cheonildu)?db.cheonildu:[];var __chapMap={};var __chapOrder=[];
     __oldCd.forEach(function(x){var cn=x.chapter||'(챕터 미입력)';if(!__chapMap[cn]){__chapMap[cn]={id:uid(),name:cn,units:[]};__chapOrder.push(cn);}
@@ -7452,11 +7494,232 @@ function rdPlanHTML(b){
       +'<span class="rdp-sum" style="margin-left:auto">'+foot+'</span></div>'
   +'</div>';
 }
+var rdView='plan';                              /* 'plan' 독서계획 · 'graph' 독서그래프 */
+function rdViewSet(v){rdView=v;renderRdPlan();}
 function renderRdPlan(){
   const box=document.getElementById('rdPlan');if(!box)return;
   const sel=document.getElementById('exBook');
   const b=sel?bookById(Number(sel.value)):null;
-  box.innerHTML=b?rdPlanHTML(b):'';
+  if(!b){box.innerHTML='';return;}
+  rdgBook=b.id;
+  const sw='<div class="rdp-switch">'
+    +'<button class="'+(rdView==='plan'?'on':'')+'" onclick="rdViewSet(\'plan\')">독서계획</button>'
+    +'<button class="'+(rdView==='graph'?'on':'')+'" onclick="rdViewSet(\'graph\')">독서그래프</button></div>';
+  box.innerHTML=sw+(rdView==='plan'?rdPlanHTML(b):rdgBoxHTML());
+  if(rdView==='graph')rdgRender();
+}
+/* 독서그래프 칸 (독서계획과 같은 자리) */
+function rdgBoxHTML(){
+  return '<div class="rdp-box rdg-box">'
+    +'<div class="rdg-ctl"><div class="rdg-seg" id="rdgMet"></div><div class="rdg-seg" id="rdgScp"></div></div>'
+    +'<div class="rdg-title" id="rdgTitle"></div>'
+    +'<div id="rdgChart"></div>'
+    +'<div class="rdp-hd" style="margin:14px 0 0"><b>기록 넣기</b>'
+      +'<span class="rdp-hint">시각·쪽수를 넣으면 읽은 시간과 페이지 수가 자동 계산됩니다</span></div>'
+    +'<div class="rdg-form">'
+      +'<input type="date" id="rdgDate" class="in" style="flex:none;width:138px">'
+      +'<span class="rdg-fl">시각</span>'
+      +'<input type="time" id="rdgS" class="in" style="flex:none;width:96px">'
+      +'<span class="rdp-sep">~</span>'
+      +'<input type="time" id="rdgE" class="in" style="flex:none;width:96px">'
+      +'<span class="rdg-fl">쪽</span>'
+      +'<input id="rdgP1" class="in" inputmode="numeric" placeholder="40" style="flex:none;width:58px">'
+      +'<span class="rdp-sep">~</span>'
+      +'<input id="rdgP2" class="in" inputmode="numeric" placeholder="78" style="flex:none;width:58px">'
+      +'<button class="btn y" style="flex:none" onclick="rdgAdd()">기록</button>'
+    +'</div>'
+    +'<div id="rdgList"></div>'
+  +'</div>';
+}
+
+/* ================= 독서 그래프 (일자별 페이지·시간·시간대) ================= */
+/* 검증된 카테고리 팔레트 — 책 순서(등록 순)대로 고정 배정 */
+var RDG_PAL=['#2a78d6','#eb6834','#1baf7a','#eda100','#e87ba4','#4a3aa7','#e34948','#008300'];
+function rdgColor(bid){
+  var i=(db.reading||[]).findIndex(function(b){return b.id===bid;});
+  return i>=0&&i<RDG_PAL.length?RDG_PAL[i]:'#8a9490';   /* 9권째부터는 회색 (이름표로 구분) */
+}
+var rdgBook=null, rdgMetric='pg', rdgScope='book';
+function rdgSetMet(m){rdgMetric=m;rdgRender();}
+function rdgSetScp(s){rdgScope=s;rdgRender();}
+/* '21:30' → 분. 잘못된 값은 null */
+function rdgMin(t){var m=/^(\d{1,2}):(\d{2})$/.exec(String(t||''));return m?Number(m[1])*60+Number(m[2]):null;}
+/* 한 기록의 계산값: 읽은 분·읽은 쪽 */
+function rdgCalc(r){
+  var s=rdgMin(r.s),e=rdgMin(r.e),mins=0;
+  if(s!=null&&e!=null){mins=e-s;if(mins<0)mins+=24*60;}
+  var p1=Number(r.p1)||0,p2=Number(r.p2)||0;
+  var pages=(p1&&p2&&p2>=p1)?(p2-p1+1):0;
+  return {mins:mins,pages:pages};
+}
+function rdgAdd(){
+  var g=function(i){var el=document.getElementById(i);return el?el.value.trim():'';};
+  var date=g('rdgDate'),s=g('rdgS'),e=g('rdgE'),p1=g('rdgP1'),p2=g('rdgP2');
+  if(!date||rdgBook==null)return;
+  if(!s&&!e&&!p1&&!p2){var f=document.getElementById('rdgS');if(f)f.focus();return;}
+  db.rdLog.push({id:uid(),book:rdgBook,date:date,s:s,e:e,p1:p1?Number(p1):'',p2:p2?Number(p2):''});
+  ['rdgS','rdgE','rdgP1','rdgP2'].forEach(function(i){var el=document.getElementById(i);if(el)el.value='';});
+  save();rdgRender();
+}
+function rdgDel(id){
+  db.rdLog=(db.rdLog||[]).filter(function(r){return r.id!==id;});
+  save();rdgRender();
+}
+function rdgRecs(){
+  var rs=(db.rdLog||[]).slice();
+  if(rdgScope==='book')rs=rs.filter(function(r){return r.book===rdgBook;});
+  return rs.sort(function(a,b){return String(a.date).localeCompare(String(b.date))||a.id-b.id;});
+}
+/* 날짜 축: 첫 기록 ~ 오늘(또는 마지막 기록), 최대 35일 */
+function rdgDays(rs){
+  if(!rs.length)return [];
+  var d0=rs[0].date,d1=rs[rs.length-1].date,t=today();
+  if(t>d1)d1=t;
+  var out=[],d=d0,n=0;
+  while(d<=d1&&n<200){out.push(d);d=shiftDayStr(d,1);n++;}
+  if(out.length>35)out=out.slice(out.length-35);
+  return out;
+}
+function rdgFmtM(m){return m>=60?(Math.floor(m/60)+'시간'+(m%60?' '+(m%60)+'분':'')):(m+'분');}
+function rdgRender(){
+  var mt=document.getElementById('rdgMet'),sc=document.getElementById('rdgScp');
+  if(mt)mt.innerHTML=[['pg','페이지'],['tm','읽은 시간'],['tz','시간대']].map(function(x){
+    return '<span class="'+(rdgMetric===x[0]?'on':'')+'" onclick="rdgSetMet(\''+x[0]+'\')">'+x[1]+'</span>';}).join('');
+  if(sc)sc.innerHTML=[['book','이 책'],['all','전체']].map(function(x){
+    return '<span class="'+(rdgScope===x[0]?'on':'')+'" onclick="rdgSetScp(\''+x[0]+'\')">'+x[1]+'</span>';}).join('');
+  var d0=document.getElementById('rdgDate');if(d0&&!d0.value)d0.value=today();
+  var b=bookById(rdgBook);
+  var tt=document.getElementById('rdgTitle');
+  if(tt){
+    if(rdgScope==='book')tt.innerHTML=b?('<b>'+esc(b.title)+'</b>'):'';
+    else{
+      var ids={};rdgRecs().forEach(function(r){ids[r.book]=1;});
+      tt.innerHTML=Object.keys(ids).map(function(k){
+        var bk=bookById(Number(k));if(!bk)return '';
+        return '<span class="rdg-lg"><i style="background:'+rdgColor(Number(k))+'"></i>'+esc(bk.title)+'</span>';
+      }).join('')||'기록된 책이 없습니다';
+    }
+  }
+  var ch=document.getElementById('rdgChart');
+  if(ch)ch.innerHTML=rdgSVG();
+  var ls=document.getElementById('rdgList');
+  if(ls){
+    var rs=rdgRecs().slice().reverse().slice(0,30);
+    ls.innerHTML=rs.length?rs.map(function(r){
+      var c=rdgCalc(r),bk=bookById(r.book);
+      var parts=[];
+      if(c.pages)parts.push(c.pages+'p');
+      if(c.mins)parts.push(rdgFmtM(c.mins));
+      return '<div class="rdg-rec"><span class="d">'+esc(String(r.date).slice(5))+'</span>'
+        +(rdgScope==='all'?'<span class="bk"><i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:'+rdgColor(r.book)+';margin-right:5px"></i>'+esc(bk?bk.title:'')+'</span>':'')
+        +(r.s&&r.e?'<span>'+esc(r.s)+'~'+esc(r.e)+'</span>':'')
+        +(r.p1&&r.p2?'<span>'+r.p1+'~'+r.p2+'쪽</span>':'')
+        +'<span class="sum">'+parts.join(' · ')+'</span>'
+        +'<span class="del" onclick="rdgDel('+r.id+')">×</span></div>';
+    }).join(''):'<div class="empty" style="padding:10px 0">아직 기록이 없습니다. 위에서 첫 기록을 넣어보세요.</div>';
+  }
+}
+/* ---- SVG 그리기 ---- */
+function rdgSVG(){
+  var rs=rdgRecs();
+  if(!rs.length)return '<div class="empty">기록을 넣으면 그래프가 그려집니다.</div>';
+  var days=rdgDays(rs);
+  var W=Math.max(660,days.length*22+90),H=252,L=46,R=14,T=16,B=30;
+  var iw=W-L-R,ih=H-T-B;
+  var x=function(i){return L+(days.length<2?iw/2:i*iw/(days.length-1));};
+  var step=days.length<2?iw:iw/(days.length-1);
+  var bw=Math.max(5,Math.min(14,step*0.55));
+  var di={};days.forEach(function(d,i){di[d]=i;});
+  var inWin=rs.filter(function(r){return di[r.date]!=null;});
+  var xlab='';
+  var every=Math.max(1,Math.ceil(days.length/8));
+  days.forEach(function(d,i){
+    if(i%every&&i!==days.length-1)return;
+    xlab+='<text x="'+x(i)+'" y="'+(H-9)+'" text-anchor="middle" font-size="9.5" fill="#8a9490">'+d.slice(5).replace('-','/')+'</text>';
+  });
+  var grid=function(ymax,unit){
+    var g='';
+    for(var k=0;k<=4;k++){
+      var v=Math.round(ymax*k/4),yy=T+ih-ih*k/4;
+      g+='<line x1="'+L+'" y1="'+yy+'" x2="'+(W-R)+'" y2="'+yy+'" stroke="#eef0ec" stroke-width="1"/>'
+        +'<text x="'+(L-7)+'" y="'+(yy+3.5)+'" text-anchor="end" font-size="9.5" fill="#8a9490">'+v+(unit||'')+'</text>';
+    }
+    return g;
+  };
+  var svg='';
+  if(rdgMetric==='tz'){
+    /* 시간대: 세로 0~24시, 기록마다 띠 */
+    var y=function(min){return T+ih*min/(24*60);};
+    var g='';
+    for(var h=0;h<=24;h+=6){
+      g+='<line x1="'+L+'" y1="'+y(h*60)+'" x2="'+(W-R)+'" y2="'+y(h*60)+'" stroke="#eef0ec"/>'
+        +'<text x="'+(L-7)+'" y="'+(y(h*60)+3.5)+'" text-anchor="end" font-size="9.5" fill="#8a9490">'+h+'시</text>';
+    }
+    var bands='';
+    inWin.forEach(function(r){
+      var s=rdgMin(r.s),e=rdgMin(r.e);
+      if(s==null||e==null)return;
+      var col=rdgScope==='all'?rdgColor(r.book):'#2f6f5e';
+      var xx=x(di[r.date])-bw/2,bk=bookById(r.book);
+      var tip=(bk?bk.title+' · ':'')+r.s+'~'+r.e;
+      var seg=function(a,bnd){return '<rect x="'+xx+'" y="'+y(a)+'" width="'+bw+'" height="'+Math.max(3,y(bnd)-y(a))+'" rx="3" fill="'+col+'" opacity=".82" stroke="#fff" stroke-width="1"><title>'+esc(tip)+'</title></rect>';};
+      if(e>=s)bands+=seg(s,e);
+      else bands+=seg(s,24*60)+seg(0,e);       /* 자정을 넘긴 기록 */
+    });
+    svg=g+bands;
+  }else{
+    /* 페이지·시간: 날짜별 합산 */
+    var agg={};                                 /* book -> day -> {pg,mn} */
+    inWin.forEach(function(r){
+      var c=rdgCalc(r),k=r.book;
+      if(!agg[k])agg[k]={};
+      if(!agg[k][r.date])agg[k][r.date]={pg:0,mn:0};
+      agg[k][r.date].pg+=c.pages;agg[k][r.date].mn+=c.mins;
+    });
+    var val=function(o){return rdgMetric==='pg'?o.pg:o.mn;};
+    var unit=rdgMetric==='pg'?'p':'분';
+    if(rdgScope==='book'){
+      var a=agg[rdgBook]||{},bk=bookById(rdgBook);
+      var daily=days.map(function(d){return a[d]?val(a[d]):0;});
+      var cum=[],run=0;
+      days.forEach(function(d,i){run+=daily[i];cum.push(run);});
+      var ymax=Math.max.apply(null,cum.concat([1]));   /* 읽은 만큼만 축을 잡는다 */
+      var yv=function(v){return T+ih-ih*v/ymax;};
+      svg=grid(ymax,unit);
+      days.forEach(function(d,i){                        /* 하루 막대 */
+        if(!daily[i])return;
+        var hh=ih*daily[i]/ymax;
+        svg+='<rect x="'+(x(i)-bw/2)+'" y="'+(T+ih-hh)+'" width="'+bw+'" height="'+Math.max(2,hh)+'" rx="3" fill="#dbeee6"><title>'+d.slice(5)+' · '+daily[i]+unit+'</title></rect>';
+      });
+      var pts=days.map(function(d,i){return x(i)+','+yv(cum[i]);}).join(' ');   /* 누적선 */
+      svg+='<polyline points="'+pts+'" fill="none" stroke="#2f6f5e" stroke-width="2" stroke-linejoin="round"/>';
+      days.forEach(function(d,i){
+        if(!daily[i]&&i!==days.length-1)return;
+        svg+='<circle cx="'+x(i)+'" cy="'+yv(cum[i])+'" r="3" fill="#2f6f5e" stroke="#fff" stroke-width="1.5"><title>'+d.slice(5)+' · 누적 '+cum[i]+unit+'</title></circle>';
+      });
+      svg+='<text x="'+(x(days.length-1)-6)+'" y="'+(yv(cum[days.length-1])-8)+'" text-anchor="end" font-size="10.5" font-weight="700" fill="#12312b">'
+        +(rdgMetric==='pg'?cum[days.length-1]+'p':rdgFmtM(cum[days.length-1]))+'</text>';
+    }else{
+      /* 전체: 책마다 누적선 */
+      var ymax2=1,lines=[];
+      Object.keys(agg).forEach(function(k){
+        var run=0,pts=[];
+        days.forEach(function(d,i){run+=(agg[k][d]?val(agg[k][d]):0);pts.push([x(i),run]);});
+        ymax2=Math.max(ymax2,run);
+        lines.push({bid:Number(k),pts:pts,last:run});
+      });
+      var yv2=function(v){return T+ih-ih*v/ymax2;};
+      svg=grid(ymax2,unit);
+      lines.forEach(function(ln){
+        var bk=bookById(ln.bid),col=rdgColor(ln.bid);
+        svg+='<polyline points="'+ln.pts.map(function(p){return p[0]+','+yv2(p[1]);}).join(' ')
+          +'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linejoin="round"><title>'+esc(bk?bk.title:'')+'</title></polyline>'
+          +'<circle cx="'+ln.pts[ln.pts.length-1][0]+'" cy="'+yv2(ln.last)+'" r="3.5" fill="'+col+'" stroke="#fff" stroke-width="1.5"><title>'
+          +esc(bk?bk.title:'')+' · '+(rdgMetric==='pg'?ln.last+'p':rdgFmtM(ln.last))+'</title></circle>';
+      });
+    }
+  }
+  return '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'">'+svg+xlab+'</svg>';
 }
 
 /* ---------- study (단어·영어·지식·문화) ---------- */
@@ -9057,7 +9320,7 @@ function addArticle(){
   var g=function(i){var e=document.getElementById(i);return e?e.value.trim():'';};
   db.articles.push({id:uid(),title:t,url:g('aUrl'),source:g('aSource'),
     date:(document.getElementById('aDate')||{}).value||today(),
-    category:g('aCat'),oneline:g('aOne'),memo:'',excerpts:[]});
+    category:g('aCat'),oneline:g('aOne'),memo:'',body:'',excerpts:[]});
   ['aUrl','aTitle','aSource','aCat','aOne'].forEach(function(i){var e=document.getElementById(i);if(e)e.value='';});
   save();document.getElementById('newArtForm').style.display='none';renderArticle();
 }
@@ -9071,7 +9334,7 @@ function delArticle(id,ev){
   save();renderArticle();renderZettel();
 }
 function renderArticle(){
-  var tb=document.getElementById('artBody');if(!tb)return;
+  var tb=document.getElementById('artRows');if(!tb)return;
   var all=(db.articles||[]);
   var c=document.getElementById('artCnt');if(c)c.textContent=all.length?all.length+'건':'';
   var list=all.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date))||b.id-a.id;});
@@ -9094,14 +9357,16 @@ function renderArticle(){
 /* ---- 기사 들여다보기 팝업 ---- */
 var artPopId=null, artExSel=null;
 function artOpen(id){
-  artPopId=id;artExSel=null;
+  artPopId=id;artExSel=null;artBodyEdit=false;artSelHide();
   document.getElementById('artOv').classList.add('on');
   document.addEventListener('keydown',artEsc);
   var mf=document.getElementById('artMetaForm');if(mf)mf.style.display='none';
   artPopRender();
 }
 function artClose(){
-  artPopId=null;
+  var a=artById(artPopId),f=document.getElementById('artBodyIn');
+  if(a&&artBodyEdit&&f){a.body=f.value;save();}          /* 편집 중이던 본문을 놓치지 않는다 */
+  artPopId=null;artBodyEdit=false;artSelHide();
   document.getElementById('artOv').classList.remove('on');
   document.removeEventListener('keydown',artEsc);
 }
@@ -9117,8 +9382,99 @@ function artPopRender(){
     +'<div class="art-one"><input value="'+escA(a.oneline||'')+'" placeholder="한줄평" onchange="artOneSave(this.value)"></div>';
   var mm=document.getElementById('artMemo');
   if(mm&&mm!==document.activeElement)mm.value=a.memo||'';
-  artExRender();
+  artBodyRender();artExRender();
 }
+/* ---- 본문(스크랩): 붙여넣고 드래그해서 발췌 ---- */
+var artBodyEdit=false, artBodyT=null;
+function artBodyTgl(){
+  var a=artById(artPopId);if(!a)return;
+  if(artBodyEdit){                                  /* 편집 → 보기 */
+    var f=document.getElementById('artBodyIn');
+    if(f){a.body=f.value;save();}
+    artBodyEdit=false;
+  }else artBodyEdit=true;
+  artBodyRender();renderArticle();
+  if(artBodyEdit)setTimeout(function(){var f=document.getElementById('artBodyIn');if(f)f.focus();},40);
+}
+function artBodySave(v){
+  var a=artById(artPopId);if(!a)return;
+  a.body=v;clearTimeout(artBodyT);artBodyT=setTimeout(save,400);
+}
+/* 이미 발췌한 문장은 본문에서 형광 표시 */
+function artBodyHTML(a){
+  var t=String(a.body||''),marks=[];
+  (a.excerpts||[]).forEach(function(e){
+    var q=String(e.text||'').trim();if(q.length<2)return;
+    var i=t.indexOf(q);if(i<0)return;
+    marks.push({s:i,e:i+q.length});
+  });
+  marks.sort(function(x,y){return x.s-y.s;});
+  var out='',pos=0;
+  marks.forEach(function(m){
+    if(m.s<pos)return;                              /* 겹치는 표시는 건너뛴다 */
+    out+=esc(t.slice(pos,m.s))+'<mark class="art-mk">'+esc(t.slice(m.s,m.e))+'</mark>';
+    pos=m.e;
+  });
+  return (out+esc(t.slice(pos))).replace(/\n/g,'<br>');
+}
+function artBodyRender(){
+  var a=artById(artPopId),w=document.getElementById('artBodyWrap');if(!a||!w)return;
+  var has=!!String(a.body||'').trim();
+  var btn=document.getElementById('artBodyBtn'),hint=document.getElementById('artBodyHint');
+  if(btn)btn.textContent=artBodyEdit?'✔ 다 넣었어요':(has?'본문 고치기':'본문 넣기');
+  if(hint)hint.textContent=has&&!artBodyEdit?'· 문장을 드래그하면 발췌로 뜹니다':'· 스크랩한 기사 본문';
+  if(artBodyEdit){
+    w.innerHTML='<textarea id="artBodyIn" class="art-ta" style="min-height:180px" '
+      +'placeholder="종이 기사는 폰 카메라로 찍어 텍스트를 인식(아이폰 라이브 텍스트 · 구글 렌즈)한 뒤 여기에 붙여넣으세요." '
+      +'oninput="artBodySave(this.value)"></textarea>';
+    document.getElementById('artBodyIn').value=a.body||'';
+    return;
+  }
+  w.innerHTML=has?'<div class="art-body" id="artBody">'+artBodyHTML(a)+'</div>'
+    :'<div class="art-body-empty">본문이 없습니다. 「본문 넣기」로 스크랩한 글을 붙여넣으면,<br>그 자리에서 문장을 드래그해 발췌를 뜰 수 있습니다.</div>';
+}
+/* 드래그 → 「＋ 발췌」 칩 */
+var artSelText='';
+function artSelHide(){artSelText='';var c=document.getElementById('artSelChip');if(c)c.classList.remove('on');}
+function artSelCheck(){
+  var c=document.getElementById('artSelChip');if(!c)return;
+  var s;try{s=window.getSelection();}catch(e){return artSelHide();}
+  if(!s||s.isCollapsed||!s.rangeCount)return artSelHide();
+  var r=s.getRangeAt(0),node=r.commonAncestorContainer;
+  if(node&&node.nodeType===3)node=node.parentNode;
+  if(!node||!node.closest||!node.closest('#artBody'))return artSelHide();
+  var t=String(s.toString()).replace(/\s+/g,' ').trim();
+  if(t.length<2)return artSelHide();
+  artSelText=t;
+  var bx=r.getBoundingClientRect();
+  c.classList.add('on');
+  var cw=c.offsetWidth||80;
+  var left=Math.max(8,Math.min(window.innerWidth-cw-8,bx.left+bx.width/2-cw/2));
+  var top=bx.top-38;if(top<8)top=bx.bottom+10;
+  c.style.left=left+'px';c.style.top=top+'px';
+}
+function artSelExcerpt(){
+  var a=artById(artPopId);if(!a||!artSelText)return;
+  var e={id:uid(),date:today(),text:artSelText,memo:''};
+  a.excerpts=a.excerpts||[];a.excerpts.push(e);
+  artExSel=e.id;
+  try{window.getSelection().removeAllRanges();}catch(err){}
+  artSelHide();
+  save();artBodyRender();artExRender();renderArticle();renderZettel();
+  var el=document.getElementById('artExList');if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+document.addEventListener('mouseup',function(ev){
+  if(artPopId==null)return;
+  var el=ev.target;
+  if(el&&el.closest&&el.closest('#artSelChip'))return;
+  setTimeout(artSelCheck,10);
+});
+document.addEventListener('touchend',function(ev){
+  if(artPopId==null)return;
+  var el=ev.target;
+  if(el&&el.closest&&el.closest('#artSelChip'))return;
+  setTimeout(artSelCheck,60);
+});
 function artOneSave(v){var a=artById(artPopId);if(!a)return;a.oneline=String(v).trim();save();renderArticle();}
 var artMemoT=null;
 function artMemoSave(v){
@@ -9156,7 +9512,7 @@ function artExAdd(){
   a.excerpts=a.excerpts||[];a.excerpts.push(e);
   if(f)f.value='';
   artExSel=e.id;
-  save();artExRender();renderArticle();renderZettel();
+  save();artBodyRender();artExRender();renderArticle();renderZettel();
 }
 function artExDel(id,ev){
   if(ev)ev.stopPropagation();
@@ -9164,7 +9520,7 @@ function artExDel(id,ev){
   if(!confirm('이 발췌를 지울까요? 문헌 메모도 함께 지워집니다.'))return;
   a.excerpts=(a.excerpts||[]).filter(function(e){return e.id!==id;});
   if(artExSel===id)artExSel=null;
-  save();artExRender();renderArticle();renderZettel();
+  save();artBodyRender();artExRender();renderArticle();renderZettel();
 }
 function artExPick(id){artExSel=(artExSel===id?null:id);artExRender();}
 var artExMemoT=null;
