@@ -1903,8 +1903,8 @@
 <aside class="sidebar">
   <div class="logo" id="hmdLogo" title="매일매일 · 독서 · 일기 열기" onclick="showMyThree()">HMD</div>
   <div class="nav active" data-v="dashboard">Dashboard</div>
+  <div class="nav" data-v="schedcard">Schedule</div>
   <div class="nav" data-v="work">Work</div>
-  <div class="nav" data-v="council">Council</div>
   <div class="nav" data-v="study">Study<span class="ca">›</span></div>
   <div class="subnav" id="studySub" style="display:none">
     <div class="nav sub" data-v="study:단어">Words</div>
@@ -1925,6 +1925,7 @@
   <div class="navsep"></div>
   <div class="nav xtra" data-v="routines">Routines</div>
   <div class="nav xtra" data-v="routiner">Checklist</div>
+  <div class="nav xtra" data-v="council">Council</div>
 </aside>
 
 <main class="main">
@@ -2680,7 +2681,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-25 · r66';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-25 · r67';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -2917,6 +2918,7 @@ function toggleMenu(){var sb=document.querySelector('.sidebar');if(sb)sb.classLi
 function go(v){
   if(v==='inboxcard'){goInbox();return;}
   if(v==='readcard'){goRead();return;}
+  if(v==='schedcard'){goTop('cal');return;}
   window.__mindCtx=null;
   var stab=null;
   if(v&&v.indexOf('study:')===0){stab=v.slice(6);v='study';}
@@ -2941,6 +2943,8 @@ function syncNav(v){
     var act=(dv.indexOf('study:')===0)?(v==='study'&&dv.slice(6)===detailStudyTab)
             :(dv==='inboxcard')?(v==='dashboard'&&topActive==='inbox')
             :(dv==='readcard')?(v==='reading'||(v==='dashboard'&&topActive==='read'))
+            :(dv==='schedcard')?(v==='dashboard'&&topActive==='cal')
+            :(dv==='dashboard')?(v==='dashboard'&&topActive!=='inbox'&&topActive!=='read'&&topActive!=='cal')
             :(dv===v);
     n.classList.toggle('active',act);
   });
@@ -10443,6 +10447,7 @@ function fwMindReset(){
 /* ================= 키보드 단축키: d 로 시작 · f 를 누를 때마다 화면이 넘어간다 =================
    대시보드 → 인박스 → 아이디어 → 연대기 → 제텔카스텐 순환. 글을 쓰는 중에는 꺼진다. */
 var DF_SEQ=[
+  ['스케줄',function(){goTop('cal');}],
   ['대시보드',function(){go('dashboard');}],
   ['인박스',function(){goInbox();}],
   ['아이디어',function(){go('inbox');}],
