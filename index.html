@@ -426,18 +426,40 @@
   .cn-badge{font-size:10px;font-weight:800;color:#fff;border-radius:10px;padding:2px 8px;white-space:nowrap;flex:none}
   .sched-item.cn{background:#f2f7fa;border-color:#c9dbe7}
   .schip.cn{background:#d8e7f1;color:#2b5a7e}
-  .tl-ev.cn{background:#d8e7f1}
-  .tl-ev.cn b{color:#2b5a7e}
+  .tl-ev.cn{background:#d8e7f1;color:#2b5a7e}
+  .tl-ev.cn b{color:inherit}
+  /* 주단위 (회기 날짜축) */
+  .tlcw-head{position:relative;height:30px;border-bottom:1px solid var(--line)}
+  .tlcw-h{position:absolute;top:0;text-align:center;font-size:10.5px;font-weight:700;color:var(--muted);
+    cursor:pointer;padding-top:7px}
+  .tlcw-h:hover{color:var(--dark)}
+  .tlcw-h.we{color:#c9736d}
+  .tlcw-h.td{color:var(--red);font-weight:800}
+  .tlcw-h.sel{text-decoration:underline;text-underline-offset:3px;color:var(--dark)}
+  .tlc-weekly .tlc-org{left:-112px}
+  .tlc-weekly .tlc-dept{left:-56px;width:52px}
+  .tlcw-ev{position:absolute;height:19px;line-height:19px;font-size:10px;font-weight:700;border-radius:5px;
+    padding:0 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+  .tlcw-ev.done{text-decoration:line-through;opacity:.55}
+  .tlcw-today{position:absolute;top:0;bottom:0;background:rgba(244,183,64,.12);pointer-events:none}
+  .tlcw-cap{font-size:11px;color:var(--muted);margin-top:8px;font-weight:700}
+  .cnev-pop{width:min(480px,100%);padding:20px 24px 22px}
+  .cnev-pop .bkv-headrow{padding:0 0 10px;margin:0 0 10px;border-bottom:1px solid var(--line)}
+  .cnev-t{font-size:15px;font-weight:800;color:var(--dark);line-height:1.5}
+  .cnev-m{font-size:12px;color:var(--muted);margin-top:5px;font-variant-numeric:tabular-nums}
+  .cnev-d{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;font-size:12.5px;line-height:1.8;color:var(--text)}
   .tlc-wrap{margin-top:14px;border-top:2px solid var(--line);padding-top:8px}
   .tlc-group{position:relative;border-bottom:2px solid #d5cfc2}   /* 대분류 사이 가로줄 */
   .tlc-group:last-child{border-bottom:none}
   .tlc-org{position:absolute;left:4px;top:0;bottom:0;width:56px;display:flex;align-items:center;gap:5px;
-    font-size:11px;font-weight:800;color:var(--dark);z-index:4;pointer-events:none}
+    font-size:11px;font-weight:800;color:var(--dark);z-index:5;pointer-events:none;
+    background:rgba(255,255,255,.92);padding-left:2px}
   .tlc-org i{width:8px;height:8px;border-radius:2px;flex:none}
   .tlc-row{position:relative;border-bottom:1px dashed #f0ede6}
   .tlc-row:last-child{border-bottom:none}
   .tlc-dept{position:absolute;left:76px;top:0;height:100%;width:50px;display:flex;align-items:center;
-    font-size:10.5px;font-weight:700;color:var(--muted);z-index:4;pointer-events:none}
+    font-size:10.5px;font-weight:700;color:var(--muted);z-index:5;pointer-events:none;
+    background:rgba(255,255,255,.92);border-radius:5px;padding-left:2px}
   .tlc-track{position:relative;height:32px}
   .tlc-ev{top:4px}
   .tlc-un{position:absolute;right:4px;top:6px;font-size:10px;color:var(--muted);background:var(--cream);
@@ -2404,6 +2426,8 @@
         <span style="margin-left:8px;display:inline-flex;gap:5px;vertical-align:middle">
           <button id="tlModeDaily" class="lunar-toggle on" onclick="tlDailyClick()">Daily</button>
           <button id="tlModeCn" class="lunar-toggle" onclick="tlCnClick()">의회일정</button>
+          <button id="tlCnDayBtn" class="lunar-toggle" style="display:none" onclick="tlCnScaleSet('day')">일단위</button>
+          <button id="tlCnWeekBtn" class="lunar-toggle" style="display:none" onclick="tlCnScaleSet('week')">주단위</button>
           <button id="tlModeProject" class="lunar-toggle" onclick="tlSetMode('project')">Project</button>
         </span>
         <span class="tl-datenav"><button type="button" onclick="tlDayShift(-1)" title="전날">‹</button><span class="more" id="tlLabel" style="margin-left:0"></span><button type="button" onclick="tlDayShift(1)" title="다음날">›</button></span></h3>
@@ -2589,6 +2613,15 @@
   <textarea id="stEditContent" style="display:none" placeholder="내용"></textarea>
 </div>
 
+<!-- 의회 세부일정 팝업 -->
+<div class="bkv-back" id="cnEvOv" onclick="cnEvClose()">
+  <div class="bkv cnev-pop" onclick="event.stopPropagation()">
+    <div class="bkv-headrow"><span class="dot" id="cnEvDot"></span>&nbsp;<b id="cnEvOrg" style="font-size:14px;color:var(--dark)"></b>
+      <span class="bkv-x" style="margin-left:auto" onclick="cnEvClose()">×</span></div>
+    <div id="cnEvBody"></div>
+  </div>
+</div>
+
 <!-- 기사 들여다보기 -->
 <div class="bkv-back" id="artOv" onclick="artClose()">
   <div class="bkv art-pop" onclick="event.stopPropagation()">
@@ -2736,7 +2769,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-27 · r73';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-27 · r76';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -3129,11 +3162,17 @@ function toggleTimeline(){toggleCalSub('tl');}
 function tlParseMin(t){var m=/^(\d{1,2}):(\d{2})$/.exec(String(t||'').trim());if(!m)return null;var h=+m[1],mm=+m[2];if(h>23||mm>59)return null;return h*60+mm;}
 var tlMode='daily';   /* 'daily'(기본) | 'project' */
 var tlDailyOn=true, tlCn=false;   /* daily 모드 안: 데일리·의회 각각 토글 (둘 다 끌 수는 없다) */
+var tlCnScale='day';   /* 의회 트랙: 'day' 시간축 | 'week' 회기 날짜축 */
+function tlCnScaleSet(s){tlCnScale=s;tlModeBtns();renderTimeline();}
 function tlModeBtns(){
   var bd=document.getElementById('tlModeDaily'),bc=document.getElementById('tlModeCn'),bp=document.getElementById('tlModeProject');
   if(bd)bd.classList.toggle('on',tlMode==='daily'&&tlDailyOn);
   if(bc)bc.classList.toggle('on',tlMode==='daily'&&tlCn);
   if(bp)bp.classList.toggle('on',tlMode==='project');
+  var showScale=(tlMode==='daily'&&tlCn);
+  var b1=document.getElementById('tlCnDayBtn'),b2=document.getElementById('tlCnWeekBtn');
+  if(b1){b1.style.display=showScale?'':'none';b1.classList.toggle('on',showScale&&tlCnScale==='day');}
+  if(b2){b2.style.display=showScale?'':'none';b2.classList.toggle('on',showScale&&tlCnScale==='week');}
 }
 function tlSetMode(m){tlMode=m;tlModeBtns();renderTimeline();}
 function tlDailyClick(){
@@ -3163,6 +3202,7 @@ function renderTimeline(){
   var lab=document.getElementById('tlLabel');
   if(lab){var q=selDate.split('-');var dw=['일','월','화','수','목','금','토'][new Date(+q[0],+q[1]-1,+q[2]).getDay()];
     lab.textContent=(+q[1])+'월 '+(+q[2])+'일 ('+dw+')'+(selDate===today()?' · 오늘':'');}
+  if(tlCn&&tlCnScale==='week'){renderTlCnWeek(inner);return;}   /* 주단위: 회기 날짜축 */
   var W=(TL_END-TL_START)*TL_HW;
   /* 시간 눈금 06:00 ~ 23:00 */
   var hours='';
@@ -3220,6 +3260,20 @@ function renderTimeline(){
     +(tlCn?tlCnGridHTML(TW2,gridBg):'')
     +(tlDailyOn&&untimed.length?'<div class="tl-untimed">'+untimed.map(function(e){return '<span>'+esc(e.time?e.time+' · ':'')+esc(e.title)+'</span>';}).join('')+'</div>':'');
   tlBindDrag();
+  tlcStickyBind();
+}
+/* 가로 스크롤에도 기관·세분류 이름칸은 틀고정 */
+function tlcStickyApply(){
+  var wrap=document.querySelector('#timelineCard .tl-wrap');if(!wrap)return;
+  var x=wrap.scrollLeft;
+  document.querySelectorAll('#tlInner .tlc-org,#tlInner .tlc-dept').forEach(function(el){
+    el.style.transform=x?('translateX('+x+'px)'):'';
+  });
+}
+function tlcStickyBind(){
+  var wrap=document.querySelector('#timelineCard .tl-wrap');if(!wrap)return;
+  if(!wrap.__tlcSticky){wrap.addEventListener('scroll',tlcStickyApply);wrap.__tlcSticky=1;}
+  tlcStickyApply();
 }
 /* ===== 의회 타임라인: 첫 열 기관 · 둘째 열 세부 · 각 줄이 트랙 ===== */
 function tlCnGridHTML(W,gridBg){
@@ -3247,17 +3301,21 @@ function tlCnGridHTML(W,gridBg){
       var evh=list.map(function(s){
         var mn=tlParseMin(s.time);
         var lbl=(s.done?'✓ ':'')+(s.title||'');
+        var col=cnDeptColor(org,ds.length?(dp==='__etc__'?s.cnDept:dp):'');
         if(mn==null||mn<TL_START*60||mn>TL_END*60)
-          return '<span class="tlc-un" title="'+escA(cnLabel(s))+'">'+esc((s.time?s.time+' · ':'')+lbl)+'</span>';
+          return '<span class="tlc-un" style="color:'+col+'" title="'+escA(cnLabel(s))+'">'+esc((s.time?s.time+' · ':'')+lbl)+'</span>';
         var left=(mn-TL_START*60)/60*TL_HW;
         var bw=Math.min(Math.max(Math.ceil(tlTextW(lbl))+16,26),220);
         var endMn=Math.min(mn+(s.dur>0?s.dur:30),24*60-1);
-        return '<div class="tl-ev cn tlc-ev" data-k="s" data-id="'+s.id+'" style="left:'+left+'px;top:3px;width:'+bw
-          +'px;border-left:3px solid '+CN_COL[org]+'" title="'+escA(cnLabel(s)+' · '+lbl+' ('+tlFmt(mn)+'~'+tlFmt(endMn)+')')+'">'
-          +'<b>'+esc(lbl)+'</b></div>';
+        var sh=(s.done?'\u2713 ':'')+cnShortTitle(s);
+        var bw2=Math.min(Math.max(Math.ceil(tlTextW(sh))+16,26),220);
+        return '<div class="tl-ev cn tlc-ev" data-k="s" data-id="'+s.id+'" style="left:'+left+'px;top:3px;width:'+bw2
+          +'px;color:'+col+';background:'+col+'1a;border-left:3px solid '+col+'" title="'+escA(cnLabel(s)+' \u00b7 '+lbl+' ('+tlFmt(mn)+'~'+tlFmt(endMn)+')')+'">'
+          +'<b>'+esc(sh)+'</b></div>';
       }).join('');
+      var dcol=ds.length?cnDeptColor(org,dp==='__etc__'?'':dp):'';
       return '<div class="tlc-row">'
-        +'<div class="tlc-dept">'+(dp==='__etc__'?'—':(dp||''))+'</div>'
+        +'<div class="tlc-dept"'+(dcol&&dp!=='__etc__'?' style="color:'+dcol+'"':'')+'>'+(dp==='__etc__'?'—':(dp||''))+'</div>'
         +'<div class="tlc-track" style="width:'+W+'px;background-image:'+gridBg+'">'+evh+nowL+'</div>'
       +'</div>';
     }).join('');
@@ -3266,6 +3324,75 @@ function tlCnGridHTML(W,gridBg){
       +'<div class="tlc-sub">'+cells+'</div></div>';
   });
   return '<div class="tlc-wrap">'+rowsOut+'</div>';
+}
+/* ===== 의회 주단위: 위에 날짜, 가로는 회기 끝까지 ===== */
+function renderTlCnWeek(inner){
+  inner.style.paddingLeft='112px';
+  /* 주로 끊지 않는다: 보고 있는 주부터 최소 2주, 겹치는 회기가 있으면 그 회기가 끝나는 날까지 길게 */
+  var wd=new Date(selDate+'T00:00:00').getDay();
+  var d0=shiftDayStr(selDate,-wd), d1=shiftDayStr(d0,13), ses=[];
+  sortedSessions().forEach(function(s2){
+    if(!s2||!s2.start)return;
+    var e2=s2.end||s2.start;
+    if(s2.start<=d1&&e2>=d0){ses.push(s2);if(e2>d1)d1=e2;}
+  });
+  var days=[],d=d0,g=0;
+  while(d<=d1&&g<62){days.push(d);d=shiftDayStr(d,1);g++;}
+  var CW=96,W=days.length*CW;
+  var wdn=['일','월','화','수','목','금','토'];
+  var head=days.map(function(x,i){
+    var w=new Date(x+'T00:00:00').getDay();
+    return '<span class="tlcw-h'+(w===0||w===6?' we':'')+(x===today()?' td':'')+(x===selDate?' sel':'')
+      +'" style="left:'+(i*CW)+'px;width:'+CW+'px" onclick="selectDate(\''+x+'\')" title="누르면 그 날짜 일정 목록">'
+      +(+x.slice(5,7))+'/'+(+x.slice(8))+' ('+wdn[w]+')</span>';
+  }).join('');
+  var colBg='repeating-linear-gradient(to right,transparent,transparent '+(CW-1)+'px,rgba(18,49,43,.08) '+(CW-1)+'px,rgba(18,49,43,.08) '+CW+'px)';
+  var ti=days.indexOf(today());
+  var tdBar=ti>=0?'<div class="tlcw-today" style="left:'+(ti*CW)+'px;width:'+CW+'px"></div>':'';
+  var cnEvs=(db.schedules||[]).filter(function(s){return s.cn&&s.date>=d0&&s.date<=d1;});
+  var rowsOut='';
+  CN_ORGS.forEach(function(org){
+    var ds=cnDepts(org),rows=ds.length?ds.slice():[''];
+    var loose=cnEvs.filter(function(s){return s.cnOrg===org&&ds.length&&(s.cnDept?rows.indexOf(s.cnDept)<0:true);});
+    if(ds.length&&loose.length)rows.push('__etc__');
+    var cells=rows.map(function(dp){
+      var list=cnEvs.filter(function(s){
+        if(s.cnOrg!==org)return false;
+        if(!ds.length)return true;
+        if(dp==='__etc__')return s.cnDept?rows.indexOf(s.cnDept)<0:!s.cnDept;
+        return s.cnDept===dp;});
+      var byDay={};
+      list.forEach(function(s){(byDay[s.date]=byDay[s.date]||[]).push(s);});
+      var maxN=1;
+      Object.keys(byDay).forEach(function(k){
+        byDay[k].sort(function(a,b){return String(a.time||'99').localeCompare(String(b.time||'99'));});
+        maxN=Math.max(maxN,byDay[k].length);});
+      var H=6+maxN*23;
+      var evh='';
+      days.forEach(function(x,i){
+        (byDay[x]||[]).forEach(function(s,si){
+          var col=cnDeptColor(org,ds.length?(dp==='__etc__'?s.cnDept:dp):'');
+          evh+='<div class="tlcw-ev'+(s.done?' done':'')+'" onclick="selectDate(\''+x+'\')" ondblclick="cnEvOpen('+s.id+');event.stopPropagation()" style="left:'+(i*CW+2)
+            +'px;top:'+(3+si*23)+'px;width:'+(CW-6)+'px;color:'+col+';background:'+col+'1a;border-left:3px solid '+col+'" title="'
+            +escA(cnLabel(s)+' · '+(s.time?s.time+' · ':'')+(s.title||'')+' — 두 번 누르면 세부일정')+'">'
+            +esc((s.time?s.time+' ':'')+cnShortTitle(s))+'</div>';
+        });
+      });
+      var dcol=ds.length&&dp!=='__etc__'?cnDeptColor(org,dp):'';
+      return '<div class="tlc-row" style="height:'+H+'px">'
+        +'<div class="tlc-dept"'+(dcol?' style="color:'+dcol+'"':'')+'>'+(dp==='__etc__'?'—':(dp||''))+'</div>'
+        +'<div class="tlc-track" style="width:'+W+'px;height:'+H+'px;background-image:'+colBg+'">'+tdBar+evh+'</div>'
+      +'</div>';
+    }).join('');
+    rowsOut+='<div class="tlc-group">'
+      +'<div class="tlc-org"><i style="background:'+CN_COL[org]+'"></i>'+org+'</div>'
+      +'<div class="tlc-sub">'+cells+'</div></div>';
+  });
+  inner.style.width=(W+130)+'px';
+  inner.innerHTML='<div class="tlcw-head" style="width:'+W+'px">'+head+'</div>'
+    +'<div class="tlc-wrap tlc-weekly" style="margin-top:0;border-top:none;padding-top:2px">'+rowsOut+'</div>'
+    +(ses.length?'<div class="tlcw-cap">'+ses.map(function(s2){return esc(s2.name||'회기')+' · '+esc(String(s2.start).slice(5).replace('-','/'))+'~'+esc(String(s2.end||s2.start).slice(5).replace('-','/'));}).join(' / ')+'</div>':'');
+  tlcStickyBind();
 }
 function tlFmt(mn){return String(Math.floor(mn/60)).padStart(2,'0')+':'+String(mn%60).padStart(2,'0');}
 
@@ -4885,7 +5012,52 @@ var CN_ORGS=['본회의','상임위','특위','사무처'];
 var CN_COL={'본회의':'#2f6f5e','상임위':'#2a78d6','특위':'#c98500','사무처':'#6d7a84'};
 function cnDepts(org){return org==='본회의'?[]:((db.cnOrgs||{})[org]||[]);}
 function cnLabel(s){return s&&s.cn?(s.cnOrg||'의회')+(s.cnDept?' · '+s.cnDept:''):'';}
-function cnColor(s){return CN_COL[s&&s.cnOrg]||'#38678a';}
+function cnColor(s){return cnDeptColor(s&&s.cnOrg,s&&s.cnDept);}
+/* 세부(위원회·부서)마다 다른 색 — 새로 추가한 세부는 팔레트에서 순서대로 */
+var CN_DEPT_COL={
+  '운영위':'#5b6ee0','기경위':'#2a78d6','행문위':'#c85f8f','복환위':'#1b9e6f',
+  '농수위':'#7a9a2e','건소위':'#c8641d','교육위':'#8a5bd0',
+  '예결위':'#b58500','윤리위':'#6d7a84','인특위':'#9e3a63',
+  '총무':'#4a7d9e','의사':'#3f7d5a','홍보':'#c94a49','입법':'#5b4bbf','예산':'#8a7340'};
+var CN_DPAL=['#2a78d6','#c8641d','#1b9e6f','#b58500','#c85f8f','#5b4bbf','#c94a49','#3f7d5a'];
+function cnDeptColor(org,dept){
+  if(!dept)return CN_COL[org]||'#38678a';
+  if(CN_DEPT_COL[dept])return CN_DEPT_COL[dept];
+  var ds=cnDepts(org),i=Math.max(0,ds.indexOf(dept));
+  return CN_DPAL[i%CN_DPAL.length];
+}
+/* 트랙 안 표시용 짧은 이름: 왼쪽에 부서가 있으니 「3차 회의」「현장방문」 정도만 */
+function cnShortTitle(s){
+  var t=String(s&&s.title||'').trim();
+  var cut=t.replace(/^[^\s·]*(위원회|본회의|특위|위)\s*[·]?\s*/,'').trim();
+  if(cut)t=cut;
+  var m=/^제?\s*(\d+)\s*차$/.exec(t);
+  if(m)return m[1]+'차 회의';
+  m=/^제?\s*(\d+)\s*차\s+(.+)$/.exec(t);
+  if(m)return m[1]+'차 '+m[2];
+  return t||String(s&&s.title||'');
+}
+/* 세부일정 팝업 (주단위 칩 두 번 누르기) */
+function cnEvOpen(id){
+  var s=(db.schedules||[]).find(function(x){return x.id===id;});if(!s)return;
+  var ov=document.getElementById('cnEvOv');if(!ov)return;
+  ov.classList.add('on');
+  var col=cnColor(s);
+  var dot=document.getElementById('cnEvDot');if(dot)dot.style.background=col;
+  var hd=document.getElementById('cnEvOrg');if(hd)hd.textContent=cnLabel(s)||'일정';
+  var dts=String(s.detail||'').split(/\s+·\s+/).filter(Boolean);
+  document.getElementById('cnEvBody').innerHTML=
+    '<div class="cnev-t">'+esc(s.title||'(제목 없음)')+(s.done?' <span style="color:var(--green);font-size:13px">✓ 완료</span>':'')+'</div>'
+    +'<div class="cnev-m">'+esc(s.date||'')+(s.time?' · '+esc(s.time):'')+(s.dur>0?' · '+s.dur+'분':'')+'</div>'
+    +(dts.length?'<div class="cnev-d">'+dts.map(function(x){return '<div>· '+esc(x)+'</div>';}).join('')+'</div>'
+      :'<div class="cnev-d" style="color:var(--muted)">세부 내용이 없습니다.</div>');
+  document.addEventListener('keydown',cnEvEsc);
+}
+function cnEvClose(){
+  var ov=document.getElementById('cnEvOv');if(ov)ov.classList.remove('on');
+  document.removeEventListener('keydown',cnEvEsc);
+}
+function cnEvEsc(e){if(e.key==='Escape'){e.stopPropagation();cnEvClose();}}
 function schCnTgl(){
   var on=document.getElementById('schCn').checked;
   var row=document.getElementById('schCnRow');if(row)row.style.display=on?'':'none';
