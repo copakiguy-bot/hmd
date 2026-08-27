@@ -419,6 +419,26 @@
   @keyframes chOpen{from{opacity:0;max-height:0;transform:translateY(-4px)}to{opacity:1;max-height:1200px;transform:none}}
   .ch-add{display:flex;gap:8px;align-items:flex-start;margin-top:10px}
   .ch-add textarea{flex:1;min-height:44px;resize:vertical}
+  /* 붓길 · 한자 획순 */
+  .hj-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+  @media(max-width:900px){.hj-grid{grid-template-columns:1fr}}
+  .hj-frame{border:2px solid #b3392e;border-radius:6px;background:#faf6ec;padding:6px;max-width:520px}
+  .hj-frame svg{display:block;width:100%;height:auto;touch-action:none;cursor:crosshair}
+  .hj-foot{display:flex;align-items:baseline;max-width:520px;margin-top:8px;font-size:14px}
+  .hj-foot .ch{font-size:22px;font-weight:700;font-family:'Noto Serif KR',serif}
+  .hj-foot .cnt{margin-left:auto;color:var(--muted);font-size:13px}
+  .hj-foot .cnt b{color:#b3392e}
+  .hj-sec{border:1px solid var(--line);border-radius:12px;background:#fff;padding:14px 16px;margin-bottom:12px}
+  .hj-sec .bkv-h{margin-bottom:8px}
+  .hj-speed{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:var(--muted)}
+  .hj-speed input{flex:1;accent-color:#b3392e}
+  .hj-msg{font-size:12px;color:var(--muted);margin-top:10px;min-height:16px}
+  .hj-msg.err{color:var(--red)}
+  #hjChips,#hjRecent{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .hj-chip{width:38px;height:38px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);
+    border-radius:9px;background:var(--cream);font-size:19px;font-family:'Noto Serif KR',serif;cursor:pointer;transition:.12s}
+  .hj-chip:hover{border-color:#b3392e;color:#b3392e}
+  .hj-chip.on{background:#b3392e;border-color:#b3392e;color:#fff}
   /* 의회 일정 흐름표 */
   #ccTplChips{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
   .cc-tpl{padding:7px 14px;border:1px solid var(--line);border-radius:20px;background:#fff;font-size:12px;
@@ -1602,6 +1622,8 @@
   @media(max-width:1000px){.hm-grid{grid-template-columns:1fr 1fr}.hm-half{grid-column:1/-1}}
   @media(max-width:640px){.hm-grid{grid-template-columns:1fr}}
   .hm-t{font-size:13px;font-weight:800;color:var(--dark);display:flex;align-items:center;gap:7px;margin-bottom:10px}
+  .hm-t .hm-go{cursor:pointer;transition:.12s}
+  .hm-t .hm-go:hover{color:var(--green);text-decoration:underline;text-underline-offset:3px}
   .hm-t .dot{width:7px;height:7px;border-radius:50%;background:var(--yellow);flex:none}
   .hm-t .more{margin-left:auto;font-size:11.5px;color:var(--muted);font-weight:700;cursor:pointer}
   .hm-t .more:hover{color:var(--dark)}
@@ -1912,6 +1934,7 @@
     <div class="nav sub" data-v="study:언어">Language</div>
     <div class="nav sub" data-v="study:지식">Knowledge</div>
     <div class="nav sub" data-v="study:문화">Culture</div>
+    <div class="nav sub" data-v="study:한자">Hanja</div>
   </div>
   <div class="nav" data-v="readcard">Reading</div>
   <div class="nav" data-v="article">Article</div>
@@ -2074,6 +2097,7 @@
         <button class="tab st" data-t="언어" onclick="setDetailStudyTab('언어')">Language<span class="n">0</span></button>
         <button class="tab st" data-t="지식" onclick="setDetailStudyTab('지식')">Knowledge<span class="n">0</span></button>
         <button class="tab st" data-t="문화" onclick="setDetailStudyTab('문화')">Culture<span class="n">0</span></button>
+        <button class="tab st" data-t="한자" onclick="setDetailStudyTab('한자')">Hanja<span class="n">0</span></button>
       </div>
       <div class="as-pane"><div id="studyPane"></div></div>
     </div>
@@ -2681,7 +2705,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-25 · r67';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-27 · r69';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -2701,12 +2725,12 @@ function ensureFields(){
     if(!Array.isArray(db[k]))db[k]=[];});
   /* null·문자열 같은 깨진 항목이 섞여 있으면 부팅이 그 자리에서 죽는다 — 목록에서 걸러낸다 */
   ['work','study','reading','assets','inbox','diary','sessions','schedules',
-   'tlRoutines','tlProjects','routines','fixed','zk','chrono','chronoLinks','articles','rdLog'].forEach(function(k){
+   'tlRoutines','tlProjects','routines','fixed','zk','chrono','chronoLinks','articles','rdLog','hanja'].forEach(function(k){
     if(Array.isArray(db[k]))db[k]=db[k].filter(function(x){return x&&typeof x==='object';});
   });
   ['todos','budget','overtime','tlrLog','workVault','rtCheck'].forEach(function(k){
     if(!db[k]||typeof db[k]!=='object'||Array.isArray(db[k]))db[k]={};});
-  if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.articles)db.articles=[];if(!db.rdLog)db.rdLog=[];if(!db.council)db.council={sessions:[],active:null};
+  if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.articles)db.articles=[];if(!db.rdLog)db.rdLog=[];if(!db.council)db.council={sessions:[],active:null};if(!Array.isArray(db.hanja))db.hanja=[];
   /* 배열 필드가 빠진 옛 데이터가 화면 전체를 멈추지 않게 (매 로드마다, 멱등)
      — 정리 자체가 실패해도 앱은 반드시 뜬다 */
   try{
@@ -7909,8 +7933,8 @@ function addStudyCat(tab,c){c=String(c||'').trim();if(!c)return;
   db.studyCats=db.studyCats||{};db.studyCats[tab]=db.studyCats[tab]||[];
   if(!db.studyCats[tab].includes(c))db.studyCats[tab].push(c);}
 /* ---------- 문화 (영화·음악·직접입력 / 별점·한줄평·리뷰·태그·비고) ---------- */
-const STUDY_EN={단어:'Words',영어:'Sentences',언어:'Language',지식:'Knowledge',문화:'Culture'};
-const STUDY_KO={단어:'단어',영어:'문장',언어:'언어',지식:'지식',문화:'문화'};
+const STUDY_EN={단어:'Words',영어:'Sentences',언어:'Language',지식:'Knowledge',문화:'Culture',한자:'Hanja'};
+const STUDY_KO={단어:'단어',영어:'문장',언어:'언어',지식:'지식',문화:'문화',한자:'한자 획순'};
 const studyKo=t=>STUDY_KO[t]||t;
 const STUDY_COLOR={'단어':'#e8615a','영어':'#d99a2b','언어':'#4a7ec7','지식':'#2f6f5e','문화':'#6f5aa8'};
 const studyColor=t=>STUDY_COLOR[t]||'#e8615a';
@@ -8241,13 +8265,14 @@ function addStudyDetail(){
 function renderStudy(){
   document.querySelectorAll('#studyTabs .tab').forEach(function(b){
     b.classList.toggle('active',b.dataset.t===detailStudyTab);
-    var c=(b.dataset.t==='언어')?cheonilWrittenCount():db.study.filter(function(x){return x.tab===b.dataset.t;}).length;
+    var c=(b.dataset.t==='언어')?cheonilWrittenCount():(b.dataset.t==='한자')?(db.hanja||[]).length:db.study.filter(function(x){return x.tab===b.dataset.t;}).length;
     var n=b.querySelector('.n');if(n)n.textContent=c;
     b.classList.toggle('has',c>0);
   });
   const pane=document.getElementById('studyPane');if(!pane)return;
   const t=detailStudyTab;
   if(t==='언어'){renderLanguagePane(pane);return;}
+  if(t==='한자'){renderHanjaPane(pane);return;}
   const rows=db.study.filter(x=>x.tab===t),g=groupByDate(rows);
   syncCultBg();
   const h1=document.getElementById('studyH1');
@@ -8995,13 +9020,23 @@ function renderDash(){
   if(topActive==='home')renderHome();
 }
 /* ================= 통합 대시보드(홈) ================= */
+/* 카드 제목을 누르면 해당 페이지로 */
+var HM_GO={'주요일정':"goTop('cal')",'업무':"go('work')",
+  '프로젝트':"secScroll(document.getElementById('timelineCard'))",
+  '독서':"goRead()",'단어':"go('study:단어')",'문장':"go('study:영어')",
+  '지식':"go('study:지식')",'문화':"go('study:문화')",
+  '지출입력':"go('assets')",'이번달 지출':"go('assets')"};
+function hmTitle(title){
+  var fn=HM_GO[title];
+  return fn?'<span class="hm-go" title="페이지로 이동" onclick="'+fn+'">'+title+'</span>':title;
+}
 function hmT(title,moreTxt,moreFn,color){
-  return '<div class="hm-t"><span class="dot"'+(color?' style="background:'+color+'"':'')+'></span>'+title
+  return '<div class="hm-t"><span class="dot"'+(color?' style="background:'+color+'"':'')+'></span>'+hmTitle(title)
     +(moreTxt?'<span class="more" onclick="'+moreFn+'">'+moreTxt+'</span>':'')+'</div>';
 }
 /* 제목줄 오른쪽에 붙는 ‹ › */
 function hmTn(title,navHTML,color){
-  return '<div class="hm-t"><span class="dot"'+(color?' style="background:'+color+'"':'')+'></span>'+title+(navHTML||'')+'</div>';
+  return '<div class="hm-t"><span class="dot"'+(color?' style="background:'+color+'"':'')+'></span>'+hmTitle(title)+(navHTML||'')+'</div>';
 }
 var hmOff={'단어':0,'영어':0,'지식':0,'문화':0};
 function hmAll(tab){
@@ -9463,6 +9498,275 @@ function renderRtLists(){
   el.innerHTML=head+body;
 }
 function renderRoutiner(){renderRtLists();}
+/* ================= 붓길 · 한자 획순 (Study → Hanja) ================= */
+/* 획순 자료: Hanzi Writer data (MIT/Arphic) — 글자당 몇 KB 를 그때그때 받아 캐시한다 */
+var HJ_CDN='https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0.1/';
+var HJ_CK='hmd_hanja_cache_v1';
+var hjChar=null,hjData=null,hjMode='watch',hjIdx=0,hjSpeed=1,hjPaused=false,
+    hjChars=[],hjMiss=0,hjRaf=null,hjAnimSt=null,hjTk=0,hjUserPts=null,hjHinting=false;
+function hjCacheAll(){try{return JSON.parse(localStorage.getItem(HJ_CK)||'{}');}catch(e){return {};}}
+function hjCacheGet(ch){var a=hjCacheAll();return a[ch]?a[ch].d:null;}
+function hjCachePut(ch,d){
+  try{
+    var a=hjCacheAll();a[ch]={d:d,t:Date.now()};
+    var ks=Object.keys(a);
+    if(ks.length>80){ks.sort(function(x,y){return a[x].t-a[y].t;});ks.slice(0,ks.length-80).forEach(function(k){delete a[k];});}
+    localStorage.setItem(HJ_CK,JSON.stringify(a));
+  }catch(e){}
+}
+function hjFetch(ch,cb){
+  var c=hjCacheGet(ch);if(c){cb(c);return;}
+  fetch(HJ_CDN+encodeURIComponent(ch)+'.json')
+    .then(function(r){if(!r.ok)throw 0;return r.json();})
+    .then(function(d){hjCachePut(ch,d);cb(d);})
+    .catch(function(){cb(null);});
+}
+function hjMsg(t,err){var e=document.getElementById('hjMsg');if(e){e.textContent=t||'';e.classList.toggle('err',!!err);}}
+function hjStopAnim(){cancelAnimationFrame(hjRaf);hjAnimSt=null;var g=document.getElementById('hjAnim');if(g)g.innerHTML='';}
+/* ---- 그리기 ---- */
+function hjGridSVG(){
+  var g='<rect x="2" y="2" width="1020" height="1020" fill="#faf6ec"/>',c='#ecd9c8';
+  [['0','512','1024','512'],['512','0','512','1024'],['0','0','1024','1024'],['1024','0','0','1024']].forEach(function(l){
+    g+='<line x1="'+l[0]+'" y1="'+l[1]+'" x2="'+l[2]+'" y2="'+l[3]+'" stroke="'+c+'" stroke-width="2.5" stroke-dasharray="14 12"/>';});
+  return g;
+}
+function hjPaint(){
+  var w=document.getElementById('hjSvgWrap');if(!w)return;
+  if(!hjData){
+    w.innerHTML='<svg id="hjSvg" viewBox="0 0 1024 1024">'+hjGridSVG()
+      +'<text x="512" y="540" text-anchor="middle" font-size="44" fill="#c9bda6">'
+      +(hjChar?'획순을 불러오는 중…':'한자를 입력해 보세요')+'</text></svg>';
+    return;
+  }
+  var outline='',done='';
+  hjData.strokes.forEach(function(st,i){
+    outline+='<path d="'+st+'" fill="#e8e2d4"/>';
+    if(i<hjIdx)done+='<path d="'+st+'" fill="#26221b"/>';
+  });
+  w.innerHTML='<svg id="hjSvg" viewBox="0 0 1024 1024" onpointerdown="hjPD(event)" onpointermove="hjPM(event)" onpointerup="hjPU(event)" onpointercancel="hjPU(event)">'
+    +hjGridSVG()
+    +'<g transform="scale(1,-1) translate(0,-900)">'
+      +'<g>'+outline+'</g><g id="hjDone">'+done+'</g><g id="hjAnim"></g>'
+    +'</g>'
+    +'<path id="hjUserPath" d="" fill="none" stroke="#b3392e" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>'
+  +'</svg>';
+  hjCnt();
+}
+function hjCnt(){
+  var e=document.getElementById('hjCnt');if(!e)return;
+  var n=hjData?hjData.strokes.length:0;
+  e.innerHTML=hjData?('<b>'+Math.min(hjIdx+(hjAnimSt?1:0),n)+'</b> / '+n+'획'):'';
+  var cl=document.getElementById('hjCharLbl');if(cl)cl.textContent=hjChar||'';
+}
+/* 한 획 애니메이션 (멈춤 지원) */
+function hjAnimate(i,fast,done){
+  if(!hjData||!hjData.strokes[i]){if(done)done();return;}
+  var g=document.getElementById('hjAnim');if(!g)return;
+  var med=hjData.medians[i]||[];
+  if(med.length<2){hjIdx=i+1;hjPaint();if(done)done();return;}
+  var d='M'+med.map(function(p){return p[0]+' '+p[1];}).join(' L ');
+  g.innerHTML='<clipPath id="hjClip"><path d="'+hjData.strokes[i]+'"/></clipPath>'
+    +'<g clip-path="url(#hjClip)"><path id="hjMed" d="'+d+'" fill="none" stroke="#26221b" stroke-width="210" stroke-linecap="round" stroke-linejoin="round"/></g>';
+  var p=document.getElementById('hjMed'),L=1;
+  try{L=p.getTotalLength()||1;}catch(e){}
+  p.style.strokeDasharray=L+' '+L;p.style.strokeDashoffset=L;
+  hjAnimSt={p:p,L:L,dur:fast?170:Math.max(260,L/(0.5*hjSpeed)),el:0,lastT:null,cb:done,i:i};
+  hjCnt();
+  cancelAnimationFrame(hjRaf);
+  hjRaf=requestAnimationFrame(hjTick);
+}
+function hjTick(t){
+  var st=hjAnimSt;if(!st)return;
+  if(st.lastT==null)st.lastT=t;
+  if(!hjPaused)st.el+=t-st.lastT;
+  st.lastT=t;
+  var k=Math.min(1,st.el/st.dur);
+  try{st.p.style.strokeDashoffset=st.L*(1-k);}catch(e){hjAnimSt=null;return;}
+  if(k>=1){var cb=st.cb,i=st.i;hjAnimSt=null;
+    if(cb)cb(i);return;}
+  hjRaf=requestAnimationFrame(hjTick);
+}
+/* ---- 재생 흐름 ---- */
+function hjPlayFrom(i){
+  if(!hjData)return;
+  if(i>=hjData.strokes.length){hjMsg(hjData.strokes.length+'획 완성 · 처음부터를 누르면 다시 봅니다');return;}
+  hjMsg('');
+  hjAnimate(i,false,function(fin){
+    hjIdx=fin+1;hjPaint();
+    if(hjMode==='watch'&&!hjPaused)hjPlayFrom(hjIdx);
+    else if(hjIdx>=hjData.strokes.length)hjMsg(hjData.strokes.length+'획 완성');
+  });
+}
+function hjRestart(){
+  if(!hjData)return;
+  hjStopAnim();hjIdx=0;hjMiss=0;hjPaused=false;
+  var b=document.getElementById('hjPauseBtn');if(b)b.textContent='멈춤';
+  hjPaint();
+  if(hjMode==='watch')hjPlayFrom(0);
+  else hjMsg(hjMode==='step'?'▶ 또는 화면을 누르면 한 획씩 나옵니다':'획순대로 따라 그려보세요');
+}
+function hjPauseTgl(){
+  hjPaused=!hjPaused;
+  var b=document.getElementById('hjPauseBtn');if(b)b.textContent=hjPaused?'이어서':'멈춤';
+  if(!hjPaused&&hjMode==='watch'&&!hjAnimSt)hjPlayFrom(hjIdx);
+}
+function hjStep(){
+  if(!hjData||hjAnimSt)return;
+  hjPaused=false;
+  if(hjIdx>=hjData.strokes.length){hjMsg('끝까지 봤습니다 · 처음부터를 누르세요');return;}
+  hjAnimate(hjIdx,false,function(fin){hjIdx=fin+1;hjPaint();
+    if(hjIdx>=hjData.strokes.length)hjMsg(hjData.strokes.length+'획 완성');});
+}
+function hjSetMode(m){
+  hjMode=m;hjStopAnim();hjPaused=false;hjMiss=0;
+  var b=document.getElementById('hjPauseBtn');if(b)b.textContent='멈춤';
+  hjPaintCtl();hjPaint();
+  if(!hjData)return;
+  if(m==='watch')hjPlayFrom(hjIdx);
+  else if(m==='step')hjMsg('▶ 또는 화면을 누르면 한 획씩 나옵니다');
+  else hjMsg('획순대로 따라 그려보세요 (3번 틀리면 힌트)');
+}
+/* ---- 따라쓰기 ---- */
+function hjXY(ev){
+  var svg=document.getElementById('hjSvg');if(!svg)return null;
+  var pt=svg.createSVGPoint();pt.x=ev.clientX;pt.y=ev.clientY;
+  try{var m=svg.getScreenCTM();if(!m)return null;var q=pt.matrixTransform(m.inverse());return [q.x,q.y];}catch(e){return null;}
+}
+function hjPD(ev){
+  if(hjMode==='step'&&!hjHinting){hjStep();return;}
+  if(hjMode!=='trace'||!hjData||hjHinting)return;
+  if(hjIdx>=hjData.strokes.length)return;
+  ev.preventDefault();
+  hjUserPts=[];var p=hjXY(ev);if(p)hjUserPts.push(p);
+}
+function hjPM(ev){
+  if(hjMode!=='trace'||!hjUserPts)return;
+  ev.preventDefault();
+  var p=hjXY(ev);if(p)hjUserPts.push(p);
+  var el=document.getElementById('hjUserPath');
+  if(el&&hjUserPts.length>1)el.setAttribute('d','M'+hjUserPts.map(function(q){return q[0].toFixed(1)+' '+q[1].toFixed(1);}).join(' L '));
+}
+function hjPU(ev){
+  if(hjMode!=='trace'||!hjUserPts)return;
+  var pts=hjUserPts;hjUserPts=null;
+  var el=document.getElementById('hjUserPath');if(el)el.setAttribute('d','');
+  if(pts.length<3)return;
+  /* 화면 좌표 → 글자 좌표 (y 뒤집기) */
+  var u=pts.map(function(p){return [p[0],900-p[1]];});
+  var med=hjData.medians[hjIdx]||[];
+  if(hjJudge(u,med)){
+    hjMiss=0;
+    hjAnimate(hjIdx,true,function(fin){hjIdx=fin+1;hjPaint();
+      hjMsg(hjIdx>=hjData.strokes.length?(hjData.strokes.length+'획 완성! 잘 썼습니다'):'맞았습니다 · 다음 획');});
+  }else{
+    hjMiss++;
+    if(hjMiss>=3){
+      hjMiss=0;hjHinting=true;hjMsg('이렇게 씁니다 — 다시 해보세요');
+      hjAnimate(hjIdx,false,function(){hjHinting=false;hjPaint();});
+    }else hjMsg('획순이 달라요 · 다시 ('+hjMiss+'/3)',true);
+  }
+}
+function hjDist(a,b){var dx=a[0]-b[0],dy=a[1]-b[1];return Math.sqrt(dx*dx+dy*dy);}
+function hjNear(p,line){
+  var best=1e9;
+  for(var i=0;i<line.length;i++)best=Math.min(best,hjDist(p,line[i]));
+  return best;
+}
+function hjJudge(u,med){
+  if(!med.length)return false;
+  if(hjDist(u[0],med[0])>150)return false;                       /* 시작점 */
+  if(hjDist(u[u.length-1],med[med.length-1])>150)return false;   /* 끝점 */
+  var s=0;for(var i=0;i<med.length;i++)s+=hjNear(med[i],u);      /* 경로 이탈 */
+  return (s/med.length)<110;
+}
+/* ---- 조회·최근 ---- */
+function hjRecent(){return db.hanja||[];}
+function hjRecentAdd(ch){
+  db.hanja=(db.hanja||[]).filter(function(x){return x.ch!==ch;});
+  db.hanja.unshift({ch:ch,t:Date.now()});
+  db.hanja=db.hanja.slice(0,60);
+  save();
+}
+function hjLoad(ch){
+  hjChar=ch;hjData=null;hjStopAnim();hjIdx=0;hjMiss=0;hjPaused=false;
+  hjPaint();hjPaintCtl();hjMsg('');
+  var tk=++hjTk;
+  hjFetch(ch,function(d){
+    if(tk!==hjTk)return;
+    if(!d||!d.strokes||!d.medians){hjData=null;hjPaint();
+      hjMsg('「'+ch+'」의 획순 자료를 불러오지 못했습니다 · 인터넷 연결을 확인해 주세요',true);return;}
+    hjData=d;hjIdx=0;hjPaint();
+    hjRecentAdd(ch);hjPaintRecent();hjPaintChips();
+    if(hjMode==='watch')hjPlayFrom(0);
+    else hjMsg(hjMode==='step'?'▶ 또는 화면을 누르면 한 획씩 나옵니다':'획순대로 따라 그려보세요');
+  });
+}
+function hjLookup(){
+  var f=document.getElementById('hjIn');if(!f)return;
+  var chars=String(f.value).match(/[㐀-䶿一-鿿豈-﫿]/g)||[];
+  if(!chars.length){hjMsg('한자를 한 글자 이상 넣어주세요 (예: 永 學 愛)',true);f.focus();return;}
+  hjChars=chars.filter(function(c,i){return chars.indexOf(c)===i;}).slice(0,12);
+  hjPaintChips();
+  hjLoad(hjChars[0]);
+}
+/* ---- 화면 ---- */
+function hjPaintChips(){
+  var w=document.getElementById('hjChips');if(!w)return;
+  w.innerHTML=hjChars.map(function(c){
+    return '<span class="hj-chip'+(c===hjChar?' on':'')+'" onclick="hjLoad(\''+c+'\')">'+c+'</span>';}).join('');
+}
+function hjPaintRecent(){
+  var w=document.getElementById('hjRecent');if(!w)return;
+  var r=hjRecent();
+  w.innerHTML=r.length?r.slice(0,24).map(function(x){
+    return '<span class="hj-chip'+(x.ch===hjChar?' on':'')+'" title="다시 보기" onclick="hjLoad(\''+x.ch+'\')">'+x.ch+'</span>';}).join('')
+    :'<span style="font-size:12px;color:var(--muted)">아직 없습니다 · 조회한 한자가 여기 남습니다</span>';
+  var tb=document.querySelector('#studyTabs .tab[data-t="한자"] .n');if(tb)tb.textContent=r.length;
+}
+function hjPaintCtl(){
+  var w=document.getElementById('hjModes');if(!w)return;
+  w.innerHTML=[['watch','감상'],['step','한 획씩'],['trace','따라쓰기']].map(function(m){
+    return '<button class="lunar-toggle'+(hjMode===m[0]?' on':'')+'" onclick="hjSetMode(\''+m[0]+'\')">'+m[1]+'</button>';}).join('');
+  var sb=document.getElementById('hjStepBtn');if(sb)sb.style.display=(hjMode==='step')?'':'none';
+  var pb=document.getElementById('hjPauseBtn');if(pb)pb.style.display=(hjMode==='watch')?'':'none';
+}
+function renderHanjaPane(pane){
+  var h1=document.getElementById('studyH1');
+  if(h1){h1.textContent='Hanja';h1.style.color='#b3392e';}
+  var h1s=document.getElementById('studyH1Sub');if(h1s)h1s.textContent='우리는 매일매일 · 붓이 가는 길, 획순';
+  if(document.getElementById('hjSvgWrap')&&pane.dataset.hj==='1'){   /* 자동 다시 그리기에도 애니메이션 유지 */
+    hjPaintRecent();return;
+  }
+  pane.dataset.hj='1';
+  pane.innerHTML='<div class="card"><h3><span class="dot" style="background:#b3392e"></span> 붓길 '
+    +'<span class="more">한자를 입력하면 붓이 가는 길, 획순을 천천히 보여 드립니다</span></h3>'
+    +'<div class="hj-grid"><div>'
+      +'<div class="hj-frame"><div id="hjSvgWrap"></div></div>'
+      +'<div class="hj-foot"><span class="ch" id="hjCharLbl"></span><span class="cnt" id="hjCnt"></span></div>'
+    +'</div><div>'
+      +'<div class="hj-sec"><div class="bkv-h">한자 입력</div>'
+        +'<div class="inrow"><input id="hjIn" class="in" style="flex:1" placeholder="예: 永 學 愛" '
+        +'onkeydown="if(event.key===\'Enter\'){event.preventDefault();hjLookup();}">'
+        +'<button class="btn y" style="flex:none" onclick="hjLookup()">보기</button></div>'
+        +'<div id="hjChips"></div></div>'
+      +'<div class="hj-sec"><div class="bkv-h">연습 방법</div>'
+        +'<div id="hjModes" style="display:flex;gap:5px;flex-wrap:wrap"></div>'
+        +'<div class="hj-speed">천천히 <input type="range" id="hjSpd" min="0.4" max="2.4" step="0.2" value="'+hjSpeed+'" '
+        +'oninput="hjSpeed=Number(this.value)"> 빨리</div>'
+        +'<div class="inrow" style="margin-top:10px">'
+        +'<button class="btn ghost" style="flex:none" onclick="hjRestart()">처음부터</button>'
+        +'<button class="btn ghost" style="flex:none" id="hjPauseBtn" onclick="hjPauseTgl()">멈춤</button>'
+        +'<button class="btn ghost" style="flex:none;display:none" id="hjStepBtn" onclick="hjStep()">▶ 다음 획</button></div>'
+        +'<div id="hjMsg" class="hj-msg"></div></div>'
+      +'<div class="hj-sec"><div class="bkv-h">최근 본 한자</div><div id="hjRecent"></div></div>'
+    +'</div></div>'
+    +'<div style="font-size:11px;color:var(--muted);margin-top:14px">획순 자료: Make Me a Hanzi · Hanzi Writer (MIT/Arphic License) — 글자를 조회할 때 받아와 이 기기에 저장해 둡니다</div>'
+  +'</div>';
+  hjPaintCtl();hjPaint();hjPaintRecent();hjPaintChips();
+  if(!hjChar&&hjRecent().length)hjLoad(hjRecent()[0].ch);
+  else if(!hjChar)hjLoad('永');
+}
+
 /* ================= 의회 일정 흐름표 ================= */
 var CC_TRACKS=['본회의','상임위','특위','실무'];
 var CC_TCOL={'본회의':'#2f6f5e','상임위':'#2a78d6','특위':'#c98500','실무':'#8a9490'};
@@ -10077,9 +10381,12 @@ function fwSymBind(bar,ed){
     e.stopPropagation();
     fwInsertSym(ed,b.getAttribute('data-s'));
   });
-  document.addEventListener('click',function(e){
-    if(pan.classList.contains('on')&&!pan.contains(e.target)&&e.target!==btn)close();
-  });
+  /* 기호를 넣은 뒤 빈 곳(편집칸 포함)을 누르면 닫힌다 — 팝업 안에서 막힌 클릭도 잡도록 캡처 단계에서 */
+  document.addEventListener('pointerdown',function(e){
+    if(!pan.classList.contains('on'))return;
+    if(pan.contains(e.target)||e.target===btn||btn.contains(e.target))return;
+    close();
+  },true);
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
 }
 function fwToolbar(ed){
@@ -10114,7 +10421,7 @@ function fwToolbar(ed){
     +'<button type="button" class="fw-hl" data-hl="#FFE8D1" title="음영 · 살구" style="background:#FFE8D1"></button>'
     +'<button type="button" class="fw-hl fw-hl-off" data-hl="transparent" title="음영 지우기">×</button>'
     +'<span class="fw-sep"></span>'
-    +'<button type="button" class="fw-symbtn" title="특수기호 (낫표·화살괄호·수식 …)">『』</button>'
+    +'<button type="button" class="fw-symbtn" title="특수기호 (낫표·화살괄호·수식 …)">※</button>'
     +'<span class="fw-now" title="지금 쓰는 글씨체·크기">고운돋움 · 11pt</span>';
   var now=bar.querySelector('.fw-now');
   var selFont=bar.querySelector('select[data-c="fontName"]'), selSize=bar.querySelector('select[data-c="fontSize"]');
