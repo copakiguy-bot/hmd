@@ -2769,7 +2769,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-27 · r76';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-27 · r77';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -2796,6 +2796,7 @@ function ensureFields(){
     if(!db[k]||typeof db[k]!=='object'||Array.isArray(db[k]))db[k]={};});
   if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.articles)db.articles=[];if(!db.rdLog)db.rdLog=[];if(!db.council)db.council={sessions:[],active:null};if(!Array.isArray(db.hanja))db.hanja=[];
   if(!db.cnOrgs||typeof db.cnOrgs!=='object')db.cnOrgs={};
+  if(!Array.isArray(db.cnOrgs['비서실']))db.cnOrgs['비서실']=['의장실','부의장실'];
   if(!Array.isArray(db.cnOrgs['상임위']))db.cnOrgs['상임위']=['운영위','기경위','행문위','복환위','농수위','건소위','교육위'];
   if(!Array.isArray(db.cnOrgs['특위']))db.cnOrgs['특위']=['예결위','윤리위'];
   if(!db.__cnYun){if(db.cnOrgs['특위'].indexOf('윤리위')<0)db.cnOrgs['특위'].splice(1,0,'윤리위');db.__cnYun=1;}
@@ -5008,13 +5009,14 @@ function gcalShowScript(){
 }
 
 /* ===== 의회 일정: 기관·세부 ===== */
-var CN_ORGS=['본회의','상임위','특위','사무처'];
-var CN_COL={'본회의':'#2f6f5e','상임위':'#2a78d6','특위':'#c98500','사무처':'#6d7a84'};
+var CN_ORGS=['비서실','본회의','상임위','특위','사무처'];
+var CN_COL={'비서실':'#a3564b','본회의':'#2f6f5e','상임위':'#2a78d6','특위':'#c98500','사무처':'#6d7a84'};
 function cnDepts(org){return org==='본회의'?[]:((db.cnOrgs||{})[org]||[]);}
 function cnLabel(s){return s&&s.cn?(s.cnOrg||'의회')+(s.cnDept?' · '+s.cnDept:''):'';}
 function cnColor(s){return cnDeptColor(s&&s.cnOrg,s&&s.cnDept);}
 /* 세부(위원회·부서)마다 다른 색 — 새로 추가한 세부는 팔레트에서 순서대로 */
 var CN_DEPT_COL={
+  '의장실':'#b03a48','부의장실':'#3f8fa3',
   '운영위':'#5b6ee0','기경위':'#2a78d6','행문위':'#c85f8f','복환위':'#1b9e6f',
   '농수위':'#7a9a2e','건소위':'#c8641d','교육위':'#8a5bd0',
   '예결위':'#b58500','윤리위':'#6d7a84','인특위':'#9e3a63',
@@ -5029,7 +5031,7 @@ function cnDeptColor(org,dept){
 /* 트랙 안 표시용 짧은 이름: 왼쪽에 부서가 있으니 「3차 회의」「현장방문」 정도만 */
 function cnShortTitle(s){
   var t=String(s&&s.title||'').trim();
-  var cut=t.replace(/^[^\s·]*(위원회|본회의|특위|위)\s*[·]?\s*/,'').trim();
+  var cut=t.replace(/^[^\s·]*(위원회|본회의|특위|비서실|의장실|사무처|위|실)\s*[·]?\s*/,'').trim();
   if(cut)t=cut;
   var m=/^제?\s*(\d+)\s*차$/.exec(t);
   if(m)return m[1]+'차 회의';
