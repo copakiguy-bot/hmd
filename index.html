@@ -419,6 +419,25 @@
   @keyframes chOpen{from{opacity:0;max-height:0;transform:translateY(-4px)}to{opacity:1;max-height:1200px;transform:none}}
   .ch-add{display:flex;gap:8px;align-items:flex-start;margin-top:10px}
   .ch-add textarea{flex:1;min-height:44px;resize:vertical}
+  /* 지도 (맛집·여행 스팟) */
+  #spotMap{height:520px;border-radius:12px;border:1px solid var(--line);z-index:1}
+  #spotMapWrap{position:relative}
+  .spot-form{border:1px solid var(--line);border-radius:12px;background:#fffdf8;padding:14px 16px;margin-top:12px}
+  .spot-form .rowx{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .spot-row{display:flex;gap:10px;align-items:center;padding:8px 4px;border-bottom:1px solid var(--line);font-size:13px}
+  .spot-row:last-child{border-bottom:none}
+  .spot-row .nm{font-weight:700;color:var(--dark);cursor:pointer}
+  .spot-row .nm:hover{text-decoration:underline}
+  .spot-row .cat{font-size:10px;font-weight:800;color:#fff;border-radius:10px;padding:2px 8px;flex:none}
+  .spot-row .mm{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+  .spot-row .vis{flex:none;font-size:11px;font-weight:800;cursor:pointer;border:1px solid var(--line);border-radius:12px;padding:2px 9px;color:var(--muted)}
+  .spot-row .vis.on{background:var(--green);border-color:var(--green);color:#fff}
+  .spot-sr{padding:7px 10px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;font-size:12.5px;cursor:pointer;background:#fff}
+  .spot-sr:hover{border-color:#2a78d6;color:#2a78d6}
+  .spot-pop b{font-size:13px}
+  .spot-pop .m{font-size:11.5px;color:#666;margin-top:3px;max-width:200px}
+  .spot-pop .r{margin-top:7px;display:flex;gap:8px;font-size:11.5px}
+  .spot-pop .r span{cursor:pointer;color:#2a78d6;font-weight:700}
   /* 의회 일정: 다른 음영 + 타임라인 기관·세부 트랙 */
   .cn-chk{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:#38678a;
     white-space:nowrap;cursor:pointer;padding:0 2px}
@@ -1990,6 +2009,7 @@
   <div class="nav" data-v="zettel">Zettelkasten</div>
   <div class="nav" data-v="chrono">Chronicle</div>
   <div class="nav" data-v="diary">Diary</div>
+  <div class="nav" data-v="map">Map</div>
   <div class="nav" data-v="assets">Assets</div>
   <div class="nav" data-v="settings">Settings</div>
   <div class="navsep"></div>
@@ -2147,6 +2167,25 @@
         <button class="tab st" data-t="한자" onclick="setDetailStudyTab('한자')">Hanja<span class="n">0</span></button>
       </div>
       <div class="as-pane"><div id="studyPane"></div></div>
+    </div>
+  </section>
+
+  <!-- ===== 지도 (맛집·여행 스팟) ===== -->
+  <section class="view" id="view-map">
+    <div class="page-head"><h1>지도</h1><p>맛집 · 여행지 스팟을 핀으로 모아둡니다</p></div>
+    <div class="card">
+      <h3><span class="dot" style="background:#2a78d6"></span> 스팟 지도 <span class="more" id="spotCnt"></span>
+        <span style="margin-left:12px;display:inline-flex;gap:5px;flex-wrap:wrap;vertical-align:middle" id="spotCatBtns"></span>
+        <span style="margin-left:auto;display:inline-flex;gap:5px" id="spotVisBtns"></span></h3>
+      <div class="inrow" style="margin-bottom:10px">
+        <input id="spotQ" class="in" style="flex:1" placeholder="주소·지명 검색 (예: 천안 두정동)  ·  지도를 누르면 그 자리에 스팟을 추가합니다"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();spotSearch();}">
+        <button class="btn ghost" style="flex:none" onclick="spotSearch()">검색</button>
+      </div>
+      <div id="spotSearchOut"></div>
+      <div id="spotMapWrap"><div id="spotMap"></div><div id="spotMapMsg" class="empty" style="display:none"></div></div>
+      <div id="spotForm" style="display:none"></div>
+      <div id="spotList" style="margin-top:14px"></div>
     </div>
   </section>
 
@@ -2769,7 +2808,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-27 · r77';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-27 · r79';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -2789,12 +2828,14 @@ function ensureFields(){
     if(!Array.isArray(db[k]))db[k]=[];});
   /* null·문자열 같은 깨진 항목이 섞여 있으면 부팅이 그 자리에서 죽는다 — 목록에서 걸러낸다 */
   ['work','study','reading','assets','inbox','diary','sessions','schedules',
-   'tlRoutines','tlProjects','routines','fixed','zk','chrono','chronoLinks','articles','rdLog','hanja'].forEach(function(k){
+   'tlRoutines','tlProjects','routines','fixed','zk','chrono','chronoLinks','articles','rdLog','hanja','spots'].forEach(function(k){
     if(Array.isArray(db[k]))db[k]=db[k].filter(function(x){return x&&typeof x==='object';});
   });
   ['todos','budget','overtime','tlrLog','workVault','rtCheck'].forEach(function(k){
     if(!db[k]||typeof db[k]!=='object'||Array.isArray(db[k]))db[k]={};});
   if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.articles)db.articles=[];if(!db.rdLog)db.rdLog=[];if(!db.council)db.council={sessions:[],active:null};if(!Array.isArray(db.hanja))db.hanja=[];
+  if(!db.__bg2608){if(!db.budget)db.budget={};db.budget['술']=30000;db.budget['식비']=50000;db.__bg2608=1;}
+  if(!Array.isArray(db.spots))db.spots=[];if(!Array.isArray(db.spotCats))db.spotCats=[];
   if(!db.cnOrgs||typeof db.cnOrgs!=='object')db.cnOrgs={};
   if(!Array.isArray(db.cnOrgs['비서실']))db.cnOrgs['비서실']=['의장실','부의장실'];
   if(!Array.isArray(db.cnOrgs['상임위']))db.cnOrgs['상임위']=['운영위','기경위','행문위','복환위','농수위','건소위','교육위'];
@@ -9151,7 +9192,7 @@ function cheonilDashHTML(solo){
 
 /* ---------- assets (지출·투자·수입 탭) ---------- */
 const ASSET_CATS={
-  지출:['식비','모임1','모임2','세탁','문화생활','유류&교통','이발','기타','경조사'],
+  지출:['식비','술','모임1','모임2','세탁','문화생활','유류&교통','이발','기타','경조사'],
   투자:['현금','적금','주식','채권','코인','연금저축','행정공제'],
   수입:['월급','명절수당','성과급','정근수당','연가보상비','여비','기타']
 };
@@ -9221,7 +9262,38 @@ function editAsset(id,field,val){const a=db.assets.find(x=>x.id===id);if(!a)retu
   if(field==='amount')a.amount=Number(String(val).replace(/[^0-9]/g,''))||0;else a[field]=String(val).trim();
   save();renderAssetsAll();renderCal();}
 function catSelect(a,type){return `<select class="rowsel" onchange="editAsset(${a.id},'category',this.value)">${ASSET_CATS[type].map(c=>`<option${c===a.category?' selected':''}>${esc(c)}</option>`).join('')}</select>`;}
-var expPage=0,expSearch='';
+var expPage=0,expSearch='',expCat='',expSort='new',expMonKey=null;
+function expMon(){return expMonKey||thisMonth();}
+function expMonShift(d){
+  var mk=expMon();
+  var dt=new Date(+mk.slice(0,4),+mk.slice(5,7)-1+d,1);
+  var nk=dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0');
+  expMonKey=(nk===thisMonth())?null:nk;
+  renderAssets();
+}
+function expCatInput(v){expCat=v;expPage=0;expRefresh();}
+function expSortInput(v){expSort=v;expPage=0;expRefresh();}
+/* 지출·투자·수입·고정지출 전체를 엑셀에서 열리는 CSV 로 저장 */
+function assetExportCSV(){
+  var rows=[['구분','날짜','카테고리','내역','금액','비고']];
+  ['지출','투자','수입'].forEach(function(t){
+    (db.assets||[]).filter(function(a){return a.type===t;})
+      .sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''));})
+      .forEach(function(a){rows.push([t,a.date||'',a.category||'',a.item||'',Number(a.amount)||0,a.note||'']);});
+  });
+  (db.fixed||[]).forEach(function(f){rows.push(['고정지출','','',f.name||'',Number(f.amount)||0,f.note||'']);});
+  var csv='\uFEFF'+rows.map(function(r){
+    return r.map(function(c){c=String(c);return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c;}).join(',');
+  }).join('\r\n');
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='HMD_가계부_'+today()+'.csv';
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},400);
+  hkChip('가계부를 내보냈습니다 · 엑셀에서 바로 열립니다');
+  setTimeout(function(){hkChip('');},2200);
+}
 function expPagerHTML(){var total=window.__expTotal||0;var per=10;var pages=Math.max(1,Math.ceil(total/per));var cur=Math.min(Math.max(expPage,0),pages-1)+1;return '<div class="inrow" style="justify-content:center;margin-top:10px;gap:12px"><button class="btn ghost" style="flex:none;padding:6px 12px" onclick="expGoPage(-1)">\u2039 \uc774\uc804</button><span style="font-size:13px;color:var(--muted)">'+cur+' / '+pages+' \u00b7 \ucd1d '+total+'\uac74</span><button class="btn ghost" style="flex:none;padding:6px 12px" onclick="expGoPage(1)">\ub2e4\uc74c \u203a</button></div>';}
 function expRefresh(){var tb=document.getElementById('expLedgerBody');if(tb)tb.innerHTML=assetLedger('\uc9c0\ucd9c');var pg=document.getElementById('expPager');if(pg)pg.innerHTML=expPagerHTML();}
 function expGoPage(d){expPage+=d;expRefresh();}
@@ -9255,7 +9327,11 @@ function assetRowHTML(a,type,slim){
 }
 function assetLedger(type){
   let rows=db.assets.filter(a=>a.type===type).sort((a,b)=>b.date.localeCompare(a.date));
-  if(type==='지출'){var q=(expSearch||'').trim().toLowerCase();if(q){rows=rows.filter(function(a){return (String(a.item||'')+' '+String(a.note||'')+' '+String(a.category||'')+' '+String(a.date||'')+' '+String(a.amount||'')).toLowerCase().indexOf(q)>=0;});}window.__expTotal=rows.length;var per=10;var pages=Math.max(1,Math.ceil(rows.length/per));if(expPage>=pages)expPage=pages-1;if(expPage<0)expPage=0;rows=rows.slice(expPage*per,expPage*per+per);}
+  if(type==='지출'){var q=(expSearch||'').trim().toLowerCase();if(q){rows=rows.filter(function(a){return (String(a.item||'')+' '+String(a.note||'')+' '+String(a.category||'')+' '+String(a.date||'')+' '+String(a.amount||'')).toLowerCase().indexOf(q)>=0;});}
+    if(expCat)rows=rows.filter(function(a){return a.category===expCat;});
+    if(expSort==='old')rows=rows.slice().reverse();
+    else if(expSort==='cat')rows=rows.slice().sort(function(a,b){return String(a.category||'').localeCompare(String(b.category||''))||String(b.date).localeCompare(String(a.date));});
+    window.__expTotal=rows.length;var per=10;var pages=Math.max(1,Math.ceil(rows.length/per));if(expPage>=pages)expPage=pages-1;if(expPage<0)expPage=0;rows=rows.slice(expPage*per,expPage*per+per);}
   if(!rows.length)return '<tr><td colspan="6" class="empty">'+((type==='지출'&&(expSearch||'').trim())?'검색 결과가 없습니다.':'내역이 없습니다. 위 입력창에서 추가하세요.')+'</td></tr>';
   return rows.map(function(a){return assetRowHTML(a,type,false);}).join('');
 }
@@ -9330,14 +9406,24 @@ function paneExpense(){
       <td contenteditable onblur="editFixed(${f.id},'note',this.innerText)">${esc(f.note||'')}</td>
       <td><span class="del" onclick="delFixed(${f.id})">×</span></td></tr>`;});
   const pieMap={};ASSET_CATS.지출.forEach(c=>{const v=sumAssets(a=>a.type==='지출'&&a.category===c&&monthOf(a.date)===mk);if(v)pieMap[c]=v;});
+  const pmk=expMon();
+  const pieMon={};let monSum=0;
+  ASSET_CATS.지출.forEach(c=>{const v=sumAssets(a=>a.type==='지출'&&a.category===c&&monthOf(a.date)===pmk);if(v){pieMon[c]=v;monSum+=v;}});
   return `
   <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 지출 입력</h3>${assetInputRow('지출')}</div>
   <div class="g2">
-    <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 가계부 <span class="more">이번달 ${won(spentSum)}</span></h3>
-      <div class="inrow" style="margin-bottom:8px"><input id="expSearch" class="in" style="flex:1" placeholder="내역·카테고리 검색" value="${escA(expSearch)}" oninput="expSearchInput(this.value)"></div>
+    <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 가계부 <span class="more">이번달 ${won(spentSum)}</span>
+      <button class="btn ghost" style="margin-left:auto;padding:5px 11px;font-size:11.5px" onclick="assetExportCSV()" title="지출·투자·수입·고정지출 전체를 엑셀용 파일로 저장">엑셀 내보내기</button></h3>
+      <div class="inrow" style="margin-bottom:8px">
+        <input id="expSearch" class="in" style="flex:1;min-width:120px" placeholder="내역·카테고리 검색" value="${escA(expSearch)}" oninput="expSearchInput(this.value)">
+        <select id="expCatSel" class="rowsel" title="카테고리별 보기" onchange="expCatInput(this.value)"><option value="">카테고리 전체</option>${ASSET_CATS.지출.map(c=>`<option${expCat===c?' selected':''}>${esc(c)}</option>`).join('')}</select>
+        <select id="expSortSel" class="rowsel" title="정렬" onchange="expSortInput(this.value)"><option value="new"${expSort==='new'?' selected':''}>최신순</option><option value="old"${expSort==='old'?' selected':''}>날짜 오래된순</option><option value="cat"${expSort==='cat'?' selected':''}>카테고리순</option></select>
+      </div>
       <div class="tblx"><table class="ledger led-fix"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th>비고</th><th></th></tr></thead>
       <tbody id="expLedgerBody">${assetLedger('지출')}</tbody></table></div><div id="expPager">${expPagerHTML()}</div></div>
-    <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 이번달 지출</h3>${donutFromMap(pieMap,300,true)}</div>
+    <div class="card"><h3><span class="dot" style="background:var(--red)"></span> ${expMon()===thisMonth()?'이번달':(+expMon().slice(5,7))+'월'} 지출 <span class="more">${won(monSum)}</span>
+      <span class="tl-datenav"><button type="button" onclick="expMonShift(-1)" title="지난달">‹</button><span class="more" style="margin-left:0">${expMon().replace('-','.')}</span><button type="button" onclick="expMonShift(1)" title="다음달">›</button></span></h3>
+      ${monSum?donutFromMap(pieMon,300,true):'<div class="empty">'+(+expMon().slice(5,7))+'월 지출이 없습니다.</div>'}</div>
   </div>
   <div class="g2">
     <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 카테고리별 월 설정액</h3>
@@ -10342,6 +10428,214 @@ function renderCouncil(){
   }
 }
 
+/* ================= 지도: 맛집·여행 스팟 ================= */
+var SPOT_BASE=['맛집','카페','여행지','숨은곳'];
+var SPOT_COL={'맛집':'#e34948','카페':'#8a5a2b','여행지':'#2a78d6','숨은곳':'#4a3aa7'};
+var SPOT_PAL=['#1b9e6f','#b58500','#c85f8f','#5b4bbf','#3f7d5a'];
+function spotCats(){
+  var extra=(db.spotCats||[]).filter(function(c){return SPOT_BASE.indexOf(c)<0;});
+  return SPOT_BASE.concat(extra);
+}
+function spotColor(cat){
+  if(SPOT_COL[cat])return SPOT_COL[cat];
+  var i=spotCats().indexOf(cat);
+  return SPOT_PAL[Math.max(0,i-SPOT_BASE.length)%SPOT_PAL.length];
+}
+var spotMap=null,spotLayer=null,spotCatF='',spotVisF='',spotPend=null,spotEditId=null,spotTmp=null;
+var SPOT_LEAF='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/';
+function spotLib(cb){
+  if(window.L){cb();return;}
+  if(window.__leafLoading){setTimeout(function(){spotLib(cb);},300);return;}
+  window.__leafLoading=1;
+  var l=document.createElement('link');l.rel='stylesheet';l.href=SPOT_LEAF+'leaflet.css';document.head.appendChild(l);
+  var sc=document.createElement('script');sc.src=SPOT_LEAF+'leaflet.js';
+  sc.onload=function(){window.__leafLoading=0;cb();};
+  sc.onerror=function(){window.__leafLoading=0;
+    var m=document.getElementById('spotMapMsg');
+    if(m){m.style.display='';m.textContent='지도를 불러오지 못했습니다 · 인터넷 연결을 확인해 주세요 (스팟 데이터는 안전합니다)';}};
+  document.head.appendChild(sc);
+}
+function spotFiltered(){
+  var rs=(db.spots||[]).slice();
+  if(spotCatF)rs=rs.filter(function(s){return s.cat===spotCatF;});
+  if(spotVisF==='y')rs=rs.filter(function(s){return s.visited;});
+  if(spotVisF==='n')rs=rs.filter(function(s){return !s.visited;});
+  return rs;
+}
+function renderSpots(){
+  var cb=document.getElementById('spotCatBtns');
+  if(!cb)return;
+  cb.innerHTML=[['','전체']].concat(spotCats().map(function(c){return [c,c];})).map(function(x){
+    return '<button class="lunar-toggle'+(spotCatF===x[0]?' on':'')+'" onclick="spotCatSet(\''+x[0]+'\')">'+x[1]+'</button>';
+  }).join('')+'<button class="lunar-toggle" title="분류 추가" onclick="spotCatAdd()">＋</button>';
+  var vb=document.getElementById('spotVisBtns');
+  if(vb)vb.innerHTML=[['','모두'],['y','가봤음'],['n','위시']].map(function(x){
+    return '<button class="lunar-toggle'+(spotVisF===x[0]?' on':'')+'" onclick="spotVisSet(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');
+  var cnt=document.getElementById('spotCnt');
+  if(cnt)cnt.textContent=(db.spots||[]).length?((db.spots||[]).length+'곳'):'';
+  var ls=document.getElementById('spotList');
+  if(ls){
+    var rs=spotFiltered().slice().sort(function(a,b){return b.id-a.id;});
+    ls.innerHTML=rs.length?rs.map(function(s){
+      return '<div class="spot-row">'
+        +'<span style="width:10px;height:10px;border-radius:50%;flex:none;background:'+spotColor(s.cat)
+          +(s.visited?'':';background:transparent;border:2.5px solid '+spotColor(s.cat))+'"></span>'
+        +'<span class="nm" title="지도에서 보기" onclick="spotGoto('+s.id+')">'+esc(s.name)+'</span>'
+        +'<span class="cat" style="background:'+spotColor(s.cat)+'">'+esc(s.cat)+'</span>'
+        +'<span class="mm">'+esc(s.memo||'')+'</span>'
+        +'<span class="vis'+(s.visited?' on':'')+'" onclick="spotVisTgl('+s.id+')">'+(s.visited?'✓ 가봤음':'위시')+'</span>'
+        +(s.link?'<span class="art-link" title="링크 열기" onclick="window.open(\''+escA(s.link)+'\',\'_blank\')">↗</span>':'')
+        +'<span class="pen-ic" title="수정" onclick="spotFormOpen('+s.id+')">✎</span>'
+        +'<span class="del" onclick="spotDel('+s.id+')">×</span></div>';
+    }).join(''):'<div class="empty" style="padding:12px 0">'
+      +((db.spots||[]).length?'조건에 맞는 스팟이 없습니다.':'아직 스팟이 없습니다. 지도를 누르거나 주소를 검색해 첫 스팟을 꽂아보세요.')+'</div>';
+  }
+  var v=document.getElementById('view-map');
+  if(!v||!v.classList.contains('on'))return;      /* 지도는 화면이 열렸을 때만 그린다 */
+  spotLib(function(){spotMapInit();spotDraw();});
+}
+function spotCatSet(c){spotCatF=c;renderSpots();}
+function spotVisSet(v){spotVisF=v;renderSpots();}
+function spotCatAdd(){
+  var nm=prompt('추가할 분류 이름 (예: 술집, 캠핑)');nm=nm?nm.trim():'';
+  if(!nm)return;
+  if(!Array.isArray(db.spotCats))db.spotCats=[];
+  if(spotCats().indexOf(nm)<0){db.spotCats.push(nm);save();}
+  spotCatF=nm;renderSpots();
+}
+function spotMapInit(){
+  if(spotMap){setTimeout(function(){spotMap.invalidateSize();},80);return;}
+  var el=document.getElementById('spotMap');
+  if(!el||!window.L)return;
+  spotMap=L.map(el).setView([36.44,127.4],8);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {maxZoom:19,attribution:'© OpenStreetMap'}).addTo(spotMap);
+  spotLayer=L.layerGroup().addTo(spotMap);
+  spotMap.on('click',function(e){spotFormOpen(null,e.latlng.lat,e.latlng.lng);});
+  setTimeout(function(){spotMap.invalidateSize();},120);
+}
+function spotDraw(){
+  if(!spotLayer||!window.L)return;
+  spotLayer.clearLayers();
+  spotFiltered().forEach(function(s){
+    if(typeof s.lat!=='number'||typeof s.lng!=='number')return;
+    var col=spotColor(s.cat);
+    L.circleMarker([s.lat,s.lng],{radius:9,color:col,weight:2.5,fillColor:col,fillOpacity:s.visited?0.85:0.12})
+      .bindPopup(spotPopHTML(s)).addTo(spotLayer);
+  });
+  if(spotTmp)spotTmp.addTo(spotLayer);
+}
+function spotPopHTML(s){
+  return '<div class="spot-pop"><b>'+esc(s.name)+'</b>'
+    +'<div class="m">'+esc(s.cat)+(s.visited?' · 가봤음':' · 가보고 싶은 곳')+(s.memo?'<br>'+esc(s.memo):'')+'</div>'
+    +'<div class="r">'
+    +(s.link?'<span onclick="window.open(\''+escA(s.link)+'\',\'_blank\')">링크</span>':'')
+    +'<span onclick="spotVisTgl('+s.id+')">'+(s.visited?'위시로':'가봤음!')+'</span>'
+    +'<span onclick="spotFormOpen('+s.id+')">수정</span>'
+    +'<span style="color:#c0574f" onclick="spotDel('+s.id+')">삭제</span></div></div>';
+}
+function spotTmpClear(){if(spotTmp&&spotLayer)spotLayer.removeLayer(spotTmp);spotTmp=null;}
+function spotFormOpen(id,lat,lng){
+  spotEditId=id||null;
+  var s=id?(db.spots||[]).find(function(x){return x.id===id;}):null;
+  if(id&&!s)return;
+  spotPend=id?null:{lat:lat,lng:lng};
+  spotTmpClear();
+  if(!id&&window.L&&spotLayer){
+    spotTmp=L.circleMarker([lat,lng],{radius:11,color:'#12312b',weight:2,dashArray:'4 3',fillOpacity:.15});
+    spotTmp.addTo(spotLayer);
+  }
+  var f=document.getElementById('spotForm');if(!f)return;
+  f.style.display='';
+  f.innerHTML='<div class="spot-form"><div class="rdp-hd" style="margin:0 0 8px"><b>'+(id?'스팟 수정':'새 스팟')+'</b>'
+    +'<span class="rdp-hint">'+(id?'':'지도에 표시된 자리에 저장됩니다')+'</span></div>'
+    +'<div class="rowx">'
+    +'<input id="spName" class="in" style="flex:2;min-width:140px" placeholder="이름 (예: 진미식당)" value="'+escA(s?s.name:'')+'" onkeydown="if(event.key===\'Enter\')spotSave()">'
+    +'<select id="spCat" class="rowsel">'+spotCats().map(function(c){
+      return '<option'+((s?s.cat:'맛집')===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>'
+    +'<label class="cn-chk" style="color:var(--green)"><input type="checkbox" id="spVis"'+(s&&s.visited?' checked':'')+'> 가봤음</label>'
+    +'</div>'
+    +'<div class="rowx" style="margin-top:8px">'
+    +'<input id="spMemo" class="in" style="flex:2;min-width:160px" placeholder="메모 (예: 수요일 휴무 · 김치찜)" value="'+escA(s?s.memo||'':'')+'">'
+    +'<input id="spLink" class="in" style="flex:1.4;min-width:120px" placeholder="링크 (선택)" value="'+escA(s?s.link||'':'')+'">'
+    +'<button class="btn y" style="flex:none" onclick="spotSave()">저장</button>'
+    +'<button class="btn ghost" style="flex:none" onclick="spotFormClose()">취소</button>'
+    +'</div></div>';
+  setTimeout(function(){var n=document.getElementById('spName');if(n)n.focus();},60);
+}
+function spotFormClose(){
+  var f=document.getElementById('spotForm');
+  if(f){f.style.display='none';f.innerHTML='';}
+  spotPend=null;spotEditId=null;spotTmpClear();
+  if(spotMap)spotDraw();
+}
+function spotSave(){
+  var g=function(i){var e=document.getElementById(i);return e?e.value.trim():'';};
+  var name=g('spName');
+  if(!name){var n=document.getElementById('spName');if(n)n.focus();return;}
+  var cat=g('spCat')||'맛집';
+  var visited=!!(document.getElementById('spVis')&&document.getElementById('spVis').checked);
+  if(spotEditId){
+    var s=(db.spots||[]).find(function(x){return x.id===spotEditId;});
+    if(s){s.name=name;s.cat=cat;s.visited=visited;s.memo=g('spMemo');s.link=g('spLink');}
+  }else{
+    if(!spotPend)return;
+    db.spots.push({id:uid(),name:name,cat:cat,lat:spotPend.lat,lng:spotPend.lng,
+      visited:visited,memo:g('spMemo'),link:g('spLink'),date:today()});
+  }
+  save();spotFormClose();renderSpots();
+  hkChip('스팟을 저장했습니다 · '+name);
+  setTimeout(function(){hkChip('');},1800);
+}
+function spotVisTgl(id){
+  var s=(db.spots||[]).find(function(x){return x.id===id;});
+  if(!s)return;
+  s.visited=!s.visited;save();
+  if(spotMap)spotMap.closePopup();
+  renderSpots();
+}
+function spotDel(id){
+  var s=(db.spots||[]).find(function(x){return x.id===id;});
+  if(!s)return;
+  if(!confirm('「'+s.name+'」 스팟을 지울까요?'))return;
+  db.spots=db.spots.filter(function(x){return x.id!==id;});
+  if(spotMap)spotMap.closePopup();
+  save();renderSpots();
+}
+function spotGoto(id){
+  var s=(db.spots||[]).find(function(x){return x.id===id;});
+  if(!s)return;
+  if(spotMap){spotMap.setView([s.lat,s.lng],15);}
+  window.scrollTo(0,0);
+}
+/* 주소·지명 검색 (OpenStreetMap Nominatim) */
+function spotSearch(){
+  var q=(document.getElementById('spotQ')||{}).value||'';q=q.trim();
+  var out=document.getElementById('spotSearchOut');if(!out)return;
+  if(!q){out.innerHTML='';return;}
+  out.innerHTML='<div class="empty" style="padding:8px 0">찾는 중…</div>';
+  fetch('https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=kr&accept-language=ko&q='+encodeURIComponent(q))
+    .then(function(r){return r.json();})
+    .then(function(j){
+      window.__spotSr=j||[];
+      out.innerHTML=(j&&j.length)?j.map(function(r,i){
+        return '<div class="spot-sr" onclick="spotSrPick('+i+')">📍 '+esc(r.display_name)+'</div>';
+      }).join(''):'<div class="empty" style="padding:8px 0">검색 결과가 없습니다 · 지명이나 주소로 다시 시도해 보세요</div>';
+    })
+    .catch(function(){out.innerHTML='<div class="empty" style="padding:8px 0">검색하지 못했습니다 · 인터넷 연결을 확인해 주세요</div>';});
+}
+function spotSrPick(i){
+  var r=(window.__spotSr||[])[i];if(!r)return;
+  var out=document.getElementById('spotSearchOut');if(out)out.innerHTML='';
+  var la=Number(r.lat),ln=Number(r.lon);
+  if(spotMap)spotMap.setView([la,ln],15);
+  spotFormOpen(null,la,ln);
+  setTimeout(function(){
+    var n=document.getElementById('spName');
+    if(n&&!n.value)n.value=String(r.display_name||'').split(',')[0].trim();
+  },80);
+}
+
 /* ================= 아티클 (기사 아카이브) ================= */
 var ART_MEDIA={'chosun.com':'조선일보','joongang.co.kr':'중앙일보','donga.com':'동아일보','hani.co.kr':'한겨레',
   'khan.co.kr':'경향신문','mk.co.kr':'매일경제','hankyung.com':'한국경제','yna.co.kr':'연합뉴스','ytn.co.kr':'YTN',
@@ -10608,7 +10902,7 @@ function renderAll(){
    renderTop,renderCal,renderSchedule,renderTodos,renderInbox,renderInboxPage,renderSessions,
    renderWork,renderDashWork,renderReading,renderStudy,renderDashStudy,
    renderAssets,renderDashAsset,renderDiary,renderDiaryPage,renderRoutiner,renderZettel,renderDash,
-   renderMemoUrl,renderChrono,renderArticle,renderCouncil].forEach(function(f){
+   renderMemoUrl,renderChrono,renderArticle,renderCouncil,renderSpots].forEach(function(f){
     try{f();}catch(e){try{console.error('renderAll · '+(f.name||'?')+':',e);}catch(_){}}
   });
 }
