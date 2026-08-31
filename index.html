@@ -1506,6 +1506,22 @@
   .as-pane .tblx,.sd-pane .tblx{min-width:0}
   .as-pane .donut-wrap,.sd-pane .donut-wrap{flex-wrap:wrap}
   .as-pane .legend,.sd-pane .legend{min-width:0}
+  /* 월별 지출 비교 그래프 */
+  .xc-wrap{position:relative}
+  .xc-wrap svg{width:100%;height:auto;display:block}
+  .xc-wrap rect.xc-bar{cursor:pointer;transition:opacity .15s}
+  .xc-wrap g.xc-col:hover rect.xc-bar{opacity:.78}
+  .xc-tip{position:absolute;pointer-events:none;background:#12312b;color:#fff;border-radius:10px;padding:8px 11px;font-size:12px;line-height:1.55;box-shadow:0 8px 22px rgba(18,49,43,.28);display:none;z-index:5;min-width:150px}
+  .xc-tip b{font-size:13px}
+  .xc-tip .up{color:#ffb3ad}.xc-tip .dn{color:#9fe3c8}
+  .xc-tip .cat{display:flex;gap:6px;align-items:center;color:#d6e2dc}
+  .xc-tip .cat i{width:8px;height:8px;border-radius:2px;display:inline-block}
+  .xc-leg{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px;font-size:12px}
+  .xc-leg span{display:inline-flex;align-items:center;gap:5px;cursor:pointer;color:var(--dark);padding:2px 4px;border-radius:6px}
+  .xc-leg span i{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .xc-leg span.off{opacity:.38;text-decoration:line-through}
+  .xc-ctl{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-left:auto}
+  .xc-ctl .sep{width:1px;height:16px;background:var(--line);margin:0 3px}
   .as-pane .card svg,.sd-pane .card svg{max-width:100%;height:auto}
   .tabs.vtabs.as-tabs .tab{font-size:14.5px;padding:11px 12px}
   .tabs.vtabs .tab.active.exp{background:var(--red);border-color:var(--red);color:#fff}
@@ -2847,7 +2863,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-31 · r84';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-31 · r87';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -9352,14 +9368,15 @@ const thisMonth=()=>monthOf(today());
 const lastMonth=()=>{const t=new Date();t.setDate(1);t.setMonth(t.getMonth()-1);return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0');};
 function sumAssets(f){return db.assets.filter(f).reduce((s,a)=>s+(Number(a.amount)||0),0);}
 function fillAssetCat(id,type){const s=document.getElementById(id);if(s)s.innerHTML=ASSET_CATS[type].map(c=>`<option>${esc(c)}</option>`).join('');}
-function donutFromMap(map,size,vertical){
+function donutFromMap(map,size,vertical,colorFn){
   size=size||150;const entries=Object.entries(map).filter(([,v])=>v>0);
   const total=entries.reduce((s,[,v])=>s+v,0);
+  const col=(k,i)=>colorFn?colorFn(k):PALETTE[i%PALETTE.length];   /* 지출은 카테고리마다 고정색 → 그래프와 같은 색 */
   let off=25,seg='<circle cx="21" cy="21" r="15.9" fill="none" stroke="#eee" stroke-width="6"/>';
-  entries.forEach(([,v],i)=>{const p=total?v/total*100:0;
-    seg+=`<circle cx="21" cy="21" r="15.9" fill="none" stroke="${PALETTE[i%PALETTE.length]}" stroke-width="6" stroke-dasharray="${p} ${100-p}" stroke-dashoffset="${off}"/>`;off-=p;});
+  entries.forEach(([k,v],i)=>{const p=total?v/total*100:0;
+    seg+=`<circle cx="21" cy="21" r="15.9" fill="none" stroke="${col(k,i)}" stroke-width="6" stroke-dasharray="${p} ${100-p}" stroke-dashoffset="${off}"/>`;off-=p;});
   const svg=`<svg width="${size}" height="${size}" viewBox="0 0 42 42">${seg}<text x="21" y="22.5" text-anchor="middle" font-size="4.2" font-weight="700" fill="#12312b">${shortWon(total)}</text></svg>`;
-  const legend=entries.length?entries.map(([k,v],i)=>`<div><span class="sw" style="background:${PALETTE[i%PALETTE.length]}"></span> ${esc(k)} <b style="margin-left:auto">${won(v)}</b></div>`).join(''):'<div class="empty">데이터 없음</div>';
+  const legend=entries.length?entries.map(([k,v],i)=>`<div><span class="sw" style="background:${col(k,i)}"></span> ${esc(k)} <b style="margin-left:auto">${won(v)}</b></div>`).join(''):'<div class="empty">데이터 없음</div>';
   if(vertical)return `<div style="text-align:center">${svg}</div><div class="legend">${legend}</div>`;
   return `<div class="donut-wrap"><div>${svg}</div><div class="legend" style="flex:1">${legend}</div></div>`;
 }
@@ -9526,6 +9543,217 @@ function incomeTrendSVG(){
     <line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="var(--line)"/>
     ${bars}<polyline fill="none" stroke="var(--green)" stroke-width="3.5" points="${pts}"/>${dots}${labels}</svg>`;
 }
+/* ================= 월별 지출 비교 그래프 ================= */
+var expCmpN=12, expCmpMode='total', expCmpFixed=false, expCmpHide={};
+var expCmpView='trend', expTrN=6;   /* 카드 보기: 'trend'=일자별 누적 추이(기본) · 'bars'=월별 막대 비교 · expTrN=평균에 넣을 지난 달 수 */
+function expCmpViewSet(v){expCmpView=v;renderAssets();}
+function expTrSet(n){expTrN=n;renderAssets();}
+var expTrCat='';   /* 추이·비교 그래프의 카테고리 ('' = 전체) */
+function expTrCatSet(v){expTrCat=v||'';renderAssets();}
+function expViewBtns(){
+  return '<button class="lunar-toggle'+(expCmpView==='trend'?' on':'')+'" onclick="expCmpViewSet(\'trend\')">추이</button>'
+    +'<button class="lunar-toggle'+(expCmpView==='bars'?' on':'')+'" onclick="expCmpViewSet(\'bars\')">월별 비교</button><span class="sep"></span>'
+    +'<select class="rowsel" title="카테고리별로 보기" onchange="expTrCatSet(this.value)"><option value="">카테고리 전체</option>'
+    +ASSET_CATS.지출.map(function(c){return '<option'+(expTrCat===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select><span class="sep"></span>';
+}
+function expTrCatOk(a){return !expTrCat||(a.category||'기타')===expTrCat;}
+/* ---- 일자별 누적 지출 추이: 이번달 · 전달 · 평균 (지난 N달의 같은 날짜 누적 평균) ---- */
+function expDim(m){var y=+m.slice(0,4),mo=+m.slice(5,7);return new Date(y,mo,0).getDate();}
+function expMonAdd(m,k){var y=+m.slice(0,4),mo=+m.slice(5,7)-1+k;var d=new Date(y,mo,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function expCumOf(m){   /* 1일부터 말일까지 누적 배열 (index 0 = 1일) */
+  var n=expDim(m),daily=new Array(n).fill(0),any=false;
+  (db.assets||[]).forEach(function(a){if(a.type!=='지출'||monthOf(a.date)!==m||!expTrCatOk(a))return;var d=+String(a.date).slice(8,10);if(!(d>=1&&d<=n))return;daily[d-1]+=Number(a.amount)||0;any=true;});
+  var cum=[],run=0;for(var i=0;i<n;i++){run+=daily[i];cum.push(run);}
+  return {cum:cum,daily:daily,any:any,n:n};
+}
+function expTrendData(){
+  var base=expMon(),prev=expMonAdd(base,-1),cur=thisMonth();
+  var B=expCumOf(base),P=expCumOf(prev);
+  var months=[],k;for(k=1;k<=expTrN;k++){var m=expMonAdd(base,-k);var c=expCumOf(m);if(c.any)months.push({m:m,c:c});}
+  var avg=[],i;
+  for(i=0;i<31;i++){var sum=0,cnt=0;months.forEach(function(x){var cm=x.c.cum;sum+=cm[Math.min(i,cm.length-1)];cnt++;});avg.push(cnt?sum/cnt:0);}
+  var todayD=(base===cur)?(+today().slice(8,10)):B.n;   /* 이번달이면 오늘까지만 그린다 */
+  return {base:base,prev:prev,B:B,P:P,avg:avg,avgN:months.length,todayD:todayD,isCur:base===cur};
+}
+function expTrTip(i,ev){
+  var tip=document.getElementById('xtTip'),d=window.__xtData;if(!tip||!d)return;
+  var bv=(i<d.todayD)?d.B.cum[i]:null,pv=(i<d.P.n)?d.P.cum[i]:null,av=d.avgN?d.avg[i]:null;
+  var h='<b>'+(i+1)+'일까지</b>';
+  h+='<div class="cat"><i style="background:#e34948"></i>'+(d.isCur?'이번달':(+d.base.slice(5))+'월')+' <b style="margin-left:auto">'+(bv==null?'—':won(bv))+'</b></div>';
+  h+='<div class="cat"><i style="background:#6a8fd8"></i>전달 <b style="margin-left:auto">'+(pv==null?'—':won(pv))+'</b></div>';
+  h+='<div class="cat"><i style="background:#12312b;border:1px solid #9fb3aa"></i>평균 <b style="margin-left:auto">'+(av==null?'—':won(Math.round(av)))+'</b></div>';
+  if(bv!=null&&av){var df=bv-av;h+='<div style="margin-top:4px;border-top:1px solid rgba(255,255,255,.15);padding-top:4px">평균 대비 <span class="'+(df>0?'up':'dn')+'">'+(df>0?'▲ ':df<0?'▼ ':'= ')+Math.abs(Math.round(df/av*100))+'% ('+(df>=0?'+':'-')+shortWon(Math.abs(df))+')</span></div>';}
+  else if(bv!=null&&pv!=null){var df2=bv-pv;h+='<div style="margin-top:4px">전달 대비 <span class="'+(df2>0?'up':'dn')+'">'+(df2>0?'▲':df2<0?'▼':'=')+' '+shortWon(Math.abs(df2))+'</span></div>';}
+  var dd=d.B.daily[i];if(i<d.todayD&&dd)h+='<div style="color:#b8c8c0;margin-top:2px">이날 지출 '+shortWon(dd)+'</div>';
+  tip.innerHTML=h;tip.style.display='';
+  var wrap=tip.parentElement,rc=wrap.getBoundingClientRect();
+  var x=ev.clientX-rc.left+14,y=ev.clientY-rc.top-10;
+  if(x+tip.offsetWidth>rc.width-4)x=ev.clientX-rc.left-tip.offsetWidth-14;
+  tip.style.left=x+'px';tip.style.top=Math.max(0,y)+'px';
+  var hl=document.getElementById('xtHover');if(hl){hl.setAttribute('x1',d.X(i));hl.setAttribute('x2',d.X(i));hl.style.display='';}
+}
+function expTrTipHide(){var t=document.getElementById('xtTip');if(t)t.style.display='none';var hl=document.getElementById('xtHover');if(hl)hl.style.display='none';}
+function expTrendCard(){
+  var d=expTrendData();window.__xtData=d;
+  var W=1000,H=340,padL=64,padR=24,padT=26,padB=40,IW=W-padL-padR,IH=H-padT-padB,N=31;
+  var X=function(i){return padL+IW*i/(N-1);};d.X=X;
+  var vals=[];
+  for(var i=0;i<d.todayD;i++)vals.push(d.B.cum[i]);
+  vals=vals.concat(d.P.cum).concat(d.avgN?d.avg:[]);
+  var max=Math.max.apply(null,vals.concat([1]));
+  var step=Math.pow(10,Math.floor(Math.log10(max)));var cands=[step/2,step,step*2,step*5];
+  step=cands.find(function(c){return max/c<=6;})||step*5;
+  var yMax=Math.ceil(max/step)*step;
+  var Y=function(v){return padT+IH*(1-v/yMax);};
+  var s='';
+  for(var v=0;v<=yMax+1e-6;v+=step){var yy=Y(v);
+    s+='<line x1="'+padL+'" y1="'+yy.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+yy.toFixed(1)+'" stroke="'+(v===0?'#cfd6d2':'#eef1ef')+'"/>';
+    s+='<text x="'+(padL-8)+'" y="'+(yy+4).toFixed(1)+'" text-anchor="end" font-size="11.5" fill="#8a9490">'+(v?shortWon(v):'0')+'</text>';}
+  [1,5,10,15,20,25,31].forEach(function(dd){var x=X(dd-1);
+    s+='<line x1="'+x.toFixed(1)+'" y1="'+padT+'" x2="'+x.toFixed(1)+'" y2="'+(padT+IH)+'" stroke="#f0f2f0"/>';
+    s+='<text x="'+x.toFixed(1)+'" y="'+(H-padB+18)+'" text-anchor="middle" font-size="12" fill="#8a9490">'+dd+'일</text>';});
+  function path(arr,upto){var p='';for(var i=0;i<Math.min(arr.length,upto);i++)p+=(i?' L':'M')+X(i).toFixed(1)+' '+Y(arr[i]).toFixed(1);return p;}
+  /* 평균 (점선) → 전달 (파랑) → 이번달 (빨강, 맨 위) */
+  if(d.avgN){s+='<path d="'+path(d.avg,N)+'" fill="none" stroke="#12312b" stroke-width="2" stroke-dasharray="5 4" opacity=".55"/>';
+    s+='<text x="'+(W-padR+2)+'" y="'+(Y(d.avg[N-1])+4).toFixed(1)+'" font-size="10.5" font-weight="700" fill="#5f6f68">평균</text>';}
+  if(d.P.any){s+='<path d="'+path(d.P.cum,d.P.n)+'" fill="none" stroke="#6a8fd8" stroke-width="2.2" stroke-linejoin="round"/>';
+    var pe=d.P.cum[d.P.n-1];s+='<circle cx="'+X(d.P.n-1).toFixed(1)+'" cy="'+Y(pe).toFixed(1)+'" r="4" fill="#6a8fd8"/>';
+    s+='<text x="'+(X(d.P.n-1)-8).toFixed(1)+'" y="'+(Y(pe)-9).toFixed(1)+'" text-anchor="end" font-size="11" font-weight="700" fill="#4b6fbf">전달 '+shortWon(pe)+'</text>';}
+  if(d.B.any&&d.todayD>0){s+='<path d="'+path(d.B.cum,d.todayD)+'" fill="none" stroke="#e34948" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>';
+    var be=d.B.cum[d.todayD-1],bx=X(d.todayD-1);
+    s+='<circle cx="'+bx.toFixed(1)+'" cy="'+Y(be).toFixed(1)+'" r="5" fill="#e34948" stroke="#fff" stroke-width="2"/>';
+    var lx=bx+(d.todayD>N-5?-8:8),anc=d.todayD>N-5?'end':'start';
+    s+='<text x="'+lx.toFixed(1)+'" y="'+(Y(be)-10).toFixed(1)+'" text-anchor="'+anc+'" font-size="12" font-weight="800" fill="#c0392b">'+shortWon(be)+'</text>';}
+  if(d.isCur){var tx=X(d.todayD-1);
+    s+='<line x1="'+tx.toFixed(1)+'" y1="'+padT+'" x2="'+tx.toFixed(1)+'" y2="'+(padT+IH)+'" stroke="#e34948" stroke-dasharray="3 3" opacity=".45"/>';
+    s+='<text x="'+(tx+4).toFixed(1)+'" y="'+(padT+IH-6)+'" text-anchor="start" font-size="10.5" fill="#c0392b">오늘</text>';}
+  s+='<line id="xtHover" x1="0" y1="'+padT+'" x2="0" y2="'+(padT+IH)+'" stroke="#12312b" stroke-width="1" opacity=".35" style="display:none;pointer-events:none"/>';
+  /* 마우스 영역: 하루 하나씩 */
+  for(var i2=0;i2<N;i2++){var x0=(i2===0?padL:(X(i2-1)+X(i2))/2),x1=(i2===N-1?W-padR:(X(i2)+X(i2+1))/2);
+    s+='<rect x="'+x0.toFixed(1)+'" y="'+padT+'" width="'+(x1-x0).toFixed(1)+'" height="'+IH+'" fill="transparent" onmousemove="expTrTip('+i2+',event)"/>';}
+  /* 머리글 요약: 같은 날짜 기준 평균 대비 + 이 속도면 월말 얼마 */
+  var summ='',bi=d.todayD-1,bnow=d.B.any?d.B.cum[bi]:0;
+  if(d.avgN&&d.B.any&&d.avg[bi]>0){var df=bnow-d.avg[bi];
+    summ=(df>0?'▲ ':df<0?'▼ ':'= ')+Math.abs(Math.round(df/d.avg[bi]*100))+'% '+(d.isCur?'같은 날 평균 대비':'평균 대비');
+    if(d.isCur&&d.todayD<d.B.n)summ+=' · 이 속도면 월말 '+shortWon(bnow/d.avg[bi]*d.avg[d.B.n-1]);}
+  else if(d.B.any&&d.P.any&&d.P.cum[Math.min(bi,d.P.n-1)]>0){var df2=bnow-d.P.cum[Math.min(bi,d.P.n-1)];summ=(df2>0?'▲ ':'▼ ')+shortWon(Math.abs(df2))+' 전달 같은 날 대비';}
+  var title=(d.isCur?'이번달':(+d.base.slice(5))+'월')+' '+(expTrCat?expTrCat+' ':'')+'지출 추이';
+  var head='<h3><span class="dot" style="background:var(--red)"></span> '+title+' <span class="more">'+(summ||('평균은 지난 '+expTrN+'달 기준'))+'</span>'
+    +'<span class="xc-ctl">'+expViewBtns()
+    +'<span style="font-size:11.5px;color:var(--muted)">평균</span>'
+    +[3,6,12].map(function(k){return '<button class="lunar-toggle'+(expTrN===k?' on':'')+'" onclick="expTrSet('+k+')">'+k+'달</button>';}).join('')
+    +'</span></h3>';
+  var legend='<div class="xc-leg"><span style="cursor:default"><i style="background:#e34948"></i>'+(d.isCur?'이번달':(+d.base.slice(5))+'월')+' ('+d.base.replace('-','.')+')</span>'
+    +'<span style="cursor:default"><i style="background:#6a8fd8"></i>전달 ('+d.prev.replace('-','.')+')</span>'
+    +'<span style="cursor:default"><i style="background:#12312b;opacity:.6"></i>평균 (지난 '+d.avgN+'달)</span>'
+    +'<span style="cursor:default;color:var(--muted);margin-left:auto">세로축은 1일부터 그날까지 쌓인 금액 · 「N월 지출」 카드의 ‹ › 로 달을 바꿉니다</span></div>';
+  var body=(!d.B.any&&!d.P.any&&!d.avgN)?'<div class="empty">'+(expTrCat?'«'+esc(expTrCat)+'» ':'')+'지출 기록이 없습니다.</div>'
+    :'<div class="xc-wrap"><svg viewBox="0 0 '+W+' '+H+'" onmouseleave="expTrTipHide()">'+s+'</svg><div class="xc-tip" id="xtTip"></div></div>'+legend;
+  return '<div class="card">'+head+body+'</div>';
+}
+function expCatColor(c){var i=ASSET_CATS.지출.indexOf(c);return PALETTE[(i<0?ASSET_CATS.지출.length:i)%PALETTE.length];}
+function expCmpSet(k,v){if(k==='n')expCmpN=v;else if(k==='mode')expCmpMode=v;else if(k==='fixed')expCmpFixed=!expCmpFixed;renderAssets();}
+function expCmpLegTgl(c){expCmpHide[c]=!expCmpHide[c];renderAssets();}
+function expCmpMonths(n){
+  var now=new Date();now.setDate(1);var out=[];
+  for(var i=n-1;i>=0;i--){var d=new Date(now);d.setMonth(d.getMonth()-i);out.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}
+  return out;
+}
+function expCmpData(){
+  var months=expCmpMonths(expCmpN),cats=ASSET_CATS.지출.slice();
+  var fixedSum=(db.fixed||[]).reduce(function(s,f){return s+(Number(f.amount)||0);},0);
+  var rows=months.map(function(m){
+    var by={},tot=0;
+    (db.assets||[]).forEach(function(a){if(a.type!=='지출'||monthOf(a.date)!==m||!expTrCatOk(a))return;var c=a.category||'기타';var v=Number(a.amount)||0;by[c]=(by[c]||0)+v;});
+    cats.forEach(function(c){if(!expCmpHide[c])tot+=by[c]||0;});
+    return {m:m,by:by,tot:tot,fixed:expCmpFixed?fixedSum:0};
+  });
+  return {months:months,cats:cats,rows:rows,fixedSum:fixedSum};
+}
+function expCmpTip(i,ev){
+  var tip=document.getElementById('xcTip'),d=window.__xcData;if(!tip||!d)return;
+  var r=d.rows[i],prev=d.rows[i-1];
+  var all=r.tot+r.fixed;
+  var h='<b>'+r.m.replace('-','.')+'</b> · '+won(all)+(r.fixed?' <span style="color:#b8c8c0">(고정 '+shortWon(r.fixed)+' 포함)</span>':'');
+  if(prev){var pa=prev.tot+prev.fixed;
+    if(pa>0){var pct=Math.round((all-pa)/pa*100);h+='<br>전월 대비 <span class="'+(all>pa?'up':'dn')+'">'+(all>pa?'▲':all<pa?'▼':'=')+' '+Math.abs(pct)+'% ('+(all>=pa?'+':'-')+shortWon(Math.abs(all-pa))+')</span>';}
+    else h+='<br>전월 지출 없음';}
+  var top=d.cats.filter(function(c){return !expCmpHide[c]&&r.by[c];}).sort(function(a,b){return r.by[b]-r.by[a];}).slice(0,4);
+  if(top.length)h+='<div style="margin-top:5px;border-top:1px solid rgba(255,255,255,.15);padding-top:5px">'+top.map(function(c){
+    return '<div class="cat"><i style="background:'+expCatColor(c)+'"></i>'+esc(c)+' <b style="margin-left:auto;font-size:12px">'+shortWon(r.by[c])+'</b></div>';}).join('')+'</div>';
+  tip.innerHTML=h;tip.style.display='';
+  var wrap=tip.parentElement,rc=wrap.getBoundingClientRect();
+  var x=ev.clientX-rc.left+14,y=ev.clientY-rc.top-10;
+  if(x+tip.offsetWidth>rc.width-4)x=ev.clientX-rc.left-tip.offsetWidth-14;
+  tip.style.left=x+'px';tip.style.top=Math.max(0,y)+'px';
+}
+function expCmpTipHide(){var t=document.getElementById('xcTip');if(t)t.style.display='none';}
+function expCmpGo(m){expMonKey=(m===thisMonth())?null:m;renderAssets();
+  setTimeout(function(){var h=[].slice.call(document.querySelectorAll('#assetPane .card h3')).find(function(x){return /지출 <span/.test(x.innerHTML)&&x.querySelector('.tl-datenav');});
+    if(h)h.scrollIntoView({behavior:'smooth',block:'center'});},60);}
+function expCmpSVG(){
+  var d=expCmpData();window.__xcData=d;
+  var rows=d.rows,n=rows.length,cur=thisMonth();
+  var budget=0;ASSET_CATS.지출.forEach(function(c){if(!expCmpHide[c]&&(!expTrCat||c===expTrCat))budget+=db.budget[c]||0;});
+  if(expCmpFixed)budget+=d.fixedSum;
+  var totals=rows.map(function(r){return r.tot+r.fixed;});
+  var have=rows.filter(function(r){return r.tot>0;});
+  var avg=have.length?have.reduce(function(s,r){return s+r.tot+r.fixed;},0)/have.length:0;
+  var maxBar=Math.max.apply(null,totals.concat([avg,1]));
+  /* 설정액이 실제 지출보다 한참 크면 막대가 납작해지니, 그땐 선을 맨 위에 붙이고 화살표로만 알린다 */
+  var budgetOff=budget>maxBar*1.6;
+  var max=budgetOff?maxBar:Math.max(maxBar,budget);
+  /* 눈금: 10·20·50 × 10ⁿ 가운데 4~6칸 나오는 것 */
+  var step=Math.pow(10,Math.floor(Math.log10(max)));var cands=[step/2,step,step*2,step*5];
+  step=cands.find(function(c){return max/c<=6;})||step*5;
+  var yMax=Math.ceil(max/step)*step;
+  var W=1000,H=340,padL=64,padR=16,padT=28,padB=40,IW=W-padL-padR,IH=H-padT-padB;
+  var cw=IW/n,bw=Math.min(cw*0.62,54);
+  var Y=function(v){return padT+IH*(1-v/yMax);};
+  var s='';
+  for(var v=0;v<=yMax+1e-6;v+=step){var yy=Y(v);
+    s+='<line x1="'+padL+'" y1="'+yy.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+yy.toFixed(1)+'" stroke="'+(v===0?'#cfd6d2':'#eef1ef')+'"/>';
+    s+='<text x="'+(padL-8)+'" y="'+(yy+4).toFixed(1)+'" text-anchor="end" font-size="11.5" fill="#8a9490">'+(v?shortWon(v):'0')+'</text>';}
+  rows.forEach(function(r,i){
+    var x=padL+cw*i+(cw-bw)/2,isCur=r.m===cur,tot=r.tot+r.fixed;
+    var g='<g class="xc-col" onmousemove="expCmpTip('+i+',event)" onmouseleave="expCmpTipHide()" onclick="expCmpGo(\''+r.m+'\')">';
+    g+='<rect x="'+(padL+cw*i).toFixed(1)+'" y="'+padT+'" width="'+cw.toFixed(1)+'" height="'+IH+'" fill="transparent"/>';
+    var base=0;
+    if(r.fixed){g+='<rect class="xc-bar" x="'+x.toFixed(1)+'" y="'+Y(r.fixed).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(IH*r.fixed/yMax).toFixed(1)+'" fill="#c9d3ce"/>';base=r.fixed;}
+    if(expCmpMode==='cat'){
+      d.cats.forEach(function(c){var v=r.by[c]||0;if(!v||expCmpHide[c])return;
+        g+='<rect class="xc-bar" x="'+x.toFixed(1)+'" y="'+Y(base+v).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(IH*v/yMax).toFixed(1)+'" fill="'+expCatColor(c)+'" opacity="'+(isCur?1:.72)+'"/>';base+=v;});
+    }else if(r.tot){
+      g+='<rect class="xc-bar" x="'+x.toFixed(1)+'" y="'+Y(base+r.tot).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(IH*r.tot/yMax).toFixed(1)+'" rx="4" fill="'+(expTrCat?expCatColor(expTrCat):'#e34948')+'" opacity="'+(isCur?1:.45)+'"/>';
+    }
+    if(tot)g+='<text x="'+(x+bw/2).toFixed(1)+'" y="'+(Y(tot)-6).toFixed(1)+'" text-anchor="middle" font-size="11.5" font-weight="700" fill="'+(isCur?'#c0392b':'#5f6f68')+'">'+shortWon(tot)+'</text>';
+    g+='<text x="'+(x+bw/2).toFixed(1)+'" y="'+(H-padB+18)+'" text-anchor="middle" font-size="12" font-weight="'+(isCur?'800':'500')+'" fill="'+(isCur?'#12312b':'#8a9490')+'">'
+      +((r.m.slice(5)==='01'||i===0)?(r.m.slice(2,4)+'.'+(+r.m.slice(5))+'월'):((+r.m.slice(5))+'월'))+'</text>';
+    g+='</g>';s+=g;
+  });
+  if(budget>0){var yb=budgetOff?padT:Y(budget);
+    if(!budgetOff)s+='<line x1="'+padL+'" y1="'+yb.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+yb.toFixed(1)+'" stroke="#c0392b" stroke-width="1.3" stroke-dasharray="6 4" opacity=".7"/>';
+    s+='<text x="'+(W-padR)+'" y="'+(yb-5).toFixed(1)+'" text-anchor="end" font-size="11" font-weight="700" fill="#c0392b">설정액 '+shortWon(budget)+(budgetOff?' ↑ (그래프 위)':'')+'</text>';}
+  if(avg>0){var ya=Y(avg);
+    s+='<line x1="'+padL+'" y1="'+ya.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+ya.toFixed(1)+'" stroke="#5f6f68" stroke-width="1.2" stroke-dasharray="2 4" opacity=".8"/>';
+    s+='<text x="'+padL+'" y="'+(ya-5).toFixed(1)+'" font-size="11" font-weight="700" fill="#5f6f68">평균 '+shortWon(avg)+'</text>';}
+  var legend='';
+  if(expCmpMode==='cat')legend='<div class="xc-leg">'+d.cats.map(function(c){
+    var any=rows.some(function(r){return r.by[c];});if(!any)return '';
+    return '<span class="'+(expCmpHide[c]?'off':'')+'" onclick="expCmpLegTgl(\''+c+'\')" title="눌러서 숨기기/보이기"><i style="background:'+expCatColor(c)+'"></i>'+esc(c)+'</span>';}).join('')
+    +(expCmpFixed?'<span style="cursor:default"><i style="background:#c9d3ce"></i>고정지출</span>':'')+'</div>';
+  else if(expCmpFixed)legend='<div class="xc-leg"><span style="cursor:default"><i style="background:#e34948"></i>이번달</span><span style="cursor:default"><i style="background:#efb2ae"></i>지난 달들</span><span style="cursor:default"><i style="background:#c9d3ce"></i>고정지출</span></div>';
+  var curRow=rows[n-1],prevRow=rows[n-2],curAll=curRow.tot+curRow.fixed,prevAll=prevRow?prevRow.tot+prevRow.fixed:0,cmp='';
+  if(prevAll>0)cmp=(curAll>prevAll?'▲ ':curAll<prevAll?'▼ ':'= ')+Math.abs(Math.round((curAll-prevAll)/prevAll*100))+'% 지난달 대비';
+  var head='<h3><span class="dot" style="background:var(--red)"></span> 월별 '+(expTrCat?expTrCat+' ':'')+'지출 비교 <span class="more">'+(cmp?cmp+' · ':'')+'평균 '+shortWon(avg)+'</span>'
+    +'<span class="xc-ctl">'+expViewBtns()
+    +[6,12,24].map(function(k){return '<button class="lunar-toggle'+(expCmpN===k?' on':'')+'" onclick="expCmpSet(\'n\','+k+')">'+k+'개월</button>';}).join('')
+    +'</span></h3>';
+  var body=(!have.length&&!expCmpFixed)?'<div class="empty">최근 '+expCmpN+'개월 지출 기록이 없습니다.</div>'
+    :'<div class="xc-wrap"><svg viewBox="0 0 '+W+' '+H+'" onmouseleave="expCmpTipHide()">'+s+'</svg><div class="xc-tip" id="xcTip"></div></div>'+legend
+     +'<div style="font-size:11.5px;color:var(--muted);margin-top:6px">막대를 누르면 그 달 지출 내역으로 이동합니다</div>';
+  return '<div class="card">'+head+body+'</div>';
+}
 function setBudget(cat,txt){db.budget[cat]=Number(String(txt).replace(/[^0-9]/g,''))||0;save();renderAssets();}
 function addFixed(){const n=document.getElementById('fName').value.trim(),amt=parseNum(document.getElementById('fAmount').value);
   if(!n){alert('내용을 입력하세요.');return;}if(!amt){alert('금액을 입력하세요.');return;}
@@ -9572,8 +9800,9 @@ function paneExpense(){
       <tbody id="expLedgerBody">${assetLedger('지출')}</tbody></table></div><div id="expPager">${expPagerHTML()}</div></div>
     <div class="card"><h3><span class="dot" style="background:var(--red)"></span> ${expMon()===thisMonth()?'이번달':(+expMon().slice(5,7))+'월'} 지출 <span class="more">${won(monSum)}</span>
       <span class="tl-datenav"><button type="button" onclick="expMonShift(-1)" title="지난달">‹</button><span class="more" style="margin-left:0">${expMon().replace('-','.')}</span><button type="button" onclick="expMonShift(1)" title="다음달">›</button></span></h3>
-      ${monSum?donutFromMap(pieMon,300,true):'<div class="empty">'+(+expMon().slice(5,7))+'월 지출이 없습니다.</div>'}</div>
+      ${monSum?donutFromMap(pieMon,300,true,expCatColor):'<div class="empty">'+(+expMon().slice(5,7))+'월 지출이 없습니다.</div>'}</div>
   </div>
+  ${expCmpView==='bars'?expCmpSVG():expTrendCard()}
   <div class="g2">
     <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 카테고리별 월 설정액</h3>
       <div class="tblx"><table class="ledger"><thead><tr><th>카테고리</th><th class="amt">설정</th><th class="amt">잔액</th><th class="amt">지난달</th></tr></thead>
@@ -9834,14 +10063,14 @@ function hmDonut(map,size){
   var total=entries.reduce(function(s,e){return s+e[1];},0);
   var off=25,seg='<circle cx="21" cy="21" r="15.9" fill="none" stroke="#eee" stroke-width="6"/>';
   entries.forEach(function(e,i){var p=total?e[1]/total*100:0;
-    seg+='<circle cx="21" cy="21" r="15.9" fill="none" stroke="'+PALETTE[i%PALETTE.length]+'" stroke-width="6" stroke-dasharray="'+p+' '+(100-p)+'" stroke-dashoffset="'+off+'"/>';off-=p;});
+    seg+='<circle cx="21" cy="21" r="15.9" fill="none" stroke="'+expCatColor(e[0])+'" stroke-width="6" stroke-dasharray="'+p+' '+(100-p)+'" stroke-dashoffset="'+off+'"/>';off-=p;});
   var svg='<svg width="'+size+'" height="'+size+'" viewBox="0 0 42 42">'+seg
     +'<text x="21" y="22.5" text-anchor="middle" font-size="4.2" font-weight="700" fill="#12312b">'+shortWon(total)+'</text></svg>';
   var setT=0,spT=0;
   var rows=entries.map(function(e,i){
     var set=db.budget[e[0]]||0,left=set-e[1];
     setT+=set;spT+=e[1];
-    return '<tr><td><span class="sw" style="background:'+PALETTE[i%PALETTE.length]+'"></span>'+esc(e[0])+'</td>'
+    return '<tr><td><span class="sw" style="background:'+expCatColor(e[0])+'"></span>'+esc(e[0])+'</td>'
       +'<td class="amt">'+(set?set.toLocaleString()+'원':'—')+'</td>'
       +'<td class="amt">'+e[1].toLocaleString()+'원</td>'
       +'<td class="amt'+(set&&left<0?' over':'')+'">'+(set?left.toLocaleString()+'원':'—')+'</td></tr>';
