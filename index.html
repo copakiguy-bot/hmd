@@ -1360,6 +1360,12 @@
   .ch-jump .in{width:200px;padding:5px 10px;font-size:12px}
   .ch-jump .btn{flex:none;padding:5px 11px;font-size:12px}
   #chWrap{position:relative;height:540px;border:1px solid var(--line);border-radius:12px;background:#fbfbf8;overflow:hidden;cursor:grab}
+  /* 시간 그래프 확장: 카드가 화면을 덮고 그래프가 남은 높이를 다 쓴다 */
+  #chGraphCard.ch-full{position:fixed;inset:0;z-index:150;margin:0;border-radius:0;overflow:hidden;padding:16px 22px;display:flex;flex-direction:column;box-sizing:border-box;width:100vw;height:100vh}
+  #chGraphCard.ch-full #chWrap{flex:1;min-height:200px;height:auto}
+  #chGraphCard.ch-full>p{margin-bottom:0}
+  #chGraphCard.ch-full #chNoDates{max-height:80px;overflow:auto}
+  body.ch-fullbody{overflow:hidden}
   #chWrap.drag{cursor:grabbing}
   #chSvg{display:block;width:100%;height:100%}
   .ch-tip{display:none;position:absolute;background:var(--dark);color:#fff;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:8px;pointer-events:none;white-space:nowrap;z-index:5}
@@ -2348,7 +2354,19 @@
   <!-- ===== 연대기 ===== -->
   <section class="view" id="view-chrono">
     <div class="page-head"><h1>연대기</h1><p>배운 것과 겪은 것을 시간 위에 점으로 찍습니다.</p></div>
-    <div class="card">
+    <div class="card" id="chGraphCard">
+      <h3><span class="dot" style="background:var(--green)"></span> 시간 그래프 <button class="lunar-toggle" id="chFullBtn" style="margin-left:auto" onclick="chFullTgl()" title="그래프를 화면 가득 크게 봅니다 (Esc 로 닫기)">⤢ 확장</button></h3>
+      <div class="ch-bar">
+        <div class="ch-units" id="chUnits"></div>
+        <button class="btn ghost" style="flex:none;padding:5px 12px;font-size:12px" onclick="chToday()">오늘</button>
+        <div class="ch-jump"><input id="chJumpIn" class="in" type="text" placeholder="연도로 이동 (예: -384, 46억년 전)" title="Enter 로 이동 · 숫자 그대로, 만·억 표기, 기원전(-), «N년 전» 모두 됩니다" onkeydown="if(event.key==='Enter'){chJump();}"><button class="btn ghost" type="button" onclick="chJump()">이동</button></div>
+        <div class="ch-filter" id="chFilter"></div>
+      </div>
+      <div id="chWrap"><svg id="chSvg"></svg><div class="ch-tip" id="chTip"></div></div>
+      <div id="chNoDates"></div>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px">끌어서 이동 · 휠로 확대/축소 · 점 한 번 = 날짜 · 두 번 = 세부 내용</p>
+    </div>
+      <div class="card">
       <h3><span class="dot" style="background:var(--yellow)"></span> 사건 기록 <span class="more" id="chCount"></span></h3>
       <div class="inrow" style="flex-wrap:wrap">
         <input id="chY" class="in" type="text" inputmode="text" style="flex:none;width:120px" placeholder="년 (기원전 -)" title="숫자 그대로(-384) · 만·억 표기(-46억, -1만2000) · 오늘 기준(1만년 전) 모두 됩니다">
@@ -2365,19 +2383,7 @@
         <button class="btn y" id="chAddBtn" style="flex:none;margin-left:auto" onclick="chAdd()">추가</button>
       </div>
     </div>
-    <div class="card">
-      <h3><span class="dot" style="background:var(--green)"></span> 시간 그래프</h3>
-      <div class="ch-bar">
-        <div class="ch-units" id="chUnits"></div>
-        <button class="btn ghost" style="flex:none;padding:5px 12px;font-size:12px" onclick="chToday()">오늘</button>
-        <div class="ch-jump"><input id="chJumpIn" class="in" type="text" placeholder="연도로 이동 (예: -384, 46억년 전)" title="Enter 로 이동 · 숫자 그대로, 만·억 표기, 기원전(-), «N년 전» 모두 됩니다" onkeydown="if(event.key==='Enter'){chJump();}"><button class="btn ghost" type="button" onclick="chJump()">이동</button></div>
-        <div class="ch-filter" id="chFilter"></div>
-      </div>
-      <div id="chWrap"><svg id="chSvg"></svg><div class="ch-tip" id="chTip"></div></div>
-      <div id="chNoDates"></div>
-      <p style="font-size:12px;color:var(--muted);margin-top:8px">끌어서 이동 · 휠로 확대/축소 · 점 한 번 = 날짜 · 두 번 = 세부 내용</p>
-    </div>
-  </section>
+</section>
   <!-- ===== 설정 ===== -->
   <section class="view" id="view-settings">
     <div class="page-head"><h1>설정</h1><p id="buildStamp"></p></div>
@@ -2888,7 +2894,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-31 · r89';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-31 · r90';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -5868,6 +5874,19 @@ function chJump(){
 function chFilterAll(){chFilter=[];renderChrono();}
 function chFilterTgl(c){var i=chFilter.indexOf(c);if(i>=0)chFilter.splice(i,1);else chFilter.push(c);renderChrono();}
 function chToday(){chState.c=chNowT();renderChrono();}
+/* 시간 그래프 전체 화면 */
+function chFullTgl(){
+  var c=document.getElementById('chGraphCard');if(!c)return;
+  var on=!c.classList.contains('ch-full');
+  c.classList.toggle('ch-full',on);document.body.classList.toggle('ch-fullbody',on);
+  var b=document.getElementById('chFullBtn');if(b){b.textContent=on?'⤡ 닫기':'⤢ 확장';b.classList.toggle('on',on);}
+  chState.ppy=null;   /* 폭이 바뀌었으니 배율을 다시 잡는다 */
+  chTipHide();setTimeout(renderChrono,30);
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){var c=document.getElementById('chGraphCard');if(c&&c.classList.contains('ch-full'))chFullTgl();}});
+window.addEventListener('resize',function(){var c=document.getElementById('chGraphCard');if(c&&c.classList.contains('ch-full')){chState.ppy=null;renderChrono();}});
+/* 제목 글자 폭 어림 (10.5px 굵은 글씨) */
+function chLabelW(t){var w=0,i;for(i=0;i<t.length;i++)w+=(t.charCodeAt(i)>255?10.5:6.3);return w+14;}
 function chTipHide(){var t=document.getElementById('chTip');if(t)t.classList.remove('on');}
 function renderChrono(){
   chFormInit();
@@ -5963,14 +5982,30 @@ function renderChrono(){
     groups.push({e:e,x:x,lanes:lanes});
   });
   groups.sort(function(a,b){return a.x-b.x;});
-  var cell={};
+  /* 같은 레인에서 제목(점 오른쪽 글자)이 앞 사건과 겹치면 위·아래 다른 줄로 내려 앉힌다 */
+  var LV=14, maxLv=Math.max(1,Math.floor((rowH/2-9)/LV));   /* 레인 높이 안에서 쓸 수 있는 줄 수 */
+  var order=[0];for(var q=1;q<=maxLv;q++){order.push(-q,q);}
+  var laneEnd={};   /* laneEnd[lane][level] = {end: 그 줄 마지막 라벨이 끝나는 x, g: 그 그룹} */
   groups.forEach(function(g){
-    g.ys=g.lanes.map(function(li){
-      var k=li+'|'+Math.round(g.x/26),n=cell[k]||0;cell[k]=n+1;
-      var cy=GT+li*rowH+rowH/2+(n%2?-1:1)*Math.ceil(n/2)*15;
+    var w=chLabelW(g.e.title);
+    g.ys=g.lanes.map(function(li,gi){
+      var ends=laneEnd[li]||(laneEnd[li]={}),lv=null,k,best=null;
+      for(k=0;k<order.length;k++){var L=order[k],e=ends[L];
+        if(!e||g.x-6>e.end){lv=L;break;}
+        if(!best||e.end<ends[best].end)best=L;}   /* 다 차 있으면 가장 빨리 끝나는 줄 */
+      if(lv==null){lv=best;var prev=ends[lv].g;   /* 앞 라벨을 이 점 앞에서 잘라 자리를 만든다 */
+        prev.labW=Math.max(20,Math.min(prev.labW==null?1e9:prev.labW,g.x-10-prev.x));}
+      if(gi===0)ends[lv]={end:g.x+w,g:g};else lv=0;   /* 제목은 첫 레인에만 붙는다 */
+      var cy=GT+li*rowH+rowH/2+lv*LV;
       return Math.max(GT+8,Math.min(GT+innerH-8,cy));
     });
   });
+  /* 잘라야 하는 제목은 «…» 으로 */
+  function chFitTitle(t,maxW){
+    if(maxW==null||chLabelW(t)<=maxW)return t;
+    var out='',i;for(i=0;i<t.length;i++){if(chLabelW(out+t[i]+'…')>maxW)break;out+=t[i];}
+    return (out||t[0])+'…';
+  }
   /* 사건끼리 이은 선 (팝업의 «선 잇기») */
   var anchor={};
   groups.forEach(function(g){anchor[g.e.id]={x:g.x,y:g.ys[0]};});
@@ -5992,7 +6027,7 @@ function renderChrono(){
       else
         s+='<circle data-id="'+g.e.id+'" cx="'+g.x.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="5.5" fill="'+col+'" stroke="#fff" stroke-width="1.5" style="cursor:pointer"/>';
       if(gi===0)
-        s+='<text x="'+(g.x+9).toFixed(1)+'" y="'+(cy+3.5).toFixed(1)+'" font-size="10.5" font-weight="700" fill="#3a4a44" style="pointer-events:none">'+esc(g.e.title)+'</text>';
+        s+='<text x="'+(g.x+9).toFixed(1)+'" y="'+(cy+3.5).toFixed(1)+'" font-size="10.5" font-weight="700" fill="#3a4a44" style="pointer-events:none">'+(g.labW!=null?'<title>'+esc(g.e.title)+'</title>':'')+esc(chFitTitle(g.e.title,g.labW))+'</text>';
     });
   });
   if(!(db.chrono||[]).length)
