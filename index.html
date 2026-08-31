@@ -441,6 +441,10 @@
   .spot-nvpop{background:#fff;border-radius:12px;padding:10px 13px;box-shadow:0 8px 24px rgba(18,49,43,.22);font-family:'Noto Sans KR',sans-serif;min-width:150px;position:relative}
   .spot-nvpop:after{content:'';position:absolute;left:50%;bottom:-7px;width:12px;height:12px;background:#fff;transform:translateX(-50%) rotate(45deg);box-shadow:3px 3px 6px rgba(18,49,43,.08)}
   .spot-nvpop .x{position:absolute;right:7px;top:4px;cursor:pointer;color:#999;font-size:14px;line-height:1}
+  .spot-cl{width:34px;height:34px;border-radius:50%;background:#fff;border:3px solid #12312b;box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#12312b;box-shadow:0 2px 8px rgba(0,0,0,.28);cursor:pointer;font-family:'Noto Sans KR',sans-serif}
+  .spot-cl.v{background:#12312b;color:#fff}
+  .spot-cl.w{border-style:dashed}
+  .spot-cl-icon{background:transparent!important;border:none!important}
   .spot-engine{font-size:11.5px;color:var(--muted);margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .spot-engine b{color:var(--dark)}
   /* 의회 일정: 다른 음영 + 타임라인 기관·세부 트랙 */
@@ -996,6 +1000,9 @@
   .tlr-nowtag{flex:none;font-size:10px;font-weight:800;color:#8a6412;background:#fff;
     border-radius:999px;padding:2px 8px;letter-spacing:.2px}
   /* 루틴 통계 대시보드 */
+  .tlr-kind{flex:none;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;background:#e3f1ea;color:#1c8258;cursor:pointer;margin-left:6px}
+  .tlr-kind.hd{background:#e6eaf9;color:#4b5fb0}
+  .tlr-grid .tg.na{background:transparent;border-color:transparent;color:#cdd3cf;cursor:default}
   .tlr-stats{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
   .tlr-stats .tlr-stats-t{font-size:12px;font-weight:800;color:var(--muted);margin-bottom:8px;letter-spacing:.3px}
   .tlr-rings{display:flex;gap:44px;flex-wrap:wrap;margin:8px 0 18px;justify-content:center}
@@ -2281,11 +2288,21 @@
   <section class="view" id="view-routines">
     <div class="page-head"><h1>루틴</h1><p>등록한 루틴 전체입니다. 대시보드 카드에는 지금 차례인 루틴을 가운데 두고 5개만 보입니다.</p></div>
     <div class="card">
-      <h3><span class="dot" style="background:var(--green)"></span> 전체 루틴 <span class="more" id="tlrPageCount"></span></h3>
+      <h3><span class="dot" style="background:var(--green)"></span> 평일 루틴 <span class="more" id="tlrPageCount"></span>
+        <span class="more" style="margin-left:auto;font-weight:500">월~금 (공휴일 제외)에 보입니다</span></h3>
       <div id="tlrPageList"></div>
-      <div style="margin-top:12px"><button class="btn y" onclick="toggleTlrForm()">＋ 루틴 추가</button></div>
+    </div>
+    <div class="card">
+      <h3><span class="dot" style="background:#5b78d0"></span> 휴일 루틴 <span class="more" id="tlrPageCountHd"></span>
+        <span class="more" style="margin-left:auto;font-weight:500">토·일·공휴일에 보입니다</span></h3>
+      <div id="tlrPageListHd"></div>
+    </div>
+    <div class="card">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn y" onclick="toggleTlrForm()">＋ 루틴 추가</button>
+        <span style="font-size:12.5px;color:var(--muted)">루틴 줄의 <b>평일</b>/<b>휴일</b> 배지를 누르면 종류를 바꿀 수 있습니다</span></div>
       <div id="tlrAddForm" style="display:none">
         <div class="inrow" style="margin-top:12px">
+          <select id="tlrKind" class="rowsel" style="flex:none"><option value="wd">평일 루틴</option><option value="hd">휴일 루틴</option></select>
           <input id="tlrTime" class="in" style="flex:none;width:92px" placeholder="시간 예:0700" onblur="this.value=normTime(this.value)">
           <input id="tlrDur" class="in" style="flex:none;width:88px" inputmode="numeric" placeholder="소요(분)·30">
         </div>
@@ -2295,6 +2312,7 @@
         </div>
       </div>
     </div>
+    <div id="tlrGraphCard"></div>
     <div class="card"><div id="tlrStatsPage"></div></div>
   </section>
   <!-- ===== Zettelkasten ===== -->
@@ -2863,7 +2881,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-31 · r87';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-31 · r88';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -2978,7 +2996,7 @@ function ensureFields(){
       s.phases=s.phases.filter(function(p){return p&&typeof p==='object';});
       s.phases.forEach(function(p){if(!Array.isArray(p.todos))p.todos=[];});
     });
-  }catch(e){try{console.error('ensureFields 정리 실패:',e);}catch(_){}}if(!db.routines)db.routines=[];if(!db.tlRoutines)db.tlRoutines=[];if(!db.tlrLog)db.tlrLog={};if(!db.tlProjects)db.tlProjects=[];if(!db.overtime)db.overtime={};if(db.otRate==null)db.otRate=12113;if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
+  }catch(e){try{console.error('ensureFields 정리 실패:',e);}catch(_){}}if(!db.routines)db.routines=[];if(!db.tlRoutines)db.tlRoutines=[];if(!db.tlrLog)db.tlrLog={};(db.tlRoutines||[]).forEach(function(r){if(r&&r.kind!=='hd')r.kind='wd';});if(!db.tlProjects)db.tlProjects=[];if(!db.overtime)db.overtime={};if(db.otRate==null)db.otRate=12113;if(!db.routineLists){db.routineLists=[{id:uid(),name:'기본 루틴',items:(db.routines||[]),collapsed:false}];}
   if(!db.cheonildu||Array.isArray(db.cheonildu)){
     var __oldCd=Array.isArray(db.cheonildu)?db.cheonildu:[];var __chapMap={};var __chapOrder=[];
     __oldCd.forEach(function(x){var cn=x.chapter||'(챕터 미입력)';if(!__chapMap[cn]){__chapMap[cn]={id:uid(),name:cn,units:[]};__chapOrder.push(cn);}
@@ -3317,8 +3335,7 @@ function renderTimeline(){
       cn:!!s.cn,cnc:s.cn?cnColor(s):'',cnl:s.cn?cnLabel(s):''};
     if(mn==null||mn<TL_START*60||mn>TL_END*60)untimed.push(e);else evs.push(e);
   });
-  (db.tlRoutines||[]).forEach(function(r){
-    if(r.active===false)return;
+  tlrFor(selDate,true).forEach(function(r){
     var mn=tlParseMin(r.time);
     var e={k:'r',id:r.id,mn:mn,time:r.time,dur:(r.dur>0?r.dur:30),title:r.title,ok:tlrOk(r.id,selDate)};
     if(mn==null||mn<TL_START*60||mn>TL_END*60)untimed.push(e);else evs.push(e);
@@ -3501,8 +3518,7 @@ function nowEvents(){
     var mn=tlParseMin(s.time);if(mn==null)return;
     out.push({k:'s',id:s.id,mn:mn,dur:(s.dur>0?s.dur:30),title:s.title||'',done:!!s.done});
   });
-  (db.tlRoutines||[]).forEach(function(r){
-    if(r.active===false)return;
+  tlrFor(td,true).forEach(function(r){
     var mn=tlParseMin(r.time);if(mn==null)return;
     out.push({k:'r',id:r.id,mn:mn,dur:(r.dur>0?r.dur:30),title:r.title||'',done:tlrOk(r.id,td)});
   });
@@ -4009,11 +4025,25 @@ function tlxOpen(){
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){var b=document.getElementById('tlxBack');if(b&&b.classList.contains('on'))tlxClose();}});
 /* ----- 루틴박스 ----- */
 function toggleTlrForm(){var f=document.getElementById('tlrAddForm');if(!f)return;var on=f.style.display!=='none';f.style.display=on?'none':'';if(!on){var t=document.getElementById('tlrTitle');if(t)t.focus();}}
+/* 날짜 종류: 토·일·공휴일 = 'hd'(휴일), 나머지 = 'wd'(평일) */
+function dayKind(ds){
+  if(!ds)return 'wd';
+  if(typeof HOLIDAYS!=='undefined'&&HOLIDAYS[ds])return 'hd';
+  var d=new Date(ds+'T00:00:00'),w=d.getDay();
+  return (w===0||w===6)?'hd':'wd';
+}
+function tlrKindOf(r){return (r&&r.kind==='hd')?'hd':'wd';}
+/* 그 날짜에 해당하는 루틴만 (평일엔 평일 루틴, 휴일엔 휴일 루틴) */
+function tlrFor(ds,activeOnly){
+  var k=dayKind(ds);
+  return (db.tlRoutines||[]).filter(function(r){return tlrKindOf(r)===k&&(!activeOnly||r.active!==false);});
+}
+function tlrKindTgl(id){var r=db.tlRoutines.find(function(x){return x.id===id;});if(!r)return;r.kind=(tlrKindOf(r)==='wd')?'hd':'wd';save();renderTlRoutines();renderTimeline();}
 function addTlRoutine(){
-  var tt=document.getElementById('tlrTitle'),tm=document.getElementById('tlrTime'),du=document.getElementById('tlrDur');
+  var tt=document.getElementById('tlrTitle'),tm=document.getElementById('tlrTime'),du=document.getElementById('tlrDur'),kd=document.getElementById('tlrKind');
   var title=tt.value.trim();if(!title){alert('루틴 이름을 입력하세요.');return;}
   var d=parseInt(du.value,10);
-  db.tlRoutines.push({id:uid(),time:normTime(tm.value),dur:(d>0?d:30),title:title,active:true});
+  db.tlRoutines.push({id:uid(),time:normTime(tm.value),dur:(d>0?d:30),title:title,active:true,kind:(kd&&kd.value==='hd')?'hd':'wd'});
   save();tt.value='';tm.value='';du.value='';
   renderTlRoutines();renderTimeline();
 }
@@ -4042,6 +4072,7 @@ function tlrItemHTML(r,cls,badge){
     +'<span class="tlr-time" contenteditable title="눌러서 시간 수정 (예: 0700)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}" onblur="tlrEditTime('+r.id+',this.innerText)">'+esc(r.time||'-')+'</span>'
     +'<b>'+esc(r.title)+'</b>'
     +(badge||'')
+    +'<span class="tlr-kind'+(tlrKindOf(r)==='hd'?' hd':'')+'" onclick="tlrKindTgl('+r.id+')" title="눌러서 평일↔휴일 바꾸기">'+(tlrKindOf(r)==='hd'?'휴일':'평일')+'</span>'
     +'<span class="tlr-ok'+(ok?' on':'')+'" onclick="tlrToggleOk('+r.id+')" title="선택한 날짜의 성공 여부">성공</span>'
     +'<span class="del" onclick="delTlRoutine('+r.id+')">×</span></div>';
 }
@@ -4061,8 +4092,8 @@ function tlrWindow(list){
   return out;
 }
 function renderTlRoutines(){
-  var list=tlrSorted(db.tlRoutines);
-  var cnt=document.getElementById('tlrCount');if(cnt)cnt.textContent=list.length?list.length+'개':'';
+  var list=tlrSorted(tlrFor(selDate,false));
+  var cnt=document.getElementById('tlrCount');if(cnt)cnt.textContent=list.length?(list.length+'개'+(dayKind(selDate)==='hd'?' · 휴일':'')):'';
   var el=document.getElementById('tlrList');
   if(el){
     if(!list.length)el.innerHTML='<div class="empty">루틴이 없습니다.</div>';
@@ -4080,16 +4111,111 @@ function renderTlRoutines(){
 /* ----- 전체 루틴 페이지 ----- */
 function renderRoutinesPage(){
   var el=document.getElementById('tlrPageList');if(!el)return;
-  var list=tlrSorted(db.tlRoutines);
-  var c=document.getElementById('tlrPageCount');if(c)c.textContent=list.length+'개';
-  el.innerHTML=list.length?list.map(function(r){return tlrItemHTML(r,'','');}).join('')
-    :'<div class="empty">루틴이 없습니다. 아래 «＋ 루틴 추가»로 만들어 보세요.</div>';
-  var st=document.getElementById('tlrStatsPage');if(st)st.innerHTML=tlrStatsHTML();
+  var wd=tlrSorted((db.tlRoutines||[]).filter(function(r){return tlrKindOf(r)==='wd';}));
+  var hd=tlrSorted((db.tlRoutines||[]).filter(function(r){return tlrKindOf(r)==='hd';}));
+  var c=document.getElementById('tlrPageCount');if(c)c.textContent=wd.length+'개';
+  el.innerHTML=wd.length?wd.map(function(r){return tlrItemHTML(r,'','');}).join('')
+    :'<div class="empty">평일 루틴이 없습니다. 아래 «＋ 루틴 추가»로 만들어 보세요.</div>';
+  var el2=document.getElementById('tlrPageListHd'),c2=document.getElementById('tlrPageCountHd');
+  if(c2)c2.textContent=hd.length?hd.length+'개':'';
+  if(el2)el2.innerHTML=hd.length?hd.map(function(r){return tlrItemHTML(r,'','');}).join('')
+    :'<div class="empty">휴일 루틴이 아직 없습니다. 루틴 추가에서 «휴일 루틴»을 고르거나, 평일 루틴 줄의 배지를 눌러 옮길 수 있습니다.</div>';
+  var g=document.getElementById('tlrGraphCard');if(g)g.innerHTML=tlrGraphCard();
+  var st=document.getElementById('tlrStatsPage');
+  if(st)st.innerHTML=(tlrStatsHTML('wd')||'')+(hd.length?tlrStatsHTML('hd'):'')||'<div class="empty">루틴을 추가하면 통계가 나타납니다.</div>';
 }
+/* ================= 평일 루틴 일별 그래프: 이번달 · 전달 · 평균 (그날 성공한 루틴 개수) ================= */
+var tlrGMonKey=null, tlrGN=6;
+function tlrGMon(){return tlrGMonKey||thisMonth();}
+function tlrGShift(d){var m=expMonAdd(tlrGMon(),d);tlrGMonKey=(m===thisMonth())?null:m;renderRoutinesPage();}
+function tlrGSetN(n){tlrGN=n;renderRoutinesPage();}
+/* 한 달치: 날짜별 성공 개수 (평일이 아닌 날은 null) */
+function tlrGMonth(m,kind){
+  var n=expDim(m),out=[],any=false,i;
+  var ids=(db.tlRoutines||[]).filter(function(r){return tlrKindOf(r)===kind;}).map(function(r){return String(r.id);});
+  var allIds=(db.tlRoutines||[]).map(function(r){return String(r.id);});
+  for(i=1;i<=n;i++){var k=m+'-'+String(i).padStart(2,'0');
+    if(dayKind(k)!==kind){out.push(null);continue;}
+    var lg=(db.tlrLog||{})[k]||{},c=0;
+    Object.keys(lg).forEach(function(id){if(!lg[id])return;
+      if(ids.indexOf(id)>=0)c++;
+      else if(allIds.indexOf(id)<0)c++;   /* 지금은 지운 루틴이라도 그날 성공 기록은 센다 */
+    });
+    if(c)any=true;out.push(c);}
+  return {vals:out,any:any,n:n};
+}
+function tlrGraphCard(){
+  var kind='wd',base=tlrGMon(),prev=expMonAdd(base,-1),cur=thisMonth(),isCur=base===cur;
+  var maxN=(db.tlRoutines||[]).filter(function(r){return tlrKindOf(r)===kind&&r.active!==false;}).length;
+  var B=tlrGMonth(base,kind),P=tlrGMonth(prev,kind);
+  var months=[],k;for(k=1;k<=tlrGN;k++){var mm=expMonAdd(base,-k);var c=tlrGMonth(mm,kind);if(c.any)months.push(c);}
+  var avg=[],i;
+  for(i=0;i<31;i++){var sum=0,cnt=0;months.forEach(function(x){var v=x.vals[i];if(v!=null){sum+=v;cnt++;}});
+    avg.push((cnt&&i<B.n&&B.vals[i]!==null)?sum/cnt:null);}   /* 이번달 휴일 자리는 평균선도 끊는다 */
+  var todayD=isCur?(+today().slice(8,10)):B.n;
+  var obs=[].concat(B.vals,P.vals,avg).filter(function(v){return v!=null;});
+  var yMax=Math.max(1,maxN,Math.max.apply(null,obs.concat([0])));
+  var W=1000,H=300,padL=40,padR=24,padT=24,padB=40,IW=W-padL-padR,IH=H-padT-padB,N=31;
+  var X=function(j){return padL+IW*j/(N-1);},Y=function(v){return padT+IH*(1-v/yMax);};
+  var s='',v;
+  var st=yMax<=8?1:yMax<=16?2:Math.ceil(yMax/8);
+  for(v=0;v<=yMax;v+=st){s+='<line x1="'+padL+'" y1="'+Y(v).toFixed(1)+'" x2="'+(W-padR)+'" y2="'+Y(v).toFixed(1)+'" stroke="'+(v===0?'#cfd6d2':'#eef1ef')+'"/>';
+    s+='<text x="'+(padL-8)+'" y="'+(Y(v)+4).toFixed(1)+'" text-anchor="end" font-size="11.5" fill="#8a9490">'+v+'</text>';}
+  /* 휴일 칸은 옅은 띠로 */
+  for(i=0;i<B.n;i++){if(B.vals[i]===null){var x0=i===0?padL:(X(i-1)+X(i))/2,x1=i===N-1?W-padR:(X(i)+X(i+1))/2;
+    s+='<rect x="'+x0.toFixed(1)+'" y="'+padT+'" width="'+(x1-x0).toFixed(1)+'" height="'+IH+'" fill="#f3f1ea"/>';}}
+  [1,5,10,15,20,25,31].forEach(function(dd){var x=X(dd-1);
+    s+='<text x="'+x.toFixed(1)+'" y="'+(H-padB+18)+'" text-anchor="middle" font-size="12" fill="#8a9490">'+dd+'일</text>';});
+  /* 선: null(휴일)에서 끊는다 */
+  function path(arr,upto){var p='',pen=false,j;for(j=0;j<Math.min(arr.length,upto);j++){var a=arr[j];if(a==null){pen=false;continue;}p+=(pen?' L':' M')+X(j).toFixed(1)+' '+Y(a).toFixed(1);pen=true;}return p.trim();}
+  function dots(arr,upto,col,r){var o='',j;for(j=0;j<Math.min(arr.length,upto);j++){if(arr[j]==null)continue;o+='<circle cx="'+X(j).toFixed(1)+'" cy="'+Y(arr[j]).toFixed(1)+'" r="'+r+'" fill="'+col+'"/>';}return o;}
+  if(months.length){s+='<path d="'+path(avg,N)+'" fill="none" stroke="#12312b" stroke-width="2" stroke-dasharray="5 4" opacity=".5"/>';}
+  if(P.any){s+='<path d="'+path(P.vals,P.n)+'" fill="none" stroke="#6a8fd8" stroke-width="2" stroke-linejoin="round" opacity=".9"/>'+dots(P.vals,P.n,'#6a8fd8',2.5);}
+  if(B.any){s+='<path d="'+path(B.vals,todayD)+'" fill="none" stroke="#1c8258" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>'+dots(B.vals,todayD,'#1c8258',3.5);}
+  if(isCur){var tx=X(todayD-1);
+    s+='<line x1="'+tx.toFixed(1)+'" y1="'+padT+'" x2="'+tx.toFixed(1)+'" y2="'+(padT+IH)+'" stroke="#1c8258" stroke-dasharray="3 3" opacity=".45"/>';
+    s+='<text x="'+(tx+4).toFixed(1)+'" y="'+(padT+IH-6)+'" font-size="10.5" fill="#1c8258">오늘</text>';}
+  /* 툴팁 영역 */
+  window.__rgData={B:B,P:P,avg:avg,avgN:months.length,todayD:todayD,isCur:isCur,base:base,X:X,maxN:maxN};
+  s+='<line id="rgHover" x1="0" y1="'+padT+'" x2="0" y2="'+(padT+IH)+'" stroke="#12312b" opacity=".35" style="display:none;pointer-events:none"/>';
+  for(i=0;i<N;i++){var a0=i===0?padL:(X(i-1)+X(i))/2,a1=i===N-1?W-padR:(X(i)+X(i+1))/2;
+    s+='<rect x="'+a0.toFixed(1)+'" y="'+padT+'" width="'+(a1-a0).toFixed(1)+'" height="'+IH+'" fill="transparent" onmousemove="tlrGTip('+i+',event)"/>';}
+  /* 머리글 요약: 이번달 평일 평균 성공 개수 vs 지난달 */
+  function meanOf(arr,upto){var t=0,c=0,j;for(j=0;j<Math.min(arr.length,upto);j++){if(arr[j]!=null){t+=arr[j];c++;}}return c?t/c:null;}
+  var bm=meanOf(B.vals,todayD),pm=meanOf(P.vals,P.n),summ='';
+  if(bm!=null)summ='하루 평균 '+bm.toFixed(1)+'개 / '+maxN+'개'+(pm!=null?' · 전달 '+pm.toFixed(1)+'개':'');
+  var head='<h3><span class="dot" style="background:var(--green)"></span> '+(isCur?'이번달':(+base.slice(5))+'월')+' 평일 루틴 그래프 <span class="more">'+(summ||'평일마다 성공한 루틴 개수')+'</span>'
+    +'<span class="xc-ctl"><span class="tl-datenav"><button type="button" onclick="tlrGShift(-1)" title="지난달">‹</button><span class="more" style="margin-left:0">'+base.replace('-','.')+'</span><button type="button" onclick="tlrGShift(1)" title="다음달">›</button></span>'
+    +'<span class="sep"></span><span style="font-size:11.5px;color:var(--muted)">평균</span>'
+    +[3,6,12].map(function(n){return '<button class="lunar-toggle'+(tlrGN===n?' on':'')+'" onclick="tlrGSetN('+n+')">'+n+'달</button>';}).join('')+'</span></h3>';
+  var legend='<div class="xc-leg"><span style="cursor:default"><i style="background:#1c8258"></i>'+(isCur?'이번달':(+base.slice(5))+'월')+' ('+base.replace('-','.')+')</span>'
+    +'<span style="cursor:default"><i style="background:#6a8fd8"></i>전달 ('+prev.replace('-','.')+')</span>'
+    +'<span style="cursor:default"><i style="background:#12312b;opacity:.6"></i>평균 (지난 '+months.length+'달)</span>'
+    +'<span style="cursor:default;color:var(--muted);margin-left:auto">세로축 최대 = 평일 루틴 '+maxN+'개 · 옅은 띠는 토·일·공휴일</span></div>';
+  var body=(!B.any&&!P.any&&!months.length)?'<div class="empty">아직 평일 루틴 성공 기록이 없습니다. 타임라인이나 루틴 카드에서 «성공»을 누르면 쌓입니다.</div>'
+    :'<div class="xc-wrap"><svg viewBox="0 0 '+W+' '+H+'" onmouseleave="tlrGTipHide()">'+s+'</svg><div class="xc-tip" id="rgTip"></div></div>'+legend;
+  return '<div class="card">'+head+body+'</div>';
+}
+function tlrGTip(i,ev){
+  var tip=document.getElementById('rgTip'),d=window.__rgData;if(!tip||!d)return;
+  var bv=(i<d.todayD)?d.B.vals[i]:null,pv=(i<d.P.n)?d.P.vals[i]:null,av=d.avg[i];
+  var f=function(v){return v==null?'—':(Math.round(v*10)/10)+'개';};
+  var h='<b>'+(i+1)+'일</b>'+(d.B.vals[i]===null?' <span style="color:#b8c8c0">휴일</span>':'');
+  h+='<div class="cat"><i style="background:#1c8258"></i>'+(d.isCur?'이번달':(+d.base.slice(5))+'월')+' <b style="margin-left:auto">'+f(bv)+'</b></div>';
+  h+='<div class="cat"><i style="background:#6a8fd8"></i>전달 <b style="margin-left:auto">'+f(pv)+'</b></div>';
+  h+='<div class="cat"><i style="background:#12312b;border:1px solid #9fb3aa"></i>평균 <b style="margin-left:auto">'+f(av)+'</b></div>';
+  tip.innerHTML=h;tip.style.display='';
+  var wrap=tip.parentElement,rc=wrap.getBoundingClientRect();
+  var x=ev.clientX-rc.left+14,y=ev.clientY-rc.top-10;
+  if(x+tip.offsetWidth>rc.width-4)x=ev.clientX-rc.left-tip.offsetWidth-14;
+  tip.style.left=x+'px';tip.style.top=Math.max(0,y)+'px';
+  var hl=document.getElementById('rgHover');if(hl){hl.setAttribute('x1',d.X(i));hl.setAttribute('x2',d.X(i));hl.style.display='';}
+}
+function tlrGTipHide(){var t=document.getElementById('rgTip');if(t)t.style.display='none';var hl=document.getElementById('rgHover');if(hl)hl.style.display='none';}
 /* 시간이 지나 «지금» 차례가 바뀌면 카드를 다시 그린다 (시간 수정 중이면 건드리지 않음) */
 var __tlrCurSig=null;
 setInterval(function(){
-  var list=tlrSorted(db.tlRoutines);if(!list.length)return;
+  var list=tlrSorted(tlrFor(selDate,false));if(!list.length)return;
   var sig=String(tlrNowIdx(list));
   if(sig===__tlrCurSig)return;
   var ae=document.activeElement;
@@ -4101,8 +4227,10 @@ var TLR_ACC=['#1c8258','#5b78d0','#d9930f','#d94f46','#2f9e8f','#8b5cd6'];   /* 
 var TLR_WKBG=['#DDEBFF','#DDF5E6','#FFF3B8','#EDE4FF','#FFE8D1','#FFE0E6'];  /* 주별 파스텔 */
 var TLR_WKTX=['#2b5a9e','#1f6b4a','#8a6412','#5b3fa8','#8a5420','#b8506b'];
 function tlrStreak(r){
-  var n=0,d=new Date();
-  while(true){var k=dstr2(d);if(db.tlrLog[k]&&db.tlrLog[k][r.id]){n++;d.setDate(d.getDate()-1);}else break;}
+  var n=0,d=new Date(),kind=tlrKindOf(r),guard=0;
+  while(guard++<800){var k=dstr2(d);
+    if(dayKind(k)!==kind){d.setDate(d.getDate()-1);continue;}   /* 해당 없는 날은 건너뛴다 */
+    if(db.tlrLog[k]&&db.tlrLog[k][r.id]){n++;d.setDate(d.getDate()-1);}else break;}
   return n;
 }
 function tlrRing(pct,color,label,sub){
@@ -4118,23 +4246,29 @@ function tlrGridToggle(id,k){
   if(db.tlrLog[k][id])delete db.tlrLog[k][id];else db.tlrLog[k][id]=true;
   save();renderTlRoutines();renderTimeline();
 }
-function tlrStatsHTML(){
-  var list=tlrSorted((db.tlRoutines||[]).filter(function(r){return r.active!==false;}));
+function tlrStatsHTML(kind){
+  kind=kind||'wd';
+  var list=tlrSorted((db.tlRoutines||[]).filter(function(r){return r.active!==false&&tlrKindOf(r)===kind;}));
   if(!list.length)return '';
   var t=new Date(),y=t.getFullYear(),m=t.getMonth(),dim=new Date(y,m+1,0).getDate(),td=t.getDate();
   function key(d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
   function ok(r,d){var k=key(d);return !!(db.tlrLog[k]&&db.tlrLog[k][r.id]);}
-  /* 요약 링: 오늘 · 이번 주 · 이번 달 */
-  var dowM=(t.getDay()+6)%7,wDays=dowM+1;
+  function app(d){return dayKind(key(d))===kind;}   /* 이 종류의 루틴이 해당되는 날인가 */
+  /* 요약 링: 오늘 · 이번 주 · 이번 달 — 해당되는 날만 센다 */
+  var dowM=(t.getDay()+6)%7,wDays=0,mDays=0,d0;
+  for(d0=td-dowM;d0<=td;d0++)if(d0>=1&&app(d0))wDays++;
+  for(d0=1;d0<=td;d0++)if(app(d0))mDays++;
+  var todayApp=app(td);
   var todayOk=list.filter(function(r){return ok(r,td);}).length;
   var wOk=0,mOk=0;
   list.forEach(function(r){
-    for(var d=td-dowM;d<=td;d++)if(d>=1&&ok(r,d))wOk++;
-    for(var d2=1;d2<=td;d2++)if(ok(r,d2))mOk++;
+    for(var d=td-dowM;d<=td;d++)if(d>=1&&app(d)&&ok(r,d))wOk++;
+    for(var d2=1;d2<=td;d2++)if(app(d2)&&ok(r,d2))mOk++;
   });
-  var rings=tlrRing(list.length?todayOk/list.length:0,'#d9930f','오늘',todayOk+'/'+list.length)
+  var rings=(todayApp?tlrRing(list.length?todayOk/list.length:0,'#d9930f','오늘',todayOk+'/'+list.length)
+      :tlrRing(0,'#d9930f','오늘','오늘은 '+(kind==='wd'?'휴일':'평일')))
     +tlrRing(list.length*wDays?wOk/(list.length*wDays):0,'#1c8258','이번 주',wOk+'/'+(list.length*wDays))
-    +tlrRing(list.length*td?mOk/(list.length*td):0,'#5b78d0','이번 달',mOk+'/'+(list.length*td));
+    +tlrRing(list.length*mDays?mOk/(list.length*mDays):0,'#5b78d0','이번 달',mOk+'/'+(list.length*mDays));
   /* 월간 체크 그리드 */
   var firstDow=new Date(y,m,1).getDay();
   var head='<tr><th class="rn">루틴</th>';
@@ -4146,22 +4280,23 @@ function tlrStatsHTML(){
     for(var d4=1;d4<=dim;d4++){
       var wi=Math.floor((firstDow+d4-1)/7)%TLR_WKBG.length;
       var o=ok(r,d4);
+      if(!app(d4)){cells+='<td'+(d4===td?' class="tdy"':'')+'><span class="tg na" title="'+(kind==='wd'?'휴일':'평일')+' · 해당 없음">·</span></td>';continue;}
       cells+='<td'+(d4===td?' class="tdy"':'')+'><span class="tg'+(o?' on':'')+'"'
         +(o?' style="background:'+TLR_WKBG[wi]+';color:'+TLR_WKTX[wi]+';border-color:transparent"':'')
         +' onclick="tlrGridToggle('+r.id+',\''+key(d4)+'\')" title="'+escA(r.title+' · '+(m+1)+'/'+d4+(o?' 성공':''))+'">'+(o?'✓':'')+'</span></td>';
     }
-    var cnt=0;for(var d5=1;d5<=dim;d5++)if(ok(r,d5))cnt++;
-    var pct=td?Math.round(cnt/td*100):0;
+    var cnt=0;for(var d5=1;d5<=dim;d5++)if(app(d5)&&ok(r,d5))cnt++;
+    var pct=mDays?Math.round(cnt/mDays*100):0;
     var col=TLR_ACC[ri%TLR_ACC.length];
     return '<tr><td class="rn" title="'+escA(r.title)+'">'+(r.time?'<span class="tm">'+esc(r.time)+'</span>':'')+esc(r.title)+'</td>'
       +cells
-      +'<td class="pr"><div class="prw"><span>'+cnt+'/'+td+'일</span><div class="pbar"><i style="width:'+Math.min(100,pct)+'%;background:'+col+'"></i></div><b>'+pct+'%</b></div></td>'
+      +'<td class="pr"><div class="prw"><span>'+cnt+'/'+mDays+'일</span><div class="pbar"><i style="width:'+Math.min(100,pct)+'%;background:'+col+'"></i></div><b>'+pct+'%</b></div></td>'
       +'<td class="st"><b>'+tlrStreak(r)+'</b></td></tr>';
   }).join('');
-  return '<div class="tlr-stats"><div class="tlr-stats-t">루틴 통계 · '+y+'년 '+(m+1)+'월</div>'
+  return '<div class="tlr-stats"><div class="tlr-stats-t">'+(kind==='wd'?'평일':'휴일')+' 루틴 통계 · '+y+'년 '+(m+1)+'월</div>'
     +'<div class="tlr-rings">'+rings+'</div>'
     +'<div class="tblx"><table class="tlr-grid"><thead>'+head+'</thead><tbody>'+rows+'</tbody></table></div>'
-    +'<div class="tlr-hint">날짜 칸을 누르면 그 날의 성공을 표시하거나 해제할 수 있습니다. · 달성률은 오늘까지 경과일 기준</div></div>';
+    +'<div class="tlr-hint">날짜 칸을 누르면 그 날의 성공을 표시하거나 해제할 수 있습니다. · 달성률은 오늘까지의 '+(kind==='wd'?'평일':'휴일')+' 수 기준</div></div>';
 }
 setInterval(function(){var c=document.getElementById('timelineCard');if(c&&c.style.display!=='none'&&!tlDrag)renderTimeline();},60000);   /* 현재 시간선 이동 */
 function toggleSchedForm(){var f=document.getElementById('schedAddForm');if(!f)return;var on=f.style.display!=='none';f.style.display=on?'none':'';if(!on){var t=document.getElementById('schTitle');if(t)t.focus();}}
@@ -4808,6 +4943,7 @@ function gcalPushAll(futureOnly){
   var rtEvents=[];
   rts.forEach(function(r){
     [tk,tm].forEach(function(d){
+      if(tlrKindOf(r)!==dayKind(d))return;   /* 평일 루틴은 평일에만, 휴일 루틴은 휴일에만 */
       rtEvents.push({uid:'hmd-rtd-'+r.id+'-'+d,date:d,
         time:(/^\d{2}:\d{2}$/.test(r.time||'')?r.time:''),
         dur:(r.dur>0?r.dur:30),title:'[루틴] '+r.title,detail:''});
@@ -10964,6 +11100,7 @@ function spotMapInit(){
     spotIw=new naver.maps.InfoWindow({content:'',borderWidth:0,backgroundColor:'transparent',disableAnchor:true,
       anchorSize:new naver.maps.Size(0,0),pixelOffset:new naver.maps.Point(0,-14)});
     naver.maps.Event.addListener(spotMap,'click',function(e){spotIw.close();spotFormOpen(null,e.coord.lat(),e.coord.lng());});
+    naver.maps.Event.addListener(spotMap,'zoom_changed',function(){setTimeout(spotDraw,30);});   /* 배율이 바뀌면 묶음을 다시 계산 (이동만으로는 안 바뀐다) */
     spotEngineNow='naver';
     return;
   }
@@ -10973,6 +11110,7 @@ function spotMapInit(){
     {maxZoom:19,attribution:'© OpenStreetMap'}).addTo(spotMap);
   spotLayer=L.layerGroup().addTo(spotMap);
   spotMap.on('click',function(e){spotFormOpen(null,e.latlng.lat,e.latlng.lng);});
+  spotMap.on('zoomend',function(){spotDraw();});   /* 배율이 바뀌면 묶음을 다시 계산 (이동만으로는 안 바뀐다 → 말풍선도 안 닫힌다) */
   spotEngineNow='osm';
   setTimeout(function(){spotResize();},120);
 }
@@ -11000,11 +11138,57 @@ function spotDrawClear(){
   if(spotIsNaver()){(spotLayer||[]).forEach(function(m){m.setMap(null);});spotLayer=[];}
   else if(spotLayer&&window.L)spotLayer.clearLayers();
 }
+/* 화면 픽셀 좌표 (엔진 공용) */
+function spotPx(lat,lng){
+  try{
+    if(spotIsNaver()){var o=spotMap.getProjection().fromCoordToOffset(new naver.maps.LatLng(lat,lng));return {x:o.x,y:o.y};}
+    var p=spotMap.latLngToContainerPoint([lat,lng]);return {x:p.x,y:p.y};
+  }catch(e){return null;}
+}
+/* 가까운 핀끼리 묶는다 (화면에서 SPOT_CL_R px 안) — 묶음은 {spots:[…], lat, lng} */
+var SPOT_CL_R=30;
+function spotClusters(list){
+  var pts=list.map(function(s){var p=spotPx(s.lat,s.lng);return p?{s:s,x:p.x,y:p.y}:null;}).filter(Boolean);
+  var groups=[],i,j;
+  for(i=0;i<pts.length;i++){
+    var placed=false;
+    for(j=0;j<groups.length;j++){var g=groups[j];
+      if(Math.hypot(g.x-pts[i].x,g.y-pts[i].y)<=SPOT_CL_R){g.spots.push(pts[i].s);
+        g.x=(g.x*(g.spots.length-1)+pts[i].x)/g.spots.length;g.y=(g.y*(g.spots.length-1)+pts[i].y)/g.spots.length;placed=true;break;}}
+    if(!placed)groups.push({spots:[pts[i].s],x:pts[i].x,y:pts[i].y});
+  }
+  groups.forEach(function(g){g.lat=g.spots.reduce(function(a,s){return a+s.lat;},0)/g.spots.length;g.lng=g.spots.reduce(function(a,s){return a+s.lng;},0)/g.spots.length;});
+  return groups;
+}
+function spotClHTML(g){
+  var vis=g.spots.filter(function(s){return s.visited;}).length;
+  var cls='spot-cl'+(vis===g.spots.length?' v':(vis===0?' w':''));
+  return '<div class="'+cls+'" title="'+escA(g.spots.map(function(s){return s.name;}).join(' · '))+'">'+g.spots.length+'</div>';
+}
+/* 묶음을 누르면 그 자리로 확대 (풀릴 때까지 두 단계씩) */
+function spotClOpen(lat,lng){
+  if(!spotMap)return;
+  var z=spotIsNaver()?spotMap.getZoom():spotMap.getZoom();
+  spotSetView(lat,lng,Math.min(z+2,spotIsNaver()?19:18));
+}
 function spotDraw(){
   if(!spotMap||!spotLayer)return;
   spotDrawClear();
-  spotFiltered().forEach(function(s){
-    if(typeof s.lat!=='number'||typeof s.lng!=='number')return;
+  var list=spotFiltered().filter(function(s){return typeof s.lat==='number'&&typeof s.lng==='number';});
+  var groups=spotClusters(list);
+  groups.forEach(function(g){
+    if(g.spots.length>1){
+      if(spotIsNaver()){
+        var cm=spotNvMarker(g.lat,g.lng,spotClHTML(g),34);
+        naver.maps.Event.addListener(cm,'click',function(){spotClOpen(g.lat,g.lng);});
+        spotLayer.push(cm);
+      }else{
+        L.marker([g.lat,g.lng],{icon:L.divIcon({html:spotClHTML(g),className:'spot-cl-icon',iconSize:[34,34],iconAnchor:[17,17]})})
+          .on('click',function(){spotClOpen(g.lat,g.lng);}).addTo(spotLayer);
+      }
+      return;
+    }
+    var s=g.spots[0];
     var col=spotColor(s.cat);
     if(spotIsNaver()){
       var mk=spotNvMarker(s.lat,s.lng,spotPinHTML(col,s.visited,false),18);
