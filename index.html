@@ -645,9 +645,16 @@
   .bkv-x:hover{color:var(--dark)}
   .bkv-headrow{display:flex;align-items:center;padding:16px 22px 0}
   @media(max-width:760px){.bkv-top{flex-direction:column}.bkv-cover img{width:44vw}}
-  .fw-back{display:none;position:fixed;inset:0;z-index:120;background:rgba(18,49,43,.38);align-items:center;justify-content:center;padding:24px}
-  .fw-back.on{display:flex}
-  .fw{background:var(--card);border-radius:20px;box-shadow:0 26px 60px rgba(18,49,43,.24);width:min(760px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;animation:fwIn .16s ease-out}
+  /* 글편집기 팝업: 배경은 서서히 어두워지고, 창은 아래에서 쑤욱 올라온다 (닫힐 땐 반대로) */
+  .fw-back{display:flex;position:fixed;inset:0;z-index:120;background:rgba(18,49,43,.38);align-items:center;justify-content:center;padding:24px;
+    opacity:0;visibility:hidden;pointer-events:none;transition:opacity .34s ease,visibility 0s linear .34s}
+  .fw-back.on{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .34s ease,visibility 0s}
+  .fw{background:var(--card);border-radius:20px;box-shadow:0 26px 60px rgba(18,49,43,.24);width:min(760px,100%);max-height:88vh;display:flex;flex-direction:column;overflow:hidden;
+    opacity:0;transform:translateY(44px) scale(.975);
+    transition:transform .5s cubic-bezier(.22,1,.36,1),opacity .34s ease}
+  .fw-back.on .fw{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){.fw-back,.fw{transition-duration:0s}}
+  @keyframes fwIn{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:none}}
   .fw.fw-sm{width:min(540px,96vw)}
   .fw.fw-sm .fw-rich{min-height:22vh}
   .fw.fw-sm .fw-main{min-height:20vh}
@@ -656,7 +663,6 @@
   #fwMindWrap{padding:0 22px 8px;flex:none}
   #fwMindWrap .fwm-tools{display:flex;align-items:center;gap:8px;margin:4px 0 6px;flex-wrap:wrap}
   #fwMindCanvas{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fbfbf8;min-height:200px;max-height:32vh}
-  @keyframes fwIn{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:none}}
   .fw-head{display:flex;align-items:center;gap:9px;padding:18px 22px 12px;font-size:15px;font-weight:800;color:var(--dark);cursor:move;touch-action:none}
   .fw-head .dot{width:8px;height:8px;border-radius:50%;flex:none}
   .fw-x{margin-left:auto;cursor:pointer;color:#c3cbc7;font-size:20px;line-height:1}
@@ -1330,6 +1336,10 @@
   .ch-units button{border:none;background:transparent;padding:5px 11px;border-radius:8px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer}
   .ch-units button.on{background:var(--dark);color:#fff}
   .ch-filter{display:flex;gap:5px;flex-wrap:wrap;margin-left:auto}
+  .ch-units .ch-usep{width:1px;align-self:stretch;margin:3px 4px;background:#d6dbd7}
+  .ch-jump{display:flex;gap:4px;align-items:center}
+  .ch-jump .in{width:200px;padding:5px 10px;font-size:12px}
+  .ch-jump .btn{flex:none;padding:5px 11px;font-size:12px}
   #chWrap{position:relative;height:540px;border:1px solid var(--line);border-radius:12px;background:#fbfbf8;overflow:hidden;cursor:grab}
   #chWrap.drag{cursor:grabbing}
   #chSvg{display:block;width:100%;height:100%}
@@ -2294,10 +2304,10 @@
     <div class="card">
       <h3><span class="dot" style="background:var(--yellow)"></span> 사건 기록 <span class="more" id="chCount"></span></h3>
       <div class="inrow" style="flex-wrap:wrap">
-        <input id="chY" class="in" type="number" style="flex:none;width:120px" placeholder="년 (기원전 -)">
+        <input id="chY" class="in" type="text" inputmode="text" style="flex:none;width:120px" placeholder="년 (기원전 -)" title="숫자 그대로(-384) · 만·억 표기(-46억, -1만2000) · 오늘 기준(1만년 전) 모두 됩니다">
         <select id="chM" class="in" style="flex:none;width:76px"></select>
         <select id="chD" class="in" style="flex:none;width:76px"></select>
-        <button class="btn ghost" id="chNoDateBtn" type="button" style="flex:none;padding:7px 12px;font-size:12px" onclick="chNoDateTgl()" title="날짜를 모르는 사건은 그래프 아래에 따로 모입니다">날짜 없음</button>
+        <button class="btn ghost" id="chNoDateBtn" type="button" style="flex:none;padding:7px 12px;font-size:12px" onclick="chNoDateTgl()" title="연도만 알고 월·일을 모를 때 — 그 해 위에 속이 빈 점으로 표시됩니다">날짜 없음</button>
         <input id="chTitle" class="in" style="flex:1;min-width:200px" placeholder="사건명">
       </div>
       <textarea id="chDetail" class="in" style="width:100%;min-height:64px;margin-top:8px;resize:vertical" placeholder="세부 내용"></textarea>
@@ -2313,6 +2323,7 @@
       <div class="ch-bar">
         <div class="ch-units" id="chUnits"></div>
         <button class="btn ghost" style="flex:none;padding:5px 12px;font-size:12px" onclick="chToday()">오늘</button>
+        <div class="ch-jump"><input id="chJumpIn" class="in" type="text" placeholder="연도로 이동 (예: -384, 46억년 전)" title="Enter 로 이동 · 숫자 그대로, 만·억 표기, 기원전(-), «N년 전» 모두 됩니다" onkeydown="if(event.key==='Enter'){chJump();}"><button class="btn ghost" type="button" onclick="chJump()">이동</button></div>
         <div class="ch-filter" id="chFilter"></div>
       </div>
       <div id="chWrap"><svg id="chSvg"></svg><div class="ch-tip" id="chTip"></div></div>
@@ -2808,7 +2819,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-27 · r79';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-31 · r83';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -5497,23 +5508,85 @@ var CH_COLOR={'나':'#a35f5a','인물':'#8a7340','역사':'#6f7a41','철학':'#5
 var CH_AXIS={'나':'ME','인물':'FIG','역사':'HIS','철학':'PHIL',
   '과학':'SCI','문학':'LIT','음악':'MUSIC','예술':'ART'};
 function chAxisNo(c){var i=CH_CATS.indexOf(c);return i<0?'':String(i+1).padStart(2,'0');}
-var CH_UNITS=['일','주','월','연','10년','100년'];
-var CH_SPAN={'일':14/365,'주':77/365,'월':0.5,'연':1.5,'10년':15,'100년':150};   /* 화면에 보이는 기간(년) */
+var CH_UNITS=['일','주','월','연','10년','100년','1000년','1만년','100만년','1억년','46억년'];
+var CH_UNIT_SEP=8;   /* 이 앞에서 버튼 묶음이 갈린다: 인류사 | 지질·우주사 */
+var CH_SPAN={'일':14/365,'주':77/365,'월':0.5,'연':1.5,'10년':15,'100년':150,'1000년':1500,'1만년':15000,
+  '100만년':1.5e6,'1억년':1.5e8,'46억년':4.9e9};   /* 화면에 보이는 기간(년) */
+var CH_EARTH=-4.6e9;   /* 지구 탄생 */
+/* 지질 시대 띠 (국제층서위원회 2023 기준, 단위: 년 전) — 화면 폭에 따라 누대 → 대 → 기 순으로 잘게 */
+var CH_GEO=[
+  /* 누대 */
+  {lv:1,n:'명왕누대',a:4600e6,b:4000e6,c:'#b46a5a'},{lv:1,n:'시생누대',a:4000e6,b:2500e6,c:'#c98a78'},
+  {lv:1,n:'원생누대',a:2500e6,b:538.8e6,c:'#d29a8a'},{lv:1,n:'현생누대',a:538.8e6,b:0,c:'#6fa889'},
+  /* 대 (현생누대 안) */
+  {lv:2,n:'고생대',a:538.8e6,b:251.9e6,c:'#7fa39a'},{lv:2,n:'중생대',a:251.9e6,b:66.0e6,c:'#5f9ec7'},{lv:2,n:'신생대',a:66.0e6,b:0,c:'#d9b74a'},
+  /* 기 */
+  {lv:3,n:'캄브리아기',a:538.8e6,b:485.4e6,c:'#7fa39a'},{lv:3,n:'오르도비스기',a:485.4e6,b:443.8e6,c:'#4fa3a8'},
+  {lv:3,n:'실루리아기',a:443.8e6,b:419.2e6,c:'#a9d0c3'},{lv:3,n:'데본기',a:419.2e6,b:358.9e6,c:'#c9a26e'},
+  {lv:3,n:'석탄기',a:358.9e6,b:298.9e6,c:'#6ea0b8'},{lv:3,n:'페름기',a:298.9e6,b:251.9e6,c:'#e07a5f'},
+  {lv:3,n:'트라이아스기',a:251.9e6,b:201.4e6,c:'#8b6fb3'},{lv:3,n:'쥐라기',a:201.4e6,b:145.0e6,c:'#4fa5d8'},
+  {lv:3,n:'백악기',a:145.0e6,b:66.0e6,c:'#8fc86f'},{lv:3,n:'팔레오기',a:66.0e6,b:23.03e6,c:'#e8a45a'},
+  {lv:3,n:'네오기',a:23.03e6,b:2.58e6,c:'#e6c84a'},{lv:3,n:'제4기',a:2.58e6,b:0,c:'#f0e27a'}
+];
+/* «년 전» 표기 (1만 년보다 옛날): 오늘 기준으로 세고, 10만 이상은 유효숫자 3자리로 둥글린다 */
+function chAgoStr(y,prec){
+  var n=new Date().getFullYear()-y;
+  if(prec){n=Math.round(n/prec)*prec;}   /* 축 눈금: 눈금 간격 단위로 둥글림 */
+  else if(n>=1e5){var p=Math.pow(10,Math.floor(Math.log10(n))-2);n=Math.round(n/p)*p;}
+  return chBigNum(n)+'년 전';
+}
+function chDeep(y){return y<-10000;}
+var CH_MAX_SPAN=2e10;   /* 휠로 축소할 수 있는 최대 폭(년) — 지구 탄생(46억 년 전)까지 한 화면에 */
+/* 큰 수를 만·억 단위로: 12000 → «1만2000», 4600000000 → «46억» (1만 미만은 그대로) */
+function chBigNum(n){
+  n=Math.round(n);var neg=n<0;n=Math.abs(n);
+  if(n<10000)return (neg?'-':'')+String(n);
+  /* 1억 이상이면서 소수 둘째 자리까지로 떨어지면 «2.9억»처럼 짧게 (축 라벨이 겹치지 않게) */
+  if(n>=1e8&&Math.abs(n/1e4-Math.round(n/1e4))<1e-9)return (neg?'-':'')+(Math.round(n/1e4)/1e4)+'억';
+  var eok=Math.floor(n/1e8),man=Math.floor((n%1e8)/1e4),rest=n%1e4,s='';
+  if(eok)s+=eok+'억';
+  if(man)s+=man+'만';
+  if(rest)s+=rest;
+  return (neg?'-':'')+s;
+}
+/* 연도 칸 입력 해석: 숫자 그대로, «46억»·«4600만»·«-1만2000» 같은 만·억 표기, «N년 전»(오늘 기준) 모두 허용 */
+function chParseYear(str){
+  var t=String(str||'').replace(/[\s,년]/g,'');
+  if(!t)return NaN;
+  var ago=/전$/.test(t);if(ago)t=t.replace(/전$/,'');
+  var bc=/^(bc|기원전|-)/i.test(t);t=t.replace(/^(bc|기원전|-)/i,'');
+  var n=0,m;
+  if(/^\d+(\.\d+)?$/.test(t))n=parseFloat(t);
+  else{
+    m=t.match(/^(?:(\d+(?:\.\d+)?)억)?(?:(\d+(?:\.\d+)?)만)?(\d+)?$/);
+    if(!m)return NaN;
+    n=(parseFloat(m[1]||0))*1e8+(parseFloat(m[2]||0))*1e4+parseFloat(m[3]||0);
+  }
+  n=Math.round(n);
+  if(ago)return new Date().getFullYear()-n;
+  return bc?-n:n;
+}
 var chState={unit:'연',c:null,ppy:null}, chEditId=null, chSelCats=[], chFilter=[], chPopId=null;
 var chNoDate=false, chLinkFrom=null;   /* chLinkFrom = 선 잇기 시작 사건 id */
 function chNoDateTgl(){chNoDate=!chNoDate;chNoDatePaint();}
 function chNoDatePaint(){
   var b=document.getElementById('chNoDateBtn');
   if(b){b.classList.toggle('y',chNoDate);b.classList.toggle('ghost',!chNoDate);}
-  ['chY','chM','chD'].forEach(function(i){var el=document.getElementById(i);
+  /* «날짜 없음» = 연도는 알고 월·일만 모름 → 연도 칸은 그대로, 월·일만 잠근다 */
+  ['chM','chD'].forEach(function(i){var el=document.getElementById(i);
     if(el){el.disabled=chNoDate;el.style.opacity=chNoDate?'.4':'';}});
 }
+/* 사건의 시간 좌표: 월·일을 모르면(m=0) 그 해 한가운데(7월 1일)에 찍는다 */
+function chTof(e){return e.m?chT(e.y,e.m,e.d):chT(e.y,7,1);}
+function chYearOnly(e){return e&&e.y!=null&&!e.m;}
 function chDim(y,m){if(m===2)return ((y%4===0&&y%100!==0)||y%400===0)?29:28;return [31,28,31,30,31,30,31,31,30,31,30,31][m-1];}
 function chDiy(y){var t=0,i;for(i=1;i<=12;i++)t+=chDim(y,i);return t;}
 function chT(y,m,d){var doy=0,i;for(i=1;i<m;i++)doy+=chDim(y,i);doy+=(d-1);return y+doy/chDiy(y);}
 function chFromT(t){var y=Math.floor(t),doy=Math.floor((t-y)*chDiy(y)+1e-6),m=1;
   while(m<12&&doy>=chDim(y,m)){doy-=chDim(y,m);m++;}return {y:y,m:m,d:doy+1};}
-function chDateStr(y,m,d){return (y<0?('기원전 '+(-y)+'년'):(y+'년'))+' '+m+'월 '+d+'일';}
+function chDateStr(y,m,d){
+  if(chDeep(y))return '약 '+chAgoStr(y);   /* 지질 시대: 월·일은 의미가 없다 */
+  var ys=(y<0?('기원전 '+chBigNum(-y)+'년'):(chBigNum(y)+'년'));return m?(ys+' '+m+'월 '+d+'일'):(ys+' · 월일 미상');}
 function chNowT(){var n=new Date();return chT(n.getFullYear(),n.getMonth()+1,n.getDate());}
 function chFormInit(){
   var M=document.getElementById('chM'),D=document.getElementById('chD');
@@ -5530,16 +5603,16 @@ function chCatPickRender(){
 function chCatTgl(c){var i=chSelCats.indexOf(c);if(i>=0)chSelCats.splice(i,1);else chSelCats.push(c);chCatPickRender();}
 function chAdd(){
   if(!db.chrono)db.chrono=[];if(!db.chronoLinks)db.chronoLinks=[];
-  var y=parseInt(document.getElementById('chY').value,10),
+  var y=chParseYear(document.getElementById('chY').value),
       m=parseInt(document.getElementById('chM').value,10)||1,
       d=parseInt(document.getElementById('chD').value,10)||1,
       title=document.getElementById('chTitle').value.trim(),
       detail=document.getElementById('chDetail').value.trim();
-  if(chNoDate){y=null;m=0;d=0;}
-  else if(isNaN(y)){alert('년도를 입력하세요. (기원전은 음수로: -384) · 모르면 «날짜 없음»');return;}
+  if(isNaN(y)){alert(chNoDate?'연도는 입력해야 합니다. (기원전은 음수로: -384)\n«날짜 없음»은 월·일만 모를 때 씁니다.':'년도를 입력하세요. (기원전은 음수로: -384) · 월·일을 모르면 «날짜 없음»');return;}
+  if(chNoDate){m=0;d=0;}
   if(!title){alert('사건명을 입력하세요.');return;}
   if(!chSelCats.length){alert('카테고리를 하나 이상 선택하세요.');return;}
-  if(y!=null&&d>chDim(y,m))d=chDim(y,m);
+  if(m&&d>chDim(y,m))d=chDim(y,m);
   if(chEditId!=null){
     var x=(db.chrono||[]).find(function(v){return v.id===chEditId;});
     if(x){x.y=y;x.m=m;x.d=d;x.title=title;x.detail=detail;x.cats=chSelCats.slice();}
@@ -5548,7 +5621,7 @@ function chAdd(){
   }
   save();
   chCancelEdit();
-  if(y!=null)chState.c=chT(y,m,d);   /* 방금 넣은 사건이 화면에 보이게 이동 */
+  chState.c=chTof({y:y,m:m,d:d});   /* 방금 넣은 사건이 화면에 보이게 이동 */
   renderChrono();
 }
 function chCancelEdit(){
@@ -5563,8 +5636,8 @@ function chCancelEdit(){
 function chEdit(id){
   var x=(db.chrono||[]).find(function(v){return String(v.id)===String(id);});if(!x)return;
   chEditId=x.id;chSelCats=(x.cats||[]).slice();
-  chNoDate=(x.y==null);chNoDatePaint();
-  document.getElementById('chY').value=(x.y==null?'':x.y);
+  chNoDate=(x.y==null||!x.m);chNoDatePaint();
+  document.getElementById('chY').value=(x.y==null?'':chBigNum(x.y));
   document.getElementById('chM').value=x.m||1;document.getElementById('chD').value=x.d||1;
   document.getElementById('chTitle').value=x.title;document.getElementById('chDetail').value=x.detail||'';
   document.getElementById('chAddBtn').textContent='저장';
@@ -5576,13 +5649,33 @@ function chEdit(id){
 }
 function chBarRender(){
   var u=document.getElementById('chUnits');
-  if(u)u.innerHTML=CH_UNITS.map(function(k){return '<button class="'+(chState.unit===k?'on':'')+'" onclick="chSetUnit(\''+k+'\')">'+k+'</button>';}).join('');
+  if(u)u.innerHTML=CH_UNITS.map(function(k,i){return (i===CH_UNIT_SEP?'<span class="ch-usep"></span>':'')+'<button class="'+(chState.unit===k?'on':'')+'" onclick="chSetUnit(\''+k+'\')">'+k+'</button>';}).join('');
   var f=document.getElementById('chFilter');
   if(f)f.innerHTML='<span class="ch-chip'+(!chFilter.length?' on':'')+'"'+(!chFilter.length?' style="background:var(--dark)"':'')+' onclick="chFilterAll()">전체</span>'
     +CH_CATS.map(function(c){var on=chFilter.indexOf(c)>=0;
       return '<span class="ch-chip'+(on?' on':'')+'"'+(on?' style="background:'+CH_COLOR[c]+'"':'')+' onclick="chFilterTgl(\''+c+'\')">'+c+'</span>';}).join('');
 }
-function chSetUnit(u){chState.unit=u;chState.ppy=null;chTipHide();renderChrono();}
+function chSetUnit(u){chState.unit=u;chState.ppy=null;chTipHide();
+  if(u==='46억년')chState.c=CH_EARTH/2+0.5e8;      /* 지구 탄생 ~ 오늘이 한 화면에 */
+  else if(u==='1억년'&&chState.c>-1e8)chState.c=-0.5e8;   /* 인류사 부근에서 누르면 지질 시대 쪽으로 */
+  else if(u==='100만년'&&chState.c>-1e6)chState.c=-0.5e6;
+  renderChrono();}
+function chSpanNow(){var w=document.getElementById('chWrap');var innerW=(w&&w.clientWidth||1000)-126;
+  return chState.ppy?innerW/chState.ppy:CH_SPAN[chState.unit];}
+/* 연도 검색 → 그 해로 화면 이동 (배율은 그대로, 너무 멀면 알맞은 단위로) */
+function chJump(){
+  var el=document.getElementById('chJumpIn');if(!el)return;
+  var y=chParseYear(el.value);
+  if(isNaN(y)){hkChip('연도를 못 읽었습니다 · 예: 1999, -384, 46억년 전');return;}
+  chState.c=chT(y,7,1);
+  var sp=chSpanNow();
+  if(chDeep(y)&&y<-1e8&&sp<1e7){chState.unit='1억년';chState.ppy=null;}
+  else if(chDeep(y)&&sp<1e5){chState.unit='100만년';chState.ppy=null;}
+  else if(!chDeep(y)&&sp>=1e5){chState.unit='연';chState.ppy=null;}
+  chTipHide();renderChrono();
+  hkChip((chDeep(y)?chAgoStr(y):(y<0?'기원전 '+chBigNum(-y)+'년':chBigNum(y)+'년'))+'으로 이동');
+  el.select();
+}
 function chFilterAll(){chFilter=[];renderChrono();}
 function chFilterTgl(c){var i=chFilter.indexOf(c);if(i>=0)chFilter.splice(i,1);else chFilter.push(c);renderChrono();}
 function chToday(){chState.c=chNowT();renderChrono();}
@@ -5619,16 +5712,40 @@ function renderChrono(){
     s+='<line x1="'+x.toFixed(1)+'" y1="'+GT+'" x2="'+x.toFixed(1)+'" y2="'+(GT+innerH)+'" stroke="'+(strong?'#ddd9cf':'#f2f0e9')+'"/>';
     if(label)s+='<text x="'+x.toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10.5" font-weight="700" fill="#8a9490">'+label+'</text>';
   }
-  function yearLb(y){return y<0?('BC '+(-y)):String(y);}
-  var mode=ppy>=12000?'day':ppy>=576?'month':ppy>=48?'year':ppy>=4.8?'decade':'century';
+  function yearLb(y,st){return chDeep(y)?chAgoStr(y,st||0):y<0?('BC '+chBigNum(-y)):chBigNum(y);}
+  /* 지질 시대 띠: 화면 폭이 10만 년 이상일 때만, 폭에 따라 누대→대→기 */
+  var spanY=t1-t0, geoLab='';
+  if(spanY>=1e5){
+    var lv=spanY>=1.5e9?1:spanY>=2.5e8?2:3, now=new Date().getFullYear();
+    var bands=CH_GEO.filter(function(g){return g.lv===lv||(lv>1&&g.lv===1&&g.b>=538.8e6);});
+    bands.forEach(function(g){
+      var ta=now-g.a,tb=now-g.b;
+      var xa=Math.max(GL,GL+(ta-t0)*ppy),xb=Math.min(W,GL+(tb-t0)*ppy);
+      if(xb<=GL||xa>=W)return;
+      s+='<rect x="'+xa.toFixed(1)+'" y="'+GT+'" width="'+(xb-xa).toFixed(1)+'" height="'+innerH.toFixed(1)+'" fill="'+g.c+'" opacity=".13"/>';
+      if(xb-xa>g.n.length*11+10)   /* 이름표는 눈금선 위에 얹히도록 나중에 그린다 */
+        geoLab+='<text x="'+(xa+6).toFixed(1)+'" y="'+(GT+13)+'" font-size="10" font-weight="700" fill="'+g.c+'" letter-spacing=".5" paint-order="stroke" stroke="#fff" stroke-width="3" style="pointer-events:none">'+g.n+'</text>';
+    });
+  }
+  var yoSolid=spanY>=1e5;   /* 이 폭에서는 월·일 미상 표시가 무의미 → 채운 점으로 */
+  var mode=ppy>=12000?'day':ppy>=576?'month':ppy>=48?'year':'big';
   var tt,p,yy,mm,dd;
-  if(mode==='century'||mode==='decade'||mode==='year'){
-    var step=mode==='century'?100:mode==='decade'?10:1;
-    var minor=mode==='century'?10:mode==='decade'?1:0;
-    if(minor&&minor*ppy>=9){for(tt=Math.ceil(t0/minor)*minor;tt<=t1;tt+=minor)if(tt%step!==0)vline(tt,null,false);}
+  if(mode==='big'||mode==='year'){
+    /* 연 단위 이상: 10년·100년·1000년·1만년… 눈금 사이가 48px 이상 되는 가장 작은 10의 거듭제곱 */
+    var step=1;
+    if(mode==='big'){
+      /* 1·2·5 × 10ⁿ 가운데, 라벨 글자 폭(어림)보다 눈금 사이가 넉넉한 가장 작은 것 */
+      var cands=[],k,e;for(e=1;e<=1e10;e*=10){cands.push(e,2*e,5*e);}
+      function lbW(st){var t=yearLb(Math.floor(t0/st)*st-st,st),n=0;
+        for(var i=0;i<t.length;i++)n+=(t.charCodeAt(i)>255?11:6.6);return n+16;}
+      step=10;for(k=0;k<cands.length;k++){if(cands[k]<10)continue;if(cands[k]*ppy>=Math.max(48,lbW(cands[k]))){step=cands[k];break;}}
+      if(step*ppy<48)step=cands[cands.length-1];
+    }
+    var minor=step>=10?step/5:0;
+    if(minor&&minor*ppy>=9){for(tt=Math.ceil(t0/minor)*minor;tt<=t1;tt+=minor)if(Math.round(tt/minor)%5!==0)vline(tt,null,false);}
     if(mode==='year'&&ppy/12>=9){p=chFromT(t0);yy=p.y;mm=p.m;
       while(chT(yy,mm,1)<=t1){if(mm!==1)vline(chT(yy,mm,1),null,false);mm++;if(mm>12){mm=1;yy++;}}}
-    for(tt=Math.ceil(t0/step)*step;tt<=t1;tt+=step)vline(tt,yearLb(tt),true);
+    for(tt=Math.ceil(t0/step)*step;tt<=t1;tt+=step)vline(tt,yearLb(tt,step),true);
   }else if(mode==='month'){
     if(ppy/365>=8){p=chFromT(t0);yy=p.y;mm=p.m;dd=p.d;
       while(chT(yy,mm,dd)<=t1){if(dd!==1)vline(chT(yy,mm,dd),null,false);dd++;if(dd>chDim(yy,mm)){dd=1;mm++;if(mm>12){mm=1;yy++;}}}}
@@ -5638,6 +5755,7 @@ function renderChrono(){
     p=chFromT(t0);yy=p.y;mm=p.m;dd=p.d;
     while(chT(yy,mm,dd)<=t1){vline(chT(yy,mm,dd),dd===1?(mm+'월'):String(dd),true);dd++;if(dd>chDim(yy,mm)){dd=1;mm++;if(mm>12){mm=1;yy++;}}}
   }
+  s+=geoLab;
   /* 오늘 표시 */
   var tn=chNowT();
   if(tn>=t0&&tn<=t1){var xn=GL+(tn-t0)*ppy;
@@ -5648,7 +5766,7 @@ function renderChrono(){
   chRenderNoDates(pass.filter(function(e){return e.y==null;}));
   var groups=[];
   evs.forEach(function(e){
-    var t=chT(e.y,e.m,e.d),x=GL+(t-t0)*ppy;
+    var t=chTof(e),x=GL+(t-t0)*ppy;
     if(x<GL-40||x>W+120)return;
     var cs=((e.cats&&e.cats.length)?e.cats:['나']).filter(function(c){return rows.indexOf(c)>=0;});
     if(!cs.length)return;
@@ -5679,8 +5797,11 @@ function renderChrono(){
   });
   groups.forEach(function(g){
     g.lanes.forEach(function(li,gi){
-      var cat=rows[li],cy=g.ys[gi];
-      s+='<circle data-id="'+g.e.id+'" cx="'+g.x.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="5.5" fill="'+(CH_COLOR[cat]||'#12312b')+'" stroke="#fff" stroke-width="1.5" style="cursor:pointer"/>';
+      var cat=rows[li],cy=g.ys[gi],col=CH_COLOR[cat]||'#12312b';
+      if(chYearOnly(g.e)&&!yoSolid)   /* 월·일 미상: 속이 빈 점선 고리 → «그 해 어딘가» */
+        s+='<circle data-id="'+g.e.id+'" class="ch-yo" cx="'+g.x.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="6" fill="#fff" stroke="'+col+'" stroke-width="2.3" stroke-dasharray="3 2" style="cursor:pointer"><title>'+esc(g.e.title)+' · 월일 미상</title></circle>';
+      else
+        s+='<circle data-id="'+g.e.id+'" cx="'+g.x.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="5.5" fill="'+col+'" stroke="#fff" stroke-width="1.5" style="cursor:pointer"/>';
       if(gi===0)
         s+='<text x="'+(g.x+9).toFixed(1)+'" y="'+(cy+3.5).toFixed(1)+'" font-size="10.5" font-weight="700" fill="#3a4a44" style="pointer-events:none">'+esc(g.e.title)+'</text>';
     });
@@ -5694,7 +5815,7 @@ function renderChrono(){
 function chRenderNoDates(list){
   var el=document.getElementById('chNoDates');if(!el)return;
   if(!list||!list.length){el.innerHTML='';return;}
-  el.innerHTML='<div class="ch-nd-h">날짜 없는 사건 <span>'+list.length+'건 · 누르면 세부 내용</span></div>'
+  el.innerHTML='<div class="ch-nd-h">연도를 모르는 사건 <span>'+list.length+'건 · 누르면 세부 내용 · 수정해서 연도를 넣으면 그래프에 올라갑니다</span></div>'
     +'<div class="ch-nd-list">'+list.map(function(e){
       var c=(e.cats&&e.cats[0])||'나';
       return '<span class="ch-nd" onclick="chPopOpen(\''+e.id+'\')">'
@@ -5739,11 +5860,11 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&chLinkFrom!
   wrap.addEventListener('wheel',function(e){
     e.preventDefault();
     if(chState.ppy==null)return;
-    var GL=52,innerW=(wrap.clientWidth||1000)-GL-8;
+    var GL=118,innerW=(wrap.clientWidth||1000)-GL-8;
     var mx=e.clientX-wrap.getBoundingClientRect().left-GL;
     var tAt=chState.c+(mx-innerW/2)/chState.ppy;
     var f=e.deltaY<0?1.18:1/1.18;
-    var np=Math.max(innerW/600,Math.min(innerW/(2/365),chState.ppy*f));
+    var np=Math.max(innerW/CH_MAX_SPAN,Math.min(innerW/(2/365),chState.ppy*f));
     chState.c=tAt-(mx-innerW/2)/np;chState.ppy=np;
     chTipHide();renderChrono();
   },{passive:false});
