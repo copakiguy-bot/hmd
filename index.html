@@ -1032,6 +1032,25 @@
   .tlr-nowtag{flex:none;font-size:10px;font-weight:800;color:#8a6412;background:#fff;
     border-radius:999px;padding:2px 8px;letter-spacing:.2px}
   /* 루틴 통계 대시보드 */
+  .rgd{width:min(420px,100%);max-height:78vh;overflow:auto}
+  .rgd .rgd-h{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--dark);padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .rgd .rgd-n{font-size:12px;font-weight:700;color:var(--muted)}
+  .rgd .rgd-x{margin-left:auto;cursor:pointer;color:var(--muted);font-size:15px}
+  .rgd .rgd-sec{font-size:11.5px;font-weight:800;color:var(--muted);margin:12px 0 5px;letter-spacing:.3px}
+  .rgd-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:9px;cursor:pointer;font-size:13px;color:var(--dark)}
+  .rgd-item:hover{background:var(--cream)}
+  .rgd-item .bx{width:17px;height:17px;border-radius:5px;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;flex:none}
+  .rgd-item.ok .bx{background:var(--green);border-color:var(--green)}
+  .rgd-item .tm{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .rgd-item.ok b{color:var(--dark)}
+  .rgd-item:not(.ok) b{color:#9aa5a0;font-weight:600}
+  .xd-item{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid var(--line);font-size:13px}
+  .xd-item:last-of-type{border-bottom:none}
+  .xd-item i{width:9px;height:9px;border-radius:3px;flex:none}
+  .xd-item .ct{font-size:11.5px;font-weight:700;color:var(--muted);flex:none;min-width:52px}
+  .xd-item .it{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dark)}
+  .xd-item b{font-variant-numeric:tabular-nums}
+  .rgd .rgd-f{margin-top:12px;font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px}
   .tlr-kind{flex:none;font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;background:#e3f1ea;color:#1c8258;cursor:pointer;margin-left:6px}
   .tlr-kind.hd{background:#e6eaf9;color:#4b5fb0}
   .tlr-grid .tg.na{background:transparent;border-color:transparent;color:#cdd3cf;cursor:default}
@@ -1291,6 +1310,19 @@
   .word-mean{font-family:'Nanum Myeongjo',serif;margin-top:24px;font-size:clamp(17px,2.6vw,25px);color:#4a5751;line-height:1.7;display:inline-block;padding:6px 14px;border-radius:12px;word-break:keep-all}
   .word-mean.masked{background:var(--line);color:transparent;user-select:none;cursor:pointer;min-width:160px}
   .word-sent{font-size:clamp(20px,3.4vw,34px);letter-spacing:-.3px;line-height:1.55;padding:4px 8px;cursor:default}
+  /* 단어 확대 화면의 한자 획순 (붓길) */
+  .wh-chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+  .wh-chips button{border:1px solid var(--line);background:#fff;border-radius:12px;width:46px;height:46px;font-size:24px;
+    font-family:'Noto Serif KR',serif;color:#26221b;cursor:pointer;line-height:1;padding:0}
+  .wh-chips button:hover{border-color:#c9a04c}
+  .wh-chips button.on{background:#26221b;color:#fff;border-color:#26221b}
+  .wh-wrap{margin-top:12px;display:flex;flex-direction:column;align-items:center;gap:8px}
+  .wh-svg{width:min(230px,60vw);aspect-ratio:1;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+  .wh-svg svg{width:100%;height:100%;display:block}
+  .wh-ctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center}
+  .wh-ctl button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700;color:var(--dark);cursor:pointer}
+  .wh-ctl button:hover{background:var(--cream)}
+  .wh-msg{font-size:12px;color:var(--muted);min-height:16px;text-align:center}
   .word-hint{margin-top:14px;font-size:13px;color:var(--muted)}
   .word-read{font-size:.5em;font-weight:700;color:var(--muted);margin-left:6px;white-space:nowrap}
   .word-term.masked .word-read{color:transparent}
@@ -2919,7 +2951,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-31 · r96';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-31 · r99';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4164,6 +4196,40 @@ function renderRoutinesPage(){
 }
 /* ================= 평일 루틴 일별 그래프: 이번달 · 전달 · 평균 (그날 성공한 루틴 개수) ================= */
 var tlrGMonKey=null, tlrGN=6;
+var RG_CUR='#f4b740';   /* «루틴 추가» 버튼과 같은 노랑 */
+/* 그래프 점을 누르면 그날 성공·실패 루틴을 팝업으로 */
+function tlrDayOpen(ds){
+  var kind=dayKind(ds);
+  var list=tlrSorted((db.tlRoutines||[]).filter(function(r){return tlrKindOf(r)===kind&&r.active!==false;}));
+  var lg=(db.tlrLog||{})[ds]||{};
+  var okL=list.filter(function(r){return lg[r.id];}),noL=list.filter(function(r){return !lg[r.id];});
+  var t=new Date(ds+'T00:00:00'),dow=['일','월','화','수','목','금','토'][t.getDay()];
+  var hol=(typeof HOLIDAYS!=='undefined'&&HOLIDAYS[ds])?(' · '+HOLIDAYS[ds]):'';
+  var ov=document.getElementById('rgDayOv');
+  if(!ov){ov=document.createElement('div');ov.id='rgDayOv';ov.className='chp-ov';
+    ov.onclick=function(e){if(e.target===ov)tlrDayClose();};document.body.appendChild(ov);}
+  var row=function(r,done){
+    return '<div class="rgd-item'+(done?' ok':'')+'" onclick="tlrDayTgl(\''+ds+'\','+r.id+')" title="눌러서 성공/실패 바꾸기">'
+      +'<span class="bx">'+(done?'✓':'')+'</span>'
+      +(r.time?'<span class="tm">'+esc(r.time)+'</span>':'')
+      +'<b>'+esc(r.title)+'</b></div>';};
+  ov.innerHTML='<div class="chp rgd"><div class="rgd-h"><b>'+(+ds.slice(5,7))+'월 '+(+ds.slice(8,10))+'일 ('+dow+')'+esc(hol)+'</b>'
+    +'<span class="rgd-n">'+okL.length+' / '+list.length+' 성공</span>'
+    +'<span class="rgd-x" onclick="tlrDayClose()">✕</span></div>'
+    +(list.length?('<div class="rgd-sec">성공 '+okL.length+'</div>'+(okL.length?okL.map(function(r){return row(r,true);}).join(''):'<div class="empty" style="padding:6px 0">없습니다</div>')
+      +'<div class="rgd-sec">실패 '+noL.length+'</div>'+(noL.length?noL.map(function(r){return row(r,false);}).join(''):'<div class="empty" style="padding:6px 0">없습니다</div>'))
+      :'<div class="empty" style="padding:14px 0">'+(kind==='wd'?'평일':'휴일')+' 루틴이 없습니다.</div>')
+    +'<div class="rgd-f">줄을 누르면 그 자리에서 성공·실패를 바꿀 수 있습니다</div></div>';
+  ov.classList.add('on');
+  document.addEventListener('keydown',tlrDayEsc);
+}
+function tlrDayEsc(e){if(e.key==='Escape')tlrDayClose();}
+function tlrDayClose(){var o=document.getElementById('rgDayOv');if(o)o.classList.remove('on');document.removeEventListener('keydown',tlrDayEsc);}
+function tlrDayTgl(ds,id){
+  db.tlrLog[ds]=db.tlrLog[ds]||{};
+  if(db.tlrLog[ds][id])delete db.tlrLog[ds][id];else db.tlrLog[ds][id]=true;
+  save();renderTlRoutines();renderTimeline();tlrDayOpen(ds);
+}
 function tlrGMon(){return tlrGMonKey||thisMonth();}
 function tlrGShift(d){var m=expMonAdd(tlrGMon(),d);tlrGMonKey=(m===thisMonth())?null:m;renderRoutinesPage();}
 function tlrGSetN(n){tlrGN=n;renderRoutinesPage();}
@@ -4208,30 +4274,35 @@ function tlrGraphCard(){
     s+='<text x="'+xx.toFixed(1)+'" y="'+(H-padB+17)+'" text-anchor="middle" font-size="'+(B.n>28?'9.5':'10.5')+'" fill="'+(hol?'#c9b8b8':'#8a9490')+'"'+(i+1===todayD&&isCur?' font-weight="800"':'')+'>'+mo+'.'+(i+1)+'</text>';}
   /* 선: 휴일(null)은 건너뛰고 평일끼리 이어 그린다 */
   function path(arr,upto){var p='',pen=false,j;for(j=0;j<Math.min(arr.length,upto);j++){var a=arr[j];if(a==null)continue;p+=(pen?' L':' M')+X(j).toFixed(1)+' '+Y(a).toFixed(1);pen=true;}return p.trim();}
-  function dots(arr,upto,col,r){var o='',j;for(j=0;j<Math.min(arr.length,upto);j++){if(arr[j]==null)continue;o+='<circle cx="'+X(j).toFixed(1)+'" cy="'+Y(arr[j]).toFixed(1)+'" r="'+r+'" fill="'+col+'"/>';}return o;}
+  function dots(arr,upto,col,r,clickable){var o='',j;for(j=0;j<Math.min(arr.length,upto);j++){if(arr[j]==null)continue;
+    o+='<circle cx="'+X(j).toFixed(1)+'" cy="'+Y(arr[j]).toFixed(1)+'" r="'+r+'" fill="'+col+'"'
+      +(clickable?' stroke="#fff" stroke-width="1.4" style="cursor:pointer" onclick="tlrDayOpen(\''+base+'-'+String(j+1).padStart(2,'0')+'\')"><title>눌러서 그날 성공·실패 보기</title></circle>':'/>');}
+    return o;}
   if(months.length){s+='<path d="'+path(avg,N)+'" fill="none" stroke="#12312b" stroke-width="2" stroke-dasharray="5 4" opacity=".5"/>';}
   if(P.any){s+='<path d="'+path(P.vals,P.n)+'" fill="none" stroke="#6a8fd8" stroke-width="2" stroke-linejoin="round" opacity=".9"/>'+dots(P.vals,P.n,'#6a8fd8',2.5);}
-  if(B.any){s+='<path d="'+path(B.vals,todayD)+'" fill="none" stroke="#1c8258" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>'+dots(B.vals,todayD,'#1c8258',3.5);}
+  if(B.any){s+='<path d="'+path(B.vals,todayD)+'" fill="none" stroke="'+RG_CUR+'" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>'+dots(B.vals,todayD,RG_CUR,4,true);}
   if(isCur){var tx=X(todayD-1);
-    s+='<line x1="'+tx.toFixed(1)+'" y1="'+padT+'" x2="'+tx.toFixed(1)+'" y2="'+(padT+IH)+'" stroke="#1c8258" stroke-dasharray="3 3" opacity=".45"/>';
-    s+='<text x="'+(tx+4).toFixed(1)+'" y="'+(padT+IH-6)+'" font-size="10.5" fill="#1c8258">오늘</text>';}
+    s+='<line x1="'+tx.toFixed(1)+'" y1="'+padT+'" x2="'+tx.toFixed(1)+'" y2="'+(padT+IH)+'" stroke="'+RG_CUR+'" stroke-dasharray="3 3" opacity=".6"/>';
+    s+='<text x="'+(tx+4).toFixed(1)+'" y="'+(padT+IH-6)+'" font-size="10.5" fill="#b8860b">오늘</text>';}
   /* 툴팁 영역 */
   window.__rgData={B:B,P:P,avg:avg,avgN:months.length,todayD:todayD,isCur:isCur,base:base,X:X,maxN:maxN};
   s+='<line id="rgHover" x1="0" y1="'+padT+'" x2="0" y2="'+(padT+IH)+'" stroke="#12312b" opacity=".35" style="display:none;pointer-events:none"/>';
   for(i=0;i<N;i++){var a0=i===0?padL:(X(i-1)+X(i))/2,a1=i===N-1?W-padR:(X(i)+X(i+1))/2;
-    s+='<rect x="'+a0.toFixed(1)+'" y="'+padT+'" width="'+(a1-a0).toFixed(1)+'" height="'+IH+'" fill="transparent" onmousemove="tlrGTip('+i+',event)"/>';}
+    var dk=base+'-'+String(i+1).padStart(2,'0');
+    s+='<rect x="'+a0.toFixed(1)+'" y="'+padT+'" width="'+(a1-a0).toFixed(1)+'" height="'+IH+'" fill="transparent" style="cursor:pointer"'
+      +' onmousemove="tlrGTip('+i+',event)" onclick="tlrDayOpen(\''+dk+'\')"/>';}
   /* 머리글 요약: 이번달 평일 평균 성공 개수 vs 지난달 */
   function meanOf(arr,upto){var t=0,c=0,j;for(j=0;j<Math.min(arr.length,upto);j++){if(arr[j]!=null){t+=arr[j];c++;}}return c?t/c:null;}
   var bm=meanOf(B.vals,todayD),pm=meanOf(P.vals,P.n),summ='';
   if(bm!=null)summ='하루 평균 '+bm.toFixed(1)+'개 / '+maxN+'개'+(pm!=null?' · 전달 '+pm.toFixed(1)+'개':'');
-  var head='<h3><span class="dot" style="background:var(--green)"></span> '+(isCur?'이번달':(+base.slice(5))+'월')+' 평일 루틴 그래프 <span class="more">'+(summ||'평일마다 성공한 루틴 개수')+'</span>'
+  var head='<h3><span class="dot" style="background:'+RG_CUR+'"></span> '+(isCur?'이번달':(+base.slice(5))+'월')+' 평일 루틴 그래프 <span class="more">'+(summ||'평일마다 성공한 루틴 개수')+'</span>'
     +'<span class="xc-ctl"><span class="tl-datenav"><button type="button" onclick="tlrGShift(-1)" title="지난달">‹</button><span class="more" style="margin-left:0">'+base.replace('-','.')+'</span><button type="button" onclick="tlrGShift(1)" title="다음달">›</button></span>'
     +'<span class="sep"></span><span style="font-size:11.5px;color:var(--muted)">평균</span>'
     +[3,6,12].map(function(n){return '<button class="lunar-toggle'+(tlrGN===n?' on':'')+'" onclick="tlrGSetN('+n+')">'+n+'달</button>';}).join('')+'</span></h3>';
-  var legend='<div class="xc-leg"><span style="cursor:default"><i style="background:#1c8258"></i>'+(isCur?'이번달':(+base.slice(5))+'월')+' ('+base.replace('-','.')+')</span>'
+  var legend='<div class="xc-leg"><span style="cursor:default"><i style="background:'+RG_CUR+'"></i>'+(isCur?'이번달':(+base.slice(5))+'월')+' ('+base.replace('-','.')+')</span>'
     +'<span style="cursor:default"><i style="background:#6a8fd8"></i>전달 ('+prev.replace('-','.')+')</span>'
     +'<span style="cursor:default"><i style="background:#12312b;opacity:.6"></i>평균 (지난 '+months.length+'달)</span>'
-    +'<span style="cursor:default;color:var(--muted);margin-left:auto">세로축 최대 = 평일 루틴 '+maxN+'개 · 옅은 띠는 토·일·공휴일 (선은 평일끼리 이어짐)</span></div>';
+    +'<span style="cursor:default;color:var(--muted);margin-left:auto">세로축 최대 = 평일 루틴 '+maxN+'개 · 점을 누르면 그날 성공·실패 목록</span></div>';
   var body=(!B.any&&!P.any&&!months.length)?'<div class="empty">아직 평일 루틴 성공 기록이 없습니다. 타임라인이나 루틴 카드에서 «성공»을 누르면 쌓입니다.</div>'
     :'<div class="xc-wrap"><svg viewBox="0 0 '+W+' '+H+'" onmouseleave="tlrGTipHide()">'+s+'</svg><div class="xc-tip" id="rgTip"></div></div>'+legend;
   return '<div class="card">'+head+body+'</div>';
@@ -4241,7 +4312,7 @@ function tlrGTip(i,ev){
   var bv=(i<d.todayD)?d.B.vals[i]:null,pv=(i<d.P.n)?d.P.vals[i]:null,av=d.avg[i];
   var f=function(v){return v==null?'—':(Math.round(v*10)/10)+'개';};
   var h='<b>'+(i+1)+'일</b>'+(d.B.vals[i]===null?' <span style="color:#b8c8c0">휴일</span>':'');
-  h+='<div class="cat"><i style="background:#1c8258"></i>'+(d.isCur?'이번달':(+d.base.slice(5))+'월')+' <b style="margin-left:auto">'+f(bv)+'</b></div>';
+  h+='<div class="cat"><i style="background:'+RG_CUR+'"></i>'+(d.isCur?'이번달':(+d.base.slice(5))+'월')+' <b style="margin-left:auto">'+f(bv)+'</b></div>';
   h+='<div class="cat"><i style="background:#6a8fd8"></i>전달 <b style="margin-left:auto">'+f(pv)+'</b></div>';
   h+='<div class="cat"><i style="background:#12312b;border:1px solid #9fb3aa"></i>평균 <b style="margin-left:auto">'+f(av)+'</b></div>';
   tip.innerHTML=h;tip.style.display='';
@@ -9046,21 +9117,119 @@ function wordPaint(){
     : `<div class="word-term masked" onclick="this.classList.toggle('masked');var h=document.getElementById('wordHint');if(h)h.style.display='none'">${esc(x.term||'')}</div>
        <div class="word-mean">${esc(x.meaning||'')}</div>
        <div class="word-hint" id="wordHint">단어를 보려면 위 가려진 영역을 탭하세요</div>`;
+  /* 한자가 있으면 누를 수 있는 칩 + 획순 화면 */
+  var cs=wordHanjaList(x);
+  if(cs.length){
+    inner.innerHTML+='<div class="wh-chips">'+cs.map(function(c){
+      return '<button type="button" data-ch="'+esc(c)+'" onclick="whOpen(\''+esc(c)+'\')" title="누르면 획순을 써 줍니다">'+esc(c)+'</button>';}).join('')+'</div>'
+      +'<div class="wh-wrap" id="whWrap" style="display:none">'
+        +'<div class="wh-svg" id="whSvg"></div>'
+        +'<div class="wh-ctl"><span class="word-read" id="whCnt" style="font-size:12px"></span>'
+          +'<button type="button" onclick="whRestart()">↻ 다시</button>'
+          +'<button type="button" onclick="whStep()">▶ 한 획씩</button></div>'
+        +'<div class="wh-msg" id="whMsg"></div></div>';
+  }
   var pos=document.getElementById('wordPos');
   if(pos)pos.textContent=(wordIdx+1)+' / '+wordSeq.length;
   var nb2=document.getElementById('wordNextBtn');if(nb2)nb2.textContent='다음 한자 ›';
 }
+/* ---- 단어 확대 화면의 붓길: 한자를 누르면 그 자리에서 획순을 써 준다 ---- */
+var whChar=null,whData=null,whIdx=0,whRaf=null,whSt=null,whTk=0,whMode='watch';
+function wordHanjaList(x){
+  var src=String((x&&x.term)||'')+' '+String((x&&x.meaning)||'');
+  var cs=src.match(/[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/g)||[];
+  return cs.filter(function(c,i){return cs.indexOf(c)===i;}).slice(0,8);
+}
+function whStop(){cancelAnimationFrame(whRaf);whSt=null;}
+function whMsg(t){var e=document.getElementById('whMsg');if(e)e.textContent=t||'';}
+function whPaint(){
+  var w=document.getElementById('whSvg');if(!w)return;
+  if(!whData){
+    w.innerHTML='<svg viewBox="0 0 1024 1024">'+hjGridSVG()
+      +'<text x="512" y="545" text-anchor="middle" font-size="60" fill="#c9bda6">'+(whChar?'불러오는 중…':'')+'</text></svg>';
+    return;
+  }
+  var outline='',done='';
+  whData.strokes.forEach(function(st,i){
+    outline+='<path d="'+st+'" fill="#e8e2d4"/>';
+    if(i<whIdx)done+='<path d="'+st+'" fill="#26221b"/>';
+  });
+  w.innerHTML='<svg viewBox="0 0 1024 1024">'+hjGridSVG()
+    +'<g transform="scale(1,-1) translate(0,-900)"><g>'+outline+'</g><g>'+done+'</g><g id="whAnim"></g></g></svg>';
+  var c=document.getElementById('whCnt');
+  if(c)c.textContent=Math.min(whIdx+(whSt?1:0),whData.strokes.length)+' / '+whData.strokes.length+'획';
+}
+function whAnimate(i,cb){
+  if(!whData||!whData.strokes[i]){if(cb)cb();return;}
+  var g=document.getElementById('whAnim');if(!g){if(cb)cb();return;}
+  var med=whData.medians[i]||[];
+  if(med.length<2){whIdx=i+1;whPaint();if(cb)cb(i);return;}
+  g.innerHTML='<clipPath id="whClip"><path d="'+whData.strokes[i]+'"/></clipPath>'
+    +'<g clip-path="url(#whClip)"><path id="whMed" d="M'+med.map(function(p){return p[0]+' '+p[1];}).join(' L ')
+    +'" fill="none" stroke="#26221b" stroke-width="210" stroke-linecap="round" stroke-linejoin="round"/></g>';
+  var p=document.getElementById('whMed'),L=1;
+  try{L=p.getTotalLength()||1;}catch(e){}
+  p.style.strokeDasharray=L+' '+L;p.style.strokeDashoffset=L;
+  whSt={p:p,L:L,dur:Math.max(280,L/0.55),el:0,lastT:null,cb:cb,i:i};
+  whPaint2();
+  cancelAnimationFrame(whRaf);whRaf=requestAnimationFrame(whTick);
+}
+function whPaint2(){var c=document.getElementById('whCnt');
+  if(c&&whData)c.textContent=Math.min(whIdx+(whSt?1:0),whData.strokes.length)+' / '+whData.strokes.length+'획';}
+function whTick(t){
+  var st=whSt;if(!st)return;
+  if(st.lastT==null)st.lastT=t;
+  st.el+=t-st.lastT;st.lastT=t;
+  var k=Math.min(1,st.el/st.dur);
+  try{st.p.style.strokeDashoffset=st.L*(1-k);}catch(e){whSt=null;return;}
+  if(k>=1){var cb=st.cb,i=st.i;whSt=null;if(cb)cb(i);return;}
+  whRaf=requestAnimationFrame(whTick);
+}
+function whPlayFrom(i){
+  if(!whData)return;
+  if(i>=whData.strokes.length){whMsg(whData.strokes.length+'획 완성');return;}
+  whMsg('');
+  whAnimate(i,function(fin){
+    whIdx=fin+1;whPaint();
+    if(whMode==='watch')whPlayFrom(whIdx);
+  });
+}
+function whRestart(){if(!whData)return;whStop();whIdx=0;whPaint();whMode='watch';whPlayFrom(0);}
+function whStep(){
+  if(!whData||whSt)return;
+  whMode='step';
+  if(whIdx>=whData.strokes.length){whIdx=0;whPaint();}
+  whAnimate(whIdx,function(fin){whIdx=fin+1;whPaint();
+    whMsg(whIdx>=whData.strokes.length?whData.strokes.length+'획 완성':'');});
+}
+function whOpen(ch){
+  if(whChar===ch){whRestart();return;}
+  whChar=ch;whData=null;whIdx=0;whMode='watch';whStop();
+  var wrap=document.getElementById('whWrap');
+  if(wrap)wrap.style.display='';
+  document.querySelectorAll('.wh-chips button').forEach(function(b){b.classList.toggle('on',b.dataset.ch===ch);});
+  whPaint();whMsg('');
+  var tk=++whTk;
+  hjFetch(ch,function(d){
+    if(tk!==whTk)return;
+    if(!d||!d.strokes||!d.medians){whData=null;whPaint();whMsg('「'+ch+'」 획순 자료를 불러오지 못했습니다');return;}
+    whData=d;whIdx=0;whPaint();
+    try{hjRecentAdd(ch);}catch(e){}
+    whPlayFrom(0);
+  });
+}
+function whReset(){whStop();whChar=null;whData=null;whIdx=0;whTk++;}
 function wordStep(d){
   if(!wordSeq.length)return;
   wordIdx=(wordIdx+d+wordSeq.length)%wordSeq.length;
-  wordPaint();
+  whReset();wordPaint();
 }
 function wordEsc(e){
   if(e.key==='Escape')closeWord();
   else if(e.key==='ArrowRight')wordStep(1);
   else if(e.key==='ArrowLeft')wordStep(-1);
 }
-function closeWord(){const e=document.getElementById('wordOv');if(e)e.remove();document.removeEventListener('keydown',wordEsc);}
+function closeWord(){whReset();const e=document.getElementById('wordOv');if(e)e.remove();document.removeEventListener('keydown',wordEsc);}
 
 /* 대시보드 */
 function setDashStudyTab(t){dashStudyTab=t;renderDashStudy();}
@@ -9919,6 +10088,29 @@ function expTrTip(i,ev){
   var hl=document.getElementById('xtHover');if(hl){hl.setAttribute('x1',d.X(i));hl.setAttribute('x2',d.X(i));hl.style.display='';}
 }
 function expTrTipHide(){var t=document.getElementById('xtTip');if(t)t.style.display='none';var hl=document.getElementById('xtHover');if(hl)hl.style.display='none';}
+/* 그래프 점을 누르면 그날 지출 내역을 팝업으로 */
+function expDayOpen(ds){
+  var rows=(db.assets||[]).filter(function(a){return a.type==='지출'&&a.date===ds&&expTrCatOk(a);})
+    .sort(function(a,b){return (Number(b.amount)||0)-(Number(a.amount)||0);});
+  var tot=rows.reduce(function(t,a){return t+(Number(a.amount)||0);},0);
+  var t=new Date(ds+'T00:00:00'),dow=['일','월','화','수','목','금','토'][t.getDay()];
+  var ov=document.getElementById('xdOv');
+  if(!ov){ov=document.createElement('div');ov.id='xdOv';ov.className='chp-ov';
+    ov.onclick=function(e){if(e.target===ov)expDayClose();};document.body.appendChild(ov);}
+  ov.innerHTML='<div class="chp rgd"><div class="rgd-h"><b>'+(+ds.slice(5,7))+'월 '+(+ds.slice(8,10))+'일 ('+dow+')</b>'
+    +'<span class="rgd-n">'+won(tot)+'</span><span class="rgd-x" onclick="expDayClose()">✕</span></div>'
+    +(rows.length?rows.map(function(a){
+      return '<div class="xd-item"><i style="background:'+expCatColor(a.category)+'"></i>'
+        +'<span class="ct">'+esc(a.category||'')+'</span>'
+        +'<span class="it">'+esc(a.item||'')+'</span>'
+        +'<b>'+won(Number(a.amount)||0)+'</b></div>';}).join('')
+      :'<div class="empty" style="padding:14px 0">이 날 지출이 없습니다.</div>')
+    +'<div class="rgd-f">자산 → 가계부에서 수정·삭제할 수 있습니다</div></div>';
+  ov.classList.add('on');
+  document.addEventListener('keydown',expDayEsc);
+}
+function expDayEsc(e){if(e.key==='Escape')expDayClose();}
+function expDayClose(){var o=document.getElementById('xdOv');if(o)o.classList.remove('on');document.removeEventListener('keydown',expDayEsc);}
 function expTrendCard(){
   var d=expTrendData();window.__xtData=d;
   var W=1000,H=340,padL=64,padR=24,padT=26,padB=40,IW=W-padL-padR,IH=H-padT-padB,N=31;
@@ -9935,9 +10127,10 @@ function expTrendCard(){
   for(var v=0;v<=yMax+1e-6;v+=step){var yy=Y(v);
     s+='<line x1="'+padL+'" y1="'+yy.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+yy.toFixed(1)+'" stroke="'+(v===0?'#cfd6d2':'#eef1ef')+'"/>';
     s+='<text x="'+(padL-8)+'" y="'+(yy+4).toFixed(1)+'" text-anchor="end" font-size="11.5" fill="#8a9490">'+(v?shortWon(v):'0')+'</text>';}
-  [1,5,10,15,20,25,31].forEach(function(dd){var x=X(dd-1);
-    s+='<line x1="'+x.toFixed(1)+'" y1="'+padT+'" x2="'+x.toFixed(1)+'" y2="'+(padT+IH)+'" stroke="#f0f2f0"/>';
-    s+='<text x="'+x.toFixed(1)+'" y="'+(H-padB+18)+'" text-anchor="middle" font-size="12" fill="#8a9490">'+dd+'일</text>';});
+  var moN=+d.base.slice(5,7);
+  for(i=0;i<31;i++){var xx=X(i),isT=(d.isCur&&i+1===d.todayD);
+    if((i+1)%5===0||i===0)s+='<line x1="'+xx.toFixed(1)+'" y1="'+padT+'" x2="'+xx.toFixed(1)+'" y2="'+(padT+IH)+'" stroke="#f0f2f0"/>';
+    s+='<text x="'+xx.toFixed(1)+'" y="'+(H-padB+17)+'" text-anchor="middle" font-size="9.5" fill="'+(isT?'#c0392b':'#8a9490')+'"'+(isT?' font-weight="800"':'')+'>'+moN+'.'+(i+1)+'</text>';}
   function path(arr,upto){var p='';for(var i=0;i<Math.min(arr.length,upto);i++)p+=(i?' L':'M')+X(i).toFixed(1)+' '+Y(arr[i]).toFixed(1);return p;}
   /* 평균 (점선) → 전달 (파랑) → 이번달 (빨강, 맨 위) */
   if(d.avgN){s+='<path d="'+path(d.avg,N)+'" fill="none" stroke="#12312b" stroke-width="2" stroke-dasharray="5 4" opacity=".55"/>';
@@ -9946,6 +10139,11 @@ function expTrendCard(){
     var pe=d.P.cum[d.P.n-1];s+='<circle cx="'+X(d.P.n-1).toFixed(1)+'" cy="'+Y(pe).toFixed(1)+'" r="4" fill="#6a8fd8"/>';
     s+='<text x="'+(X(d.P.n-1)-8).toFixed(1)+'" y="'+(Y(pe)-9).toFixed(1)+'" text-anchor="end" font-size="11" font-weight="700" fill="#4b6fbf">전달 '+shortWon(pe)+'</text>';}
   if(d.B.any&&d.todayD>0){s+='<path d="'+path(d.B.cum,d.todayD)+'" fill="none" stroke="#e34948" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>';
+    for(i=0;i<d.todayD;i++){                       /* 그날 지출이 있으면 점 · 누르면 내역 */
+      if(!d.B.daily[i])continue;
+      var dk=d.base+'-'+String(i+1).padStart(2,'0');
+      s+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(d.B.cum[i]).toFixed(1)+'" r="4.5" fill="#e34948" stroke="#fff" stroke-width="1.6" style="cursor:pointer" onclick="expDayOpen(\''+dk+'\')"><title>'
+        +(i+1)+'일 · '+won(d.B.daily[i])+' · 눌러서 내역 보기</title></circle>';}
     var be=d.B.cum[d.todayD-1],bx=X(d.todayD-1);
     s+='<circle cx="'+bx.toFixed(1)+'" cy="'+Y(be).toFixed(1)+'" r="5" fill="#e34948" stroke="#fff" stroke-width="2"/>';
     var lx=bx+(d.todayD>N-5?-8:8),anc=d.todayD>N-5?'end':'start';
@@ -9956,7 +10154,10 @@ function expTrendCard(){
   s+='<line id="xtHover" x1="0" y1="'+padT+'" x2="0" y2="'+(padT+IH)+'" stroke="#12312b" stroke-width="1" opacity=".35" style="display:none;pointer-events:none"/>';
   /* 마우스 영역: 하루 하나씩 */
   for(var i2=0;i2<N;i2++){var x0=(i2===0?padL:(X(i2-1)+X(i2))/2),x1=(i2===N-1?W-padR:(X(i2)+X(i2+1))/2);
-    s+='<rect x="'+x0.toFixed(1)+'" y="'+padT+'" width="'+(x1-x0).toFixed(1)+'" height="'+IH+'" fill="transparent" onmousemove="expTrTip('+i2+',event)"/>';}
+    var has=(i2<d.todayD&&d.B.daily[i2]>0),dk2=d.base+'-'+String(i2+1).padStart(2,'0');
+    s+='<rect x="'+x0.toFixed(1)+'" y="'+padT+'" width="'+(x1-x0).toFixed(1)+'" height="'+IH+'" fill="transparent"'
+      +(has?' style="cursor:pointer" onclick="expDayOpen(\''+dk2+'\')"':'')
+      +' onmousemove="expTrTip('+i2+',event)"/>';}
   /* 머리글 요약: 같은 날짜 기준 평균 대비 + 이 속도면 월말 얼마 */
   var summ='',bi=d.todayD-1,bnow=d.B.any?d.B.cum[bi]:0;
   if(d.avgN&&d.B.any&&d.avg[bi]>0){var df=bnow-d.avg[bi];
@@ -9972,7 +10173,7 @@ function expTrendCard(){
   var legend='<div class="xc-leg"><span style="cursor:default"><i style="background:#e34948"></i>'+(d.isCur?'이번달':(+d.base.slice(5))+'월')+' ('+d.base.replace('-','.')+')</span>'
     +'<span style="cursor:default"><i style="background:#6a8fd8"></i>전달 ('+d.prev.replace('-','.')+')</span>'
     +'<span style="cursor:default"><i style="background:#12312b;opacity:.6"></i>평균 (지난 '+d.avgN+'달)</span>'
-    +'<span style="cursor:default;color:var(--muted);margin-left:auto">세로축은 1일부터 그날까지 쌓인 금액 · 「N월 지출」 카드의 ‹ › 로 달을 바꿉니다</span></div>';
+    +'<span style="cursor:default;color:var(--muted);margin-left:auto">세로축은 1일부터 그날까지 쌓인 금액 · 점을 누르면 그날 지출 내역</span></div>';
   var body=(!d.B.any&&!d.P.any&&!d.avgN)?'<div class="empty">'+(expTrCat?'«'+esc(expTrCat)+'» ':'')+'지출 기록이 없습니다.</div>'
     :'<div class="xc-wrap"><svg viewBox="0 0 '+W+' '+H+'" onmouseleave="expTrTipHide()">'+s+'</svg><div class="xc-tip" id="xtTip"></div></div>'+legend;
   return '<div class="card">'+head+body+'</div>';
