@@ -505,6 +505,27 @@
   .tlcw-today{position:absolute;top:0;bottom:0;background:rgba(244,183,64,.12);pointer-events:none}
   .tlcw-cap{font-size:11px;color:var(--muted);margin-top:8px;font-weight:700}
   .cnev-pop{width:min(480px,100%);padding:20px 24px 22px}
+  #cnEvOv{z-index:140}
+  .cnev-foot{margin-top:14px;display:flex;gap:6px;justify-content:flex-end}
+  /* 의회 일정 마인드맵: 칩 바로 오른쪽에 붙는 작은 창 (포스트잇보다 조금 큰 크기) */
+  .cnm-pop{position:fixed;z-index:130;width:360px;height:290px;background:#fbfbf8;border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 12px 32px rgba(18,49,43,.18);display:flex;flex-direction:column;overflow:hidden;font-family:inherit}
+  .cnm-top{display:flex;align-items:center;gap:6px;padding:6px 8px 6px 10px;border-bottom:1px solid var(--line);background:#fff;flex:none;min-width:0}
+  .cnm-top b{font-size:10.5px;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+  .cnm-top .dot{width:7px;height:7px;flex:none}
+  .cnm-meta{font-size:9.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;flex:none}
+  .cnm-top select{font-size:9.5px;padding:1px 2px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--muted);flex:none;max-width:78px}
+  .cnm-b{flex:none;border:none;background:none;cursor:pointer;font-size:11px;line-height:1;padding:3px 5px;border-radius:5px;color:var(--dark);font-family:inherit;font-weight:700}
+  .cnm-b:hover{background:var(--cream)}
+  .cnm-b.add{background:var(--yellow);color:#12312b}
+  .cnm-b.x{color:var(--muted);font-size:13px}
+  .cnm-cv{flex:1;min-height:0;overflow:auto;position:relative}
+  .cnm-cv .mind-canvas{zoom:.78}   /* 칸·글씨를 타임라인 칩 크기에 맞춘다 (13.5px → 10.5px) */
+  .cnm-cv .mnode.root{padding:4px 10px;border-radius:7px;box-shadow:none}
+  .cnm-cv .mnode.root .mtext{font-size:13.5px}
+  .tlq-cnl{font-size:12px;font-weight:700;color:var(--dark);flex:none}
+  .tlcw-ev .cnm-n,.tlc-ev .cnm-n{display:inline-block;margin-left:4px;padding:0 4px;border-radius:7px;background:rgba(255,255,255,.75);font-size:9px;line-height:13px;color:inherit;vertical-align:1px}
+  .tlc-track[ondblclick]{cursor:copy}
   .cnev-pop .bkv-headrow{padding:0 0 10px;margin:0 0 10px;border-bottom:1px solid var(--line)}
   .cnev-t{font-size:15px;font-weight:800;color:var(--dark);line-height:1.5}
   .cnev-m{font-size:12px;color:var(--muted);margin-top:5px;font-variant-numeric:tabular-nums}
@@ -2961,7 +2982,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-31 · r100';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-31 · r102';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -3504,13 +3525,13 @@ function tlCnGridHTML(W,gridBg){
         var sh=(s.done?'\u2713 ':'')+cnShortTitle(s);
         var bw2=Math.min(Math.max(Math.ceil(tlTextW(sh))+16,26),220);
         return '<div class="tl-ev cn tlc-ev" data-k="s" data-id="'+s.id+'" style="left:'+left+'px;top:3px;width:'+bw2
-          +'px;color:'+col+';background:'+col+'1a;border-left:3px solid '+col+'" title="'+escA(cnLabel(s)+' \u00b7 '+lbl+' ('+tlFmt(mn)+'~'+tlFmt(endMn)+')')+'">'
-          +'<b>'+esc(sh)+'</b></div>';
+          +'px;color:'+col+';background:'+col+'1a;border-left:3px solid '+col+'" title="'+escA(cnLabel(s)+' \u00b7 '+lbl+' ('+tlFmt(mn)+'~'+tlFmt(endMn)+') — 한 번 누르면 마인드맵 · 두 번 = 완료')+'">'
+          +'<b>'+esc(sh)+'</b>'+cnMindBadge(s)+'</div>';
       }).join('');
       var dcol=ds.length?cnDeptColor(org,dp==='__etc__'?'':dp):'';
       return '<div class="tlc-row">'
         +'<div class="tlc-dept"'+(dcol&&dp!=='__etc__'?' style="color:'+dcol+'"':'')+'>'+(dp==='__etc__'?'—':(dp||''))+'</div>'
-        +'<div class="tlc-track" style="width:'+W+'px;background-image:'+gridBg+'">'+evh+nowL+'</div>'
+        +'<div class="tlc-track" ondblclick="cnQuickAdd(event,\''+escA(org)+'\',\''+escA(dp)+'\')" title="빈 곳 더블클릭 → 그 시각에 의회 일정 추가" style="width:'+W+'px;background-image:'+gridBg+'">'+evh+nowL+'</div>'
       +'</div>';
     }).join('');
     rowsOut+='<div class="tlc-group">'
@@ -3566,16 +3587,16 @@ function renderTlCnWeek(inner){
       days.forEach(function(x,i){
         (byDay[x]||[]).forEach(function(s,si){
           var col=cnDeptColor(org,ds.length?(dp==='__etc__'?s.cnDept:dp):'');
-          evh+='<div class="tlcw-ev'+(s.done?' done':'')+'" onclick="selectDate(\''+x+'\')" ondblclick="cnEvOpen('+s.id+');event.stopPropagation()" style="left:'+(i*CW+2)
+          evh+='<div class="tlcw-ev'+(s.done?' done':'')+'" data-sid="'+s.id+'" onclick="cnChipTap(event,'+s.id+')" ondblclick="cnChipDbl(event,'+s.id+')" style="left:'+(i*CW+2)
             +'px;top:'+(3+si*23)+'px;width:'+(CW-6)+'px;color:'+col+';background:'+col+'1a;border-left:3px solid '+col+'" title="'
-            +escA(cnLabel(s)+' · '+(s.time?s.time+' · ':'')+(s.title||'')+' — 두 번 누르면 세부일정')+'">'
-            +esc((s.time?s.time+' ':'')+cnShortTitle(s))+'</div>';
+            +escA(cnLabel(s)+' · '+(s.time?s.time+' · ':'')+(s.title||'')+' — 누르면 마인드맵 · 두 번 누르면 세부일정')+'">'
+            +esc((s.time?s.time+' ':'')+cnShortTitle(s))+cnMindBadge(s)+'</div>';
         });
       });
       var dcol=ds.length&&dp!=='__etc__'?cnDeptColor(org,dp):'';
       return '<div class="tlc-row" style="height:'+H+'px">'
         +'<div class="tlc-dept"'+(dcol?' style="color:'+dcol+'"':'')+'>'+(dp==='__etc__'?'—':(dp||''))+'</div>'
-        +'<div class="tlc-track" style="width:'+W+'px;height:'+H+'px;background-image:'+colBg+'">'+tdBar+evh+'</div>'
+        +'<div class="tlc-track" ondblclick="cnQuickAddW(event,\''+escA(org)+'\',\''+escA(dp)+'\',\''+d0+'\','+CW+')" title="빈 곳 더블클릭 → 그 날짜에 의회 일정 추가" style="width:'+W+'px;height:'+H+'px;background-image:'+colBg+'">'+tdBar+evh+'</div>'
       +'</div>';
     }).join('');
     rowsOut+='<div class="tlc-group">'
@@ -3724,6 +3745,15 @@ function tlTextW(t){
 }
 /* ----- 타임라인 블록 드래그로 시간 이동 (5분 단위) ----- */
 var tlDrag=null;
+/* 의회 칩을 한 번만 탭 → (두 번째 탭이 없으면) 마인드맵 */
+function tlCnTap1(el,d){
+  if(d.k!=='s'||!el.classList.contains('tlc-ev'))return;
+  el.__tapT=setTimeout(function(){
+    if(el.__taps!==1)return;
+    el.__taps=0;el.__lastTap=0;
+    cnMindOpen(d.id,el);
+  },460);
+}
 function tlBindDrag(){
   document.querySelectorAll('#tlInner .tl-ev[data-k]').forEach(function(el){
     el.addEventListener('pointerdown',function(e){
@@ -3758,7 +3788,7 @@ function tlBindDrag(){
             el.__taps=0;el.__lastTap=0;
             tlToggleDone(d.k,d.id);
           },430);
-        }
+        }else tlCnTap1(el,d);
         return;
       }
       var left=parseFloat(el.style.left);
@@ -3774,6 +3804,7 @@ function tlBindDrag(){
         if(el.__taps>=3){el.__taps=0;el.__lastTap=0;rtPopOpen(d.k,d.id);}
         else if(el.__taps===2){el.__tapT=setTimeout(function(){
           el.__taps=0;el.__lastTap=0;tlToggleDone(d.k,d.id);},430);}
+        else tlCnTap1(el,d);
         return;
       }
       var t=tlFmt(mn);
@@ -4888,8 +4919,9 @@ function renderMind(){
     minY=Math.min(minY,mindTop(p));maxY=Math.max(maxY,mindBot(p));});
   var padX=100,padY=80, offX=padX-minX, offY=padY-minY;
   var W=Math.max(560,(maxX-minX)+padX*2), H=Math.max(340,(maxY-minY)+padY*2);
-  var cw=el.clientWidth||0, ch=el.clientHeight||0;
-  if(cw>W){offX+=(cw-W)/2;W=cw;}
+  var z0=mindZoom(), cw=(el.clientWidth||0)/z0, ch=(el.clientHeight||0)/z0;
+  if(window.__mindCtx&&window.__mindCtx.left){padX=24;padY=30;offX=padX-minX;offY=padY-minY;W=Math.max(cw,(maxX-minX)+padX*2);H=(maxY-minY)+padY*2;}   /* 작은 창: 여백 최소 */
+  else if(cw>W){offX+=(cw-W)/2;W=cw;}
   if(ch>H){offY+=(ch-H)/2;H=ch;}
   var shape=mindShape(x), multi=mindRootsOf(x).length>1;
   var nodesHTML=x.mind.map(function(n){
@@ -4907,8 +4939,12 @@ function renderMind(){
   var sel=document.getElementById('mindModeSel');if(sel)sel.value=mindMode(x);
   var shs=document.getElementById('mindShapeSel');if(shs)shs.value=shape;
   if(mindHoldScroll){el.scrollLeft=keepL;el.scrollTop=keepT;}
-  else{var rp=pos[x.mind[0].id];if(rp){el.scrollLeft=Math.max(0,offX+rp.x-el.clientWidth/2);el.scrollTop=Math.max(0,offY+rp.y-el.clientHeight/2);}}
+  else{var rp=pos[x.mind[0].id],z=mindZoom(),ctx=window.__mindCtx;if(rp){
+    /* 작은 창(의회 일정)에서는 뿌리를 왼쪽에 붙이고, 그 외에는 가운데 */
+    el.scrollLeft=Math.max(0,(ctx&&ctx.left)?((offX+rp.x)*z-14):((offX+rp.x)*z-el.clientWidth/2));
+    el.scrollTop=Math.max(0,(offY+rp.y)*z-el.clientHeight/2);}}
 }
+function mindZoom(){var c=window.__mindCtx;return (c&&c.zoom>0)?c.zoom:1;}
 function updateMindPanel(){var mc=document.getElementById("mindCanvas");if(!mc)return;if(curIdea){renderMind();}else{mc.innerHTML='<div class="empty"></div>';}}
 function mindToggle(e,id){e.stopPropagation();var x=curIdeaObj();if(!x)return;var n=x.mind.find(function(a){return a.id===id;});if(!n)return;n.collapsed=!n.collapsed;save();renderMind();}
 var mDrag=null, mindHoldScroll=false;
@@ -4938,7 +4974,7 @@ function mindMove(e){
     else{var el=document.querySelector('.mnode[data-id="'+mDrag.id+'"]');if(el)el.classList.add("dragging");}
   }
   e.preventDefault();
-  if(mDrag.root){mindGrabMove(mDrag.grab,e.clientX-mDrag.sx,e.clientY-mDrag.sy);return;}
+  if(mDrag.root){var z=mindZoom();mindGrabMove(mDrag.grab,(e.clientX-mDrag.sx)/z,(e.clientY-mDrag.sy)/z);return;}
   document.querySelectorAll(".mnode.drop").forEach(function(n){n.classList.remove("drop");});
   var tid=mindTargetAt(e.clientX,e.clientY,mDrag.id);
   if(tid!=null){var te=document.querySelector('.mnode[data-id="'+tid+'"]');if(te)te.classList.add("drop");}
@@ -4947,7 +4983,7 @@ function mindUp(e){
   document.removeEventListener("mousemove",mindMove);document.removeEventListener("mouseup",mindUp);
   if(mDrag&&mDrag.moved&&mDrag.root){
     var x=curIdeaObj(),n=x&&mindNodeById(x,mDrag.id);
-    if(n){n.ox=mDrag.ox0+(e.clientX-mDrag.sx);n.oy=mDrag.oy0+(e.clientY-mDrag.sy);save();}
+    if(n){var z=mindZoom();n.ox=mDrag.ox0+(e.clientX-mDrag.sx)/z;n.oy=mDrag.oy0+(e.clientY-mDrag.sy)/z;save();}
     document.querySelectorAll(".mnode.moving").forEach(function(el){el.classList.remove("moving");});
     mDrag=null;mindHoldScroll=true;renderMind();mindHoldScroll=false;return;
   }
@@ -5484,6 +5520,8 @@ function cnShortTitle(s){
   if(m)return m[1]+'차 '+m[2];
   return t||String(s&&s.title||'');
 }
+/* 칩에 붙는 가지 수 (뿌리 제외) */
+function cnMindBadge(s){var n=(s&&s.mind)?s.mind.length-1:0;return n>0?'<span class="cnm-n" title="마인드맵 가지 '+n+'개">'+n+'</span>':'';}
 /* 세부일정 팝업 (주단위 칩 두 번 누르기) */
 function cnEvOpen(id){
   var s=(db.schedules||[]).find(function(x){return x.id===id;});if(!s)return;
@@ -5497,7 +5535,8 @@ function cnEvOpen(id){
     '<div class="cnev-t">'+esc(s.title||'(제목 없음)')+(s.done?' <span style="color:var(--green);font-size:13px">✓ 완료</span>':'')+'</div>'
     +'<div class="cnev-m">'+esc(s.date||'')+(s.time?' · '+esc(s.time):'')+(s.dur>0?' · '+s.dur+'분':'')+'</div>'
     +(dts.length?'<div class="cnev-d">'+dts.map(function(x){return '<div>· '+esc(x)+'</div>';}).join('')+'</div>'
-      :'<div class="cnev-d" style="color:var(--muted)">세부 내용이 없습니다.</div>');
+      :'<div class="cnev-d" style="color:var(--muted)">세부 내용이 없습니다.</div>')
+    +'<div class="cnev-foot"><button class="btn ghost" onclick="cnEvClose();cnMindOpen('+s.id+')">🧠 마인드맵'+((s.mind&&s.mind.length>1)?' ('+(s.mind.length-1)+')':'')+'</button></div>';
   document.addEventListener('keydown',cnEvEsc);
 }
 function cnEvClose(){
@@ -5806,12 +5845,26 @@ function tlQuickAdd(ev){
   mn=Math.max(TL_START*60,Math.min(mn,TL_END*60-5));
   tlqOpen(tlFmt(mn));
 }
-function tlqClose(){var e=document.getElementById('tlqOv');if(e)e.remove();document.removeEventListener('keydown',tlqEsc);window.__tlqAfter=null;}
+function tlqClose(){var e=document.getElementById('tlqOv');if(e)e.remove();document.removeEventListener('keydown',tlqEsc);window.__tlqAfter=null;window.__tlqOpt=null;}
 function tlqEsc(e){if(e.key==='Escape')tlqClose();}
+/* 의회 일정용 기관·세부 고르기 (빠른 추가 창 안) */
+function tlqCnPaint(org,dept){
+  var so=document.getElementById('tlqOrg'),sd=document.getElementById('tlqDept');
+  if(!so||!sd)return;
+  org=org||so.value||'본회의'; if(CN_ORGS.indexOf(org)<0)org='본회의';
+  so.innerHTML=CN_ORGS.map(function(o){return '<option'+(o===org?' selected':'')+'>'+o+'</option>';}).join('');
+  var ds=cnDepts(org);
+  if(!ds.length){sd.style.display='none';sd.innerHTML='';return;}
+  sd.style.display='';
+  if(dept==null)dept=sd.value;
+  if(ds.indexOf(dept)<0)dept=ds[0];
+  sd.innerHTML=ds.map(function(x){return '<option'+(x===dept?' selected':'')+'>'+x+'</option>';}).join('');
+}
 function tlqOpen(time,opt){
   opt=opt||{};
   tlqClose();
   window.__tlqAfter=opt.after||null;
+  window.__tlqOpt=opt;
   var d=opt.date||selDate, dow=['일','월','화','수','목','금','토'][new Date(d+'T00:00:00').getDay()];
   var lbl=(+d.slice(5,7))+'월 '+(+d.slice(8,10))+'일 ('+dow+')'+(d===today()?' · 오늘':'');
   var head=opt.pickDate
@@ -5823,6 +5876,9 @@ function tlqOpen(time,opt){
     +'<div class="tlq-top"><b>'+esc(opt.head||'일정 추가')+'</b>'+head
     +'<span class="tlq-x" onclick="tlqClose()">✕</span></div>'
     +'<div class="tlq-body">'
+    +(opt.cn?'<div class="inrow tlq-cn" style="margin-bottom:8px"><span class="tlq-cnl">🏛 의회</span>'
+      +'<select id="tlqOrg" class="in" style="flex:none;width:120px;padding:6px 9px" onchange="tlqCnPaint(this.value,\'\')"></select>'
+      +'<select id="tlqDept" class="in" style="flex:1;padding:6px 9px"></select></div>':'')
     +'<div class="inrow">'
     +'<input id="tlqTime" class="in" style="flex:none;width:92px" value="'+esc(time)+'" placeholder="0900" onblur="this.value=normTime(this.value)">'
     +'<input id="tlqDur" class="in" style="flex:none;width:96px" inputmode="numeric" value="30" placeholder="소요(분)">'
@@ -5837,6 +5893,7 @@ function tlqOpen(time,opt){
     +'</div></div>';
   document.body.appendChild(ov);
   document.addEventListener('keydown',tlqEsc);
+  if(opt.cn)tlqCnPaint(opt.cn.org,opt.cn.dept||'');
   var t=document.getElementById('tlqTitle');
   if(t){t.focus();if(t.value)t.setSelectionRange(t.value.length,t.value.length);}
   ['tlqDate','tlqTime','tlqDur','tlqTitle'].forEach(function(i){
@@ -5851,16 +5908,103 @@ function tlqSave(){
   var title=ti.value.trim();
   if(!title){alert('일정 제목을 입력하세요.');ti.focus();return;}
   var d=parseInt(du.value,10);
-  var dEl=document.getElementById('tlqDate');
-  var date=(dEl&&dEl.value)?dEl.value:selDate;
-  db.schedules.push({id:uid(),date:date,time:normTime(tm.value),dur:(d>0?d:30),
-    title:title,detail:de.value.trim()});
+  var dEl=document.getElementById('tlqDate'),opt=window.__tlqOpt||{};
+  var date=(dEl&&dEl.value)?dEl.value:(opt.date||selDate);
+  var ns={id:uid(),date:date,time:normTime(tm.value),dur:(d>0?d:30),
+    title:title,detail:de.value.trim()};
+  if(opt.cn){
+    var so=document.getElementById('tlqOrg'),sd=document.getElementById('tlqDept');
+    ns.cn=true;ns.cnOrg=(so&&so.value)||opt.cn.org||'본회의';
+    ns.cnDept=(sd&&sd.style.display!=='none'&&sd.value)?sd.value:'';
+  }
+  db.schedules.push(ns);
   save();
   var after=window.__tlqAfter;window.__tlqAfter=null;
   tlqClose();
   renderCal();renderSchedule();renderTimeline();
   if(typeof renderHome==='function')renderHome();
   if(after)after(date,normTime(tm.value));
+}
+/* ================= 의회 타임라인: 빈 곳 더블클릭 → 일정 추가 ================= */
+function cnQuickAdd(ev,org,dept){                 /* 하루 보기: 가로 = 시각 */
+  if(ev.target.closest('.tl-ev'))return;
+  ev.stopPropagation();
+  var tr=ev.currentTarget.getBoundingClientRect();
+  var mn=Math.round(((ev.clientX-tr.left)/TL_HW*60)/5)*5+TL_START*60;
+  mn=Math.max(TL_START*60,Math.min(mn,TL_END*60-5));
+  tlqOpen(tlFmt(mn),{head:'의회 일정 추가',cn:{org:org,dept:dept==='__etc__'?'':(dept||'')}});
+}
+function cnQuickAddW(ev,org,dept,d0,CW){          /* 주 보기: 가로 = 날짜 */
+  if(ev.target.closest('.tlcw-ev'))return;
+  ev.stopPropagation();
+  var tr=ev.currentTarget.getBoundingClientRect();
+  var i=Math.max(0,Math.floor((ev.clientX-tr.left)/CW));
+  var date=shiftDayStr(d0,i);
+  tlqOpen('',{head:'의회 일정 추가',date:date,cn:{org:org,dept:dept==='__etc__'?'':(dept||'')},
+    after:function(){renderTimeline();}});
+}
+/* ================= 의회 일정 마인드맵 (일정 = 뿌리, 가지는 오른쪽으로) ================= */
+function cnChipTap(ev,id){                        /* 한 번 = 마인드맵 · 두 번 = 세부일정 */
+  ev.stopPropagation();
+  clearTimeout(window.__cnTapT);
+  var el=ev.currentTarget;
+  window.__cnTapT=setTimeout(function(){cnMindOpen(id,el);},280);
+}
+function cnChipDbl(ev,id){ev.stopPropagation();clearTimeout(window.__cnTapT);cnEvOpen(id);}
+var CNM_W=360, CNM_H=290, CNM_ZOOM=.78;
+/* 칩 오른쪽에 붙여 놓기 (오른쪽이 모자라면 왼쪽, 아래가 모자라면 위로 올린다) */
+function cnMindPlace(box,anchor){
+  var vw=window.innerWidth, vh=window.innerHeight, x, y;
+  if(anchor&&anchor.getBoundingClientRect){
+    var r=anchor.getBoundingClientRect();
+    x=r.right+8; y=r.top-6;
+    if(x+CNM_W>vw-8)x=r.left-8-CNM_W;
+    if(x<8)x=Math.max(8,Math.min(vw-CNM_W-8,r.left));
+  }else{x=(vw-CNM_W)/2;y=(vh-CNM_H)/2;}
+  y=Math.max(8,Math.min(y,vh-CNM_H-8));
+  box.style.left=Math.round(x)+'px';box.style.top=Math.round(y)+'px';
+}
+function cnMindOpen(id,anchor){
+  var s=(db.schedules||[]).find(function(x){return x.id===id;});if(!s)return;
+  if(!s.mind||!s.mind.length){s.mind=[{id:1,t:s.title||'일정',x:30,y:30,p:0}];if(!s.mindMode)s.mindMode='R';save();}
+  cnMindClose();pjMindClose();
+  if(!anchor)anchor=document.querySelector('.tlcw-ev[data-sid="'+id+'"],.tlc-ev[data-id="'+id+'"]');
+  var box=document.createElement('div');box.className='cnm-pop';box.id='cnmOv';
+  box.addEventListener('mousedown',function(e){e.stopPropagation();});
+  box.addEventListener('click',function(e){e.stopPropagation();});
+  box.addEventListener('dblclick',function(e){e.stopPropagation();});
+  var col=cnColor(s);
+  box.innerHTML='<div class="cnm-top"><span class="dot" style="background:'+col+'"></span>'
+    +'<b title="'+escA(cnLabel(s)+' · '+(s.title||''))+'">'+esc(s.title||'(제목 없음)')+'</b>'
+    +'<span class="cnm-meta">'+esc(String(s.date||'').slice(5).replace('-','/'))+(s.time?' '+esc(s.time):'')+'</span>'
+    +'<select id="cnmModeSel" title="가지 방향" onchange="setMindMode(this.value)"></select>'
+    +'<button class="cnm-b" title="세부일정 보기" onclick="cnEvOpen('+s.id+')">≡</button>'
+    +'<button class="cnm-b add" title="가지 추가 (뿌리에서 Tab)" onclick="mindAddFocus(mindRoot())">＋</button>'
+    +'<button class="cnm-b x" title="닫기 (Esc)" onclick="cnMindClose()">✕</button></div>'
+    +'<div id="cnmCanvas" class="cnm-cv" title="Tab=하위 · Enter=대등 · Shift+Enter=줄바꿈 · 칸을 끌어 이동"></div>';
+  document.body.appendChild(box);
+  cnMindPlace(box,anchor);
+  window.__mindCtx={obj:s,canvas:'cnmCanvas',zoom:CNM_ZOOM,left:true};
+  var md=document.getElementById('cnmModeSel');
+  if(md){md.innerHTML=MIND_MODES.map(function(m){return '<option value="'+m[0]+'">'+m[1]+'</option>';}).join('');md.value=mindMode(s);}
+  renderMind();
+  document.addEventListener('keydown',cnMindEsc);
+  setTimeout(function(){document.addEventListener('mousedown',cnMindOut);},0);
+}
+function cnMindOut(e){                                  /* 창 밖을 누르면 닫힘 (세부일정 팝업은 예외) */
+  if(e.target.closest&&(e.target.closest('#cnmOv')||e.target.closest('#cnEvOv')))return;
+  cnMindClose();
+}
+function cnMindEsc(e){if(e.key==='Escape'&&!e.target.closest('.mtext')&&!document.querySelector('#cnEvOv.on')){e.stopPropagation();cnMindClose();}}
+function cnMindClose(){
+  var e=document.getElementById('cnmOv');
+  document.removeEventListener('keydown',cnMindEsc);
+  document.removeEventListener('mousedown',cnMindOut);
+  if(!e)return;
+  if(document.activeElement&&e.contains(document.activeElement))document.activeElement.blur();   /* 쓰던 글 저장 */
+  e.remove();
+  if(window.__mindCtx&&window.__mindCtx.canvas==='cnmCanvas')window.__mindCtx=null;
+  if(typeof renderTimeline==='function')renderTimeline();   /* 가지 수 표시 갱신 */
 }
 /* ================= 프로젝트 마인드맵 ================= */
 function pjMindOpen(pid){
