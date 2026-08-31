@@ -438,6 +438,11 @@
   .spot-pop .m{font-size:11.5px;color:#666;margin-top:3px;max-width:200px}
   .spot-pop .r{margin-top:7px;display:flex;gap:8px;font-size:11.5px}
   .spot-pop .r span{cursor:pointer;color:#2a78d6;font-weight:700}
+  .spot-nvpop{background:#fff;border-radius:12px;padding:10px 13px;box-shadow:0 8px 24px rgba(18,49,43,.22);font-family:'Noto Sans KR',sans-serif;min-width:150px;position:relative}
+  .spot-nvpop:after{content:'';position:absolute;left:50%;bottom:-7px;width:12px;height:12px;background:#fff;transform:translateX(-50%) rotate(45deg);box-shadow:3px 3px 6px rgba(18,49,43,.08)}
+  .spot-nvpop .x{position:absolute;right:7px;top:4px;cursor:pointer;color:#999;font-size:14px;line-height:1}
+  .spot-engine{font-size:11.5px;color:var(--muted);margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .spot-engine b{color:var(--dark)}
   /* 의회 일정: 다른 음영 + 타임라인 기관·세부 트랙 */
   .cn-chk{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;color:#38678a;
     white-space:nowrap;cursor:pointer;padding:0 2px}
@@ -2194,6 +2199,7 @@
       </div>
       <div id="spotSearchOut"></div>
       <div id="spotMapWrap"><div id="spotMap"></div><div id="spotMapMsg" class="empty" style="display:none"></div></div>
+      <div class="spot-engine" id="spotEngineBar"></div>
       <div id="spotForm" style="display:none"></div>
       <div id="spotList" style="margin-top:14px"></div>
     </div>
@@ -2364,6 +2370,28 @@
         <button class="btn y" style="flex:none" onclick="copyMemoUrl()">주소 복사</button>
       </div>
       <div id="memoUrlMsg" style="margin-top:8px;font-size:12.5px;color:var(--muted);line-height:1.7"></div>
+    </div>
+    <div class="card">
+      <h3><span class="dot" style="background:#03c75a"></span> 네이버 지도 <span class="more">선택</span></h3>
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:10px">
+        지도 탭은 기본으로 OpenStreetMap을 씁니다. 네이버 클라우드 플랫폼에서 받은 <b>Client ID</b>를 넣으면 지도 배경이 네이버 지도로 바뀝니다(핀·목록은 그대로).
+        키가 없거나 인증에 실패하면 자동으로 OpenStreetMap으로 돌아갑니다.</p>
+      <div class="inrow">
+        <input id="naverKeyIn" class="in" style="flex:1" placeholder="네이버 지도 Client ID (ncpKeyId)" autocomplete="off">
+        <button class="btn y" style="flex:none" onclick="naverKeySave()">저장</button>
+        <button class="btn ghost" style="flex:none" onclick="naverKeyClear()">해제</button>
+      </div>
+      <div id="naverKeyStatus" style="margin-top:8px;font-size:13px;color:var(--muted)"></div>
+      <details style="margin-top:10px;font-size:12.5px;color:var(--muted);line-height:1.75">
+        <summary style="cursor:pointer;font-weight:800;color:var(--dark)">발급 방법 (10분)</summary>
+        <div style="margin-top:6px">
+          ① <a href="https://console.ncloud.com/" target="_blank" rel="noopener">console.ncloud.com</a> 가입 → 결제수단(카드) 등록 <span style="color:#8a9490">(월 600만 건까지 무료라 개인용은 0원입니다)</span><br>
+          ② 콘솔 <b>Services → Application Services → Maps → Application 등록</b><br>
+          ③ 서비스 선택에서 <b>Dynamic Map</b> 체크 (안 하면 429 오류) · 원하면 Geocoding 도 체크<br>
+          ④ <b>Web 서비스 URL</b>에 이 주소를 등록: <code id="naverUrlHint" style="background:var(--cream);padding:1px 6px;border-radius:6px;user-select:all"></code><br>
+          ⑤ 발급된 <b>Client ID</b>를 위 칸에 붙여 넣고 저장 → 지도 탭에서 확인
+        </div>
+      </details>
     </div>
     <div class="card">
       <h3><span class="dot" style="background:#4285f4"></span> 구글 캘린더 내보내기</h3>
@@ -2819,7 +2847,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-31 · r83';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-31 · r84';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -10563,8 +10591,36 @@ function spotColor(cat){
   return SPOT_PAL[Math.max(0,i-SPOT_BASE.length)%SPOT_PAL.length];
 }
 var spotMap=null,spotLayer=null,spotCatF='',spotVisF='',spotPend=null,spotEditId=null,spotTmp=null;
+var spotEngineNow=null, spotIw=null;   /* 지금 그려진 지도의 엔진 ('naver'|'osm') · 네이버 말풍선 */
 var SPOT_LEAF='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/';
+var SPOT_NAVER='https://oapi.map.naver.com/openapi/v3/maps.js';
+/* ---- 지도 엔진: 설정에 네이버 Client ID가 있으면 네이버, 없거나 인증 실패면 OpenStreetMap ---- */
+function spotNaverKey(){return String((db&&db.naverKey)||'').trim();}
+function spotEngine(){return (spotNaverKey()&&!window.__naverFail)?'naver':'osm';}
+function spotIsNaver(){return spotEngineNow==='naver'&&!!window.naver&&!!naver.maps;}
+window.navermap_authFailure=function(){          /* 네이버가 키·URL 거부 → OSM 으로 되돌아간다 */
+  window.__naverFail='인증 실패 · Client ID 또는 등록된 Web 서비스 URL을 확인하세요';
+  spotMapDestroy();
+  var m=document.getElementById('spotMapMsg');
+  if(m){m.style.display='';m.textContent='네이버 지도 인증에 실패해 OpenStreetMap으로 보여줍니다 · 설정에서 Client ID와 Web 서비스 URL을 확인하세요';
+    setTimeout(function(){m.style.display='none';},6000);}
+  renderSpots();naverKeyStatus();
+};
+function spotMsg(t){var m=document.getElementById('spotMapMsg');if(m){m.style.display=t?'':'none';m.textContent=t||'';}}
 function spotLib(cb){
+  if(spotEngine()==='naver'){
+    if(window.naver&&naver.maps&&naver.maps.Map){cb();return;}
+    if(window.__naverLoading){setTimeout(function(){spotLib(cb);},300);return;}
+    window.__naverLoading=1;
+    var ns=document.createElement('script');
+    ns.src=SPOT_NAVER+'?ncpKeyId='+encodeURIComponent(spotNaverKey())+'&submodules=geocoder';
+    ns.onload=function(){window.__naverLoading=0;cb();};
+    ns.onerror=function(){window.__naverLoading=0;window.__naverFail='스크립트를 불러오지 못했습니다';
+      spotMsg('네이버 지도를 불러오지 못해 OpenStreetMap으로 보여줍니다');setTimeout(function(){spotMsg('');},5000);
+      renderSpots();naverKeyStatus();};
+    document.head.appendChild(ns);
+    return;
+  }
   if(window.L){cb();return;}
   if(window.__leafLoading){setTimeout(function(){spotLib(cb);},300);return;}
   window.__leafLoading=1;
@@ -10572,9 +10628,48 @@ function spotLib(cb){
   var sc=document.createElement('script');sc.src=SPOT_LEAF+'leaflet.js';
   sc.onload=function(){window.__leafLoading=0;cb();};
   sc.onerror=function(){window.__leafLoading=0;
-    var m=document.getElementById('spotMapMsg');
-    if(m){m.style.display='';m.textContent='지도를 불러오지 못했습니다 · 인터넷 연결을 확인해 주세요 (스팟 데이터는 안전합니다)';}};
+    spotMsg('지도를 불러오지 못했습니다 · 인터넷 연결을 확인해 주세요 (스팟 데이터는 안전합니다)');};
   document.head.appendChild(sc);
+}
+/* 엔진이 바뀌면(키 저장·해제·인증 실패) 지금 지도를 걷어내고 다시 만든다 */
+function spotMapDestroy(){
+  if(!spotMap)return;
+  try{
+    if(spotEngineNow==='naver'){spotDrawClear();if(spotIw)spotIw.close();spotMap.destroy();}
+    else spotMap.remove();
+  }catch(e){}
+  spotMap=null;spotLayer=null;spotIw=null;spotTmp=null;spotEngineNow=null;
+  var el=document.getElementById('spotMap');if(el)el.innerHTML='';
+}
+function spotEngineBar(){
+  var b=document.getElementById('spotEngineBar');if(!b)return;
+  var nv=spotIsNaver();
+  b.innerHTML=(nv?'<b>네이버 지도</b>':'<b>OpenStreetMap</b>')
+    +(nv?'<span>주소 검색은 네이버, 상호명 검색은 OSM이 이어받습니다</span>'
+      :(spotNaverKey()?'<span style="color:var(--red)">네이버 지도 '+esc(window.__naverFail||'준비 중')+'</span>':'<span>설정에 네이버 Client ID를 넣으면 네이버 지도로 바뀝니다</span>'));
+}
+/* ---- 설정: 네이버 Client ID ---- */
+function naverKeySave(){
+  var v=(document.getElementById('naverKeyIn')||{}).value||'';v=v.trim();
+  if(!v){naverKeyClear();return;}
+  db.naverKey=v;window.__naverFail=null;save();
+  spotMapDestroy();
+  naverKeyStatus();hkChip('네이버 지도 키를 저장했습니다 · 지도 탭에서 확인하세요');
+}
+function naverKeyClear(){
+  delete db.naverKey;window.__naverFail=null;save();
+  var i=document.getElementById('naverKeyIn');if(i)i.value='';
+  spotMapDestroy();naverKeyStatus();
+}
+function naverKeyStatus(){
+  var el=document.getElementById('naverKeyStatus');if(!el)return;
+  var k=spotNaverKey();
+  el.innerHTML=!k?'아직 키가 없습니다 · OpenStreetMap으로 보여줍니다.'
+    :window.__naverFail?'<b style="color:var(--red)">'+esc(window.__naverFail)+'</b> · 지금은 OpenStreetMap으로 보여줍니다.'
+    :'✅ 키 저장됨 ('+esc(k.slice(0,4))+'…) · 지도 탭을 열면 네이버 지도로 그립니다.';
+  var i=document.getElementById('naverKeyIn');if(i&&k&&!i.value)i.value=k;
+  var h=document.getElementById('naverUrlHint');
+  if(h)h.textContent=(location.protocol==='file:')?'(file:// 은 등록할 수 없습니다 · GitHub Pages 주소를 등록하세요)':location.origin;
 }
 function spotFiltered(){
   var rs=(db.spots||[]).slice();
@@ -10613,7 +10708,8 @@ function renderSpots(){
   }
   var v=document.getElementById('view-map');
   if(!v||!v.classList.contains('on'))return;      /* 지도는 화면이 열렸을 때만 그린다 */
-  spotLib(function(){spotMapInit();spotDraw();});
+  spotLib(function(){spotMapInit();spotDraw();spotEngineBar();});
+  spotEngineBar();
 }
 function spotCatSet(c){spotCatF=c;renderSpots();}
 function spotVisSet(v){spotVisF=v;renderSpots();}
@@ -10625,26 +10721,76 @@ function spotCatAdd(){
   spotCatF=nm;renderSpots();
 }
 function spotMapInit(){
-  if(spotMap){setTimeout(function(){spotMap.invalidateSize();},80);return;}
-  var el=document.getElementById('spotMap');
-  if(!el||!window.L)return;
+  var eng=spotEngine();
+  if(spotMap&&spotEngineNow!==eng)spotMapDestroy();
+  if(spotMap){setTimeout(function(){spotResize();},80);return;}
+  var el=document.getElementById('spotMap');if(!el)return;
+  if(eng==='naver'){
+    if(!(window.naver&&naver.maps&&naver.maps.Map))return;
+    spotMap=new naver.maps.Map(el,{center:new naver.maps.LatLng(36.44,127.4),zoom:7,
+      mapTypeControl:true,mapTypeControlOptions:{style:naver.maps.MapTypeControlStyle.BUTTON,position:naver.maps.Position.TOP_RIGHT},
+      zoomControl:true,zoomControlOptions:{position:naver.maps.Position.TOP_LEFT,style:naver.maps.ZoomControlStyle.SMALL},
+      scaleControl:false,mapDataControl:false});
+    spotLayer=[];
+    spotIw=new naver.maps.InfoWindow({content:'',borderWidth:0,backgroundColor:'transparent',disableAnchor:true,
+      anchorSize:new naver.maps.Size(0,0),pixelOffset:new naver.maps.Point(0,-14)});
+    naver.maps.Event.addListener(spotMap,'click',function(e){spotIw.close();spotFormOpen(null,e.coord.lat(),e.coord.lng());});
+    spotEngineNow='naver';
+    return;
+  }
+  if(!window.L)return;
   spotMap=L.map(el).setView([36.44,127.4],8);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     {maxZoom:19,attribution:'© OpenStreetMap'}).addTo(spotMap);
   spotLayer=L.layerGroup().addTo(spotMap);
   spotMap.on('click',function(e){spotFormOpen(null,e.latlng.lat,e.latlng.lng);});
-  setTimeout(function(){spotMap.invalidateSize();},120);
+  spotEngineNow='osm';
+  setTimeout(function(){spotResize();},120);
+}
+function spotResize(){
+  if(!spotMap)return;
+  try{if(spotIsNaver()){var c=spotMap.getCenter();naver.maps.Event.trigger(spotMap,'resize');spotMap.setCenter(c);}else spotMap.invalidateSize();}catch(e){}
+}
+function spotClosePop(){try{if(spotIsNaver()){if(spotIw)spotIw.close();}else if(spotMap)spotMap.closePopup();}catch(e){}}
+function spotSetView(lat,lng,z){
+  if(!spotMap)return;
+  if(spotIsNaver()){spotMap.setCenter(new naver.maps.LatLng(lat,lng));spotMap.setZoom(z,true);}
+  else spotMap.setView([lat,lng],z);
+}
+/* 네이버용 핀: 색 원(가봤음=채움, 위시=빈 원) · 임시 핀은 점선 고리 */
+function spotPinHTML(col,visited,tmp){
+  var d=tmp?22:18;
+  return '<div style="width:'+d+'px;height:'+d+'px;border-radius:50%;box-sizing:border-box;border:'+(tmp?'2px dashed #12312b':'2.5px solid '+col)
+    +';background:'+(tmp?'rgba(18,49,43,.15)':visited?col:'rgba(255,255,255,.8)')+';box-shadow:0 1px 4px rgba(0,0,0,.28)"></div>';
+}
+function spotNvMarker(lat,lng,html,d){
+  return new naver.maps.Marker({position:new naver.maps.LatLng(lat,lng),map:spotMap,
+    icon:{content:html,size:new naver.maps.Size(d,d),anchor:new naver.maps.Point(d/2,d/2)}});
+}
+function spotDrawClear(){
+  if(spotIsNaver()){(spotLayer||[]).forEach(function(m){m.setMap(null);});spotLayer=[];}
+  else if(spotLayer&&window.L)spotLayer.clearLayers();
 }
 function spotDraw(){
-  if(!spotLayer||!window.L)return;
-  spotLayer.clearLayers();
+  if(!spotMap||!spotLayer)return;
+  spotDrawClear();
   spotFiltered().forEach(function(s){
     if(typeof s.lat!=='number'||typeof s.lng!=='number')return;
     var col=spotColor(s.cat);
-    L.circleMarker([s.lat,s.lng],{radius:9,color:col,weight:2.5,fillColor:col,fillOpacity:s.visited?0.85:0.12})
-      .bindPopup(spotPopHTML(s)).addTo(spotLayer);
+    if(spotIsNaver()){
+      var mk=spotNvMarker(s.lat,s.lng,spotPinHTML(col,s.visited,false),18);
+      mk.setTitle(s.name);
+      naver.maps.Event.addListener(mk,'click',function(){
+        spotIw.setContent('<div class="spot-nvpop"><span class="x" onclick="spotClosePop()">×</span>'+spotPopHTML(s)+'</div>');
+        spotIw.open(spotMap,mk);
+      });
+      spotLayer.push(mk);
+    }else{
+      L.circleMarker([s.lat,s.lng],{radius:9,color:col,weight:2.5,fillColor:col,fillOpacity:s.visited?0.85:0.12})
+        .bindPopup(spotPopHTML(s)).addTo(spotLayer);
+    }
   });
-  if(spotTmp)spotTmp.addTo(spotLayer);
+  if(spotTmp){if(spotIsNaver())spotTmp.setMap(spotMap);else spotTmp.addTo(spotLayer);}
 }
 function spotPopHTML(s){
   return '<div class="spot-pop"><b>'+esc(s.name)+'</b>'
@@ -10655,16 +10801,22 @@ function spotPopHTML(s){
     +'<span onclick="spotFormOpen('+s.id+')">수정</span>'
     +'<span style="color:#c0574f" onclick="spotDel('+s.id+')">삭제</span></div></div>';
 }
-function spotTmpClear(){if(spotTmp&&spotLayer)spotLayer.removeLayer(spotTmp);spotTmp=null;}
+function spotTmpClear(){
+  if(spotTmp){try{if(spotIsNaver())spotTmp.setMap(null);else if(spotLayer)spotLayer.removeLayer(spotTmp);}catch(e){}}
+  spotTmp=null;
+}
 function spotFormOpen(id,lat,lng){
   spotEditId=id||null;
   var s=id?(db.spots||[]).find(function(x){return x.id===id;}):null;
   if(id&&!s)return;
   spotPend=id?null:{lat:lat,lng:lng};
   spotTmpClear();
-  if(!id&&window.L&&spotLayer){
-    spotTmp=L.circleMarker([lat,lng],{radius:11,color:'#12312b',weight:2,dashArray:'4 3',fillOpacity:.15});
-    spotTmp.addTo(spotLayer);
+  if(!id&&spotMap){
+    if(spotIsNaver())spotTmp=spotNvMarker(lat,lng,spotPinHTML('',false,true),22);
+    else if(window.L&&spotLayer){
+      spotTmp=L.circleMarker([lat,lng],{radius:11,color:'#12312b',weight:2,dashArray:'4 3',fillOpacity:.15});
+      spotTmp.addTo(spotLayer);
+    }
   }
   var f=document.getElementById('spotForm');if(!f)return;
   f.style.display='';
@@ -10712,7 +10864,7 @@ function spotVisTgl(id){
   var s=(db.spots||[]).find(function(x){return x.id===id;});
   if(!s)return;
   s.visited=!s.visited;save();
-  if(spotMap)spotMap.closePopup();
+  spotClosePop();
   renderSpots();
 }
 function spotDel(id){
@@ -10720,40 +10872,62 @@ function spotDel(id){
   if(!s)return;
   if(!confirm('「'+s.name+'」 스팟을 지울까요?'))return;
   db.spots=db.spots.filter(function(x){return x.id!==id;});
-  if(spotMap)spotMap.closePopup();
+  spotClosePop();
   save();renderSpots();
 }
 function spotGoto(id){
   var s=(db.spots||[]).find(function(x){return x.id===id;});
   if(!s)return;
-  if(spotMap){spotMap.setView([s.lat,s.lng],15);}
+  spotSetView(s.lat,s.lng,15);
   window.scrollTo(0,0);
 }
-/* 주소·지명 검색 (OpenStreetMap Nominatim) */
+/* 주소·지명 검색: 네이버 지도가 켜져 있으면 네이버 지오코딩(주소)부터, 없으면 OpenStreetMap Nominatim(지명·상호) */
+function spotSrShow(list,q){
+  var out=document.getElementById('spotSearchOut');if(!out)return;
+  window.__spotSr=list||[];
+  out.innerHTML=(list&&list.length)?list.map(function(r,i){
+    return '<div class="spot-sr" onclick="spotSrPick('+i+')">'+(r.src==='naver'?'<span style="color:#03c75a;font-weight:800">N</span> ':'📍 ')+esc(r.display_name)+'</div>';
+  }).join(''):'<div class="empty" style="padding:8px 0">검색 결과가 없습니다 · 지명이나 주소로 다시 시도해 보세요</div>';
+}
+function spotSearchOSM(q,cb){
+  fetch('https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=kr&accept-language=ko&q='+encodeURIComponent(q))
+    .then(function(r){return r.json();})
+    .then(function(j){cb((j||[]).map(function(r){return {display_name:r.display_name,lat:Number(r.lat),lon:Number(r.lon),src:'osm'};}));})
+    .catch(function(){cb(null);});
+}
+function spotSearchNaver(q,cb){
+  try{
+    if(!(spotIsNaver()&&naver.maps.Service&&naver.maps.Service.geocode)){cb([]);return;}
+    naver.maps.Service.geocode({query:q},function(status,res){
+      if(status!==naver.maps.Service.Status.OK){cb([]);return;}
+      var as=(res&&res.v2&&res.v2.addresses)||[];
+      cb(as.slice(0,5).map(function(a){return {display_name:(a.roadAddress||a.jibunAddress||'')+(a.roadAddress&&a.jibunAddress?' ('+a.jibunAddress+')':''),
+        lat:Number(a.y),lon:Number(a.x),src:'naver'};}).filter(function(r){return r.display_name&&!isNaN(r.lat);}));
+    });
+  }catch(e){cb([]);}
+}
 function spotSearch(){
   var q=(document.getElementById('spotQ')||{}).value||'';q=q.trim();
   var out=document.getElementById('spotSearchOut');if(!out)return;
   if(!q){out.innerHTML='';return;}
   out.innerHTML='<div class="empty" style="padding:8px 0">찾는 중…</div>';
-  fetch('https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=kr&accept-language=ko&q='+encodeURIComponent(q))
-    .then(function(r){return r.json();})
-    .then(function(j){
-      window.__spotSr=j||[];
-      out.innerHTML=(j&&j.length)?j.map(function(r,i){
-        return '<div class="spot-sr" onclick="spotSrPick('+i+')">📍 '+esc(r.display_name)+'</div>';
-      }).join(''):'<div class="empty" style="padding:8px 0">검색 결과가 없습니다 · 지명이나 주소로 다시 시도해 보세요</div>';
-    })
-    .catch(function(){out.innerHTML='<div class="empty" style="padding:8px 0">검색하지 못했습니다 · 인터넷 연결을 확인해 주세요</div>';});
+  spotSearchNaver(q,function(nv){
+    if(nv&&nv.length){spotSrShow(nv,q);return;}
+    spotSearchOSM(q,function(os){
+      if(os===null){out.innerHTML='<div class="empty" style="padding:8px 0">검색하지 못했습니다 · 인터넷 연결을 확인해 주세요</div>';return;}
+      spotSrShow(os,q);
+    });
+  });
 }
 function spotSrPick(i){
   var r=(window.__spotSr||[])[i];if(!r)return;
   var out=document.getElementById('spotSearchOut');if(out)out.innerHTML='';
   var la=Number(r.lat),ln=Number(r.lon);
-  if(spotMap)spotMap.setView([la,ln],15);
+  spotSetView(la,ln,15);
   spotFormOpen(null,la,ln);
   setTimeout(function(){
     var n=document.getElementById('spName');
-    if(n&&!n.value)n.value=String(r.display_name||'').split(',')[0].trim();
+    if(n&&!n.value)n.value=(r.src==='naver')?((document.getElementById('spotQ')||{}).value||'').trim():String(r.display_name||'').split(',')[0].trim();
   },80);
 }
 
@@ -11028,7 +11202,8 @@ function renderAll(){
   });
 }
 (function(){var e=document.getElementById('buildStamp');
-  if(e)e.textContent='버전 '+HMD_BUILD;})();
+  if(e)e.textContent='버전 '+HMD_BUILD;
+  try{naverKeyStatus();}catch(_){}})();
 [renderAll,applyTopState,renderSyncUI,renderBackupUI,backupTick].forEach(function(f){
   try{f();}catch(e){try{console.error('boot · '+(f.name||'?')+':',e);}catch(_){}}
 });
