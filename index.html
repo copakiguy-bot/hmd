@@ -432,6 +432,13 @@
   .spot-row .mm{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
   .spot-row .vis{flex:none;font-size:11px;font-weight:800;cursor:pointer;border:1px solid var(--line);border-radius:12px;padding:2px 9px;color:var(--muted)}
   .spot-row .vis.on{background:var(--green);border-color:var(--green);color:#fff}
+  .spot-row .nmw{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+  .spot-row .nmw .ad{font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .spot-row .nmw .nt{font-size:11.5px;color:#7a6a3a;margin-left:6px;font-weight:500}
+  .spot-pop .ad{font-size:11.5px;color:#666;margin-top:2px;max-width:220px}
+  .spot-pop .nt{font-size:11px;color:#7a6a3a;margin-left:5px;font-weight:600}
+  .spot-pop .st{display:inline-block;margin-top:5px;font-size:11px;font-weight:800;border-radius:10px;padding:1px 8px;border:1px solid #d8ddd9;color:#8a9490}
+  .spot-pop .st.on{background:var(--green);border-color:var(--green);color:#fff}
   .spot-sr{padding:7px 10px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;font-size:12.5px;cursor:pointer;background:#fff}
   .spot-sr:hover{border-color:#2a78d6;color:#2a78d6}
   .spot-pop b{font-size:13px}
@@ -2881,7 +2888,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-31 · r88';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-31 · r89';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4151,7 +4158,7 @@ function tlrGraphCard(){
   var months=[],k;for(k=1;k<=tlrGN;k++){var mm=expMonAdd(base,-k);var c=tlrGMonth(mm,kind);if(c.any)months.push(c);}
   var avg=[],i;
   for(i=0;i<31;i++){var sum=0,cnt=0;months.forEach(function(x){var v=x.vals[i];if(v!=null){sum+=v;cnt++;}});
-    avg.push((cnt&&i<B.n&&B.vals[i]!==null)?sum/cnt:null);}   /* 이번달 휴일 자리는 평균선도 끊는다 */
+    avg.push((cnt&&i<B.n&&B.vals[i]!==null)?sum/cnt:null);}   /* 이번달 휴일 자리는 평균값을 두지 않는다 (선은 평일끼리 잇는다) */
   var todayD=isCur?(+today().slice(8,10)):B.n;
   var obs=[].concat(B.vals,P.vals,avg).filter(function(v){return v!=null;});
   var yMax=Math.max(1,maxN,Math.max.apply(null,obs.concat([0])));
@@ -4164,10 +4171,12 @@ function tlrGraphCard(){
   /* 휴일 칸은 옅은 띠로 */
   for(i=0;i<B.n;i++){if(B.vals[i]===null){var x0=i===0?padL:(X(i-1)+X(i))/2,x1=i===N-1?W-padR:(X(i)+X(i+1))/2;
     s+='<rect x="'+x0.toFixed(1)+'" y="'+padT+'" width="'+(x1-x0).toFixed(1)+'" height="'+IH+'" fill="#f3f1ea"/>';}}
-  [1,5,10,15,20,25,31].forEach(function(dd){var x=X(dd-1);
-    s+='<text x="'+x.toFixed(1)+'" y="'+(H-padB+18)+'" text-anchor="middle" font-size="12" fill="#8a9490">'+dd+'일</text>';});
-  /* 선: null(휴일)에서 끊는다 */
-  function path(arr,upto){var p='',pen=false,j;for(j=0;j<Math.min(arr.length,upto);j++){var a=arr[j];if(a==null){pen=false;continue;}p+=(pen?' L':' M')+X(j).toFixed(1)+' '+Y(a).toFixed(1);pen=true;}return p.trim();}
+  /* 가로축: 실제 날짜 «8.1» 을 매일 (휴일은 옅게) */
+  var mo=+base.slice(5,7);
+  for(i=0;i<B.n;i++){var xx=X(i),hol=B.vals[i]===null;
+    s+='<text x="'+xx.toFixed(1)+'" y="'+(H-padB+17)+'" text-anchor="middle" font-size="'+(B.n>28?'9.5':'10.5')+'" fill="'+(hol?'#c9b8b8':'#8a9490')+'"'+(i+1===todayD&&isCur?' font-weight="800"':'')+'>'+mo+'.'+(i+1)+'</text>';}
+  /* 선: 휴일(null)은 건너뛰고 평일끼리 이어 그린다 */
+  function path(arr,upto){var p='',pen=false,j;for(j=0;j<Math.min(arr.length,upto);j++){var a=arr[j];if(a==null)continue;p+=(pen?' L':' M')+X(j).toFixed(1)+' '+Y(a).toFixed(1);pen=true;}return p.trim();}
   function dots(arr,upto,col,r){var o='',j;for(j=0;j<Math.min(arr.length,upto);j++){if(arr[j]==null)continue;o+='<circle cx="'+X(j).toFixed(1)+'" cy="'+Y(arr[j]).toFixed(1)+'" r="'+r+'" fill="'+col+'"/>';}return o;}
   if(months.length){s+='<path d="'+path(avg,N)+'" fill="none" stroke="#12312b" stroke-width="2" stroke-dasharray="5 4" opacity=".5"/>';}
   if(P.any){s+='<path d="'+path(P.vals,P.n)+'" fill="none" stroke="#6a8fd8" stroke-width="2" stroke-linejoin="round" opacity=".9"/>'+dots(P.vals,P.n,'#6a8fd8',2.5);}
@@ -4191,7 +4200,7 @@ function tlrGraphCard(){
   var legend='<div class="xc-leg"><span style="cursor:default"><i style="background:#1c8258"></i>'+(isCur?'이번달':(+base.slice(5))+'월')+' ('+base.replace('-','.')+')</span>'
     +'<span style="cursor:default"><i style="background:#6a8fd8"></i>전달 ('+prev.replace('-','.')+')</span>'
     +'<span style="cursor:default"><i style="background:#12312b;opacity:.6"></i>평균 (지난 '+months.length+'달)</span>'
-    +'<span style="cursor:default;color:var(--muted);margin-left:auto">세로축 최대 = 평일 루틴 '+maxN+'개 · 옅은 띠는 토·일·공휴일</span></div>';
+    +'<span style="cursor:default;color:var(--muted);margin-left:auto">세로축 최대 = 평일 루틴 '+maxN+'개 · 옅은 띠는 토·일·공휴일 (선은 평일끼리 이어짐)</span></div>';
   var body=(!B.any&&!P.any&&!months.length)?'<div class="empty">아직 평일 루틴 성공 기록이 없습니다. 타임라인이나 루틴 카드에서 «성공»을 누르면 쌓입니다.</div>'
     :'<div class="xc-wrap"><svg viewBox="0 0 '+W+' '+H+'" onmouseleave="tlrGTipHide()">'+s+'</svg><div class="xc-tip" id="rgTip"></div></div>'+legend;
   return '<div class="card">'+head+body+'</div>';
@@ -11050,7 +11059,7 @@ function renderSpots(){
     return '<button class="lunar-toggle'+(spotCatF===x[0]?' on':'')+'" onclick="spotCatSet(\''+x[0]+'\')">'+x[1]+'</button>';
   }).join('')+'<button class="lunar-toggle" title="분류 추가" onclick="spotCatAdd()">＋</button>';
   var vb=document.getElementById('spotVisBtns');
-  if(vb)vb.innerHTML=[['','모두'],['y','가봤음'],['n','위시']].map(function(x){
+  if(vb)vb.innerHTML=[['','모두'],['y','✓ 가봤음'],['n','예정']].map(function(x){
     return '<button class="lunar-toggle'+(spotVisF===x[0]?' on':'')+'" onclick="spotVisSet(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');
   var cnt=document.getElementById('spotCnt');
   if(cnt)cnt.textContent=(db.spots||[]).length?((db.spots||[]).length+'곳'):'';
@@ -11061,15 +11070,17 @@ function renderSpots(){
       return '<div class="spot-row">'
         +'<span style="width:10px;height:10px;border-radius:50%;flex:none;background:'+spotColor(s.cat)
           +(s.visited?'':';background:transparent;border:2.5px solid '+spotColor(s.cat))+'"></span>'
-        +'<span class="nm" title="지도에서 보기" onclick="spotGoto('+s.id+')">'+esc(s.name)+'</span>'
+        +'<span class="nmw"><span><span class="nm" title="지도에서 보기" onclick="spotGoto('+s.id+')">'+esc(s.name)+'</span>'
+          +(s.note?'<span class="nt">'+esc(s.note)+'</span>':'')+'</span>'
+          +'<span class="ad">'+esc(s.addr||'')+(s.memo?(s.addr?' · ':'')+esc(s.memo):'')+'</span></span>'
         +'<span class="cat" style="background:'+spotColor(s.cat)+'">'+esc(s.cat)+'</span>'
-        +'<span class="mm">'+esc(s.memo||'')+'</span>'
-        +'<span class="vis'+(s.visited?' on':'')+'" onclick="spotVisTgl('+s.id+')">'+(s.visited?'✓ 가봤음':'위시')+'</span>'
+        +'<span class="vis'+(s.visited?' on':'')+'" onclick="spotVisTgl('+s.id+')" title="눌러서 바꾸기">'+(s.visited?'✓':'예정')+'</span>'
         +(s.link?'<span class="art-link" title="링크 열기" onclick="window.open(\''+escA(s.link)+'\',\'_blank\')">↗</span>':'')
         +'<span class="pen-ic" title="수정" onclick="spotFormOpen('+s.id+')">✎</span>'
         +'<span class="del" onclick="spotDel('+s.id+')">×</span></div>';
     }).join(''):'<div class="empty" style="padding:12px 0">'
       +((db.spots||[]).length?'조건에 맞는 스팟이 없습니다.':'아직 스팟이 없습니다. 지도를 누르거나 주소를 검색해 첫 스팟을 꽂아보세요.')+'</div>';
+    ls.querySelectorAll('.vis.on').forEach(function(v){v.title='가봤음 · 눌러서 예정으로';});
   }
   var v=document.getElementById('view-map');
   if(!v||!v.classList.contains('on'))return;      /* 지도는 화면이 열렸을 때만 그린다 */
@@ -11206,11 +11217,13 @@ function spotDraw(){
   if(spotTmp){if(spotIsNaver())spotTmp.setMap(spotMap);else spotTmp.addTo(spotLayer);}
 }
 function spotPopHTML(s){
-  return '<div class="spot-pop"><b>'+esc(s.name)+'</b>'
-    +'<div class="m">'+esc(s.cat)+(s.visited?' · 가봤음':' · 가보고 싶은 곳')+(s.memo?'<br>'+esc(s.memo):'')+'</div>'
+  return '<div class="spot-pop"><b>'+esc(s.name)+'</b>'+(s.note?'<span class="nt">'+esc(s.note)+'</span>':'')
+    +(s.addr?'<div class="ad">'+esc(s.addr)+'</div>':'')
+    +'<div class="m">'+esc(s.cat)+(s.memo?' · '+esc(s.memo):'')+'</div>'
+    +'<span class="st'+(s.visited?' on':'')+'">'+(s.visited?'✓ 가봤음':'예정')+'</span>'
     +'<div class="r">'
     +(s.link?'<span onclick="window.open(\''+escA(s.link)+'\',\'_blank\')">링크</span>':'')
-    +'<span onclick="spotVisTgl('+s.id+')">'+(s.visited?'위시로':'가봤음!')+'</span>'
+    +'<span onclick="spotVisTgl('+s.id+')">'+(s.visited?'예정으로':'✓ 가봤음으로')+'</span>'
     +'<span onclick="spotFormOpen('+s.id+')">수정</span>'
     +'<span style="color:#c0574f" onclick="spotDel('+s.id+')">삭제</span></div></div>';
 }
@@ -11237,9 +11250,13 @@ function spotFormOpen(id,lat,lng){
     +'<span class="rdp-hint">'+(id?'':'지도에 표시된 자리에 저장됩니다')+'</span></div>'
     +'<div class="rowx">'
     +'<input id="spName" class="in" style="flex:2;min-width:140px" placeholder="이름 (예: 진미식당)" value="'+escA(s?s.name:'')+'" onkeydown="if(event.key===\'Enter\')spotSave()">'
+    +'<input id="spNote" class="in" style="flex:1;min-width:100px" placeholder="비고 (예: 2호점)" value="'+escA(s?s.note||'':'')+'">'
     +'<select id="spCat" class="rowsel">'+spotCats().map(function(c){
       return '<option'+((s?s.cat:'맛집')===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select>'
     +'<label class="cn-chk" style="color:var(--green)"><input type="checkbox" id="spVis"'+(s&&s.visited?' checked':'')+'> 가봤음</label>'
+    +'</div>'
+    +'<div class="rowx" style="margin-top:8px">'
+    +'<input id="spAddr" class="in" style="flex:2;min-width:180px" placeholder="주소 (비워두면 자동으로 찾습니다)" value="'+escA(s?s.addr||'':(window.__spotAddrHint||''))+'">'
     +'</div>'
     +'<div class="rowx" style="margin-top:8px">'
     +'<input id="spMemo" class="in" style="flex:2;min-width:160px" placeholder="메모 (예: 수요일 휴무 · 김치찜)" value="'+escA(s?s.memo||'':'')+'">'
@@ -11247,11 +11264,38 @@ function spotFormOpen(id,lat,lng){
     +'<button class="btn y" style="flex:none" onclick="spotSave()">저장</button>'
     +'<button class="btn ghost" style="flex:none" onclick="spotFormClose()">취소</button>'
     +'</div></div>';
+  window.__spotAddrHint='';   /* 검색에서 넘어온 주소는 한 번만 쓴다 */
   setTimeout(function(){var n=document.getElementById('spName');if(n)n.focus();},60);
+}
+/* 좌표 → 주소 (네이버가 켜져 있으면 네이버, 아니면 OSM) */
+function spotFmtOsmAddr(dn){
+  var parts=String(dn||'').split(',').map(function(x){return x.trim();}).filter(function(x){return x&&x!=='대한민국'&&!/^\d{3,}$/.test(x);});
+  return parts.reverse().join(' ');
+}
+function spotRevGeo(lat,lng,cb){
+  try{
+    if(spotIsNaver()&&naver.maps.Service&&naver.maps.Service.reverseGeocode){
+      naver.maps.Service.reverseGeocode({coords:new naver.maps.LatLng(lat,lng),orders:[naver.maps.Service.OrderType.ROAD_ADDR,naver.maps.Service.OrderType.ADDR].join(',')},function(status,res){
+        if(status!==naver.maps.Service.Status.OK){cb('');return;}
+        var a=res&&res.v2&&res.v2.address;cb(a?(a.roadAddress||a.jibunAddress||''):'');
+      });return;
+    }
+  }catch(e){}
+  fetch('https://nominatim.openstreetmap.org/reverse?format=json&accept-language=ko&zoom=18&lat='+lat+'&lon='+lng)
+    .then(function(r){return r.json();}).then(function(j){cb(spotFmtOsmAddr(j&&j.display_name));})
+    .catch(function(){cb('');});
+}
+function spotFillAddr(s){
+  spotRevGeo(s.lat,s.lng,function(addr){
+    if(!addr)return;
+    var x=(db.spots||[]).find(function(v){return v.id===s.id;});
+    if(x&&!x.addr){x.addr=addr;save();renderSpots();}
+  });
 }
 function spotFormClose(){
   var f=document.getElementById('spotForm');
   if(f){f.style.display='none';f.innerHTML='';}
+  window.__spotAddrHint='';
   spotPend=null;spotEditId=null;spotTmpClear();
   if(spotMap)spotDraw();
 }
@@ -11263,12 +11307,16 @@ function spotSave(){
   var visited=!!(document.getElementById('spVis')&&document.getElementById('spVis').checked);
   if(spotEditId){
     var s=(db.spots||[]).find(function(x){return x.id===spotEditId;});
-    if(s){s.name=name;s.cat=cat;s.visited=visited;s.memo=g('spMemo');s.link=g('spLink');}
+    if(s){s.name=name;s.cat=cat;s.visited=visited;s.memo=g('spMemo');s.link=g('spLink');s.note=g('spNote');s.addr=g('spAddr');
+      if(!s.addr)spotFillAddr(s);}
   }else{
     if(!spotPend)return;
-    db.spots.push({id:uid(),name:name,cat:cat,lat:spotPend.lat,lng:spotPend.lng,
-      visited:visited,memo:g('spMemo'),link:g('spLink'),date:today()});
+    var ns={id:uid(),name:name,cat:cat,lat:spotPend.lat,lng:spotPend.lng,
+      visited:visited,memo:g('spMemo'),link:g('spLink'),note:g('spNote'),addr:g('spAddr'),date:today()};
+    db.spots.push(ns);
+    if(!ns.addr)spotFillAddr(ns);
   }
+  window.__spotAddrHint='';
   save();spotFormClose();renderSpots();
   hkChip('스팟을 저장했습니다 · '+name);
   setTimeout(function(){hkChip('');},1800);
@@ -11337,6 +11385,7 @@ function spotSrPick(i){
   var out=document.getElementById('spotSearchOut');if(out)out.innerHTML='';
   var la=Number(r.lat),ln=Number(r.lon);
   spotSetView(la,ln,15);
+  window.__spotAddrHint=(r.src==='naver')?String(r.display_name||'').replace(/\s*\(.*\)$/,''):spotFmtOsmAddr(r.display_name);
   spotFormOpen(null,la,ln);
   setTimeout(function(){
     var n=document.getElementById('spName');
