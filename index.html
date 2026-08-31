@@ -381,6 +381,7 @@
   .dy-side{flex:none;width:212px;max-height:74vh;overflow:auto;border-right:1px solid var(--line);padding-right:12px}
   .dy-main{flex:1;min-width:0;max-height:74vh;overflow:auto;padding-right:4px}
   .dy-main .entry{max-width:700px;margin-left:auto;margin-right:auto}
+  .dy-main .body.dy-full{cursor:text;user-select:text}
   .dy-all{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:800;color:var(--muted);padding:7px 8px;border-radius:9px;cursor:pointer;margin-bottom:4px}
   .dy-all.on{background:var(--dark);color:#fff}
   .dy-all .n{margin-left:auto;font-weight:600;opacity:.75;font-size:11px}
@@ -2918,7 +2919,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-31 · r92';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-31 · r93';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4433,21 +4434,24 @@ function dockApply(st){st=st||{};
   applyTopState();
 }
 function dockAllOff(){topActive=null;calSub={sched:false,tl:false,session:false,ot:false};applyTopState();}
-function addDiary(inputId){var el=document.getElementById(inputId||'diaryInput');if(!el)return;var v=el.value.trim();if(!v)return;db.diary.push({id:uid(),date:today(),text:v,kind:fwDiaryKind||'기록'});save();el.value='';renderDiary();renderDiaryPage();renderCal();}
+function dyNowTime(){var d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function addDiary(inputId){var el=document.getElementById(inputId||'diaryInput');if(!el)return;var v=el.value.trim();if(!v)return;db.diary.push({id:uid(),date:today(),time:dyNowTime(),text:v,kind:fwDiaryKind||'기록'});save();el.value='';renderDiary();renderDiaryPage();renderCal();}
 function editDiary(id,val){var x=db.diary.find(function(a){return a.id===id;});if(!x)return;var v=String(val).trim();if(v)x.text=v;save();}
 function delDiary(id){db.diary=db.diary.filter(function(a){return a.id!==id;});save();renderDiary();renderDiaryPage();}
-function diaryItem(x){return '<div class="entry"><div class="meta">'+
-  '<span class="day">'+esc(x.date||'')+'</span>'+
+/* full=true 면 (일기 페이지 오른쪽 칸) 자르지 않고 전문을 보여 준다 */
+function diaryItem(x,full){return '<div class="entry"><div class="meta">'+
+  '<span class="day">'+esc(x.date||'')+(x.time?' '+esc(x.time):'')+'</span>'+
   (x.kind?'<span class="dy-kind">'+esc(x.kind)+'</span>':'')+
   '<span class="pen-ic" style="margin-left:auto" title="수정" onclick="editDiaryFull('+x.id+')">✎</span>'+
   '<span class="del" onclick="delDiary('+x.id+')">×</span></div>'+
-  '<div class="body ex-clip" title="크게 보기" onclick="openDiaryView('+x.id+')">'+fwR(x.text)+'</div></div>';}
+  (full?'<div class="body dy-full">'+fwR(x.text)+'</div></div>'
+      :'<div class="body ex-clip" title="크게 보기" onclick="openDiaryView('+x.id+')">'+fwR(x.text)+'</div></div>');}
 /* 일기 크게 보기 / 수정 */
 var dvId=null;
 function diaryById(id){return db.diary.find(function(a){return a.id===id;});}
 function openDiaryView(id){var x=diaryById(id);if(!x)return;
   dvId=id;exvBook=null;exvId=null;
-  document.getElementById('exvMeta').textContent=(x.date||'')+(x.kind?' · '+x.kind:'');
+  document.getElementById('exvMeta').textContent=(x.date||'')+(x.time?' '+x.time:'')+(x.kind?' · '+x.kind:'');
   var bd=document.getElementById('exvBody');bd.classList.add('dy');bd.innerHTML=fwR(x.text);
   document.getElementById('exvBack').classList.add('on');}
 function editDiaryFull(id){var x=diaryById(id);if(!x)return;
@@ -4498,7 +4502,9 @@ function renderDiaryPage(){
   var el=document.getElementById('diaryPage');if(!el)return;
   var cnt=document.getElementById('diaryCount');if(cnt)cnt.textContent=db.diary.length+'건';
   if(!db.diary.length){el.innerHTML='<div class="empty">작성한 일기가 없습니다.</div>';return;}
-  var list=db.diary.slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date));});
+  var list=db.diary.slice().sort(function(a,b){
+    var c=String(b.date).localeCompare(String(a.date));
+    return c||String(b.time||'').localeCompare(String(a.time||''));});
   /* 달별로 묶고, 연도별로 다시 묶는다 */
   var byMon={},order=[];
   list.forEach(function(x){var m=monthOf(x.date)||'(날짜없음)';
@@ -4535,15 +4541,19 @@ function renderDiaryPage(){
   var g={},dates=[];
   shown.forEach(function(x){var d=x.date||'(날짜없음)';if(!g[d]){g[d]=[];dates.push(d);}g[d].push(x);});
   var head='';
-  if(dySelDate)head='<div class="dy-mhead">'+esc(dyFullLabel(dySelDate))+'<span class="s">'+shown.length+'건</span></div>';
+  if(dySelDate){
+    var tms=shown.map(function(x){return x.time||'';}).filter(Boolean).sort();
+    var rg=tms.length?(tms[0]===tms[tms.length-1]?tms[0]:tms[0]+'~'+tms[tms.length-1]):'';
+    head='<div class="dy-mhead">'+esc(dyFullLabel(dySelDate))+'<span class="s">'+shown.length+'건'+(rg?' · '+esc(rg):'')+'</span></div>';
+  }
   else if(dySelMon)head='<div class="dy-mhead">'+esc(dySelMon.slice(0,4))+'년 '+esc(dyMonLabel(dySelMon))
       +'<span class="s">'+shown.length+'건 · '+dates.length+'일 · 왼쪽에서 날짜를 고르면 그 날만 봅니다</span></div>';
   var main=head+dates.map(function(d){
-    if(dySelDate)return g[d].map(diaryItem).join('');   /* 하루만 볼 땐 날짜 머리글 없이 */
+    if(dySelDate)return g[d].map(function(x){return diaryItem(x,true);}).join('');   /* 하루만 볼 땐 날짜 머리글 없이 */
     var open=diaryOpen[d]!==true;   /* 기본 펼침 · 누르면 접힘 */
     return '<div class="datehdr dy-date" onclick="toggleDiaryDate(\''+esc(d)+'\')"><span>'+esc(d)+'</span>'
       +'<span class="dy-cnt">'+g[d].length+'건</span><span class="dy-arrow">'+(open?'▾':'▸')+'</span></div>'
-      +(open?g[d].map(diaryItem).join(''):'');}).join('');
+      +(open?g[d].map(function(x){return diaryItem(x,true);}).join(''):'');}).join('');
   el.innerHTML='<div class="dy-wrap"><div class="dy-side">'+side+'</div><div class="dy-main">'+main+'</div></div>';
 }
 let __pushT=null;
@@ -5578,7 +5588,7 @@ function inbItemTo(id,kind){
     db.inbox=db.inbox.filter(function(a){return a.id!==id;});
     save();renderCal();renderSchedule();
   }else if(kind==='diary'){
-    db.diary.push({id:uid(),date:today(),text:x.t,kind:'기록'});
+    db.diary.push({id:uid(),date:today(),time:dyNowTime(),text:x.t,kind:'기록'});
     db.inbox=db.inbox.filter(function(a){return a.id!==id;});
     save();renderDiary();renderDiaryPage();renderCal();
   }else if(kind==='hold'){ x.grp='hold';save(); }
