@@ -16,6 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
@@ -1192,7 +1193,10 @@
   .xl-cell:focus{background:#fffbea;text-align:left}
   
   .wv-tools{display:flex;align-items:center;gap:8px;padding:12px 12px 8px}
-  .wv-vault{font-size:14px;font-weight:800;color:var(--dark);flex:1}
+  .wv-vault{font-size:13.5px;font-weight:800;color:var(--dark);flex:1;
+    font-family:'Inter','Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif}
+  .wv-tbtns button{font-size:13px}
+  .wv-hbtn.on{background:var(--yellow-soft);color:var(--dark)}
   .wv-tbtns{display:flex;gap:4px}
   .wv-tbtns button{border:none;background:var(--cream);width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px;line-height:1}
   .wv-tbtns button:hover{background:var(--yellow-soft)}
@@ -1201,16 +1205,19 @@
   .wv-tags{display:flex;flex-wrap:wrap;gap:5px;padding:0 12px 8px}
   .wv-tag{font-size:11px;background:var(--yellow-soft);color:#a9721a;border-radius:20px;padding:2px 9px;cursor:pointer;font-weight:600}
   .wv-tag.on{background:var(--yellow);color:var(--dark)}
-  .wv-tree{flex:1;overflow:auto;padding:4px 6px 12px}
-  .wv-row{display:flex;align-items:center;gap:5px;padding:5px 6px;border-radius:8px;cursor:pointer;font-size:13.5px;position:relative;user-select:none}
-  .wv-row:hover{background:#efeee7}
-  .wv-file.on{background:var(--yellow-soft)}
-  .wv-ca{width:12px;font-size:10px;color:var(--muted);flex-shrink:0}
-  .wv-ic{font-size:13px;flex-shrink:0}
+  .wv-tree{flex:1;overflow:auto;padding:4px 6px 12px;
+    font-family:'Inter','Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;letter-spacing:-.15px}
+  .wv-row{display:flex;align-items:center;gap:4px;padding:4px 6px;border-radius:6px;cursor:pointer;font-size:13px;position:relative;user-select:none;color:#5b6360}
+  .wv-row:hover{background:#efeee7;color:var(--dark)}
+  .wv-folder{font-weight:600;color:#4a524f}
+  .wv-file.on{background:var(--yellow-soft);color:var(--dark);font-weight:600}
+  .wv-gd{position:absolute;top:0;bottom:0;width:1px;background:#e2e0d6;pointer-events:none}
+  .wv-ca{width:12px;font-size:11px;color:#a8b0ac;flex-shrink:0;text-align:center;transition:transform .12s ease;display:inline-block}
+  .wv-ca.o{transform:rotate(90deg)}
   .wv-nm{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .wv-act{display:none;gap:2px}
   .wv-row:hover .wv-act{display:flex}
-  .wv-act i{font-style:normal;font-size:12px;padding:2px 3px;border-radius:5px;cursor:pointer;opacity:.65}
+  .wv-act i{font-style:normal;font-size:11.5px;padding:1px 4px;border-radius:5px;cursor:pointer;opacity:.55;color:#7b837f}
   .wv-act i:hover{opacity:1;background:#fff}
   .wv-empty,.wv-blank{color:var(--muted);font-size:13px;text-align:center;padding:34px 14px;line-height:1.7}
   .wv-blank{margin:auto}
@@ -2159,7 +2166,10 @@
 
   <!-- ===== 업무 ===== -->
   <section class="view" id="view-work">
-    <div class="page-head"><h1>업무</h1></div>
+    <div class="page-head" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <h1 style="margin:0">업무</h1>
+      <span id="wvSecBtns" style="display:inline-flex;gap:5px;flex-wrap:wrap"></span>
+    </div>
     <div id="workPane" style="margin-top:16px"></div>
   </section>
 
@@ -2951,7 +2961,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-31 · r99';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-31 · r100';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -7113,6 +7123,10 @@ function renderWork(){
   const pane=document.getElementById('workPane');if(!pane)return;
   ensureWorkVault();
   const V=db.workVault[detailWorkTab];
+  /* 제목 옆 구역 버튼 (타임라인 옆 버튼과 같은 모양) */
+  var sb=document.getElementById('wvSecBtns');
+  if(sb)sb.innerHTML=WV_SECS.map(function(t){
+    return '<button class="lunar-toggle'+(wvSec()===t?' on':'')+'" onclick="wvSecSet(\''+t+'\')">'+t+'</button>';}).join('');
   pane.innerHTML=`<div class="wv${window.__wvFull?' wv-fullscreen':''}"><div class="wv-side">${wvSideHTML(V)}</div><div class="wv-main">${wvMainHTML(V)}</div></div>`;
 wvUndoInit();wvPostRender();
 }
@@ -7179,6 +7193,17 @@ function wvFind(V,id,nodes,parent){
   return null;
 }
 function wvActiveFile(V){if(!V.active)return null;const r=wvFind(V,V.active);return r&&r.node.type==='file'?r.node:null;}
+/* ---- 구역(의회운영·매뉴얼·법규정): 최상위 폴더를 트리 대신 제목 옆 버튼으로 ---- */
+const WV_SECS=['의회운영','매뉴얼','법규정'];
+function wvSec(){var v=db.workSec;return WV_SECS.indexOf(v)>=0?v:WV_SECS[0];}
+function wvSecSet(t){db.workSec=t;var V=db.workVault[WV_MAIN];if(V)V.active=null;save();renderWork();}
+function wvSecNode(V){
+  var n=(V.nodes||[]).find(function(x){return x.type==='folder'&&x.name===wvSec();});
+  if(!n){n={id:wvUid(),type:'folder',name:wvSec(),children:[]};V.nodes.push(n);save();}
+  if(!n.children)n.children=[];
+  return n;
+}
+function wvRootList(V){return wvSecNode(V).children;}
 function wvAllFiles(V,nodes,out){
   nodes=nodes||V.nodes;out=out||[];
   nodes.forEach(n=>{if(n.type==='file')out.push(n);else if(n.children)wvAllFiles(V,n.children,out);});
@@ -7222,39 +7247,43 @@ function wvMatch(node,V){
 function wvSideHTML(V){
   const tags=wvAllTags(V);
   const chips=tags.map(t=>`<span class="wv-tag${V.tag===t?' on':''}" onclick="wvFilterTag('${wvA(t)}')">#${esc(t)}</span>`).join('');
-  return `<div class="wv-tools"><b class="wv-vault">업무</b>
-    <span class="wv-tbtns"><button onclick="wvNewFile(null)" title="새 노트">＋📝</button><button onclick="wvNewFolder(null)" title="새 폴더">＋📁</button><button onclick="wvGraph()" title="그래프 뷰">🕸</button></span></div>
+  return `<div class="wv-tools"><b class="wv-vault">${esc(wvSec())}</b>
+    <span class="wv-tbtns"><button onclick="wvNewFile(null)" title="새 노트">＋</button><button onclick="wvNewFolder(null)" title="새 폴더">＋▸</button><button onclick="wvGraph()" title="그래프 뷰">◇</button></span></div>
     <input id="wvq" class="wv-search" placeholder="🔍 노트·내용 검색" value="${escA(V.q||'')}" oninput="wvSearch(this.value)">
     ${chips?`<div class="wv-tags">${chips}</div>`:''}
     <div class="wv-tree" id="wvTree" ondragover="wvDragOver(event)" ondrop="wvDrop(event,null)">${wvTreeHTML(V)}</div>`;
 }
 function wvTreeHTML(V){
   const filtering=!!(V.q||V.tag);
+  /* 깊이만큼 세로 안내선을 깔고, 폴더는 › / ⌄ 로만 표시한다 */
+  function guides(depth){
+    var g='';for(var i=0;i<depth;i++)g+='<span class="wv-gd" style="left:'+(10+i*14)+'px"></span>';
+    return g;
+  }
   function rows(nodes,depth){
     let h='';
     const sorted=nodes.slice().sort(function(a,b){
-      if(depth===0){const ra=wvRank(a),rb=wvRank(b);if(ra!==rb)return ra-rb;}
       return a.type===b.type?a.name.localeCompare(b.name,'ko'):(a.type==='folder'?-1:1);
     });
     sorted.forEach(n=>{
       if(filtering&&!wvMatch(n,V))return;
-      const pad=6+depth*15;
+      const pad=8+depth*14;
       if(n.type==='folder'){
         const open=filtering||V.open[n.id];
         h+=`<div class="wv-row wv-folder" style="padding-left:${pad}px" draggable="true" ondragstart="wvDragStart(event,'${n.id}')" ondragover="wvDragOver(event)" ondrop="wvDrop(event,'${n.id}')" onclick="wvToggle('${n.id}')">
-          <span class="wv-ca">${open?'▾':'▸'}</span><span class="wv-ic">📁</span><span class="wv-nm">${esc(n.name)}</span>
-          <span class="wv-act"><i onclick="event.stopPropagation();wvNewFile('${n.id}')" title="새 노트">📝</i><i onclick="event.stopPropagation();wvNewFolder('${n.id}')" title="새 폴더">📁</i><i onclick="event.stopPropagation();wvRename('${n.id}')" title="이름변경">✎</i><i onclick="event.stopPropagation();wvDelete('${n.id}')" title="삭제">🗑</i></span></div>`;
+          ${guides(depth)}<span class="wv-ca${open?' o':''}">›</span><span class="wv-nm">${esc(n.name)}</span>
+          <span class="wv-act"><i onclick="event.stopPropagation();wvNewFile('${n.id}')" title="새 노트">＋</i><i onclick="event.stopPropagation();wvNewFolder('${n.id}')" title="새 폴더">＋▸</i><i onclick="event.stopPropagation();wvRename('${n.id}')" title="이름변경">✎</i><i onclick="event.stopPropagation();wvDelete('${n.id}')" title="삭제">✕</i></span></div>`;
         if(open)h+=rows(n.children||[],depth+1);
       }else{
         const act=V.active===n.id;
-        h+=`<div class="wv-row wv-file${act?' on':''}" style="padding-left:${pad+12}px" draggable="true" ondragstart="wvDragStart(event,'${n.id}')" onclick="wvOpen('${n.id}')">
-          <span class="wv-ic">📄</span><span class="wv-nm">${esc(n.name)}</span>
-          <span class="wv-act"><i onclick="event.stopPropagation();wvRename('${n.id}')" title="이름변경">✎</i><i onclick="event.stopPropagation();wvDelete('${n.id}')" title="삭제">🗑</i></span></div>`;
+        h+=`<div class="wv-row wv-file${act?' on':''}" style="padding-left:${pad}px" draggable="true" ondragstart="wvDragStart(event,'${n.id}')" onclick="wvOpen('${n.id}')">
+          ${guides(depth)}<span class="wv-ca"></span><span class="wv-nm">${esc(n.name)}</span>
+          <span class="wv-act"><i onclick="event.stopPropagation();wvRename('${n.id}')" title="이름변경">✎</i><i onclick="event.stopPropagation();wvDelete('${n.id}')" title="삭제">✕</i></span></div>`;
       }
     });
     return h;
   }
-  return rows(V.nodes,0)||'<div class="wv-empty">아직 노트가 없어요.<br>위의 ＋📝 로 첫 노트를 만들어 보세요.</div>';
+  return rows(wvRootList(V),0)||'<div class="wv-empty">«'+esc(wvSec())+'» 에 아직 노트가 없어요.<br>위의 ＋ 로 첫 노트를 만들어 보세요.</div>';
 }
 function wvMainHTML(V){
   const f=wvActiveFile(V);
@@ -7262,58 +7291,29 @@ function wvMainHTML(V){
   const path=wvPath(V,f.id);
   const bl=wvBacklinks(V,f.name);
   const blHTML=bl.length?`<div class="wv-bl"><b>🔗 백링크 (${bl.length})</b>${bl.map(b=>`<a onclick="wvOpen('${b.id}')">${esc(b.name)}</a>`).join('')}</div>`:'';
-  const fmt=f.fmt||'md';
-  const FMTN={md:'MD',word:'WORD',xl:'EXEL',map:'MAP'};
-  const fmtBar='<span class="wv-fmtbar">'+['md','word','xl','map'].map(k=>`<button class="wv-fmt${fmt===k?' on':''}" onclick="wvSetFmt('${k}')">${FMTN[k]}</button>`).join('')+'</span>';
+  let fmt=f.fmt||'md';
+  if(fmt==='xl')fmt='md';                       /* 엑셀 기능은 뺐다 (자료는 그대로 남아 있음) */
+  const FMTN={md:'MD',word:'WORD',map:'MAP'};
+  const fmtBar='<span class="wv-fmtbar">'+['md','word','map'].map(k=>`<button class="wv-fmt${fmt===k?' on':''}" onclick="wvSetFmt('${k}')">${FMTN[k]}</button>`).join('')+'</span>';
   let body='';
   if(fmt==='md'){
-    body=`<div class="wv-live" id="wvEditor" contenteditable="true" spellcheck="false" oninput="wvLiveInput(event)" onkeydown="wvLiveKey(event)" oncompositionend="wvLiveComposEnd()" onpaste="wvLivePaste(event)">${wvHi(f.content||'')}</div>${wvCheatHTML()}`;
+    body=`<div class="wv-live" id="wvEditor" contenteditable="true" spellcheck="false" oninput="wvLiveInput(event)" onkeydown="wvLiveKey(event)" oncompositionend="wvLiveComposEnd()" onpaste="wvLivePaste(event)">${wvHi(f.content||'')}</div>${wvCheatOn()?wvCheatHTML():''}`;
   }else if(fmt==='word'){
     body=`<div class="wv-wordbox" id="wvWordBox"><div class="fw-rich" id="wvWord" contenteditable="true" data-noenter="1" oninput="wvWordInput()"></div></div>`;
-  }else if(fmt==='xl'){
-    body=`<div class="xl-col"><div class="xl-tools">
-      <button onclick="wvXlInsRow()" title="선택 위에 행 삽입">행+</button><button onclick="wvXlDelRow()" title="선택 행 삭제">행−</button>
-      <button onclick="wvXlInsCol()" title="선택 왼쪽에 열 삽입">열+</button><button onclick="wvXlDelCol()" title="선택 열 삭제">열−</button>
-      <span class="sep"></span>
-      <button onclick="wvXlMerge()" title="선택 범위 병합">병합</button><button onclick="wvXlUnmerge()">해제</button>
-      <span class="sep"></span>
-      <button onclick="wvXlSort(1)" title="선택 열 기준 오름차순">정렬↑</button><button onclick="wvXlSort(-1)">정렬↓</button>
-      <button onclick="wvXlFilter()" title="선택 열 필터">필터</button><button onclick="wvXlFilterOff()">필터✕</button>
-      <span class="sep"></span>
-      <button onclick="wvXlFreezeRow()" title="선택 행까지 틀고정">행고정</button><button onclick="wvXlFreezeCol()">열고정</button><button onclick="wvXlFreezeOff()">고정✕</button>
-      <span class="sep"></span>
-      <select onchange="if(this.value){wvXlStyle('ff',this.value);this.selectedIndex=0}"><option value="">글씨체</option><option value="Pretendard">프리텐다드</option><option value="Nanum Gothic">나눔고딕</option><option value="Nanum Myeongjo">나눔명조</option><option value="Gowun Dodum">고운돋움</option><option value="Noto Sans KR">노토산스</option></select>
-      <select onchange="if(this.value){wvXlStyle('fs',this.value);this.selectedIndex=0}"><option value="">크기</option><option value="11px">11</option><option value="13px">13</option><option value="15px">15</option><option value="18px">18</option><option value="22px">22</option></select>
-      <button onclick="wvXlStyle('b')"><b>B</b></button><button onclick="wvXlStyle('i')"><i>I</i></button>
-      <button class="swb" style="background:#111" onclick="wvXlStyle('fc','#111111')" title="검정 글자"></button>
-      <button class="swb" style="background:#d0342c" onclick="wvXlStyle('fc','#d0342c')" title="빨강 글자"></button>
-      <button class="swb" style="background:#2b5fd9" onclick="wvXlStyle('fc','#2b5fd9')" title="파랑 글자"></button>
-      <span class="sep"></span>
-      <button class="swb" style="background:#FFF3B8" onclick="wvXlStyle('bg','#FFF3B8')" title="배경 노랑"></button>
-      <button class="swb" style="background:#FFE0E6" onclick="wvXlStyle('bg','#FFE0E6')" title="배경 분홍"></button>
-      <button class="swb" style="background:#DDEBFF" onclick="wvXlStyle('bg','#DDEBFF')" title="배경 하늘"></button>
-      <button class="swb" style="background:#DDF5E6" onclick="wvXlStyle('bg','#DDF5E6')" title="배경 민트"></button>
-      <button class="swb" style="background:#EDE4FF" onclick="wvXlStyle('bg','#EDE4FF')" title="배경 라벤더"></button>
-      <button class="swb" style="background:#fff;border-style:dashed" onclick="wvXlStyle('bg','')" title="배경 없음"></button>
-      <span class="sep"></span>
-      <button onclick="wvXlStyle('bd',1)" title="선택 범위 테두리">표</button><button onclick="wvXlStyle('bd',0)">표✕</button>
-      <button onclick="wvXlPct()">%</button>
-      <span class="wv-xlhint">=A1+B1 · =SUM(A1:A5) · =AVG · MIN · MAX · 쉼표 자동 · Shift+클릭=범위선택</span>
-    </div><div class="xl-wrap"><div id="wvXl"></div></div></div>`;
-  }else{
+    }else{
     body=`<div class="wv-mapwrap"><div class="wv-maptools"><button class="btn y" onclick="mindAddFocus(mindRoot())">＋ 생각 추가</button>
       <select class="idea-edit" id="wvMindShapeSel" onchange="setMindShape(this.value)"></select>
       <select class="idea-edit" id="wvMindModeSel" onchange="setMindMode(this.value)"></select>
       <span class="wv-xlhint"><b>Tab</b>=하위 · <b>Enter</b>=대등 · 칸을 끌어 이동 · ○ 눌러 가지접기</span></div><div id="wvMindCanvas" class="wv-mindcv"></div></div>`;
   }
-  return `<div class="wv-tabstrip"><span class="wv-tabon">📄 ${esc(f.name)}</span></div>
-  <div class="wv-head"><span class="wv-path">${esc(path)}</span><span class="wv-htools">${fmtBar}<i class="wv-hbtn" onclick="wvToggleFull()" title="전체화면">${window.__wvFull?'⤡ 축소':'⤢ 확장'}</i><i class="wv-hbtn" onclick="wvRename('${f.id}')">✎ 이름</i><i class="wv-hbtn" onclick="wvDelete('${f.id}')">🗑 삭제</i></span></div>
+  return `<div class="wv-tabstrip"><span class="wv-tabon">${esc(f.name)}</span></div>
+  <div class="wv-head"><span class="wv-path">${esc(path)}</span><span class="wv-htools">${fmtBar}${fmt==='md'?`<i class="wv-hbtn${wvCheatOn()?' on':''}" onclick="wvCheatTgl()" title="마크다운 단축키 모음">✍️ 단축키</i>`:''}<i class="wv-hbtn" onclick="wvToggleFull()" title="전체화면">${window.__wvFull?'⤡ 축소':'⤢ 확장'}</i><i class="wv-hbtn" onclick="wvRename('${f.id}')">✎ 이름</i><i class="wv-hbtn" onclick="wvDelete('${f.id}')">🗑 삭제</i></span></div>
   <div class="wv-body2">${body}</div>${blHTML}
   <div class="wv-status" id="wvStatus"></div>`;
 }
 
 /* ---- 형식 전환 + 후처리 ---- */
-function wvSetFmt(k){var V=db.workVault[detailWorkTab];var f=wvActiveFile(V);if(!f)return;f.fmt=k;save();renderWork();}
+function wvSetFmt(k){var V=db.workVault[detailWorkTab];var f=wvActiveFile(V);if(!f)return;f.fmt=(k==='xl'?'md':k);save();renderWork();}
 function wvToggleFull(){window.__wvFull=!window.__wvFull;renderWork();}
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&window.__wvFull&&!fwCfg){window.__wvFull=false;renderWork();}});
 function wvPostRender(){
@@ -7341,14 +7341,13 @@ function wvPostRender(){
 function wvUpdateStatus(){
   var st=document.getElementById('wvStatus');if(!st)return;
   var V=db.workVault[detailWorkTab];var f=wvActiveFile(V);var t='';
-  if(f){var fmt=f.fmt||'md';
+  if(f){var fmt=f.fmt||'md';if(fmt==='xl')fmt='md';
     if(fmt==='md'||fmt==='word'){
       var txt=String(f.content||'');
       if(fmt==='word'){var d=document.createElement('div');d.innerHTML=txt;txt=d.textContent;}
       var w=txt.trim()?txt.trim().split(/\s+/).length:0;
       t=w+' words · '+txt.length+' characters';
-    }else if(fmt==='xl'){var s=f.sheet||{cells:{}};t=Object.keys(s.cells).filter(function(k){return String(s.cells[k]).trim();}).length+' cells';}
-    else t=(f.mind?f.mind.length:0)+' nodes';
+    }else t=(f.mind?f.mind.length:0)+' nodes';
   }
   st.textContent=t;
 }
@@ -7545,6 +7544,8 @@ function wvXlPct(){var f=wvXlF();if(!f)return;var sh=wvXlSheet(f);var s=wvXlSelR
     o.v=/%$/.test(raw)?raw.slice(0,-1):raw+'%';
   }
   save();wvXlRender();}
+function wvCheatOn(){return localStorage.getItem('hmd_wv_cheat')==='1';}
+function wvCheatTgl(){localStorage.setItem('hmd_wv_cheat',wvCheatOn()?'0':'1');renderWork();}
 function wvCheatHTML(){
   var typed=[['# 제목','제목'],['## 소제목','소제목'],['**굵게**','굵게'],['*기울임*','기울임'],['`코드`','코드'],['~~취소선~~','취소선'],['==하이라이트==','하이라이트'],['- 목록','목록'],['1. 번호','번호'],['- [ ] 할일','체크박스'],['> 인용','인용'],['[[노트]]','위키링크'],['#태그','태그'],['[문구](주소)','링크'],['---','구분선']];
   return `<aside class="wv-cheat"><div class="wv-cheat-h">✍️ 마크다운</div><div class="wv-cheat-sub">이렇게 입력하면 자동 적용돼요</div>${typed.map(r=>`<div class="wv-cheat-row"><code>${esc(r[0])}</code><span class="wv-cheat-desc">${r[1]}</span></div>`).join('')}</aside>`;
@@ -7624,16 +7625,16 @@ function wvExpandTo(V,id){
 function wvNewFile(parentId){
   const name=prompt('새 노트 이름','제목 없는 노트');if(name===null)return;
   const V=db.workVault[detailWorkTab];
-  const parent=parentId?wvFind(V,parentId).node:null;
-  const list=parent?(parent.children=parent.children||[]):V.nodes;
+  const parent=parentId?wvFind(V,parentId).node:wvSecNode(V);
+  const list=parent.children=parent.children||[];
   const node={id:wvUid(),type:'file',name:wvUniqueName(list,name),content:'',updated:today()};
   list.push(node);if(parent)V.open[parent.id]=true;V.active=node.id;save();renderWork();
 }
 function wvNewFolder(parentId){
   const name=prompt('새 폴더 이름','새 폴더');if(name===null)return;
   const V=db.workVault[detailWorkTab];
-  const parent=parentId?wvFind(V,parentId).node:null;
-  const list=parent?(parent.children=parent.children||[]):V.nodes;
+  const parent=parentId?wvFind(V,parentId).node:wvSecNode(V);
+  const list=parent.children=parent.children||[];
   const node={id:wvUid(),type:'folder',name:wvUniqueName(list,name),children:[]};
   list.push(node);if(parent)V.open[parent.id]=true;V.open[node.id]=true;save();renderWork();
 }
@@ -7677,10 +7678,10 @@ function wvDrop(e,folderId){
   if(folderId&&wvIsDescendant(V,id,folderId))return;
   const src=wvFind(V,id);if(!src)return;const node=src.node;
   src.list.splice(src.list.indexOf(node),1);
-  const dest=folderId?wvFind(V,folderId).node:null;
-  const list=dest?(dest.children=dest.children||[]):V.nodes;
+  const dest=folderId?wvFind(V,folderId).node:wvSecNode(V);
+  const list=dest.children=dest.children||[];
   node.name=wvUniqueName(list,node.name);list.push(node);
-  if(dest)V.open[dest.id]=true;save();renderWork();
+  V.open[dest.id]=true;save();renderWork();
 }
 function wvMd(src,V){
   src=String(src||'').replace(/\r\n/g,'\n');
