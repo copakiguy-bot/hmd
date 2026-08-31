@@ -2919,7 +2919,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-31 · r93';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-31 · r94';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -8668,14 +8668,19 @@ function rdgRender(){
   var b=bookById(rdgBook);
   var tt=document.getElementById('rdgTitle');
   if(tt){
-    if(rdgBook!=null)tt.innerHTML=b?('<b>'+esc(b.title)+'</b>'):'';
+    var lg='';
+    if(rdgBook!=null)lg=b?('<b>'+esc(b.title)+'</b>'):'';
     else{
       var ids={};rdgRecs().forEach(function(r){ids[r.book]=1;});
-      tt.innerHTML=Object.keys(ids).map(function(k){
+      lg=Object.keys(ids).map(function(k){
         var bk=bookById(Number(k));if(!bk)return '';
         return '<span class="rdg-lg"><i style="background:'+rdgColor(Number(k))+'"></i>'+esc(bk.title)+'</span>';
       }).join('')||'<b>전체</b> · 아직 기록이 없습니다';
     }
+    /* 하루치(주황 점선)는 오른쪽 축을 쓴다는 안내 */
+    if(rdgMetric!=='tz')lg+='<span class="rdg-lg" style="margin-left:10px;color:#c08a2e">'
+      +'<i style="background:#d99a2b"></i>'+(rdgBook==null?'하루 합계':'하루')+' (오른쪽 축) · 선은 누적</span>';
+    tt.innerHTML=lg;
   }
   var ch=document.getElementById('rdgChart');
   if(ch)ch.innerHTML=rdgSVG();
@@ -8701,7 +8706,7 @@ function rdgSVG(){
   var rs=rdgRecs();
   if(!rs.length)return '<div class="empty">기록을 넣으면 그래프가 그려집니다.</div>';
   var days=rdgDays(rs);
-  var W=Math.max(660,days.length*22+90),H=252,L=46,R=14,T=16,B=30;
+  var W=Math.max(660,days.length*22+130),H=252,L=46,R=(rdgMetric==='tz'?14:46),T=16,B=30;   /* 시간대 말고는 오른쪽에 하루치 축이 붙는다 */
   var iw=W-L-R,ih=H-T-B;
   var x=function(i){return L+(days.length<2?iw/2:i*iw/(days.length-1));};
   var step=days.length<2?iw:iw/(days.length-1);
@@ -8722,6 +8727,34 @@ function rdgSVG(){
         +'<text x="'+(L-7)+'" y="'+(yy+3.5)+'" text-anchor="end" font-size="9.5" fill="#8a9490">'+v+(unit||'')+'</text>';
     }
     return g;
+  };
+  /* 오른쪽 축: 하루치 (누적과 크기가 다르므로 축을 따로 쓴다) */
+  var gridR=function(ymax,unit){
+    var g='';
+    for(var k=1;k<=4;k++){
+      var v=Math.round(ymax*k/4),yy=T+ih-ih*k/4;
+      g+='<text x="'+(W-R+5)+'" y="'+(yy+3.5)+'" text-anchor="start" font-size="9.5" fill="#c08a2e">'+v+(unit||'')+'</text>';
+    }
+    return g;
+  };
+  var DAY_COL='#d99a2b';
+  /* 하루치 막대 + 그 위를 잇는 꺾은선 (오른쪽 축 기준) */
+  var dayLayer=function(daily,dmax,unit,label){
+    var yd=function(v){return T+ih-ih*v/dmax;},o='',pts=[];
+    days.forEach(function(d,i){
+      var v=daily[i]||0;
+      if(v){var hh=ih*v/dmax;
+        o+='<rect x="'+(x(i)-bw/2)+'" y="'+(T+ih-hh)+'" width="'+bw+'" height="'+Math.max(2,hh)+'" rx="3" fill="'+DAY_COL+'" opacity=".2"><title>'
+          +d.slice(5)+' · '+(label||'')+' '+(unit==='분'?rdgFmtM(v):v+unit)+'</title></rect>';}
+      pts.push(x(i)+','+yd(v));
+    });
+    o+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+DAY_COL+'" stroke-width="1.8" stroke-linejoin="round" stroke-dasharray="4 3" opacity=".9"/>';
+    days.forEach(function(d,i){
+      if(!daily[i])return;
+      o+='<circle cx="'+x(i)+'" cy="'+yd(daily[i])+'" r="2.8" fill="'+DAY_COL+'" stroke="#fff" stroke-width="1.2"><title>'
+        +d.slice(5)+' · '+(label||'')+' '+(unit==='분'?rdgFmtM(daily[i]):daily[i]+unit)+'</title></circle>';
+    });
+    return o;
   };
   var svg='';
   if(rdgMetric==='tz'){
@@ -8762,12 +8795,9 @@ function rdgSVG(){
       days.forEach(function(d,i){run+=daily[i];cum.push(run);});
       var ymax=Math.max.apply(null,cum.concat([1]));   /* 읽은 만큼만 축을 잡는다 */
       var yv=function(v){return T+ih-ih*v/ymax;};
-      svg=grid(ymax,unit);
-      days.forEach(function(d,i){                        /* 하루 막대 */
-        if(!daily[i])return;
-        var hh=ih*daily[i]/ymax;
-        svg+='<rect x="'+(x(i)-bw/2)+'" y="'+(T+ih-hh)+'" width="'+bw+'" height="'+Math.max(2,hh)+'" rx="3" fill="#dbeee6"><title>'+d.slice(5)+' · '+daily[i]+unit+'</title></rect>';
-      });
+      var dmax=Math.max.apply(null,daily.concat([1]));
+      svg=grid(ymax,unit)+gridR(dmax,unit)
+        +dayLayer(daily,dmax,unit,'하루');               /* 하루 막대 + 하루 꺾은선 */
       var pts=days.map(function(d,i){return x(i)+','+yv(cum[i]);}).join(' ');   /* 누적선 */
       svg+='<polyline points="'+pts+'" fill="none" stroke="#2f6f5e" stroke-width="2" stroke-linejoin="round"/>';
       days.forEach(function(d,i){
@@ -8786,7 +8816,10 @@ function rdgSVG(){
         lines.push({bid:Number(k),pts:pts,last:run});
       });
       var yv2=function(v){return T+ih-ih*v/ymax2;};
-      svg=grid(ymax2,unit);
+      var dailyAll=days.map(function(d){var t=0;Object.keys(agg).forEach(function(k){if(agg[k][d])t+=val(agg[k][d]);});return t;});
+      var dmax2=Math.max.apply(null,dailyAll.concat([1]));
+      svg=grid(ymax2,unit)+gridR(dmax2,unit)
+        +dayLayer(dailyAll,dmax2,unit,'하루 합계');       /* 모든 책을 합친 하루치 */
       lines.forEach(function(ln){
         var bk=bookById(ln.bid),col=rdgColor(ln.bid);
         svg+='<polyline points="'+ln.pts.map(function(p){return p[0]+','+yv2(p[1]);}).join(' ')
