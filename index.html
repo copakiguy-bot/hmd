@@ -390,8 +390,13 @@
   .dy-yr .n{margin-left:auto;font-size:11px;font-weight:600;color:var(--muted)}
   .dy-mon{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);padding:6px 8px 6px 20px;border-radius:9px;cursor:pointer}
   .dy-mon:hover{background:var(--cream);color:var(--dark)}
-  .dy-mon.on{background:#e8eef8;color:#3a5a9c;font-weight:800}
+  .dy-mon.on{color:var(--dark);font-weight:800}
   .dy-mon .n{margin-left:auto;font-size:11px;font-weight:600;opacity:.8}
+  .dy-mon .ar{font-size:9px;color:var(--muted);width:8px;flex:none}
+  .dy-day{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);padding:5px 8px 5px 34px;border-radius:9px;cursor:pointer}
+  .dy-day:hover{background:var(--cream);color:var(--dark)}
+  .dy-day.on{background:#e8eef8;color:#3a5a9c;font-weight:800}
+  .dy-day .n{margin-left:auto;font-size:11px;font-weight:600;opacity:.8}
   .dy-mhead{font-size:13px;font-weight:800;color:var(--dark);margin:0 0 10px;display:flex;align-items:center;gap:8px}
   .dy-mhead .s{font-size:11.5px;font-weight:600;color:var(--muted)}
   @media(max-width:900px){.dy-wrap{flex-direction:column}.dy-side{width:auto;max-height:190px;border-right:none;border-bottom:1px solid var(--line);padding-right:0;padding-bottom:8px;width:100%}.dy-main{max-height:none;width:100%}}
@@ -2913,7 +2918,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-08-31 · r91';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-08-31 · r92';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4456,13 +4461,39 @@ function saveDiaryFull(){
   x.text=tx;x.kind=fwDiaryKind||x.kind||'기록';dvId=null;save();renderDiary();renderDiaryPage();renderCal();}
 function renderDiary(){var el=document.getElementById('dashDiaryFeed');if(!el)return;var td=today();var list=db.diary.filter(function(x){return x.date===td;});el.innerHTML=list.length?('<div class="datehdr">오늘</div>'+list.map(diaryItem).join('')):'<div class="empty">오늘 일기가 없습니다.</div>';}
 var diaryOpen={};                 /* 오른쪽에서 접은 날짜 (기본은 펼침) */
-var dySelMon=null;                /* 왼쪽에서 고른 달 ('2026-08') · null = 전체 */
+var dySelMon=null;                /* 왼쪽에서 펼친 달 ('2026-08') · null = 전체 */
+var dySelDate=null;               /* 왼쪽에서 고른 날짜 ('2026-08-31') · null = 그 달 전체 */
 var dyYearClosed={};              /* 접어 둔 연도 */
+var dyInit=false;                 /* 첫 진입에 가장 최근 날짜를 자동으로 고른다 */
 function toggleDiaryDate(d){diaryOpen[d]=!diaryOpen[d];renderDiaryPage();}
-function dyPickMon(m){dySelMon=m||null;renderDiaryPage();
-  var mn=document.querySelector('#diaryPage .dy-main');if(mn)mn.scrollTop=0;}
+function dyScrollTop(){var mn=document.querySelector('#diaryPage .dy-main');if(mn)mn.scrollTop=0;}
+/* 달을 누르면 펼쳐지고 그 달의 가장 최근 날짜가 골라진다 · 다시 누르면 접힌다 */
+function dyPickMon(m){
+  if(!m){dySelMon=null;dySelDate=null;}
+  else if(dySelMon===m){dySelMon=null;dySelDate=null;}
+  else{dySelMon=m;
+    var ds=(db.diary||[]).filter(function(x){return monthOf(x.date)===m;}).map(function(x){return x.date;});
+    ds.sort();dySelDate=ds.length?ds[ds.length-1]:null;}
+  renderDiaryPage();dyScrollTop();
+}
+function dyPickDate(d){
+  if(dySelDate===d)dySelDate=null;             /* 다시 누르면 그 달 전체 */
+  else{dySelDate=d;dySelMon=monthOf(d)||dySelMon;}   /* 날짜를 고르면 그 달은 펼쳐 둔다 */
+  renderDiaryPage();dyScrollTop();
+}
 function dyYearTgl(y){dyYearClosed[y]=!dyYearClosed[y];renderDiaryPage();}
 function dyMonLabel(m){return (+m.slice(5,7))+'월';}
+var DY_DOW=['일','월','화','수','목','금','토'];
+function dyDayLabel(d){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return d;
+  var t=new Date(d+'T00:00:00');
+  return (+d.slice(8,10))+'일 <span style="opacity:.6;font-weight:600">('+DY_DOW[t.getDay()]+')</span>';
+}
+function dyFullLabel(d){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return d;
+  var t=new Date(d+'T00:00:00');
+  return (+d.slice(0,4))+'년 '+(+d.slice(5,7))+'월 '+(+d.slice(8,10))+'일 ('+DY_DOW[t.getDay()]+')';
+}
 function renderDiaryPage(){
   var el=document.getElementById('diaryPage');if(!el)return;
   var cnt=document.getElementById('diaryCount');if(cnt)cnt.textContent=db.diary.length+'건';
@@ -4472,7 +4503,14 @@ function renderDiaryPage(){
   var byMon={},order=[];
   list.forEach(function(x){var m=monthOf(x.date)||'(날짜없음)';
     if(!byMon[m]){byMon[m]=[];order.push(m);}byMon[m].push(x);});
-  if(dySelMon&&!byMon[dySelMon])dySelMon=null;
+  if(dySelMon&&!byMon[dySelMon]){dySelMon=null;dySelDate=null;}
+  /* 처음 열면 가장 최근 달을 펼치고 그 날짜를 고른다 */
+  if(!dyInit){dyInit=true;if(order.length){dySelMon=order[0];
+    var d0=byMon[dySelMon].map(function(x){return x.date;}).sort();dySelDate=d0[d0.length-1];}}
+  /* 달마다 날짜별 묶음 */
+  var byDate={};
+  list.forEach(function(x){var d=x.date||'(날짜없음)';(byDate[d]=byDate[d]||[]).push(x);});
+  if(dySelDate&&!byDate[dySelDate])dySelDate=null;
   var years=[],byYear={};
   order.forEach(function(m){var y=m.slice(0,4);if(!byYear[y]){byYear[y]=[];years.push(y);}byYear[y].push(m);});
   var side='<div class="dy-all'+(dySelMon?'':' on')+'" onclick="dyPickMon(\'\')">전체<span class="n">'+list.length+'건</span></div>';
@@ -4481,16 +4519,27 @@ function renderDiaryPage(){
     side+='<div class="dy-yr" onclick="dyYearTgl(\''+esc(y)+'\')"><span class="ar">'+(closed?'▸':'▾')+'</span>'+esc(y)+'년<span class="n">'+yn+'건</span></div>';
     if(closed)return;
     byYear[y].forEach(function(m){
-      side+='<div class="dy-mon'+(dySelMon===m?' on':'')+'" onclick="dyPickMon(\''+esc(m)+'\')">'+esc(dyMonLabel(m))
-        +'<span class="n">'+byMon[m].length+'</span></div>';});
+      var open=dySelMon===m;
+      side+='<div class="dy-mon'+(open?' on':'')+'" onclick="dyPickMon(\''+esc(m)+'\')"><span class="ar">'+(open?'▾':'▸')+'</span>'+esc(dyMonLabel(m))
+        +'<span class="n">'+byMon[m].length+'</span></div>';
+      if(!open)return;
+      /* 그 달의 날짜들 (최신순) */
+      var ds=[];byMon[m].forEach(function(x){var d=x.date||'(날짜없음)';if(ds.indexOf(d)<0)ds.push(d);});
+      ds.forEach(function(d){
+        side+='<div class="dy-day'+(dySelDate===d?' on':'')+'" onclick="dyPickDate(\''+esc(d)+'\')">'
+          +dyDayLabel(d)+'<span class="n">'+byDate[d].length+'</span></div>';});
+    });
   });
-  /* 오른쪽: 고른 달(없으면 전체)의 일기를 날짜별로 */
-  var shown=dySelMon?byMon[dySelMon]:list;
+  /* 오른쪽: 고른 날짜 → 그 날만 · 날짜 없이 달만 → 그 달 전체 · 아무것도 없으면 전체 */
+  var shown=dySelDate?byDate[dySelDate]:(dySelMon?byMon[dySelMon]:list);
   var g={},dates=[];
   shown.forEach(function(x){var d=x.date||'(날짜없음)';if(!g[d]){g[d]=[];dates.push(d);}g[d].push(x);});
-  var head=dySelMon?('<div class="dy-mhead">'+esc(dySelMon.slice(0,4))+'년 '+esc(dyMonLabel(dySelMon))
-      +'<span class="s">'+shown.length+'건 · '+dates.length+'일</span></div>'):'';
+  var head='';
+  if(dySelDate)head='<div class="dy-mhead">'+esc(dyFullLabel(dySelDate))+'<span class="s">'+shown.length+'건</span></div>';
+  else if(dySelMon)head='<div class="dy-mhead">'+esc(dySelMon.slice(0,4))+'년 '+esc(dyMonLabel(dySelMon))
+      +'<span class="s">'+shown.length+'건 · '+dates.length+'일 · 왼쪽에서 날짜를 고르면 그 날만 봅니다</span></div>';
   var main=head+dates.map(function(d){
+    if(dySelDate)return g[d].map(diaryItem).join('');   /* 하루만 볼 땐 날짜 머리글 없이 */
     var open=diaryOpen[d]!==true;   /* 기본 펼침 · 누르면 접힘 */
     return '<div class="datehdr dy-date" onclick="toggleDiaryDate(\''+esc(d)+'\')"><span>'+esc(d)+'</span>'
       +'<span class="dy-cnt">'+g[d].length+'건</span><span class="dy-arrow">'+(open?'▾':'▸')+'</span></div>'
