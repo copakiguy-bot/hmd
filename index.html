@@ -565,6 +565,8 @@
   .cnp-txt::placeholder{color:#c3cbc7;font-weight:600}
   .cnp-top .cnp-b .n{font-size:8.5px;margin-left:1px;vertical-align:2px}
   /* ===== 일정에 붙인 문서 · PDF 뷰어 ===== */
+  .ev-clip{flex:none;font-size:9px;margin-left:3px;opacity:.85;line-height:1;white-space:nowrap}
+  .ev-clip i{font-style:normal;font-size:8.5px;font-weight:800;margin-left:1px;vertical-align:1px}
   .sched-item .pdf-btn{flex:none;border:none;background:none;cursor:pointer;font-size:12px;line-height:1;padding:2px 3px;border-radius:6px;opacity:.35;position:relative;font-family:inherit}
   .sched-item:hover .pdf-btn{opacity:.7}
   .sched-item .pdf-btn.on{opacity:1}
@@ -3119,7 +3121,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-02 · r109';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-02 · r110';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -3589,7 +3591,7 @@ function renderTimeline(){
     if(tlCn&&s.cn)return;                      /* 의회 트랙이 켜져 있으면 그쪽에서 보여준다 */
     var mn=tlParseMin(s.time);
     var e={k:'s',id:s.id,mn:mn,time:s.time,dur:(s.dur>0?s.dur:30),title:s.title,detail:s.detail,done:s.done,
-      cn:!!s.cn,cnc:s.cn?cnColor(s):'',cnl:s.cn?cnLabel(s):'',hl:hlOk(s.hl)?s.hl:''};
+      cn:!!s.cn,cnc:s.cn?cnColor(s):'',cnl:s.cn?cnLabel(s):'',hl:hlOk(s.hl)?s.hl:'',nf:schFiles(s).length};
     if(mn==null||mn<TL_START*60||mn>TL_END*60)untimed.push(e);else evs.push(e);
   });
   tlrFor(selDate,true).forEach(function(r){
@@ -3602,7 +3604,7 @@ function renderTimeline(){
   evs.forEach(function(e){
     var left=(e.mn-TL_START*60)/60*TL_HW;
     var lbl=((e.ok||e.done)?'✓ ':'')+e.title;
-    var bw=Math.min(Math.max(Math.ceil(tlTextW(lbl))+17,26),252);   /* 글자에 딱 맞는 폭 */
+    var bw=Math.min(Math.max(Math.ceil(tlTextW(lbl))+17+(e.nf?(e.nf>1?26:18):0),26),278);   /* 글자에 딱 맞는 폭 */
     var occ=Math.max(bw,84);                                        /* 시간표기 폭까지 감안 */
     var li=0;while(li<lanes.length&&lanes[li]>left-4)li++;
     lanes[li]=left+occ+10;
@@ -3613,7 +3615,8 @@ function renderTimeline(){
     var tip=det||(e.title+' ('+range+')');       /* 마우스를 올리면 세부정보 */
     html+='<div class="tl-ev'+(e.k==='r'?' rt':'')+(e.done?' done':'')+(e.ok?' ok':'')+(e.cn?' cn':'')+(e.hl?' hl':'')+'" data-k="'+e.k+'" data-id="'+e.id+'"'
       +' style="left:'+left+'px;top:'+(8+li*38)+'px;width:'+bw+'px'+(e.cn?';border-left:3px solid '+CN_MONO_BAR:'')+(e.hl?';background:'+e.hl:'')+'" title="'+escA(e.cn?(e.cnl+' · '+tip):tip)+'">'
-      +'<b>'+esc(lbl)+'</b><span class="tl-time">'+range+'</span></div>';
+      +'<b>'+esc(lbl)+'</b>'+(e.nf?'<span class="ev-clip" title="붙은 문서 '+e.nf+'개">📎'+(e.nf>1?'<i>'+e.nf+'</i>':'')+'</span>':'')
+      +'<span class="tl-time">'+range+'</span></div>';
   });
   var trackH=Math.max(110,8+Math.max(1,lanes.length)*38+18);
   /* 현재 시간 세로선 (오늘일 때만) */
@@ -3679,10 +3682,10 @@ function tlCnGridHTML(W,gridBg){
         var bw=Math.min(Math.max(Math.ceil(tlTextW(lbl))+16,26),220);
         var endMn=Math.min(mn+(s.dur>0?s.dur:30),24*60-1);
         var sh=(s.done?'\u2713 ':'')+cnShortTitle(s);
-        var bw2=Math.min(Math.max(Math.ceil(tlTextW(sh))+16,26),220);
+        var bw2=Math.min(Math.max(Math.ceil(tlTextW(sh))+16+(schFiles(s).length?(schFiles(s).length>1?26:18):0),26),244);
         return '<div class="tl-ev cn tlc-ev'+cnMemoCls(s)+'" data-k="s" data-id="'+s.id+'" style="left:'+left+'px;top:3px;width:'+bw2
           +'px;color:'+col+';background:'+(hlOk(s.hl)?s.hl:CN_MONO_BG)+';border-left:3px solid '+CN_MONO_BAR+'" title="'+escA(cnLabel(s)+' \u00b7 '+lbl+' ('+tlFmt(mn)+'~'+tlFmt(endMn)+')'+(cnNoteHas(s)?' \u00b7 \ud83d\udcdd 메모 있음':'')+' — 한 번 누르면 포스트잇 · 두 번 = 완료')+'">'
-          +'<b>'+esc(sh)+'</b></div>';
+          +'<b>'+esc(sh)+'</b>'+pdfClip(s)+'</div>';
       }).join('');
       var tone=cnDeptTone(org,dp);
       return '<div class="tlc-row">'
@@ -3746,7 +3749,7 @@ function renderTlCnWeek(inner){
           evh+='<div class="tlcw-ev'+(s.done?' done':'')+cnMemoCls(s)+'" data-sid="'+s.id+'" onclick="cnChipTap(event,'+s.id+')" ondblclick="cnChipDbl(event,'+s.id+')" style="left:'+(i*CW+2)
             +'px;top:'+(3+si*23)+'px;width:'+(CW-6)+'px;color:'+col+';background:'+(hlOk(s.hl)?s.hl:CN_MONO_BG)+';border-left:3px solid '+CN_MONO_BAR+'" title="'
             +escA(cnLabel(s)+' · '+(s.time?s.time+' · ':'')+(s.title||'')+' — 누르면 포스트잇 · 두 번 누르면 세부일정')+'">'
-            +esc((s.time?s.time+' ':'')+cnShortTitle(s))+'</div>';
+            +esc((s.time?s.time+' ':'')+cnShortTitle(s))+pdfClip(s)+'</div>';
         });
       });
       var tone=cnDeptTone(org,dp);
@@ -3902,6 +3905,9 @@ function tlTextW(t){
 /* ----- 타임라인 블록 드래그로 시간 이동 (5분 단위) ----- */
 var tlDrag=null;
 /* 의회 칩을 한 번만 탭 → (두 번째 탭이 없으면) 포스트잇 */
+/* 이 일정이 의회 일정인가 (두 번 누르기 = 문서 뷰어) */
+function tlIsCn(k,id){if(k!=='s')return false;var s=schById(id);return !!(s&&s.cn);}
+function tlTap2(k,id){if(tlIsCn(k,id))pdfOpen(id,0);else tlToggleDone(k,id);}
 function tlCnTap1(el,d){
   if(d.k!=='s'||!el.classList.contains('tlc-ev'))return;
   el.__tapT=setTimeout(function(){
@@ -3942,7 +3948,7 @@ function tlBindDrag(){
         }else if(el.__taps===2){               /* 잠깐 기다렸다 세 번째가 없으면 완료 토글 */
           el.__tapT=setTimeout(function(){
             el.__taps=0;el.__lastTap=0;
-            tlToggleDone(d.k,d.id);
+            tlTap2(d.k,d.id);
           },430);
         }else tlCnTap1(el,d);
         return;
@@ -3959,7 +3965,7 @@ function tlBindDrag(){
         clearTimeout(el.__tapT);
         if(el.__taps>=3){el.__taps=0;el.__lastTap=0;rtPopOpen(d.k,d.id);}
         else if(el.__taps===2){el.__tapT=setTimeout(function(){
-          el.__taps=0;el.__lastTap=0;tlToggleDone(d.k,d.id);},430);}
+          el.__taps=0;el.__lastTap=0;tlTap2(d.k,d.id);},430);}
         else tlCnTap1(el,d);
         return;
       }
@@ -5675,6 +5681,8 @@ function cnShortTitle(s){
   if(m)return m[1]+'차 '+m[2];
   return t||String(s&&s.title||'');
 }
+/* 문서가 붙은 일정: 제목 옆 클립 */
+function pdfClip(s){var n=schFiles(s).length;return n?'<span class="ev-clip" title="붙은 문서 '+n+'개 · 두 번 누르면 열림">📎'+(n>1?'<i>'+n+'</i>':'')+'</span>':'';}
 /* 쪽지가 붙어 있는 일정 표시 */
 function cnNoteHas(s){return !!(s&&((s.memo&&s.memo.trim())||(!s.memo&&s.mind&&s.mind.length>1)));}
 function cnMemoCls(s){return cnNoteHas(s)?' memo':'';}
@@ -5692,10 +5700,12 @@ function cnEvOpen(id){
     +'<div class="cnev-m">'+esc(s.date||'')+(s.time?' · '+esc(s.time):'')+(s.dur>0?' · '+s.dur+'분':'')+'</div>'
     +(dts.length?'<div class="cnev-d">'+dts.map(function(x){return '<div>· '+esc(x)+'</div>';}).join('')+'</div>'
       :'<div class="cnev-d" style="color:var(--muted)">세부 내용이 없습니다.</div>')
-    +'<div class="cnev-foot"><button class="btn ghost" onclick="cnEvClose();pdfOpen('+s.id+',0)">📎 문서'+(schFiles(s).length?' '+schFiles(s).length:'')+'</button>'
+    +'<div class="cnev-foot"><button class="btn ghost" onclick="cnEvDone('+s.id+')">'+(s.done?'✓ 완료 취소':'완료로 표시')+'</button>'
+    +'<button class="btn ghost" onclick="cnEvClose();pdfOpen('+s.id+',0)">📎 문서'+(schFiles(s).length?' '+schFiles(s).length:'')+'</button>'
     +'<button class="btn ghost" onclick="cnEvClose();cnNoteOpen('+s.id+')">📝 포스트잇'+(cnNoteHas(s)?' ●':'')+'</button></div>';
   document.addEventListener('keydown',cnEvEsc);
 }
+function cnEvDone(id){var s=schById(id);if(!s)return;s.done=!s.done;save();renderCal();renderSchedule();cnEvOpen(id);}
 function cnEvClose(){
   var ov=document.getElementById('cnEvOv');if(ov)ov.classList.remove('on');
   document.removeEventListener('keydown',cnEvEsc);
@@ -5804,9 +5814,10 @@ function renderSchedule(){
     <div class="top">
       <div class="chk ${s.done?'done':''}" onclick="toggleSchedule(${s.id})">${s.done?'✓':''}</div>
       <button type="button" class="hl-btn ${hlOk(s.hl)?'':'none'}" title="하이라이트 색" style="${hlOk(s.hl)?`background:${s.hl}`:''}" onclick="hlPopOpen(event,${s.id})"></button>
-      <button type="button" class="pdf-btn${schFiles(s).length?' on':''}" title="${schFiles(s).length?`문서 ${schFiles(s).length}개 보기`:'문서 붙이기'}" onclick="pdfOpen(${s.id},0)">📎${schFiles(s).length>1?`<i>${schFiles(s).length}</i>`:''}</button>
       <span class="sched-time" contenteditable onblur="editSchedule(${s.id},'time',this.innerText)">${esc(s.time||'-')}</span>
-      <b style="flex:1" contenteditable onblur="editSchedule(${s.id},'title',this.innerText)">${esc(s.title)}</b>
+      <b contenteditable onblur="editSchedule(${s.id},'title',this.innerText)">${esc(s.title)}</b>
+      <button type="button" class="pdf-btn${schFiles(s).length?' on':''}" title="${schFiles(s).length?`붙은 문서 ${schFiles(s).length}개 보기`:'문서 붙이기'}" onclick="pdfOpen(${s.id},0)">📎${schFiles(s).length>1?`<i>${schFiles(s).length}</i>`:''}</button>
+      <span style="flex:1"></span>
       ${s.cn?`<span class="cn-badge" style="background:${cnColor(s)}">${esc(cnLabel(s))}</span>`:''}
       <span class="post" title="내일로 미루기" onclick="postponeSchedule(${s.id})">→내일</span><span class="del" onclick="delSchedule(${s.id})">×</span></div>
     <div class="sub" style="margin-top:6px" contenteditable onfocus="schedDetailFocus(event)" onkeydown="schedDetailKey(event)" onblur="editSchedule(${s.id},'detail',this.innerText)">${esc(s.detail||'')}</div>
@@ -6322,7 +6333,7 @@ function cnChipTap(ev,id){                        /* 한 번 = 포스트잇 · �
   var el=ev.currentTarget;
   window.__cnTapT=setTimeout(function(){cnNoteOpen(id,el);},280);
 }
-function cnChipDbl(ev,id){ev.stopPropagation();clearTimeout(window.__cnTapT);cnEvOpen(id);}
+function cnChipDbl(ev,id){ev.stopPropagation();clearTimeout(window.__cnTapT);cnNoteClose();pdfOpen(id,0);}
 var CNP_W=262, CNP_H=212;
 /* 예전에 마인드맵으로 적어 둔 것이 있으면 쪽지 글로 옮겨 온다 (한 번만) */
 function cnNoteFromMind(s){
