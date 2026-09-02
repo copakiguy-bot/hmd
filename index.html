@@ -563,6 +563,58 @@
     padding:2px 13px 12px;font-family:inherit;font-size:11.5px;font-weight:600;line-height:1.6;
     color:#12312b;word-break:break-word}
   .cnp-txt::placeholder{color:#c3cbc7;font-weight:600}
+  .cnp-top .cnp-b .n{font-size:8.5px;margin-left:1px;vertical-align:2px}
+  /* ===== 일정에 붙인 문서 · PDF 뷰어 ===== */
+  .sched-item .pdf-btn{flex:none;border:none;background:none;cursor:pointer;font-size:12px;line-height:1;padding:2px 3px;border-radius:6px;opacity:.35;position:relative;font-family:inherit}
+  .sched-item:hover .pdf-btn{opacity:.7}
+  .sched-item .pdf-btn.on{opacity:1}
+  .sched-item .pdf-btn:hover{background:var(--cream);opacity:1}
+  .sched-item .pdf-btn i{font-style:normal;font-size:9px;font-weight:800;color:var(--green);margin-left:1px}
+  .sf-row{display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .sf-row .lb{font-size:11px;font-weight:700;color:var(--muted);flex:none}
+  .sf-row input{flex:1;min-width:170px}
+  .sf-row .btn{flex:none;padding:6px 11px;font-size:11.5px}
+  .sf-list{display:flex;gap:5px;flex-wrap:wrap;width:100%}
+  .sf-c{display:inline-flex;align-items:center;gap:5px;background:var(--green-soft);color:var(--green);border-radius:999px;
+    padding:3px 10px;font-size:11.5px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sf-c i{font-style:normal;cursor:pointer;color:#8fae9f;font-size:13px}
+  .sf-c i:hover{color:var(--red)}
+  .pdf-ov{position:fixed;inset:0;z-index:150;background:rgba(18,49,43,.5);display:flex;align-items:center;justify-content:center;padding:20px}
+  .pdf-box{background:var(--card);border-radius:18px;width:min(1100px,96vw);height:min(920px,94vh);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(18,49,43,.3)}
+  .pdf-top{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);flex:none;min-width:0}
+  .pdf-top b{font-size:14px;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .pdf-meta{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;flex:none}
+  .pdf-tools{margin-left:auto;display:flex;gap:6px;align-items:center;flex:none}
+  .pdf-b{border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 10px;font-size:11.5px;font-weight:700;
+    color:var(--dark);cursor:pointer;font-family:inherit;text-decoration:none;line-height:1.6}
+  .pdf-b:hover{background:var(--cream)}
+  .pdf-x{cursor:pointer;font-size:18px;color:var(--muted);line-height:1;flex:none}
+  .pdf-x:hover{color:var(--dark)}
+  .pdf-tabs{display:flex;gap:5px;padding:8px 14px 0;flex:none;overflow-x:auto}
+  .pdf-tab{border:1px solid var(--line);background:#fff;border-radius:8px 8px 0 0;border-bottom:none;padding:5px 12px;
+    font-size:11.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;white-space:nowrap}
+  .pdf-tab.on{background:var(--cream);color:var(--dark)}
+  .pdf-body{flex:1;min-height:0;background:#f3f2ed;position:relative}
+  .pdf-body iframe{width:100%;height:100%;border:none;display:block}
+  .pdf-none{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;
+    font-size:14px;font-weight:700;color:var(--muted);text-align:center;line-height:1.7}
+  .pdf-none span{font-size:12px;font-weight:600}
+  .pdf-add{display:flex;gap:6px;align-items:center;padding:10px 14px;border-top:1px solid var(--line);flex:none;flex-wrap:wrap}
+  .pdf-add input{flex:1;min-width:180px}
+  .pdf-add .btn{flex:none;padding:7px 12px;font-size:12px}
+  .ghp-ov{position:fixed;inset:0;z-index:160;background:rgba(18,49,43,.45);display:flex;align-items:center;justify-content:center;padding:20px}
+  .ghp-box{background:var(--card);border-radius:16px;width:min(560px,94vw);max-height:min(620px,88vh);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 44px rgba(18,49,43,.28)}
+  .ghp-top{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);flex:none}
+  .ghp-top b{font-size:13.5px;color:var(--dark);flex:none}
+  .ghp-path{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+  .ghp-list{overflow:auto;padding:8px}
+  .ghp-i{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;cursor:pointer;font-size:13px;color:var(--text)}
+  .ghp-i:hover{background:var(--cream)}
+  .ghp-i .ic{flex:none}
+  .ghp-i .sz{margin-left:auto;font-size:10.5px;color:var(--muted);flex:none}
+  .ghp-i.pdf{font-weight:700;color:var(--dark)}
+  .ghp-i.up{color:var(--muted);font-weight:700}
+  .ghp-msg{padding:16px;font-size:12.5px;color:var(--muted);line-height:1.7;text-align:center}
   .tlq-cnl{font-size:12px;font-weight:700;color:var(--dark);flex:none}
   /* 메모가 붙은 일정: 이름을 가리지 않도록 모서리를 접어 표시 */
   .tlc-ev.memo::after,.tlcw-ev.memo::after{content:'';position:absolute;right:0;bottom:0;
@@ -2599,6 +2651,21 @@
       </details>
     </div>
     <div class="card">
+      <h3><span class="dot" style="background:#24292f"></span> 문서 게시판 <span class="more">일정에 붙일 PDF</span></h3>
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:10px">
+        파일은 HMD에 담지 않고 <b>깃허브 게시판</b>에 올려 둔 문서의 <b>주소만</b> 일정에 붙입니다.
+        일정 옆 <b>📎</b>를 누르면 그 자리에서 PDF가 열립니다. 공개 저장소여야 목록을 읽고 볼 수 있습니다.</p>
+      <div class="inrow" style="flex-wrap:wrap">
+        <input id="ghOwner" class="in" style="flex:1;min-width:150px" placeholder="사용자/조직 (owner)">
+        <input id="ghRepo" class="in" style="flex:1;min-width:130px" placeholder="저장소 (repo)">
+        <input id="ghBranch" class="in" style="flex:none;width:110px" placeholder="브랜치">
+        <input id="ghFolder" class="in" style="flex:1;min-width:130px" placeholder="폴더 (비우면 전체)">
+        <button class="btn y" style="flex:none" onclick="ghCfgSave()">저장</button>
+        <button class="btn ghost" style="flex:none" onclick="ghPickOpen(null)">목록 열어보기</button>
+      </div>
+      <div id="ghCfgStatus" style="margin-top:8px;font-size:13px;color:var(--muted)"></div>
+    </div>
+    <div class="card">
       <h3><span class="dot" style="background:#4285f4"></span> 구글 캘린더 내보내기</h3>
       <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px">
         자동 전송은 쓰지 않습니다. 아래 <b>버튼을 누를 때만</b> 구글 캘린더로 보냅니다.</p>
@@ -2670,6 +2737,7 @@
           <label class="cn-chk" title="의회 일정으로 표시 (다른 색·의회 타임라인)"><input type="checkbox" id="schCn" onchange="schCnTgl()"> 의회</label>
         </div>
         <div class="hl-row" id="schHl"></div>
+        <div class="sf-row" id="schFiles"></div>
         <div class="inrow" id="schCnRow" style="margin-top:8px;display:none">
           <select id="schCnOrg" class="rowsel" onchange="schCnOrgCh()"></select>
           <select id="schCnDept" class="rowsel" onchange="schCnDeptCh()"></select>
@@ -3051,7 +3119,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-02 · r108';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-02 · r109';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4539,7 +4607,7 @@ function tlrStatsHTML(kind){
     +'<div class="tlr-hint">날짜 칸을 누르면 그 날의 성공을 표시하거나 해제할 수 있습니다. · 달성률은 오늘까지의 '+(kind==='wd'?'평일':'휴일')+' 수 기준</div></div>';
 }
 setInterval(function(){var c=document.getElementById('timelineCard');if(c&&c.style.display!=='none'&&!tlDrag)renderTimeline();},60000);   /* 현재 시간선 이동 */
-function toggleSchedForm(){var f=document.getElementById('schedAddForm');if(!f)return;var on=f.style.display!=='none';f.style.display=on?'none':'';if(!on){var r=document.getElementById('schHl');if(r&&!r.innerHTML)hlRowPaint('schHl','');var t=document.getElementById('schTitle');if(t)t.focus();}}
+function toggleSchedForm(){var f=document.getElementById('schedAddForm');if(!f)return;var on=f.style.display!=='none';f.style.display=on?'none':'';if(!on){var r=document.getElementById('schHl');if(r&&!r.innerHTML)hlRowPaint('schHl','');schFilesPaint();var t=document.getElementById('schTitle');if(t)t.focus();}}
 function setSectionOn(name,on){var c=document.getElementById(name+'SecCard');var b=document.getElementById(name+'SecBtn');
   if(!c)return;c.style.display=on?'':'none';if(b)b.classList.toggle('on',on);}
 function setCalOn(on){var c=document.getElementById('calCard');if(!c)return;
@@ -5624,7 +5692,8 @@ function cnEvOpen(id){
     +'<div class="cnev-m">'+esc(s.date||'')+(s.time?' · '+esc(s.time):'')+(s.dur>0?' · '+s.dur+'분':'')+'</div>'
     +(dts.length?'<div class="cnev-d">'+dts.map(function(x){return '<div>· '+esc(x)+'</div>';}).join('')+'</div>'
       :'<div class="cnev-d" style="color:var(--muted)">세부 내용이 없습니다.</div>')
-    +'<div class="cnev-foot"><button class="btn ghost" onclick="cnEvClose();cnNoteOpen('+s.id+')">📝 포스트잇'+(cnNoteHas(s)?' ●':'')+'</button></div>';
+    +'<div class="cnev-foot"><button class="btn ghost" onclick="cnEvClose();pdfOpen('+s.id+',0)">📎 문서'+(schFiles(s).length?' '+schFiles(s).length:'')+'</button>'
+    +'<button class="btn ghost" onclick="cnEvClose();cnNoteOpen('+s.id+')">📝 포스트잇'+(cnNoteHas(s)?' ●':'')+'</button></div>';
   document.addEventListener('keydown',cnEvEsc);
 }
 function cnEvClose(){
@@ -5666,7 +5735,8 @@ function addSchedule(){
   if(!title){alert('일정 제목을 입력하세요.');return;}
   var __d=parseInt(document.getElementById('schDur')?document.getElementById('schDur').value:'',10);
   var __ns={id:uid(),date:selDate,time:normTime(document.getElementById('schTime').value),
-    dur:(__d>0?__d:30),title,detail:document.getElementById('schDetail').value.trim(),hl:hlRowVal('schHl')};
+    dur:(__d>0?__d:30),title,detail:document.getElementById('schDetail').value.trim(),hl:hlRowVal('schHl'),
+    files:schFormFiles.slice()};
   var cnEl=document.getElementById('schCn');
   if(cnEl&&cnEl.checked){
     __ns.cn=true;
@@ -5676,7 +5746,7 @@ function addSchedule(){
   }
   db.schedules.push(__ns);
   save();['schTitle','schTime','schDetail','schDur'].forEach(i=>{var e=document.getElementById(i);if(e)e.value='';});
-  hlRowPaint('schHl','');
+  hlRowPaint('schHl','');schFormFiles=[];schFilesPaint();
   renderCal();renderSchedule();
 }
 /* ===== 일정 하이라이트: 글쓰기 편집기의 음영 파스텔 6색 ===== */
@@ -5723,6 +5793,7 @@ function renderSchedule(){
   if(typeof renderTlRoutines==='function')renderTlRoutines();
   const el=document.getElementById('schedList');if(!el)return;
   var __hr=document.getElementById('schHl');if(__hr&&!__hr.innerHTML)hlRowPaint('schHl','');
+  var __fr=document.getElementById('schFiles');if(__fr&&!__fr.innerHTML)schFilesPaint();
   const [y,m,d]=selDate.split('-');
   const dow=['일','월','화','수','목','금','토'][new Date(+y,+m-1,+d).getDay()];
   document.getElementById('schedLabel').textContent=`${+m}월 ${+d}일 (${dow})${selDate===today()?' · 오늘':''}`;
@@ -5733,6 +5804,7 @@ function renderSchedule(){
     <div class="top">
       <div class="chk ${s.done?'done':''}" onclick="toggleSchedule(${s.id})">${s.done?'✓':''}</div>
       <button type="button" class="hl-btn ${hlOk(s.hl)?'':'none'}" title="하이라이트 색" style="${hlOk(s.hl)?`background:${s.hl}`:''}" onclick="hlPopOpen(event,${s.id})"></button>
+      <button type="button" class="pdf-btn${schFiles(s).length?' on':''}" title="${schFiles(s).length?`문서 ${schFiles(s).length}개 보기`:'문서 붙이기'}" onclick="pdfOpen(${s.id},0)">📎${schFiles(s).length>1?`<i>${schFiles(s).length}</i>`:''}</button>
       <span class="sched-time" contenteditable onblur="editSchedule(${s.id},'time',this.innerText)">${esc(s.time||'-')}</span>
       <b style="flex:1" contenteditable onblur="editSchedule(${s.id},'title',this.innerText)">${esc(s.title)}</b>
       ${s.cn?`<span class="cn-badge" style="background:${cnColor(s)}">${esc(cnLabel(s))}</span>`:''}
@@ -5964,7 +6036,7 @@ function tlQuickAdd(ev){
   mn=Math.max(TL_START*60,Math.min(mn,TL_END*60-5));
   tlqOpen(tlFmt(mn));
 }
-function tlqClose(){var e=document.getElementById('tlqOv');if(e)e.remove();document.removeEventListener('keydown',tlqEsc);window.__tlqAfter=null;window.__tlqOpt=null;}
+function tlqClose(){var e=document.getElementById('tlqOv');if(e)e.remove();document.removeEventListener('keydown',tlqEsc);window.__tlqAfter=null;window.__tlqOpt=null;schFormFiles=[];}
 function tlqEsc(e){if(e.key==='Escape')tlqClose();}
 /* 의회 일정용 기관·세부 고르기 (빠른 추가 창 안) */
 function tlqCnPaint(org,dept){
@@ -6004,6 +6076,7 @@ function tlqOpen(time,opt){
     +'<input id="tlqTitle" class="in" style="flex:1" placeholder="일정 제목" value="'+escA(opt.title||'')+'">'
     +'</div>'
     +'<div class="hl-row" id="tlqHl"></div>'
+    +'<div class="sf-row" id="schFiles"></div>'
     +'<textarea id="tlqDetail" class="in" style="width:100%;min-height:66px;margin-top:8px;resize:vertical" placeholder="세부 내용 (선택)">'+esc(opt.detail||'')+'</textarea>'
     +'<div class="tlq-quick">'
     +[15,30,60,90,120].map(function(m){return '<span onclick="tlqSetDur('+m+')">'+(m<60?m+'분':Math.floor(m/60)+'시간'+(m%60?' '+(m%60)+'분':''))+'</span>';}).join('')
@@ -6014,7 +6087,7 @@ function tlqOpen(time,opt){
   document.body.appendChild(ov);
   document.addEventListener('keydown',tlqEsc);
   if(opt.cn)tlqCnPaint(opt.cn.org,opt.cn.dept||'');
-  hlRowPaint('tlqHl','');
+  hlRowPaint('tlqHl','');schFormFiles=[];schFilesPaint();
   var t=document.getElementById('tlqTitle');
   if(t){t.focus();if(t.value)t.setSelectionRange(t.value.length,t.value.length);}
   ['tlqDate','tlqTime','tlqDur','tlqTitle'].forEach(function(i){
@@ -6032,7 +6105,7 @@ function tlqSave(){
   var dEl=document.getElementById('tlqDate'),opt=window.__tlqOpt||{};
   var date=(dEl&&dEl.value)?dEl.value:(opt.date||selDate);
   var ns={id:uid(),date:date,time:normTime(tm.value),dur:(d>0?d:30),
-    title:title,detail:de.value.trim(),hl:hlRowVal('tlqHl')};
+    title:title,detail:de.value.trim(),hl:hlRowVal('tlqHl'),files:schFormFiles.slice()};
   if(opt.cn){
     var so=document.getElementById('tlqOrg'),sd=document.getElementById('tlqDept');
     ns.cn=true;ns.cnOrg=(so&&so.value)||opt.cn.org||'본회의';
@@ -6063,6 +6136,184 @@ function cnQuickAddW(ev,org,dept,d0,CW){          /* 주 보기: 가로 = 날짜
   var date=shiftDayStr(d0,i);
   tlqOpen('',{head:'의회 일정 추가',date:date,cn:{org:org,dept:dept==='__etc__'?'':(dept||'')},
     after:function(){renderTimeline();}});
+}
+
+/* ================= 일정에 붙인 문서(PDF) · 뷰어 ================= */
+/* 파일은 HMD에 담지 않고 «부의장실 게시판»(깃허브)에 있는 주소만 적어 둔다 */
+function ghCfg(){
+  var g=db.gh||(db.gh={});
+  if(!g.owner)g.owner='copakiguy-bot';
+  if(!g.repo)g.repo='rainstop';
+  if(!g.branch)g.branch='main';
+  if(g.folder==null)g.folder='';
+  return g;
+}
+/* raw·blob 주소는 그대로 열면 내려받기가 되므로 github.io(Pages) 주소로 바꿔 준다 */
+function pdfUrlFix(u){
+  u=String(u||'').trim();
+  var m=/^https?:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/[^/]+\/(.+)$/.exec(u);
+  if(m)return 'https://'+m[1]+'.github.io/'+m[2]+'/'+m[3];
+  m=/^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/(?:blob|raw)\/[^/]+\/(.+)$/.exec(u);
+  if(m)return 'https://'+m[1]+'.github.io/'+m[2]+'/'+m[3];
+  return u;
+}
+function pdfNameOf(u){try{return decodeURIComponent(String(u).split('?')[0].split('/').pop())||'문서';}catch(e){return '문서';}}
+function schFiles(s){return (s&&Array.isArray(s.files))?s.files:[];}
+function schById(id){return (db.schedules||[]).find(function(x){return x.id===id;});}
+function schFileAdd(id,url,name){
+  var s=schById(id);if(!s)return false;
+  url=pdfUrlFix(url);if(!url)return false;
+  if(!Array.isArray(s.files))s.files=[];
+  if(s.files.some(function(f){return f.u===url;}))return true;
+  s.files.push({u:url,n:(name||pdfNameOf(url))});
+  save();renderCal();renderSchedule();return true;
+}
+function schFileDel(id,i){
+  var s=schById(id);if(!s||!s.files)return;
+  s.files.splice(i,1);save();renderCal();renderSchedule();
+  if(document.getElementById('pdfOv'))pdfOpen(id,0);
+}
+/* ---- 뷰어 ---- */
+var pdfSch=null,pdfIdx=0;
+function pdfClose(){var e=document.getElementById('pdfOv');if(e)e.remove();document.removeEventListener('keydown',pdfEsc);pdfSch=null;}
+function pdfEsc(e){if(e.key==='Escape'){e.stopPropagation();pdfClose();}}
+function pdfOpen(id,i){
+  var s=schById(id);if(!s)return;
+  var list=schFiles(s);
+  pdfSch=id;pdfIdx=Math.max(0,Math.min(i||0,Math.max(0,list.length-1)));
+  pdfClose();pdfSch=id;
+  var ov=document.createElement('div');ov.className='pdf-ov';ov.id='pdfOv';
+  ov.addEventListener('click',function(e){if(e.target===ov)pdfClose();});
+  ov.innerHTML='<div class="pdf-box">'
+    +'<div class="pdf-top"><b>'+esc(s.title||'일정')+'</b>'
+    +'<span class="pdf-meta">'+esc(s.date||'')+(s.time?' · '+esc(s.time):'')+(s.cn?' · '+esc(cnLabel(s)):'')+'</span>'
+    +'<span class="pdf-tools" id="pdfTools"></span>'
+    +'<span class="pdf-x" onclick="pdfClose()" title="닫기 (Esc)">✕</span></div>'
+    +'<div class="pdf-tabs" id="pdfTabs"></div>'
+    +'<div class="pdf-body" id="pdfBody"></div>'
+    +'<div class="pdf-add" id="pdfAdd"></div></div>';
+  document.body.appendChild(ov);
+  document.addEventListener('keydown',pdfEsc);
+  pdfPaint();
+}
+function pdfPaint(){
+  var s=schById(pdfSch);if(!s||!document.getElementById('pdfOv'))return;
+  var list=schFiles(s),f=list[pdfIdx];
+  var tabs=document.getElementById('pdfTabs');
+  tabs.style.display=list.length>1?'':'none';
+  tabs.innerHTML=list.map(function(x,i){
+    return '<button class="pdf-tab'+(i===pdfIdx?' on':'')+'" onclick="pdfGo('+i+')" title="'+escA(x.u)+'">'+esc(x.n||pdfNameOf(x.u))+'</button>';}).join('');
+  var tools=document.getElementById('pdfTools');
+  tools.innerHTML=f?('<a class="pdf-b" href="'+escA(f.u)+'" target="_blank" rel="noopener" title="새 창에서 열기">↗ 새 창</a>'
+    +'<button class="pdf-b" onclick="schFileDel('+s.id+','+pdfIdx+')" title="이 일정에서 문서 떼기">떼기</button>'):'';
+  var body=document.getElementById('pdfBody');
+  body.innerHTML=f?('<iframe id="pdfFrame" src="'+escA(f.u)+(/\.pdf($|\?)/i.test(f.u)?'#view=FitH':'')+'" title="'+escA(f.n||'')+'"></iframe>')
+    :'<div class="pdf-none">이 일정에 붙은 문서가 없습니다.<br><span>아래에 게시판 주소를 넣거나 «게시판에서 고르기»를 눌러 보세요.</span></div>';
+  document.getElementById('pdfAdd').innerHTML=
+    '<input id="pdfUrlIn" class="in" placeholder="문서 주소 붙여넣기 (예: https://'+esc(ghCfg().owner)+'.github.io/'+esc(ghCfg().repo)+'/…​.pdf)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();pdfAddUrl();}">'
+    +'<button class="btn ghost" onclick="ghPickOpen(pdfSch)">📄 게시판에서 고르기</button>'
+    +'<button class="btn y" onclick="pdfAddUrl()">붙이기</button>';
+}
+function pdfGo(i){pdfIdx=i;pdfPaint();}
+function pdfAddUrl(){
+  var el=document.getElementById('pdfUrlIn');if(!el)return;
+  var v=el.value.trim();if(!v)return;
+  if(!/^https?:\/\//i.test(v)){alert('http로 시작하는 문서 주소를 넣어 주세요.');return;}
+  var s=schById(pdfSch);var before=schFiles(s).length;
+  schFileAdd(pdfSch,v);
+  el.value='';pdfIdx=Math.max(0,schFiles(schById(pdfSch)).length-1);
+  if(schFiles(schById(pdfSch)).length===before)hkChip('이미 붙어 있는 문서입니다');
+  pdfPaint();
+}
+/* ---- 게시판에서 고르기 (공개 저장소 목록 읽기) ---- */
+function ghApi(path){var g=ghCfg();
+  return 'https://api.github.com/repos/'+encodeURIComponent(g.owner)+'/'+encodeURIComponent(g.repo)
+    +'/contents/'+String(path||'').split('/').filter(Boolean).map(encodeURIComponent).join('/')
+    +'?ref='+encodeURIComponent(g.branch);}
+function ghPageUrl(path){var g=ghCfg();
+  return 'https://'+g.owner+'.github.io/'+g.repo+'/'+String(path||'').split('/').filter(Boolean).map(encodeURIComponent).join('/');}
+function ghPickClose(){var e=document.getElementById('ghpOv');if(e)e.remove();document.removeEventListener('keydown',ghPickEsc);}
+function ghPickEsc(e){if(e.key==='Escape'){e.stopPropagation();ghPickClose();}}
+function ghPickOpen(schedId,path){
+  ghPickClose();
+  window.__ghPickSch=schedId;
+  var ov=document.createElement('div');ov.className='ghp-ov';ov.id='ghpOv';
+  ov.addEventListener('click',function(e){if(e.target===ov)ghPickClose();});
+  ov.innerHTML='<div class="ghp-box">'
+    +'<div class="ghp-top"><b>📄 게시판에서 고르기</b><span class="ghp-path" id="ghpPath"></span>'
+    +'<span class="pdf-x" onclick="ghPickClose()">✕</span></div>'
+    +'<div class="ghp-list" id="ghpList"><div class="ghp-msg">불러오는 중…</div></div></div>';
+  document.body.appendChild(ov);
+  document.addEventListener('keydown',ghPickEsc);
+  ghPickLoad(path||ghCfg().folder||'');
+}
+function ghPickLoad(path){
+  var box=document.getElementById('ghpList');if(!box)return;
+  var g=ghCfg();
+  var ph=document.getElementById('ghpPath');
+  if(ph)ph.textContent=g.owner+'/'+g.repo+(path?' / '+path:'');
+  box.innerHTML='<div class="ghp-msg">불러오는 중…</div>';
+  fetch(ghApi(path)).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();}).then(function(j){
+    if(!Array.isArray(j)){box.innerHTML='<div class="ghp-msg">폴더가 아닙니다.</div>';return;}
+    var up=path?('<div class="ghp-i up" onclick="ghPickLoad(\''+escA(path.split('/').slice(0,-1).join('/'))+'\')">↑ 상위 폴더</div>'):'';
+    var dirs=j.filter(function(x){return x.type==='dir';}).sort(function(a,b){return a.name.localeCompare(b.name);});
+    var files=j.filter(function(x){return x.type==='file';}).sort(function(a,b){return a.name.localeCompare(b.name);});
+    box.innerHTML=up
+      +dirs.map(function(x){return '<div class="ghp-i dir" onclick="ghPickLoad(\''+escA(x.path)+'\')"><span class="ic">📁</span>'+esc(x.name)+'</div>';}).join('')
+      +files.map(function(x){
+        var pdf=/\.pdf$/i.test(x.name);
+        return '<div class="ghp-i'+(pdf?' pdf':'')+'" onclick="ghPickTake(\''+escA(x.path)+'\',\''+escA(x.name)+'\')">'
+          +'<span class="ic">'+(pdf?'📕':'📄')+'</span>'+esc(x.name)
+          +'<span class="sz">'+(x.size?Math.round(x.size/1024)+'KB':'')+'</span></div>';}).join('')
+      +((dirs.length+files.length)?'':'<div class="ghp-msg">이 폴더에 파일이 없습니다.</div>');
+  }).catch(function(e){
+    box.innerHTML='<div class="ghp-msg">목록을 불러오지 못했습니다 ('+esc(String(e.message||e))+')<br>'
+      +'<span>설정 → 문서 게시판에서 사용자·저장소 이름을 확인해 주세요. 비공개 저장소는 목록을 읽을 수 없습니다.</span></div>';
+  });
+}
+function ghPickTake(path,name){
+  var id=window.__ghPickSch;
+  var url=ghPageUrl(path);
+  if(id!=null){schFileAdd(id,url,name);ghPickClose();
+    if(document.getElementById('pdfOv')){pdfIdx=Math.max(0,schFiles(schById(id)).length-1);pdfPaint();}
+    else pdfOpen(id,Math.max(0,schFiles(schById(id)).length-1));
+  }else{                                   /* 일정 만들기 전(폼)에서 고른 경우 */
+    schFormFileAdd(url,name);ghPickClose();
+  }
+}
+function ghCfgSave(){
+  var g=ghCfg();
+  var v=function(i){var e=document.getElementById(i);return e?e.value.trim():'';};
+  g.owner=v('ghOwner')||g.owner;g.repo=v('ghRepo')||g.repo;g.branch=v('ghBranch')||'main';
+  g.folder=v('ghFolder').replace(/^\/+|\/+$/g,'');
+  save();ghCfgPaint();hkChip('문서 게시판 설정을 저장했습니다');
+}
+function ghCfgPaint(){
+  var g=ghCfg();
+  [['ghOwner',g.owner],['ghRepo',g.repo],['ghBranch',g.branch],['ghFolder',g.folder]].forEach(function(p){
+    var e=document.getElementById(p[0]);if(e&&document.activeElement!==e)e.value=p[1]||'';});
+  var st=document.getElementById('ghCfgStatus');
+  if(st)st.innerHTML='지금 보는 곳: <b>'+esc(ghPageUrl(g.folder))+'</b>';
+}
+/* ---- 일정 추가 폼·빠른 추가 창에 붙일 문서 ---- */
+var schFormFiles=[];
+function schFormFileAdd(u,n){u=pdfUrlFix(u);if(!u)return;
+  if(!schFormFiles.some(function(f){return f.u===u;}))schFormFiles.push({u:u,n:n||pdfNameOf(u)});
+  schFilesPaint();}
+function schFormFileDel(i){schFormFiles.splice(i,1);schFilesPaint();}
+function schFormAddUrl(){
+  var el=document.getElementById('schFileIn');if(!el)return;
+  var v=el.value.trim();if(!v)return;
+  if(!/^https?:\/\//i.test(v)){alert('http로 시작하는 문서 주소를 넣어 주세요.');return;}
+  schFormFileAdd(v);el.value='';
+}
+function schFilesPaint(){
+  var box=document.getElementById('schFiles');if(!box)return;
+  box.innerHTML='<span class="lb">📎 문서</span>'
+    +'<input id="schFileIn" class="in" placeholder="게시판 문서 주소 붙여넣기 (선택)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();schFormAddUrl();}">'
+    +'<button type="button" class="btn ghost" onclick="ghPickOpen(null)">게시판</button>'
+    +(schFormFiles.length?('<span class="sf-list">'+schFormFiles.map(function(f,i){
+      return '<span class="sf-c" title="'+escA(f.u)+'">'+esc(f.n)+'<i onclick="schFormFileDel('+i+')">×</i></span>';}).join('')+'</span>'):'');
 }
 /* ================= 의회 일정 포스트잇 (칩 옆에 붙는 쪽지) ================= */
 function cnChipTap(ev,id){                        /* 한 번 = 포스트잇 · 두 번 = 세부일정 */
@@ -6111,6 +6362,7 @@ function cnNoteOpen(id,anchor){
   box.innerHTML='<div class="cnp-top">'
     +'<b title="'+escA(cnLabel(s)+' · '+(s.title||''))+'">'+esc(s.title||'(제목 없음)')+'</b>'
     +'<span class="cnp-meta">'+esc(String(s.date||'').slice(5).replace('-','/'))+(s.time?' '+esc(s.time):'')+'</span>'
+    +'<button class="cnp-b" title="붙인 문서 보기" onclick="pdfOpen('+s.id+',0)">📎'+(schFiles(s).length?'<b class="n">'+schFiles(s).length+'</b>':'')+'</button>'
     +'<button class="cnp-b" title="세부일정 보기" onclick="cnEvOpen('+s.id+')">≡</button>'
     +'<button class="cnp-b x" title="닫기 (Esc)" onclick="cnNoteClose()">✕</button></div>'
     +'<textarea id="cnpTxt" class="cnp-txt" placeholder="여기에 메모…" oninput="cnNoteType()"></textarea>';
@@ -12462,7 +12714,8 @@ function renderAll(){
 }
 (function(){var e=document.getElementById('buildStamp');
   if(e)e.textContent='버전 '+HMD_BUILD;
-  try{naverKeyStatus();}catch(_){}})();
+  try{naverKeyStatus();}catch(_){}
+  try{ghCfgPaint();}catch(_){}})();
 [renderAll,applyTopState,renderSyncUI,renderBackupUI,backupTick].forEach(function(f){
   try{f();}catch(e){try{console.error('boot · '+(f.name||'?')+':',e);}catch(_){}}
 });
