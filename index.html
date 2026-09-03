@@ -566,6 +566,17 @@
   .cnp-top .cnp-b .n{font-size:8.5px;margin-left:1px;vertical-align:2px}
   /* ===== 일정에 붙인 문서 · PDF 뷰어 ===== */
   .ev-clip{flex:none;font-size:9px;margin-left:3px;opacity:.85;line-height:1;white-space:nowrap}
+  /* 주요일정: 빨간 점 */
+  .imp-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#e34948;margin-left:5px;flex:none;vertical-align:1px;box-shadow:0 0 0 1.5px #fff}
+  .cnev-t .imp-dot{width:8px;height:8px;margin-left:7px}
+  .sched-item .imp-btn{flex:none;width:12px;height:12px;border-radius:50%;border:1.5px solid #e6b3b2;background:#fff;cursor:pointer;padding:0;margin-left:2px;opacity:.55}
+  .sched-item:hover .imp-btn{opacity:1}
+  .sched-item .imp-btn.on{background:#e34948;border-color:#e34948;opacity:1}
+  .lunar-toggle.imp i,.cn-chk.imp i,.btn.imp i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#e34948;margin-right:4px;vertical-align:0}
+  .cn-chk.imp{color:#a3564b}
+  .cn-chk.imp input{accent-color:#e34948}
+  .tlc-imp-note{font-size:11px;font-weight:700;color:#a3564b;white-space:nowrap}
+  .tlc-imp-note i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#e34948;margin-right:4px}
   .ev-clip i{font-style:normal;font-size:8.5px;font-weight:800;margin-left:1px;vertical-align:1px}
   .sched-item .pdf-btn{flex:none;border:none;background:none;cursor:pointer;font-size:12px;line-height:1;padding:2px 3px;border-radius:6px;opacity:.35;position:relative;font-family:inherit}
   .sched-item:hover .pdf-btn{opacity:.7}
@@ -1576,6 +1587,14 @@
   #chGraphCard.ch-full #chNoDates{max-height:80px;overflow:auto}
   body.ch-fullbody{overflow:hidden}
   #chWrap.drag{cursor:grabbing}
+  #chWrap.dotdrag{cursor:ew-resize}
+  #chWrap circle[data-id]{cursor:grab}
+  .ch-yhint{font-size:12px;color:var(--muted);margin-top:6px;min-height:0;line-height:1.6}
+  .ch-yhint:empty{display:none}
+  .ch-yhint b{color:var(--dark)}
+  .ch-yhint .tip{color:#8a9490}
+  .ch-yhint code{background:var(--cream);border-radius:5px;padding:0 5px}
+  .ch-yhint .bad{color:var(--red)}
   #chSvg{display:block;width:100%;height:100%}
   .ch-tip{display:none;position:absolute;background:var(--dark);color:#fff;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:8px;pointer-events:none;white-space:nowrap;z-index:5}
   .ch-tip.on{display:block}
@@ -2581,12 +2600,13 @@
       <div class="card">
       <h3><span class="dot" style="background:var(--yellow)"></span> 사건 기록 <span class="more" id="chCount"></span></h3>
       <div class="inrow" style="flex-wrap:wrap">
-        <input id="chY" class="in" type="text" inputmode="text" style="flex:none;width:120px" placeholder="년 (기원전 -)" title="숫자 그대로(-384) · 만·억 표기(-46억, -1만2000) · 오늘 기준(1만년 전) 모두 됩니다">
+        <input id="chY" class="in" type="text" inputmode="text" style="flex:none;width:132px" placeholder="년 · -384 / 4만2000년 전" oninput="chYHint()" title="-42000 = 기원전 42000년 (약 4만4천년 전) · 42000년 전 = 오늘 기준 4만2천년 전 · 만·억 표기(-46억) 됩니다">
         <select id="chM" class="in" style="flex:none;width:76px"></select>
         <select id="chD" class="in" style="flex:none;width:76px"></select>
         <button class="btn ghost" id="chNoDateBtn" type="button" style="flex:none;padding:7px 12px;font-size:12px" onclick="chNoDateTgl()" title="연도만 알고 월·일을 모를 때 — 그 해 위에 속이 빈 점으로 표시됩니다">날짜 없음</button>
         <input id="chTitle" class="in" style="flex:1;min-width:200px" placeholder="사건명">
       </div>
+      <div class="ch-yhint" id="chYHintBox"></div>
       <textarea id="chDetail" class="in" style="width:100%;min-height:64px;margin-top:8px;resize:vertical" placeholder="세부 내용"></textarea>
       <div class="ch-cats" id="chCatPick" style="margin-top:8px"></div>
       <div class="inrow" style="margin-top:8px">
@@ -2737,6 +2757,7 @@
           <input id="schDur" class="in" style="flex:none;width:92px" inputmode="numeric" placeholder="소요(분)·30" title="소요시간(분). 비우면 30분">
           <input id="schTitle" class="in" style="flex:1" placeholder="일정 제목">
           <label class="cn-chk" title="의회 일정으로 표시 (다른 색·의회 타임라인)"><input type="checkbox" id="schCn" onchange="schCnTgl()"> 의회</label>
+          <label class="cn-chk imp" title="주요일정 — 제목 옆 빨간 점 · 「주요일정」 버튼으로 따로 봅니다"><input type="checkbox" id="schImp"> <i></i>주요</label>
         </div>
         <div class="hl-row" id="schHl"></div>
         <div class="sf-row" id="schFiles"></div>
@@ -2780,6 +2801,7 @@
         <span style="margin-left:8px;display:inline-flex;gap:5px;vertical-align:middle">
           <button id="tlModeDaily" class="lunar-toggle on" onclick="tlDailyClick()">Daily</button>
           <button id="tlModeCn" class="lunar-toggle" onclick="tlCnClick()">의회일정</button>
+          <button id="tlModeImp" class="lunar-toggle imp" onclick="tlImpClick()" title="주요일정만 보기 (D·F)"><i></i>주요일정</button>
           <button id="tlModeProject" class="lunar-toggle" onclick="tlSetMode('project')">Project</button>
         </span>
         <span class="tl-datenav"><button type="button" onclick="tlDayShift(-1)" title="전날">‹</button><span class="more" id="tlLabel" style="margin-left:0"></span><button type="button" onclick="tlDayShift(1)" title="다음날">›</button></span></h3>
@@ -3121,7 +3143,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-02 · r110';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-02 · r111';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -3518,12 +3540,14 @@ function toggleTimeline(){toggleCalSub('tl');}
 function tlParseMin(t){var m=/^(\d{1,2}):(\d{2})$/.exec(String(t||'').trim());if(!m)return null;var h=+m[1],mm=+m[2];if(h>23||mm>59)return null;return h*60+mm;}
 var tlMode='daily';   /* 'daily'(기본) | 'project' */
 var tlDailyOn=true, tlCn=false;   /* daily 모드 안: 데일리·의회 각각 토글 (둘 다 끌 수는 없다) */
-var tlCnScale='day';   /* 의회 트랙: 'day' 시간축 | 'week' 회기 날짜축 */
+var tlCnScale='week';   /* 의회 트랙: 'day' 시간축 | 'week' 회기 날짜축 — 기본은 주단위 */
+var tlCnImp=false;      /* 주요일정만 보기 */
 function tlCnScaleSet(s){tlCnScale=s;tlModeBtns();renderTimeline();}
 function tlModeBtns(){
   var bd=document.getElementById('tlModeDaily'),bc=document.getElementById('tlModeCn'),bp=document.getElementById('tlModeProject');
   if(bd)bd.classList.toggle('on',tlMode==='daily'&&tlDailyOn);
   if(bc)bc.classList.toggle('on',tlMode==='daily'&&tlCn);
+  var bi=document.getElementById('tlModeImp');if(bi)bi.classList.toggle('on',tlMode==='daily'&&tlCn&&tlCnImp);
   if(bp)bp.classList.toggle('on',tlMode==='project');
 }
 /* ===== 의회 타임라인 머리띠: 일단위·주단위 + 기관 고르기 (트랙 바로 위, 가로 스크롤에 틀고정) ===== */
@@ -3542,6 +3566,7 @@ function tlcBarHTML(st){
     +'<span class="tlc-bar-g">'
     +'<button class="lunar-toggle'+(tlCnScale==='day'?' on':'')+'" onclick="tlCnScaleSet(\'day\')">일단위</button>'
     +'<button class="lunar-toggle'+(tlCnScale==='week'?' on':'')+'" onclick="tlCnScaleSet(\'week\')">주단위</button></span>'
+    +(tlCnImp?'<span class="tlc-bar-sep"></span><span class="tlc-imp-note"><i></i>주요일정만 보는 중</span>':'')
     +'<span class="tlc-bar-sep"></span>'
     +'<span class="tlc-bar-g">'
     +'<button class="lunar-toggle'+(!tlCnOrgSel.length?' on':'')+'" onclick="tlCnOrgSet(\'\')" title="모든 기관">전체</button>'
@@ -3557,9 +3582,25 @@ function tlDailyClick(){
 function tlCnClick(){
   if(tlMode!=='daily')tlMode='daily';
   tlCn=!tlCn;
-  if(!tlCn&&!tlDailyOn)tlDailyOn=true;
+  if(!tlCn){tlCnImp=false;if(!tlDailyOn)tlDailyOn=true;}
   tlModeBtns();renderTimeline();
 }
+/* 주요일정만: 의회 트랙에서 빨간 점 붙은 일정만 남긴다 (의회 트랙이 꺼져 있으면 켠다) */
+function tlImpClick(){
+  if(tlMode!=='daily')tlMode='daily';
+  tlCnImp=!tlCnImp;
+  if(tlCnImp)tlCn=true;
+  tlModeBtns();renderTimeline();
+}
+function tlImpShow(){   /* D·F 첫 화면: 스케줄 → 타임라인 → 의회 주단위 → 주요일정만 */
+  goTop('cal');
+  var c=document.getElementById('timelineCard');
+  if(c&&c.style.display==='none'&&typeof toggleCalSub==='function')toggleCalSub('tl');
+  tlMode='daily';tlCn=true;tlCnImp=true;tlCnScale='week';
+  tlModeBtns();renderTimeline();
+  setTimeout(function(){var el=document.getElementById('timelineCard');if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'start'});},60);
+}
+function cnImpOk(s){return !tlCnImp||!!(s&&s.imp);}
 function renderTimeline(){
   var inner=document.getElementById('tlInner'),card=document.getElementById('timelineCard');
   if(!inner||!card||card.style.display==='none')return;
@@ -3591,7 +3632,7 @@ function renderTimeline(){
     if(tlCn&&s.cn)return;                      /* 의회 트랙이 켜져 있으면 그쪽에서 보여준다 */
     var mn=tlParseMin(s.time);
     var e={k:'s',id:s.id,mn:mn,time:s.time,dur:(s.dur>0?s.dur:30),title:s.title,detail:s.detail,done:s.done,
-      cn:!!s.cn,cnc:s.cn?cnColor(s):'',cnl:s.cn?cnLabel(s):'',hl:hlOk(s.hl)?s.hl:'',nf:schFiles(s).length};
+      cn:!!s.cn,cnc:s.cn?cnColor(s):'',cnl:s.cn?cnLabel(s):'',hl:hlOk(s.hl)?s.hl:'',nf:schFiles(s).length,imp:!!s.imp};
     if(mn==null||mn<TL_START*60||mn>TL_END*60)untimed.push(e);else evs.push(e);
   });
   tlrFor(selDate,true).forEach(function(r){
@@ -3604,7 +3645,7 @@ function renderTimeline(){
   evs.forEach(function(e){
     var left=(e.mn-TL_START*60)/60*TL_HW;
     var lbl=((e.ok||e.done)?'✓ ':'')+e.title;
-    var bw=Math.min(Math.max(Math.ceil(tlTextW(lbl))+17+(e.nf?(e.nf>1?26:18):0),26),278);   /* 글자에 딱 맞는 폭 */
+    var bw=Math.min(Math.max(Math.ceil(tlTextW(lbl))+17+(e.nf?(e.nf>1?26:18):0)+(e.imp?12:0),26),290);   /* 글자에 딱 맞는 폭 */
     var occ=Math.max(bw,84);                                        /* 시간표기 폭까지 감안 */
     var li=0;while(li<lanes.length&&lanes[li]>left-4)li++;
     lanes[li]=left+occ+10;
@@ -3615,7 +3656,7 @@ function renderTimeline(){
     var tip=det||(e.title+' ('+range+')');       /* 마우스를 올리면 세부정보 */
     html+='<div class="tl-ev'+(e.k==='r'?' rt':'')+(e.done?' done':'')+(e.ok?' ok':'')+(e.cn?' cn':'')+(e.hl?' hl':'')+'" data-k="'+e.k+'" data-id="'+e.id+'"'
       +' style="left:'+left+'px;top:'+(8+li*38)+'px;width:'+bw+'px'+(e.cn?';border-left:3px solid '+CN_MONO_BAR:'')+(e.hl?';background:'+e.hl:'')+'" title="'+escA(e.cn?(e.cnl+' · '+tip):tip)+'">'
-      +'<b>'+esc(lbl)+'</b>'+(e.nf?'<span class="ev-clip" title="붙은 문서 '+e.nf+'개">📎'+(e.nf>1?'<i>'+e.nf+'</i>':'')+'</span>':'')
+      +'<b>'+esc(lbl)+'</b>'+(e.imp?'<span class="imp-dot" title="주요일정"></span>':'')+(e.nf?'<span class="ev-clip" title="붙은 문서 '+e.nf+'개">📎'+(e.nf>1?'<i>'+e.nf+'</i>':'')+'</span>':'')
       +'<span class="tl-time">'+range+'</span></div>';
   });
   var trackH=Math.max(110,8+Math.max(1,lanes.length)*38+18);
@@ -3651,7 +3692,7 @@ function tlcStickyBind(){
 }
 /* ===== 의회 타임라인: 첫 열 기관 · 둘째 열 세부 · 각 줄이 트랙 ===== */
 function tlCnGridHTML(W,gridBg){
-  var cnEvs=schedOf(selDate).filter(function(s){return s.cn;});
+  var cnEvs=schedOf(selDate).filter(function(s){return s.cn&&cnImpOk(s);});
   var nowL='';
   if(selDate===today()){
     var nd=new Date(),nmn=nd.getHours()*60+nd.getMinutes();
@@ -3682,10 +3723,10 @@ function tlCnGridHTML(W,gridBg){
         var bw=Math.min(Math.max(Math.ceil(tlTextW(lbl))+16,26),220);
         var endMn=Math.min(mn+(s.dur>0?s.dur:30),24*60-1);
         var sh=(s.done?'\u2713 ':'')+cnShortTitle(s);
-        var bw2=Math.min(Math.max(Math.ceil(tlTextW(sh))+16+(schFiles(s).length?(schFiles(s).length>1?26:18):0),26),244);
+        var bw2=Math.min(Math.max(Math.ceil(tlTextW(sh))+16+(schFiles(s).length?(schFiles(s).length>1?26:18):0)+(s.imp?12:0),26),256);
         return '<div class="tl-ev cn tlc-ev'+cnMemoCls(s)+'" data-k="s" data-id="'+s.id+'" style="left:'+left+'px;top:3px;width:'+bw2
           +'px;color:'+col+';background:'+(hlOk(s.hl)?s.hl:CN_MONO_BG)+';border-left:3px solid '+CN_MONO_BAR+'" title="'+escA(cnLabel(s)+' \u00b7 '+lbl+' ('+tlFmt(mn)+'~'+tlFmt(endMn)+')'+(cnNoteHas(s)?' \u00b7 \ud83d\udcdd 메모 있음':'')+' — 한 번 누르면 포스트잇 · 두 번 = 완료')+'">'
-          +'<b>'+esc(sh)+'</b>'+pdfClip(s)+'</div>';
+          +'<b>'+esc(sh)+'</b>'+impDot(s)+pdfClip(s)+'</div>';
       }).join('');
       var tone=cnDeptTone(org,dp);
       return '<div class="tlc-row">'
@@ -3723,7 +3764,7 @@ function renderTlCnWeek(inner){
   var colBg='repeating-linear-gradient(to right,transparent,transparent '+(CW-1)+'px,rgba(18,49,43,.08) '+(CW-1)+'px,rgba(18,49,43,.08) '+CW+'px)';
   var ti=days.indexOf(today());
   var tdBar=ti>=0?'<div class="tlcw-today" style="left:'+(ti*CW)+'px;width:'+CW+'px"></div>':'';
-  var cnEvs=(db.schedules||[]).filter(function(s){return s.cn&&s.date>=d0&&s.date<=d1;});
+  var cnEvs=(db.schedules||[]).filter(function(s){return s.cn&&s.date>=d0&&s.date<=d1&&cnImpOk(s);});
   var rowsOut='';
   tlCnOrgs().forEach(function(org){
     var ds=cnDepts(org),rows=ds.length?ds.slice():[''];
@@ -3749,7 +3790,7 @@ function renderTlCnWeek(inner){
           evh+='<div class="tlcw-ev'+(s.done?' done':'')+cnMemoCls(s)+'" data-sid="'+s.id+'" onclick="cnChipTap(event,'+s.id+')" ondblclick="cnChipDbl(event,'+s.id+')" style="left:'+(i*CW+2)
             +'px;top:'+(3+si*23)+'px;width:'+(CW-6)+'px;color:'+col+';background:'+(hlOk(s.hl)?s.hl:CN_MONO_BG)+';border-left:3px solid '+CN_MONO_BAR+'" title="'
             +escA(cnLabel(s)+' · '+(s.time?s.time+' · ':'')+(s.title||'')+' — 누르면 포스트잇 · 두 번 누르면 세부일정')+'">'
-            +esc((s.time?s.time+' ':'')+cnShortTitle(s))+pdfClip(s)+'</div>';
+            +esc((s.time?s.time+' ':'')+cnShortTitle(s))+impDot(s)+pdfClip(s)+'</div>';
         });
       });
       var tone=cnDeptTone(org,dp);
@@ -5681,6 +5722,10 @@ function cnShortTitle(s){
   if(m)return m[1]+'차 '+m[2];
   return t||String(s&&s.title||'');
 }
+/* 주요일정: 제목 옆 빨간 점 */
+function impDot(s){return (s&&s.imp)?'<span class="imp-dot" title="주요일정"></span>':'';}
+function impToggle(id){var s=schById(id);if(!s)return;s.imp=!s.imp;save();renderCal();renderSchedule();
+  if(document.querySelector('#cnEvOv.on'))cnEvOpen(id);}
 /* 문서가 붙은 일정: 제목 옆 클립 */
 function pdfClip(s){var n=schFiles(s).length;return n?'<span class="ev-clip" title="붙은 문서 '+n+'개 · 두 번 누르면 열림">📎'+(n>1?'<i>'+n+'</i>':'')+'</span>':'';}
 /* 쪽지가 붙어 있는 일정 표시 */
@@ -5696,11 +5741,12 @@ function cnEvOpen(id){
   var hd=document.getElementById('cnEvOrg');if(hd)hd.textContent=cnLabel(s)||'일정';
   var dts=String(s.detail||'').split(/\s+·\s+/).filter(Boolean);
   document.getElementById('cnEvBody').innerHTML=
-    '<div class="cnev-t">'+esc(s.title||'(제목 없음)')+(s.done?' <span style="color:var(--green);font-size:13px">✓ 완료</span>':'')+'</div>'
+    '<div class="cnev-t">'+esc(s.title||'(제목 없음)')+impDot(s)+(s.done?' <span style="color:var(--green);font-size:13px">✓ 완료</span>':'')+'</div>'
     +'<div class="cnev-m">'+esc(s.date||'')+(s.time?' · '+esc(s.time):'')+(s.dur>0?' · '+s.dur+'분':'')+'</div>'
     +(dts.length?'<div class="cnev-d">'+dts.map(function(x){return '<div>· '+esc(x)+'</div>';}).join('')+'</div>'
       :'<div class="cnev-d" style="color:var(--muted)">세부 내용이 없습니다.</div>')
-    +'<div class="cnev-foot"><button class="btn ghost" onclick="cnEvDone('+s.id+')">'+(s.done?'✓ 완료 취소':'완료로 표시')+'</button>'
+    +'<div class="cnev-foot"><button class="btn ghost imp" onclick="impToggle('+s.id+')"><i></i>'+(s.imp?'주요 해제':'주요일정')+'</button>'
+    +'<button class="btn ghost" onclick="cnEvDone('+s.id+')">'+(s.done?'✓ 완료 취소':'완료로 표시')+'</button>'
     +'<button class="btn ghost" onclick="cnEvClose();pdfOpen('+s.id+',0)">📎 문서'+(schFiles(s).length?' '+schFiles(s).length:'')+'</button>'
     +'<button class="btn ghost" onclick="cnEvClose();cnNoteOpen('+s.id+')">📝 포스트잇'+(cnNoteHas(s)?' ●':'')+'</button></div>';
   document.addEventListener('keydown',cnEvEsc);
@@ -5754,6 +5800,7 @@ function addSchedule(){
     var sd=document.getElementById('schCnDept');
     __ns.cnDept=(sd&&sd.style.display!=='none'&&sd.value!=='__add__')?sd.value:'';
   }
+  var impEl=document.getElementById('schImp');if(impEl&&impEl.checked){__ns.imp=true;impEl.checked=false;}
   db.schedules.push(__ns);
   save();['schTitle','schTime','schDetail','schDur'].forEach(i=>{var e=document.getElementById(i);if(e)e.value='';});
   hlRowPaint('schHl','');schFormFiles=[];schFilesPaint();
@@ -5816,6 +5863,7 @@ function renderSchedule(){
       <button type="button" class="hl-btn ${hlOk(s.hl)?'':'none'}" title="하이라이트 색" style="${hlOk(s.hl)?`background:${s.hl}`:''}" onclick="hlPopOpen(event,${s.id})"></button>
       <span class="sched-time" contenteditable onblur="editSchedule(${s.id},'time',this.innerText)">${esc(s.time||'-')}</span>
       <b contenteditable onblur="editSchedule(${s.id},'title',this.innerText)">${esc(s.title)}</b>
+      <button type="button" class="imp-btn${s.imp?' on':''}" title="${s.imp?'주요일정 해제':'주요일정으로 표시'}" onclick="impToggle(${s.id})"></button>
       <button type="button" class="pdf-btn${schFiles(s).length?' on':''}" title="${schFiles(s).length?`붙은 문서 ${schFiles(s).length}개 보기`:'문서 붙이기'}" onclick="pdfOpen(${s.id},0)">📎${schFiles(s).length>1?`<i>${schFiles(s).length}</i>`:''}</button>
       <span style="flex:1"></span>
       ${s.cn?`<span class="cn-badge" style="background:${cnColor(s)}">${esc(cnLabel(s))}</span>`:''}
@@ -6085,6 +6133,7 @@ function tlqOpen(time,opt){
     +'<input id="tlqTime" class="in" style="flex:none;width:92px" value="'+esc(time)+'" placeholder="0900" onblur="this.value=normTime(this.value)">'
     +'<input id="tlqDur" class="in" style="flex:none;width:96px" inputmode="numeric" value="30" placeholder="소요(분)">'
     +'<input id="tlqTitle" class="in" style="flex:1" placeholder="일정 제목" value="'+escA(opt.title||'')+'">'
+    +'<label class="cn-chk imp" style="flex:none" title="주요일정 (빨간 점)"><input type="checkbox" id="tlqImp"> <i></i>주요</label>'
     +'</div>'
     +'<div class="hl-row" id="tlqHl"></div>'
     +'<div class="sf-row" id="schFiles"></div>'
@@ -6117,6 +6166,7 @@ function tlqSave(){
   var date=(dEl&&dEl.value)?dEl.value:(opt.date||selDate);
   var ns={id:uid(),date:date,time:normTime(tm.value),dur:(d>0?d:30),
     title:title,detail:de.value.trim(),hl:hlRowVal('tlqHl'),files:schFormFiles.slice()};
+  var ie=document.getElementById('tlqImp');if(ie&&ie.checked)ns.imp=true;
   if(opt.cn){
     var so=document.getElementById('tlqOrg'),sd=document.getElementById('tlqDept');
     ns.cn=true;ns.cnOrg=(so&&so.value)||opt.cn.org||'본회의';
@@ -6504,7 +6554,20 @@ function chParseYear(str){
   if(ago)return new Date().getFullYear()-n;
   return bc?-n:n;
 }
+/* 연도 칸 아래 «이렇게 읽었습니다» — -42000(기원전) 과 42000년 전(오늘 기준)이 헷갈리지 않게 */
+function chYHint(){
+  var el=document.getElementById('chYHintBox'),inp=document.getElementById('chY');if(!el||!inp)return;
+  var v=inp.value.trim();
+  if(!v){el.innerHTML='';return;}
+  var y=chParseYear(v);
+  if(isNaN(y)){el.innerHTML='<span class="bad">못 읽었습니다 · 예: 1999 · -384 · 4만2000년 전 · -46억</span>';return;}
+  var now=new Date().getFullYear(),ago=now-y;
+  var s1=y<0?('기원전 '+chBigNum(-y)+'년'):(y===0?'0년':(chBigNum(y)+'년'));
+  var s2=ago>0?(' · 지금부터 <b>'+chBigNum(ago)+'년 전</b>'):(ago<0?' · '+chBigNum(-ago)+'년 뒤':' · 올해');
+  el.innerHTML='→ <b>'+s1+'</b>'+s2+(y<0&&!/전$/.test(v.replace(/\s/g,''))?'<span class="tip"> · «N년 전»으로 넣고 싶으면 <code>'+chBigNum(-y)+'년 전</code></span>':'');
+}
 var chState={unit:'연',c:null,ppy:null}, chEditId=null, chSelCats=[], chFilter=[], chPopId=null;
+var chDragDot=null;   /* 점을 끌어 옮기는 중: {id, t} */
 var chNoDate=false, chLinkFrom=null;   /* chLinkFrom = 선 잇기 시작 사건 id */
 function chNoDateTgl(){chNoDate=!chNoDate;chNoDatePaint();}
 function chNoDatePaint(){
@@ -6517,6 +6580,16 @@ function chNoDatePaint(){
 /* 사건의 시간 좌표: 월·일을 모르면(m=0) 그 해 한가운데(7월 1일)에 찍는다 */
 function chTof(e){return e.m?chT(e.y,e.m,e.d):chT(e.y,7,1);}
 function chYearOnly(e){return e&&e.y!=null&&!e.m;}
+/* 시간 좌표(년, 소수) → 연·월·일 (fine=false 면 연도만) */
+function chYMD(t,fine){
+  var y=Math.floor(t);
+  if(!fine)return {y:y,m:0,d:0};
+  var doy=Math.floor((t-y)*chDiy(y)),m=1;
+  while(m<12&&doy>=chDim(y,m)){doy-=chDim(y,m);m++;}
+  return {y:y,m:m,d:Math.max(1,Math.min(chDim(y,m),doy+1))};
+}
+/* 지금 화면에서 한 해가 넉넉히 보이는가 (그러면 끌어 놓을 때 월·일까지 잡는다) */
+function chFine(){return (chState.ppy||0)>=250;}   /* 한 해가 250px 이상 = 연 단위 이하 */
 function chDim(y,m){if(m===2)return ((y%4===0&&y%100!==0)||y%400===0)?29:28;return [31,28,31,30,31,30,31,31,30,31,30,31][m-1];}
 function chDiy(y){var t=0,i;for(i=1;i<=12;i++)t+=chDim(y,i);return t;}
 function chT(y,m,d){var doy=0,i;for(i=1;i<m;i++)doy+=chDim(y,i);doy+=(d-1);return y+doy/chDiy(y);}
@@ -6559,6 +6632,7 @@ function chAdd(){
   }
   save();
   chCancelEdit();
+  var hb=document.getElementById('chYHintBox');if(hb)hb.innerHTML='';
   chState.c=chTof({y:y,m:m,d:d});   /* 방금 넣은 사건이 화면에 보이게 이동 */
   renderChrono();
 }
@@ -6717,7 +6791,7 @@ function renderChrono(){
   chRenderNoDates(pass.filter(function(e){return e.y==null;}));
   var groups=[];
   evs.forEach(function(e){
-    var t=chTof(e),x=GL+(t-t0)*ppy;
+    var t=(chDragDot&&String(chDragDot.id)===String(e.id))?chDragDot.t:chTof(e),x=GL+(t-t0)*ppy;
     if(x<GL-40||x>W+120)return;
     var cs=((e.cats&&e.cats.length)?e.cats:['나']).filter(function(c){return rows.indexOf(c)>=0;});
     if(!cs.length)return;
@@ -6816,14 +6890,31 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&chLinkFrom!
 (function(){
   var wrap=document.getElementById('chWrap');if(!wrap)return;
   var down=null,moved=false;
-  wrap.addEventListener('mousedown',function(e){down={x:e.clientX,c:chState.c};moved=false;wrap.classList.add('drag');});
+  function tAtX(clientX){var GL=118,innerW=(wrap.clientWidth||1000)-GL-8;var mx=clientX-wrap.getBoundingClientRect().left-GL;return chState.c+(mx-innerW/2)/chState.ppy;}
+  wrap.addEventListener('mousedown',function(e){
+    var c=e.target.closest?e.target.closest('circle[data-id]'):null;
+    if(c&&e.button===0&&chLinkFrom==null){                  /* 점 위: 점을 끌어 옮긴다 */
+      var ev=(db.chrono||[]).find(function(v){return String(v.id)===c.getAttribute('data-id');});
+      if(ev){down={x:e.clientX,dot:ev,t0:chTof(ev)};moved=false;e.preventDefault();return;}
+    }
+    down={x:e.clientX,c:chState.c};moved=false;wrap.classList.add('drag');});
   window.addEventListener('mousemove',function(e){
     if(!down)return;
     var dx=e.clientX-down.x;
     if(Math.abs(dx)>4)moved=true;
-    if(moved&&chState.ppy){chState.c=down.c-dx/chState.ppy;chTipHide();renderChrono();}
+    if(!moved||!chState.ppy)return;
+    if(down.dot){chDragDot={id:down.dot.id,t:down.t0+dx/chState.ppy};wrap.classList.add('dotdrag');chTipHide();renderChrono();return;}
+    chState.c=down.c-dx/chState.ppy;chTipHide();renderChrono();
   });
-  window.addEventListener('mouseup',function(){down=null;wrap.classList.remove('drag');});
+  window.addEventListener('mouseup',function(){
+    if(down&&down.dot&&chDragDot){                        /* 놓은 자리의 시간으로 저장 */
+      var ev=down.dot,nt=chDragDot.t,fine=chFine()&&!!ev.m;
+      var q=chYMD(nt,fine);
+      ev.y=q.y; if(fine){ev.m=q.m;ev.d=q.d;} else if(!ev.m){ev.m=0;ev.d=0;}
+      chDragDot=null;save();renderChrono();
+      hkChip('「'+ev.title+'」 → '+chDateStr(ev.y,ev.m,ev.d));setTimeout(function(){hkChip('');},1800);
+    }
+    chDragDot=null;down=null;wrap.classList.remove('drag');wrap.classList.remove('dotdrag');});
   wrap.addEventListener('wheel',function(e){
     e.preventDefault();
     if(chState.ppy==null)return;
@@ -6849,10 +6940,27 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&chLinkFrom!
   });
   wrap.addEventListener('dblclick',function(e){
     var c=e.target.closest?e.target.closest('circle[data-id]'):null;
-    if(!c)return;
-    chTipHide();chPopOpen(c.getAttribute('data-id'));
+    if(c){chTipHide();chPopOpen(c.getAttribute('data-id'));return;}
+    if(!chState.ppy)return;
+    /* 빈 곳: 그 자리의 연도·레인으로 새 사건 입력 */
+    var t=tAtX(e.clientX),H=wrap.clientHeight||540,GT=8,GB=24,innerH=H-GT-GB;
+    var rows=chFilter.length?CH_CATS.filter(function(k){return chFilter.indexOf(k)>=0;}):CH_CATS.slice();
+    var my=e.clientY-wrap.getBoundingClientRect().top-GT,li=Math.max(0,Math.min(rows.length-1,Math.floor(my/(innerH/rows.length))));
+    chQuickAt(t,rows[li]);
   });
 })();
+/* 그래프 빈 곳 더블클릭 → 그 연도(·레인)로 입력칸 채우고 사건명에 커서 */
+function chQuickAt(t,cat){
+  if(chEditId!=null)chCancelEdit();
+  var fine=chFine(),q=chYMD(t,fine);
+  chNoDate=!fine;chNoDatePaint();
+  var yEl=document.getElementById('chY');if(yEl)yEl.value=chBigNum(q.y);
+  chYHint();
+  if(fine){var mEl=document.getElementById('chM'),dEl=document.getElementById('chD');if(mEl)mEl.value=q.m;if(dEl)dEl.value=q.d;}
+  chSelCats=cat?[cat]:[];chCatPickRender();
+  var hint=document.getElementById('chEditHint');if(hint)hint.textContent=chDateStr(q.y,q.m,q.d)+(cat?' · '+cat:'')+' 자리에 새 사건';
+  var tEl=document.getElementById('chTitle');if(tEl){tEl.focus();tEl.scrollIntoView({behavior:'smooth',block:'center'});}
+}
 function chPopOpen(id){
   var x=(db.chrono||[]).find(function(v){return String(v.id)===String(id);});if(!x)return;
   chPopId=x.id;
@@ -8500,9 +8608,8 @@ function addBook(){
   renderReading();renderCal();
 }
 /* ---------- 독서 책장: 읽는 중인 책을 표지로 골라 발췌 입력 ---------- */
-function shelfPool(){
-  var live=(db.reading||[]).filter(function(b){return !b.end;});
-  return live.length?live:(db.reading||[]);
+function shelfPool(){                       /* 대시보드 책장 = 읽는 중인 책만 (완독은 독서 목록에서) */
+  return (db.reading||[]).filter(function(b){return !b.end;});
 }
 function shelfIndex(pool){
   var sel=document.getElementById('exBook'),cur=sel?String(sel.value||''):'';
@@ -8515,7 +8622,7 @@ function renderShelf(){
   if(!big||!strip)return;
   var pool=shelfPool();
   if(!pool.length){
-    big.innerHTML='<div class="rd-empty">읽는 중인 책이 없습니다.<br>아래 «＋ 책 추가»에서 등록하세요.</div>';
+    big.innerHTML='<div class="rd-empty">읽는 중인 책이 없습니다.<br>아래 «＋ 책 추가»에서 등록하세요.'+((db.reading||[]).length?'<br><span style="font-size:11px">완독한 책은 <a href="#" onclick="go(\'reading\');return false" style="color:var(--green)">독서 목록</a>에 있습니다.</span>':'')+'</div>';
     strip.innerHTML='';if(pos)pos.textContent='';shelfArrows();renderRdPlan();return;
   }
   var i=shelfIndex(pool),b=pool[i];
@@ -8949,7 +9056,7 @@ function renderReadingInputs(){
   const cats=[...new Set(db.reading.map(b=>b.category).filter(Boolean))];
   const cl=document.getElementById('catList');if(cl)cl.innerHTML=cats.map(c=>`<option value="${esc(c)}">`).join('');
   const bs=document.getElementById('exBook');if(!bs)return;
-  const reading=db.reading.filter(b=>!b.end);const pool=reading.length?reading:db.reading;
+  const pool=db.reading.filter(b=>!b.end);
   const prev=bs.value;
   bs.innerHTML=pool.length?pool.map(b=>`<option value="${b.id}">${esc(b.title)}${b.end?' (완독)':''}</option>`).join('')
     :'<option value="">등록된 책이 없습니다</option>';
@@ -13241,6 +13348,7 @@ function fwMindReset(){
 /* ================= 키보드 단축키: d 로 시작 · f 를 누를 때마다 화면이 넘어간다 =================
    대시보드 → 인박스 → 아이디어 → 연대기 → 제텔카스텐 순환. 글을 쓰는 중에는 꺼진다. */
 var DF_SEQ=[
+  ['주요일정',function(){tlImpShow();}],
   ['스케줄',function(){goTop('cal');}],
   ['대시보드',function(){go('dashboard');}],
   ['인박스',function(){goInbox();}],
