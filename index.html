@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-03 · r117">
+<meta name="hmd-build" content="2026-09-03 · r118">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1432,10 +1432,11 @@
   .wv-lawn{margin-left:auto;margin-right:6px;font-size:10px;font-weight:800;color:#3b5bdb;background:#eef1fc;border-radius:8px;padding:0 6px;flex:none}
   .wv-lawro{font-size:11px;color:var(--muted);font-weight:700;margin-right:6px}
   .law-wrap{display:flex;height:calc(100vh - 250px);min-height:440px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
-  .wv-fullscreen .law-wrap{height:calc(100vh - 140px)}
+  .wv-fullscreen .law-wrap{height:calc(100vh - 56px)}
   .law-frame{flex:1;min-width:0;border:none;background:#fff;height:100%}
-  .law-ann{flex:0 0 250px;overflow:auto;background:#faf9f7;border-left:1px solid var(--line);padding:12px}
-  .wv-fullscreen .law-ann{flex-basis:300px}
+  .law-ann{width:250px;flex:0 0 250px;overflow:auto;background:#faf9f7;border-left:1px solid var(--line);padding:12px;min-height:0}
+  .wv-fullscreen .law-ann{width:300px;flex-basis:300px;height:100vh}
+  @media(max-width:1000px){.law-ann{width:auto;flex:none;max-height:280px;border-left:none;border-top:1px solid var(--line)}}
   .law-ann-h{font-size:14px;font-weight:800;color:var(--dark);margin-bottom:4px}
   .law-ann-hint{font-size:11.5px;color:var(--muted);line-height:1.6;margin-bottom:10px}
   .law-none{font-size:12.5px;color:var(--muted);text-align:center;padding:40px 10px;line-height:1.7}
@@ -3168,7 +3169,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-03 · r117';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-03 · r118';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -7868,7 +7869,8 @@ function renderWork(){
   var sb=document.getElementById('wvSecBtns');
   if(sb)sb.innerHTML=WV_SECS.map(function(t){
     return '<button class="lunar-toggle'+(wvSec()===t?' on':'')+'" onclick="wvSecSet(\''+t+'\')">'+t+'</button>';}).join('');
-  pane.innerHTML=`<div class="wv${window.__wvFull?' wv-fullscreen':''}"><div class="wv-side">${wvSideHTML(V)}</div><div class="wv-main">${wvMainHTML(V)}</div></div>`;
+  var lawSide='';{var lid=wvLawActive(V);var LL=lid?lawById(lid):null;if(LL)lawSide=wvLawAnnSideHTML(LL);}
+  pane.innerHTML=`<div class="wv${window.__wvFull?' wv-fullscreen':''}${lawSide?' wv-law':''}"><div class="wv-side">${wvSideHTML(V)}</div><div class="wv-main">${wvMainHTML(V)}</div>${lawSide}</div>`;
 wvUndoInit();wvPostRender();
 }
 
@@ -8064,10 +8066,14 @@ function wvLawMainHTML(law){
     +'<div class="wv-head"><span class="wv-path">법규정  /  '+esc(law.cat)+'  /  '+esc(law.title)+'</span>'
     +'<span class="wv-htools"><span class="wv-lawro">읽기 전용 · 조문을 드래그하면 주석</span>'
     +'<i class="wv-hbtn" onclick="wvToggleFull()" title="전체화면">'+(window.__wvFull?'⤡ 축소':'⤢ 확장')+'</i></span></div>'
-    +'<div class="law-wrap"><iframe id="lawFrame" class="law-frame" title="'+escA(law.title)+'"></iframe>'
-    +'<div class="law-ann"><div class="law-ann-h">주석 <span id="lawAnnCnt">'+(a.list.length?'('+a.list.length+')':'')+'</span></div>'
-    +'<div class="law-ann-hint">왼쪽 조문에서 글을 드래그하면 형광펜과 번호가 붙고 여기에 주석 칸이 생깁니다. 번호를 누르면 그 자리로 갑니다.</div>'
-    +'<div id="lawAnnList"></div></div></div>';
+    +'<div class="law-wrap"><iframe id="lawFrame" class="law-frame" title="'+escA(law.title)+'"></iframe></div>';
+}
+/* 주석 칸: 원문을 그대로 보게, 본문 밖 오른쪽에 따로 둔다 */
+function wvLawAnnSideHTML(law){
+  var a=lawAnn(law.id);
+  return '<div class="law-ann"><div class="law-ann-h">주석 <span id="lawAnnCnt">'+(a.list.length?'('+a.list.length+')':'')+'</span></div>'
+    +'<div class="law-ann-hint">원문에서 글을 드래그하면 형광펜과 번호가 붙고 여기에 주석 칸이 생깁니다. 번호를 누르면 그 자리로 갑니다.</div>'
+    +'<div id="lawAnnList"></div></div>';
 }
 var LAW_MARK_CSS='mark.lw-hl{background:#fff3a3;padding:1px 0;border-radius:2px;cursor:pointer;color:inherit;font:inherit}mark.lw-hl:hover{background:#ffe36e}mark.lw-hl.lw-flash{background:#ffd43b}sup.lw-annref{color:#3b5bdb;font-weight:800;font-size:11px;cursor:pointer;margin:0 1px;user-select:none}sup.lw-annref:hover{text-decoration:underline}'
   /* HMD 안에서는 언제나 밝은 바탕 (기기 다크모드 무시) · 좁은 칸에서도 본문이 잘리지 않게 */
