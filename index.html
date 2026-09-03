@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta name="hmd-build" content="2026-09-03 · r117">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1035,6 +1036,11 @@
     padding:9px 18px;box-shadow:0 10px 28px rgba(18,49,43,.3);z-index:200;
     opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
   .live-toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .live-toast.ver{pointer-events:auto;cursor:pointer;background:#8a2f2f;bottom:calc(24px + env(safe-area-inset-bottom))}
+  .live-toast.ver b{text-decoration:underline;margin-left:6px}
+  .ver-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px}
+  .ver-row .btn{font-size:11.5px;padding:3px 9px}
+  #verMsg{font-size:11.5px;color:var(--muted)}
   /* ===== 제텔카스텐 메모지 (A6 148×105 비율) ===== */
   .zkc-ov{display:none;position:fixed;inset:0;z-index:126;background:rgba(18,49,43,.42);
     align-items:center;justify-content:center;padding:20px}
@@ -2689,7 +2695,7 @@
 </section>
   <!-- ===== 설정 ===== -->
   <section class="view" id="view-settings">
-    <div class="page-head"><h1>설정</h1><p id="buildStamp"></p></div>
+    <div class="page-head"><h1>설정</h1><p id="buildStamp"></p><p class="ver-row"><button type="button" class="btn ghost" onclick="verCheck(true)">최신판 확인</button> <button type="button" class="btn ghost" onclick="verReload()">새로고침(캐시 무시)</button> <span id="verMsg"></span></p></div>
     <div class="card">
       <h3><span class="dot" style="background:#6a8fd8"></span> 클라우드 동기화</h3>
       <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px">여러 기기(PC·아이폰)에서 같은 데이터를 보려면, 모든 기기에 <b>같은 동기화 코드</b>를 입력하세요. 이후 입력하는 내용은 자동으로 저장·동기화됩니다.</p>
@@ -3162,7 +3168,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-03 · r116';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-03 · r117';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -13617,6 +13623,50 @@ function liveFlash(msg){
   el.textContent=msg;el.classList.add('on');
   clearTimeout(el.__t);el.__t=setTimeout(function(){el.classList.remove('on');},2600);
 }
+/* ================= 새 판 확인 (홈 화면 아이콘 앱은 옛 파일을 오래 물고 있어서) =================
+   서버의 index.html 앞부분(<meta name="hmd-build">)만 읽어 이 파일의 HMD_BUILD 와 비교한다. */
+var __verAt=0, __verSeen='';
+function verBase(){return location.origin+location.pathname;}
+function verReload(){
+  try{sessionStorage.setItem('hmd_verReload','1');}catch(e){}
+  location.replace(verBase()+'?v='+Date.now());
+}
+function verMsg(t){var e=document.getElementById('verMsg');if(e)e.textContent=t||'';}
+function verToast(remote){
+  var el=document.getElementById('liveToast');
+  if(!el){el=document.createElement('div');el.id='liveToast';el.className='live-toast';document.body.appendChild(el);}
+  el.className='live-toast ver on';
+  el.innerHTML='새 판이 있습니다 ('+remote.replace(/^.*·\s*/,'')+')<b>새로고침</b>';
+  el.onclick=function(){verReload();};
+  clearTimeout(el.__t);
+}
+function verCheck(manual){
+  if(!/^https?:/.test(location.protocol)){if(manual)verMsg('파일로 열린 상태라 확인할 수 없습니다');return;}
+  var now=Date.now();
+  if(!manual&&now-__verAt<5*60*1000)return;         /* 자동 확인은 5분에 한 번 */
+  __verAt=now;
+  if(manual)verMsg('확인 중…');
+  fetch(verBase()+'?vc='+now,{cache:'no-store',headers:{'Range':'bytes=0-2047'}})
+    .then(function(r){return r.text();})
+    .then(function(t){
+      var m=/name="hmd-build"\s+content="([^"]+)"/.exec(t.slice(0,4000));
+      if(!m){if(manual)verMsg('서버 판을 읽지 못했습니다');return;}
+      var remote=m[1];
+      if(remote===HMD_BUILD){if(manual)verMsg('최신판입니다 ('+HMD_BUILD+')');__verSeen='';return;}
+      if(manual)verMsg('새 판 '+remote+' 이 있습니다 → 새로고침을 누르세요');
+      if(__verSeen!==remote){__verSeen=remote;verToast(remote);}
+    })
+    .catch(function(){if(manual)verMsg('서버에 닿지 못했습니다');});
+}
+(function(){
+  /* ?v= 로 다시 불러온 뒤엔 주소를 원래대로 */
+  try{if(/[?&]v=\d+/.test(location.search))history.replaceState(null,'',location.pathname+location.hash);}catch(e){}
+  try{if(sessionStorage.getItem('hmd_verReload')){sessionStorage.removeItem('hmd_verReload');
+    setTimeout(function(){liveFlash('새 판으로 열렸습니다 · '+HMD_BUILD);},600);}}catch(e){}
+  setTimeout(function(){verCheck(false);},2500);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)verCheck(false);});
+  window.addEventListener('pageshow',function(e){if(e.persisted)verCheck(false);});
+})();
 /* 지금 화면을 갈아끼우면 안 되는 상황 (쓰던 글이 날아가지 않게) */
 function liveBusy(){
   if(typeof fwCfg!=='undefined'&&fwCfg)return true;                 /* 글쓰기 편집기 */
