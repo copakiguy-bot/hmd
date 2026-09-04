@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-04 · r124">
+<meta name="hmd-build" content="2026-09-04 · r125">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3205,7 +3205,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-04 · r124';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-04 · r125';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -13435,16 +13435,18 @@ var FW_KINDS={
   cheonilLdesc:['천일문 쓰기',['ldChapter','ldUnit','ldDesc'],['ldDesc'],function(){saveCheonil('ld');}],
   cmdesc:['설명 쓰기',['cmDescEdit'],['cmDescEdit'],function(){if(cheonilEditKey){var q=String(cheonilEditKey).split('_');saveCheonilDesc(Number(q[0]),Number(q[1]));}}],
   chex:['발췌 쓰기',['chExText','chExPage'],['chExText'],function(){if(readOpenId)addChapterExcerpt(readOpenId);}],
+  bkvex:['발췌 쓰기',['bkvAddCh','bkvAddPage','bkvAddText'],['bkvAddText'],function(){bkvAddExcerpt();}],
   exedit:['발췌 수정',['exEditChapter','exEditPage','exEditText'],['exEditText'],function(){saveExcerptFull();}],
   stedit:['지식 수정',['stEditCat','stEditTitle','stEditContent'],['stEditContent'],function(){saveStudyFull();}],
   dyedit:['일기 수정',['dyEditText'],['dyEditText'],function(){saveDiaryFull();}]
 };
 function fwStart(kind,src){
   if(fwCfg)return;
+  var c=FW_KINDS[kind];if(!c)return;            /* 모르는 종류면 칸을 그냥 쓰게 둔다 (포커스를 빼앗지 않음) */
   if(src&&src.blur)src.blur();
-  var c=FW_KINDS[kind];if(c)fwOpen(kind,c[0],c[1],c[2],c[3]);
+  fwOpen(kind,c[0],c[1],c[2],c[3]);
 }
-var FW_RICH={diary:1,diary2:1,excerpt:1,chex:1,exedit:1,dyedit:1,cheonil:1,cheonildesc:1,cheonilL:1,cheonilLdesc:1,cmdesc:1};   // 큰화면에서 서식 편집을 쓰는 종류
+var FW_RICH={diary:1,diary2:1,excerpt:1,chex:1,bkvex:1,exedit:1,dyedit:1,cheonil:1,cheonildesc:1,cheonilL:1,cheonilLdesc:1,cmdesc:1};   // 큰화면에서 서식 편집을 쓰는 종류
 /* 일기 종류: 기록 / 단상 */
 var fwDiaryKind='기록';
 function fwKindSet(k){fwDiaryKind=k;fwKindPaint();}
