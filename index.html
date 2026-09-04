@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-04 · r128">
+<meta name="hmd-build" content="2026-09-04 · r129">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1750,6 +1750,8 @@
   .chp-foot{display:flex;gap:6px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
   /* 연대기 장소 칸 */
   .ch-place-lb{font-size:12px;font-weight:800;color:var(--dark);flex:none}
+  .ch-place .btn{padding:6px 11px;font-size:12px}
+  .wm-tmp text{fill:#c0392b}
   .ch-ll{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
   .ch-pl-hint{font-size:11.5px;color:var(--muted);padding:6px 2px}
   .ch-pl-row{display:flex;gap:8px;align-items:baseline;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:12.5px}
@@ -2772,9 +2774,10 @@
       <textarea id="chDetail" class="in" style="width:100%;min-height:64px;margin-top:8px;resize:vertical" placeholder="세부 내용"></textarea>
       <div class="inrow ch-place" style="margin-top:8px;flex-wrap:wrap">
         <span class="ch-place-lb">📍 장소</span>
-        <input id="chPlace" class="in" style="flex:1;min-width:150px" placeholder="지명 (예: 예리코) — 검색하거나 지도에서 찍기" onkeydown="if(event.key==='Enter'){event.preventDefault();chPlaceSearch();}">
+        <input id="chPlace" class="in" style="flex:none;width:190px;min-width:120px" placeholder="지명 (예: 예리코)" onkeydown="if(event.key==='Enter'){event.preventDefault();chPlaceSearch();}">
         <button type="button" class="btn ghost" style="flex:none" onclick="chPlaceSearch()">검색</button>
-        <button type="button" class="btn ghost" style="flex:none" onclick="chPlacePick()">지도에서 찍기</button>
+        <button type="button" class="btn ghost" style="flex:none" onclick="chPlacePick()">지도 찍기</button>
+        <button type="button" class="btn ghost" id="chPlaceView" style="flex:none" onclick="chPlaceView()">지도보기</button>
         <span id="chLatLng" class="ch-ll"></span>
         <button type="button" class="btn ghost" id="chPlaceClr" style="flex:none;display:none;padding:5px 9px" onclick="chPlaceClear()" title="장소 지우기">×</button>
       </div>
@@ -3263,7 +3266,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-04 · r128';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-04 · r129';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -7237,6 +7240,7 @@ function chPlacePaint(){
   var e=document.getElementById('chLatLng'),c=document.getElementById('chPlaceClr');
   if(e)e.textContent=chPlaceLL?(chPlaceLL.lat.toFixed(3)+', '+chPlaceLL.lng.toFixed(3)):'';
   if(c)c.style.display=chPlaceLL?'':'none';
+  chPlaceViewPaint();
 }
 function chPlaceClear(){chPlaceSet(null,'');}
 function wmGeocode(q,cb){
@@ -7266,6 +7270,28 @@ function chPlacePick(){
       var i=document.getElementById('chPlace');if(i&&!i.value.trim())i.value=lat.toFixed(2)+', '+lng.toFixed(2);
       var c=document.getElementById('chCount');if(c)c.scrollIntoView({behavior:'smooth',block:'center'});},
     center:chPlaceLL});
+}
+/* 지금 칸에 들어 있는 장소를 지도에서 확인 (아직 저장 전이어도) */
+function chPlaceView(){
+  var nm=(document.getElementById('chPlace')||{value:''}).value.trim();
+  if(chPlaceLL){wmOpen({center:chPlaceLL,tmp:{lat:chPlaceLL.lat,lng:chPlaceLL.lng,title:nm||'여기'}});return;}
+  if(nm){                                     /* 좌표가 없으면 이름으로 한 번 찾아보고 */
+    hkChip('«'+nm+'» 찾는 중…');
+    wmGeocode(nm,function(rs){
+      hkChip('');
+      if(rs&&rs.length){chPlaceSet({lat:rs[0].lat,lng:rs[0].lng},nm);
+        wmOpen({center:chPlaceLL,tmp:{lat:rs[0].lat,lng:rs[0].lng,title:nm}});return;}
+      hkChip('찾지 못했습니다 · «지도 찍기»로 직접 찍어 보세요');setTimeout(function(){hkChip('');},2200);
+      wmOpen({});
+    });
+    return;
+  }
+  wmOpen({});                                 /* 아무것도 없으면 전체 지도 */
+}
+function chPlaceViewPaint(){
+  var b=document.getElementById('chPlaceView');if(!b)return;
+  b.classList.toggle('ghost',true);
+  b.title=chPlaceLL?'이 좌표를 지도에서 보기':'지명으로 찾아 지도에서 보기';
 }
 function chPopMap(){
   var x=(db.chrono||[]).find(function(v){return String(v.id)===String(chPopId);});if(!x)return;
@@ -7318,7 +7344,7 @@ function wmBuild(){
 function wmOpen(opt){
   opt=opt||{};
   wmBuild();
-  wm.cur=opt.id!=null?opt.id:null;wm.pick=opt.pick||null;wm.sel=null;wm.cats=[];
+  wm.cur=opt.id!=null?opt.id:null;wm.pick=opt.pick||null;wm.sel=null;wm.cats=[];wm.tmp=opt.tmp||null;
   var ov=document.getElementById('wmOv');ov.classList.add('on');
   document.addEventListener('keydown',wmEsc);
   wmSize();
@@ -7327,7 +7353,7 @@ function wmOpen(opt){
   document.getElementById('wmSvg').classList.toggle('pick',!!wm.pick);
   var target=null;
   if(wm.cur!=null){var x=(db.chrono||[]).find(function(v){return String(v.id)===String(wm.cur);});if(chHasLL(x))target={lat:x.lat,lng:x.lng};}
-  else if(opt.center&&chHasLL(opt.center))target=opt.center;
+  else if(opt.center&&opt.center.lat!=null)target={lat:Number(opt.center.lat),lng:Number(opt.center.lng)};
   if(target)wmCenter(target.lat,target.lng,wm.cur!=null?6:4);
   else{var es=wmEntries();if(es.length===1)wmCenter(es[0].lat,es[0].lng,4);else wmFit();}
   if(wm.mode==='leaf'&&wm.leaf){wmLeafSync();wmLangBar(true);}
@@ -7409,8 +7435,15 @@ function wmPinsDraw(){
       +((showAll||cur||sel)?(dy?'<line x1="0" y1="0" x2="'+(r+3)+'" y2="'+dy+'" stroke="#8a9490" stroke-width="1"/>':'')+'<text x="'+(r+4)+'" y="'+(4+dy)+'">'+esc(x.title)+(x.y!=null?' <tspan class="wm-yr">'+esc(wmYear(x))+'</tspan>':'')+'</text>':'')
       +'<title>'+esc(x.title+(x.y!=null?' · '+chDateStr(x.y,x.m,x.d):'')+(x.place?' · '+x.place:''))+'</title></g>';
   });
+  if(wm.tmp){
+    h+='<g class="wm-pin cur wm-tmp" transform="translate('+wmX(wm.tmp.lng).toFixed(2)+' '+wmY(wm.tmp.lat).toFixed(2)+') scale('+inv.toFixed(5)+')">'
+      +'<circle class="wm-ring" r="14"/><circle r="7" fill="#e34948"/>'
+      +'<text x="11" y="4">'+esc(wm.tmp.title||'여기')+'</text><title>'+esc((wm.tmp.title||'')+' · '+wm.tmp.lat.toFixed(3)+', '+wm.tmp.lng.toFixed(3))+'</title></g>';
+  }
   document.getElementById('wmPins').innerHTML=h;
-  var c=document.getElementById('wmCnt');if(c)c.textContent=es.length?('핀 '+es.length+'개'):'장소를 넣은 사건이 아직 없습니다';
+  var c=document.getElementById('wmCnt');
+  if(c)c.textContent=wm.tmp?('📍 '+(wm.tmp.title||'여기')+' · '+wm.tmp.lat.toFixed(3)+', '+wm.tmp.lng.toFixed(3))
+    :(es.length?('핀 '+es.length+'개'):'장소를 넣은 사건이 아직 없습니다');
 }
 function wmCatsDraw(){
   var box=document.getElementById('wmCats');if(!box)return;
@@ -7533,6 +7566,11 @@ function wmLeafPins(){
     var m=new maplibregl.Marker({element:el,anchor:'left',offset:[-7,0]}).setLngLat([x.lng,x.lat]).addTo(wm.leaf);
     wm.leafMarkers.push(m);
   });
+  if(wm.tmp){
+    var te=document.createElement('div');te.className='wm-mk cur';
+    te.innerHTML='<i style="background:#e34948"></i><span>'+esc(wm.tmp.title||'여기')+'</span>';
+    wm.leafMarkers.push(new maplibregl.Marker({element:te,anchor:'left',offset:[-7,0]}).setLngLat([wm.tmp.lng,wm.tmp.lat]).addTo(wm.leaf));
+  }
 }
 /* ================= 퀵 메뉴: 빈 화면 더블클릭 → 방사형 바로가기 ================= */
 var QM_ICON={
