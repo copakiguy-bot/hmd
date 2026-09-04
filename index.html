@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-04 · r127">
+<meta name="hmd-build" content="2026-09-04 · r128">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1777,7 +1777,8 @@
   .wm-pin text .wm-yr{font-weight:600;fill:#5f6f68}
   .wm-ring{fill:none;stroke:#e34948;stroke-width:2;transform-origin:0 0;animation:wmPulse 1.5s ease-out infinite}
   @keyframes wmPulse{0%{transform:scale(.4);opacity:1}100%{transform:scale(1.6);opacity:0}}
-  .wm-leaf{position:absolute;inset:0;display:none;z-index:1}.wm-leaf.on{display:block}
+  .wm-leaf{position:absolute;inset:0;display:none;z-index:1}
+  .wm-body .wm-leaf.on{display:block;position:absolute!important;top:0;left:0;right:0;bottom:0;width:100%;height:100%}   /* MapLibre 가 position:relative 를 덮어써서 높이 0 이 되던 것 */
   .wm-lang{display:inline-flex;gap:3px;margin-right:4px}
   .wm-mk{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11.5px;font-weight:800;color:#12312b;white-space:nowrap}
   .wm-mk i{width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);flex:none}
@@ -3262,7 +3263,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-04 · r127';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-04 · r128';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -7295,7 +7296,7 @@ function wmBuild(){
   ov.innerHTML='<div class="wm-box">'
     +'<div class="wm-top"><b>🗺 연대기 지도</b><span class="wm-cnt" id="wmCnt"></span><span class="wm-cats" id="wmCats"></span>'
     +'<span class="wm-tools"><span id="wmLang" class="wm-lang" style="display:none"></span><button type="button" class="lunar-toggle" id="wmBordBtn" onclick="wmBordTgl()">국경</button>'
-    +'<button type="button" class="lunar-toggle" id="wmModeBtn" onclick="wmModeTgl()">OSM 상세</button>'
+    +'<button type="button" class="lunar-toggle" id="wmModeBtn" onclick="wmModeTgl()">상세 지도</button>'
     +'<span class="bkv-x" onclick="wmClose()" title="닫기 (Esc)">×</span></span></div>'
     +'<div class="wm-body" id="wmBody">'
     +'<svg id="wmSvg" class="wm-svg"><g id="wmG"><g id="wmGrat"></g><path id="wmLand" class="wm-land"/><path id="wmBord" class="wm-bord" style="display:none"/><g id="wmPins"></g></g></svg>'
@@ -7466,8 +7467,9 @@ function wmLangExpr(){
   return e;
 }
 function wmLangApply(){
-  var m=wm.leaf;if(!m||!m.isStyleLoaded||!m.isStyleLoaded())return;
-  var st=m.getStyle();if(!st||!st.layers)return;
+  var m=wm.leaf;if(!m)return;
+  var st=null;try{st=m.getStyle();}catch(e){}
+  if(!st||!st.layers||!st.layers.length)return;
   var ex=wmLangExpr(),key=wm.lang;
   if(wm.__langDone===key)return;             /* 같은 언어를 다시 입히지 않는다 (styledata 가 되풀이되지 않게) */
   wm.__langDone=key;
@@ -7488,7 +7490,7 @@ function wmModeTgl(){
   if(wm.mode==='leaf'){                      /* → 백지도: 상세 지도의 가운데·확대를 이어받는다 */
     var c=wm.leaf?wm.leaf.getCenter():null,z=wm.leaf?wm.leaf.getZoom():2;
     wm.mode='svg';document.getElementById('wmLeaf').classList.remove('on');document.getElementById('wmSvg').style.display='';
-    var mb=document.getElementById('wmModeBtn');if(mb){mb.textContent='OSM 상세';mb.classList.remove('on');}
+    var mb=document.getElementById('wmModeBtn');if(mb){mb.textContent='상세 지도';mb.classList.remove('on');}
     wmLangBar(false);
     if(c)wmCenter(c.lat,c.lng,Math.max(0.8,256*Math.pow(2,z)/WM_W/wm.fit));
     wmDraw();return;
@@ -7502,8 +7504,9 @@ function wmModeTgl(){
       var c0=wmLL({x:wm.vw/2,y:wm.vh/2}),z0=Math.max(0.5,Math.min(18,Math.log2(wm.k*WM_W/512)));
       wm.leaf=new maplibregl.Map({container:box,style:WM_STYLE,center:[c0.lng,Math.max(-85,Math.min(85,c0.lat))],zoom:z0,attributionControl:{compact:true}});
       wm.leaf.addControl(new maplibregl.NavigationControl({showCompass:false}),'bottom-right');
-      wm.leaf.on('load',function(){wmLangApply();wmLeafPins();});
+      wm.leaf.on('load',function(){wm.__langDone=null;wm.leaf.resize();wmLangApply();wmLeafPins();});
       wm.leaf.on('styledata',function(){wmLangApply();});
+      wm.leaf.on('style.load',function(){wm.__langDone=null;wmLangApply();});
       wm.leaf.on('error',function(e){
         if(wm.__mlErr)return;wm.__mlErr=1;
         hkChip('상세 지도 타일을 불러오지 못했습니다 · 인터넷 연결을 확인해 주세요');setTimeout(function(){hkChip('');},2600);
