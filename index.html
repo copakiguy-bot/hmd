@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-04 · r123">
+<meta name="hmd-build" content="2026-09-04 · r124">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -771,7 +771,13 @@
   .rdg-title b{color:var(--dark)}
   .rdg-lg{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text)}
   .rdg-lg i{width:10px;height:10px;border-radius:3px;flex:none}
-  #rdgChart{border:1px solid var(--line);border-radius:12px;background:#fff;padding:8px 6px 4px;overflow-x:auto}
+  #rdgChart{border:1px solid var(--line);border-radius:12px;background:#fff;padding:8px 10px 6px;overflow:hidden}
+  .rdg-nav{display:inline-flex;align-items:center;gap:4px}
+  .rdg-today{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--dark);cursor:pointer;font-weight:700;margin-left:4px}
+  .rdg-today:hover{background:var(--cream)}
+  .rdg-cmp{font-weight:800}.rdg-cmp.up{color:#1f8a5c}.rdg-cmp.dn{color:#b23b3b}
+  .rdg-leg{margin-top:6px}
+  .rdg-empty{padding:8px 4px 4px;font-size:12px;color:var(--muted)}
   #rdgChart .empty{padding:36px 0}
   .rdg-form{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 12px}
   .rdg-fl{font-size:12px;color:var(--muted);font-weight:700;margin-left:4px}
@@ -3199,7 +3205,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-04 · r123';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-04 · r124';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -9913,6 +9919,8 @@ function rdgBoxHTML(){
   return '<div class="rdp-box rdg-box">'
     +'<div class="rdg-ctl">'
       +'<span id="rdgMet" style="display:inline-flex;gap:5px;flex-wrap:wrap"></span>'
+      +'<span class="tl-datenav rdg-nav"><button type="button" onclick="rdgMonShift(-1)" title="지난달">‹</button><span class="more" id="rdgMonLbl" style="margin-left:0"></span><button type="button" onclick="rdgMonShift(1)" title="다음달">›</button>'
+      +'<button type="button" id="rdgMonToday" class="rdg-today" onclick="rdgMonShift(0)" title="이번달로">이번달</button></span>'
       +'<select id="rdgBookSel" class="rowsel" style="margin-left:auto;max-width:240px" onchange="rdgPickBook(this.value)"></select>'
     +'</div>'
     +'<div class="rdg-title" id="rdgTitle"></div>'
@@ -10034,20 +10042,22 @@ function rdgRender(){
   }
   var d0=document.getElementById('rdgDate');if(d0&&!d0.value)d0.value=today();
   var b=bookById(rdgBook);
+  /* 달 표시 · 이번달 버튼 */
+  var ml=document.getElementById('rdgMonLbl');if(ml)ml.textContent=rdgMon().replace('-','.');
+  var mtb=document.getElementById('rdgMonToday');if(mtb)mtb.style.display=rdgMonKey?'':'none';
   var tt=document.getElementById('rdgTitle');
   if(tt){
     var lg='';
-    if(rdgBook!=null)lg=b?('<b>'+esc(b.title)+'</b>'):'';
-    else{
-      var ids={};rdgRecs().forEach(function(r){ids[r.book]=1;});
-      lg=Object.keys(ids).map(function(k){
-        var bk=bookById(Number(k));if(!bk)return '';
-        return '<span class="rdg-lg"><i style="background:'+rdgColor(Number(k))+'"></i>'+esc(bk.title)+'</span>';
-      }).join('')||'<b>전체</b> · 아직 기록이 없습니다';
+    var M=rdgMon(),BM=rdgMonData(M),PM=rdgFoldPrev(rdgMonData(expMonAdd(M,-1)),BM.n),isC=(M===thisMonth());
+    var td=isC?Math.min(BM.n,+today().slice(8,10)):BM.n;
+    var who=rdgBook!=null?(b?'<b>'+esc(b.title)+'</b>':''):'<b>전체</b>';
+    lg+='<span class="rdg-lg">'+who+' · '+(+M.slice(5,7))+'월 <b>'+BM.totPg+'p</b>'+(BM.totMn?' · '+rdgFmtM(BM.totMn):'')+'</span>';
+    if(PM.any){var pc=PM.cum[Math.min(td,PM.n)-1]||0,df=(BM.cum[td-1]||0)-pc;
+      lg+='<span class="rdg-lg rdg-cmp '+(df>=0?'up':'dn')+'">'+(df>0?'▲':df<0?'▼':'=')+' '+Math.abs(df)+'p 전달 같은 날 대비</span>';}
+    if(rdgMetric==='tz'&&rdgBook==null){
+      var ids={};BM.recs.forEach(function(r){ids[r.book]=1;});
+      lg+=Object.keys(ids).map(function(k){var bk=bookById(Number(k));return bk?'<span class="rdg-lg"><i style="background:'+rdgColor(Number(k))+'"></i>'+esc(bk.title)+'</span>':'';}).join('');
     }
-    /* 하루치(주황 점선)는 오른쪽 축을 쓴다는 안내 */
-    if(rdgMetric!=='tz')lg+='<span class="rdg-lg" style="margin-left:10px;color:#c08a2e">'
-      +'<i style="background:#d99a2b"></i>아래 칸 = '+(rdgBook==null?'하루 합계':'하루치')+' · 위 칸 = 누적</span>';
     tt.innerHTML=lg;
   }
   var ch=document.getElementById('rdgChart');
@@ -10113,130 +10123,143 @@ function renderRdLog(){
   box.innerHTML=h;
 }
 /* ---- SVG 그리기 ---- */
-function rdgSVG(){
-  var rs=rdgRecs();
-  if(!rs.length)return '<div class="empty">기록을 넣으면 그래프가 그려집니다.</div>';
-  var days=rdgDays(rs);
-  var two=(rdgMetric!=='tz');                 /* 페이지·시간: 누적(위) + 하루(아래) 두 칸 */
-  var W=Math.max(660,days.length*22+90),H=two?312:252,L=52,R=14,T=16,B=30;
-  var iw=W-L-R,ih=(two?150:H-T-B);            /* ih = 위 칸(또는 시간대 칸) 높이 */
-  var T2=T+ih+40,ih2=H-B-T2;                  /* 아래 «하루» 칸 */
-  var x=function(i){return L+(days.length<2?iw/2:i*iw/(days.length-1));};
-  var step=days.length<2?iw:iw/(days.length-1);
-  var bw=Math.max(5,Math.min(14,step*0.55));
-  var di={};days.forEach(function(d,i){di[d]=i;});
-  var inWin=rs.filter(function(r){return di[r.date]!=null;});
-  var xlab='';
-  var every=Math.max(1,Math.ceil(days.length/8));
-  days.forEach(function(d,i){
-    if(i%every&&i!==days.length-1)return;
-    xlab+='<text x="'+x(i)+'" y="'+(H-9)+'" text-anchor="middle" font-size="9.5" fill="#8a9490">'+d.slice(5).replace('-','/')+'</text>';
+/* ---- 달 단위 (자산 그래프처럼): 1일~말일, 전달과 같은 날짜로 비교 ---- */
+var rdgMonKey=null;                               /* null = 이번달 */
+function rdgMon(){return rdgMonKey||thisMonth();}
+function rdgMonShift(d){
+  if(d===0){rdgMonKey=null;rdgRender();return;}
+  var nk=expMonAdd(rdgMon(),d);
+  rdgMonKey=(nk===thisMonth())?null:nk;
+  rdgRender();
+}
+/* 한 달치 자료: 하루 페이지·분, 누적 페이지, 기록(시간대용) */
+function rdgMonData(m){
+  var n=expDim(m),pg=new Array(n).fill(0),mn=new Array(n).fill(0),recs=[],any=false;
+  (db.rdLog||[]).forEach(function(r){
+    if(String(r.date).slice(0,7)!==m)return;
+    if(rdgBook!=null&&r.book!==rdgBook)return;
+    var d=+String(r.date).slice(8,10);if(!(d>=1&&d<=n))return;
+    var c=rdgCalc(r);pg[d-1]+=c.pages;mn[d-1]+=c.mins;recs.push(r);any=true;
   });
-  var grid=function(ymax,unit){
-    var g='';
-    for(var k=0;k<=4;k++){
-      var v=Math.round(ymax*k/4),yy=T+ih-ih*k/4;
-      g+='<line x1="'+L+'" y1="'+yy+'" x2="'+(W-R)+'" y2="'+yy+'" stroke="#eef0ec" stroke-width="1"/>'
-        +'<text x="'+(L-7)+'" y="'+(yy+3.5)+'" text-anchor="end" font-size="9.5" fill="#8a9490">'+v+(unit||'')+'</text>';
-    }
-    return g;
-  };
-  var axisL='<text x="'+(L-7)+'" y="'+(T-4)+'" text-anchor="end" font-size="9.5" font-weight="800" fill="#2f6f5e">누적</text>';
-  var DAY_COL='#d99a2b';
-  /* 아래 칸: 하루치 막대 + 그 위를 잇는 꺾은선 (칸을 나눠서 누적과 헷갈리지 않게) */
-  var dayPanel=function(daily,unit,label){
-    var dmax=Math.max.apply(null,daily.concat([1]));
-    var yd=function(v){return T2+ih2-ih2*v/dmax;},o='',pts=[],k;
-    o+='<text x="'+(L-7)+'" y="'+(T2-4)+'" text-anchor="end" font-size="9.5" font-weight="800" fill="'+DAY_COL+'">'+(label||'하루')+'</text>';
-    for(k=0;k<=2;k++){
-      var v=Math.round(dmax*k/2),yy=T2+ih2-ih2*k/2;
-      o+='<line x1="'+L+'" y1="'+yy+'" x2="'+(W-R)+'" y2="'+yy+'" stroke="'+(k?'#f3f0e6':'#e6ddc8')+'"/>'
-        +'<text x="'+(L-7)+'" y="'+(yy+3.5)+'" text-anchor="end" font-size="9.5" fill="#c08a2e">'+v+(unit||'')+'</text>';
-    }
-    days.forEach(function(d,i){
-      var v=daily[i]||0,tip=d.slice(5)+' · '+(label||'하루')+' '+(unit==='분'?rdgFmtM(v):v+unit);
-      if(v){var hh=ih2*v/dmax;
-        o+='<rect x="'+(x(i)-bw/2)+'" y="'+(T2+ih2-hh)+'" width="'+bw+'" height="'+Math.max(2,hh)+'" rx="3" fill="'+DAY_COL+'" opacity=".28"><title>'+tip+'</title></rect>';}
-      pts.push(x(i)+','+yd(v));
-    });
-    o+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+DAY_COL+'" stroke-width="2" stroke-linejoin="round"/>';
-    days.forEach(function(d,i){
-      if(!daily[i])return;
-      o+='<circle cx="'+x(i)+'" cy="'+yd(daily[i])+'" r="2.8" fill="'+DAY_COL+'" stroke="#fff" stroke-width="1.2"><title>'
-        +d.slice(5)+' · '+(label||'하루')+' '+(unit==='분'?rdgFmtM(daily[i]):daily[i]+unit)+'</title></circle>';
-    });
-    return o;
-  };
-  var svg='';
-  if(rdgMetric==='tz'){
-    /* 시간대: 세로 0~24시, 기록마다 띠 */
-    var y=function(min){return T+ih*min/(24*60);};
-    var g='';
-    for(var h=0;h<=24;h+=6){
-      g+='<line x1="'+L+'" y1="'+y(h*60)+'" x2="'+(W-R)+'" y2="'+y(h*60)+'" stroke="#eef0ec"/>'
-        +'<text x="'+(L-7)+'" y="'+(y(h*60)+3.5)+'" text-anchor="end" font-size="9.5" fill="#8a9490">'+h+'시</text>';
-    }
-    var bands='';
-    inWin.forEach(function(r){
-      var s=rdgMin(r.s),e=rdgMin(r.e);
-      if(s==null||e==null)return;
-      var col=rdgBook==null?rdgColor(r.book):'#2f6f5e';
-      var xx=x(di[r.date])-bw/2,bk=bookById(r.book);
-      var tip=(bk?bk.title+' · ':'')+r.s+'~'+r.e;
-      var seg=function(a,bnd){return '<rect x="'+xx+'" y="'+y(a)+'" width="'+bw+'" height="'+Math.max(3,y(bnd)-y(a))+'" rx="3" fill="'+col+'" opacity=".82" stroke="#fff" stroke-width="1"><title>'+esc(tip)+'</title></rect>';};
-      if(e>=s)bands+=seg(s,e);
-      else bands+=seg(s,24*60)+seg(0,e);       /* 자정을 넘긴 기록 */
-    });
-    svg=g+bands;
+  var cum=[],run=0;for(var i=0;i<n;i++){run+=pg[i];cum.push(run);}
+  var tm=0;for(i=0;i<n;i++)tm+=mn[i];
+  return {m:m,n:n,pg:pg,mn:mn,cum:cum,recs:recs,any:any,totPg:run,totMn:tm};
+}
+/* 전달 자료를 이 달의 날수(N)에 맞춘다: 남는 날(31일)은 마지막 칸에 합쳐서 */
+function rdgFoldPrev(P,N){
+  if(P.n<=N)return P;
+  var pg=P.pg.slice(0,N),mn=P.mn.slice(0,N);
+  for(var i=N;i<P.n;i++){pg[N-1]+=P.pg[i];mn[N-1]+=P.mn[i];}
+  var cum=[],run=0;for(i=0;i<N;i++){run+=pg[i];cum.push(run);}
+  return {m:P.m,n:N,pg:pg,mn:mn,cum:cum,recs:P.recs,any:P.any,totPg:P.totPg,totMn:P.totMn};
+}
+function rdgTip(i,ev){
+  var tip=document.getElementById('rdgTip'),d=window.__rdgData;if(!tip||!d)return;
+  var B=d.B,P=d.P,h='<b>'+(+d.m.slice(5,7))+'.'+(i+1)+'</b>';
+  var cur=(d.isCur?'이번달':(+d.m.slice(5,7))+'월'),prv=(+d.pm.slice(5,7))+'월';
+  var shown=i<d.todayD;
+  if(rdgMetric==='pg'){
+    h+='<div class="cat"><i style="background:#e34948"></i>'+cur+' 누적 <b style="margin-left:auto">'+(shown?B.cum[i]+'p':'—')+'</b></div>';
+    h+='<div class="cat"><i style="background:#6a8fd8"></i>'+prv+' 누적 <b style="margin-left:auto">'+(i<P.n?P.cum[i]+'p':'—')+'</b></div>';
+    h+='<div class="cat"><i style="background:#d99a2b"></i>이날 <b style="margin-left:auto">'+(shown?B.pg[i]+'p':'—')+'</b>'
+      +'<span style="color:#b8c8c0;margin-left:8px">전달 '+(i<P.n?P.pg[i]+'p':'—')+'</span></div>';
+    if(shown&&i<P.n){var df=B.cum[i]-P.cum[i];h+='<div style="margin-top:4px;border-top:1px solid rgba(255,255,255,.15);padding-top:4px">전달 같은 날 대비 <span class="'+(df>=0?'dn':'up')+'">'+(df>0?'▲':df<0?'▼':'=')+' '+Math.abs(df)+'p</span></div>';}
   }else{
-    /* 페이지·시간: 날짜별 합산 */
-    var agg={};                                 /* book -> day -> {pg,mn} */
-    inWin.forEach(function(r){
-      var c=rdgCalc(r),k=r.book;
-      if(!agg[k])agg[k]={};
-      if(!agg[k][r.date])agg[k][r.date]={pg:0,mn:0};
-      agg[k][r.date].pg+=c.pages;agg[k][r.date].mn+=c.mins;
-    });
-    var val=function(o){return rdgMetric==='pg'?o.pg:o.mn;};
-    var unit=rdgMetric==='pg'?'p':'분';
-    if(rdgBook!=null){
-      var a=agg[rdgBook]||{},bk=bookById(rdgBook);
-      var daily=days.map(function(d){return a[d]?val(a[d]):0;});
-      var cum=[],run=0;
-      days.forEach(function(d,i){run+=daily[i];cum.push(run);});
-      var ymax=Math.max.apply(null,cum.concat([1]));   /* 읽은 만큼만 축을 잡는다 */
-      var yv=function(v){return T+ih-ih*v/ymax;};
-      svg=grid(ymax,unit)+axisL+dayPanel(daily,unit,'하루');
-      var pts=days.map(function(d,i){return x(i)+','+yv(cum[i]);}).join(' ');   /* 누적선 */
-      svg+='<polyline points="'+pts+'" fill="none" stroke="#2f6f5e" stroke-width="2" stroke-linejoin="round"/>';
-      days.forEach(function(d,i){
-        if(!daily[i]&&i!==days.length-1)return;
-        svg+='<circle cx="'+x(i)+'" cy="'+yv(cum[i])+'" r="3" fill="#2f6f5e" stroke="#fff" stroke-width="1.5"><title>'+d.slice(5)+' · 누적 '+cum[i]+unit+'</title></circle>';
-      });
-      svg+='<text x="'+(x(days.length-1)-6)+'" y="'+(yv(cum[days.length-1])-8)+'" text-anchor="end" font-size="10.5" font-weight="700" fill="#12312b">'
-        +(rdgMetric==='pg'?cum[days.length-1]+'p':rdgFmtM(cum[days.length-1]))+'</text>';
-    }else{
-      /* 전체: 책마다 누적선 */
-      var ymax2=1,lines=[];
-      Object.keys(agg).forEach(function(k){
-        var run=0,pts=[];
-        days.forEach(function(d,i){run+=(agg[k][d]?val(agg[k][d]):0);pts.push([x(i),run]);});
-        ymax2=Math.max(ymax2,run);
-        lines.push({bid:Number(k),pts:pts,last:run});
-      });
-      var yv2=function(v){return T+ih-ih*v/ymax2;};
-      var dailyAll=days.map(function(d){var t=0;Object.keys(agg).forEach(function(k){if(agg[k][d])t+=val(agg[k][d]);});return t;});
-      svg=grid(ymax2,unit)+axisL+dayPanel(dailyAll,unit,'하루 합계');   /* 모든 책을 합친 하루치 */
-      lines.forEach(function(ln){
-        var bk=bookById(ln.bid),col=rdgColor(ln.bid);
-        svg+='<polyline points="'+ln.pts.map(function(p){return p[0]+','+yv2(p[1]);}).join(' ')
-          +'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linejoin="round"><title>'+esc(bk?bk.title:'')+'</title></polyline>'
-          +'<circle cx="'+ln.pts[ln.pts.length-1][0]+'" cy="'+yv2(ln.last)+'" r="3.5" fill="'+col+'" stroke="#fff" stroke-width="1.5"><title>'
-          +esc(bk?bk.title:'')+' · '+(rdgMetric==='pg'?ln.last+'p':rdgFmtM(ln.last))+'</title></circle>';
-      });
-    }
+    h+='<div class="cat"><i style="background:#d99a2b"></i>'+cur+' <b style="margin-left:auto">'+(shown?rdgFmtM(B.mn[i]):'—')+'</b></div>';
+    h+='<div class="cat"><i style="background:#b9b3a6"></i>'+prv+' <b style="margin-left:auto">'+(i<P.n?rdgFmtM(P.mn[i]):'—')+'</b></div>';
   }
-  return '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'">'+svg+xlab+'</svg>';
+  tip.innerHTML=h;tip.style.display='';
+  var wrap=tip.parentElement,rc=wrap.getBoundingClientRect();
+  var x=ev.clientX-rc.left+14,y=ev.clientY-rc.top-10;
+  if(x+tip.offsetWidth>rc.width-4)x=ev.clientX-rc.left-tip.offsetWidth-14;
+  tip.style.left=x+'px';tip.style.top=Math.max(0,y)+'px';
+  var hl=document.getElementById('rdgHover');if(hl){hl.setAttribute('x1',d.X(i));hl.setAttribute('x2',d.X(i));hl.style.display='';}
+}
+function rdgTipHide(){var t=document.getElementById('rdgTip');if(t)t.style.display='none';var hl=document.getElementById('rdgHover');if(hl)hl.style.display='none';}
+function rdgSVG(){
+  var m=rdgMon(),pm=expMonAdd(m,-1),cur=thisMonth(),isCur=(m===cur);
+  var B=rdgMonData(m),P=rdgMonData(pm);
+  var N=B.n,todayD=isCur?Math.min(N,+today().slice(8,10)):N;
+  P=rdgFoldPrev(P,N);                           /* 전달이 31일이면 마지막 날은 이 달 말일 칸에 합친다 */
+  var tz=(rdgMetric==='tz'),two=(rdgMetric==='pg');
+  var W=760,H=two?330:240,L=52,R=16,T=18,BM=30;
+  var ih=two?160:(H-T-BM),T2=T+ih+38,ih2=H-BM-T2;     /* 위 칸(누적) · 아래 칸(하루) */
+  var iw=W-L-R;
+  var X=function(i){return L+iw*(i+0.5)/N;};
+  var slot=iw/N,bw=Math.max(3,Math.min(9,slot*0.36));
+  var d={m:m,pm:pm,B:B,P:P,isCur:isCur,todayD:todayD,X:X};window.__rdgData=d;
+  var moN=+m.slice(5,7),pmN=+pm.slice(5,7);
+  var s='';
+  /* 날짜 축 (1 · 5 · 10 …) */
+  for(var i=0;i<N;i++){var isT=isCur&&i+1===todayD;
+    if((i+1)%5===0||i===0||i===N-1)s+='<line x1="'+X(i).toFixed(1)+'" y1="'+T+'" x2="'+X(i).toFixed(1)+'" y2="'+(H-BM)+'" stroke="#f0f2f0"/>';
+    if((i+1)%5===0||i===0||isT||i===N-1)s+='<text x="'+X(i).toFixed(1)+'" y="'+(H-BM+17)+'" text-anchor="middle" font-size="9.5" fill="'+(isT?'#c0392b':'#8a9490')+'"'+(isT?' font-weight="800"':'')+'>'+moN+'.'+(i+1)+'</text>';}
+  var niceStep=function(max,rows){var st=Math.pow(10,Math.floor(Math.log10(Math.max(1,max))));var c=[st/5,st/2,st,st*2,st*5].find(function(v){return max/v<=rows;})||st*5;return Math.max(1,c);};
+  if(tz){
+    /* 시간대: 세로 0~24시, 기록마다 띠 (이 달만) */
+    var y=function(min){return T+ih*min/(24*60);};
+    for(var h=0;h<=24;h+=6){s+='<line x1="'+L+'" y1="'+y(h*60).toFixed(1)+'" x2="'+(W-R)+'" y2="'+y(h*60).toFixed(1)+'" stroke="#eef0ec"/>'
+      +'<text x="'+(L-7)+'" y="'+(y(h*60)+3.5).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="#8a9490">'+h+'시</text>';}
+    B.recs.forEach(function(r){
+      var a=rdgMin(r.s),e=rdgMin(r.e);if(a==null||e==null)return;
+      var col=rdgBook==null?rdgColor(r.book):'#2f6f5e',i=+String(r.date).slice(8,10)-1,xx=X(i)-bw,bk=bookById(r.book);
+      var tip=(bk?bk.title+' · ':'')+r.date.slice(5)+' '+r.s+'~'+r.e;
+      var seg=function(p,q){return '<rect x="'+xx.toFixed(1)+'" y="'+y(p).toFixed(1)+'" width="'+(bw*2).toFixed(1)+'" height="'+Math.max(3,y(q)-y(p)).toFixed(1)+'" rx="3" fill="'+col+'" opacity=".82" stroke="#fff" stroke-width="1"><title>'+esc(tip)+'</title></rect>';};
+      if(e>=a)s+=seg(a,e);else s+=seg(a,24*60)+seg(0,e);
+    });
+    if(!B.recs.length)s+='<text x="'+(L+iw/2)+'" y="'+(T+ih/2)+'" text-anchor="middle" font-size="12" fill="#8a9490">'+moN+'월에는 시각을 넣은 기록이 없습니다</text>';
+  }else{
+    var unit=two?'p':'분';
+    var curD=two?B.pg:B.mn,prvD=two?P.pg:P.mn;
+    /* ---- 위 칸: 누적 총페이지 — 이번달(빨강) vs 전달(파랑) ---- */
+    if(two){
+      var vals=B.cum.slice(0,todayD).concat(P.cum),max=Math.max.apply(null,vals.concat([1]));
+      var st=niceStep(max,5),yMax=Math.ceil(max/st)*st;
+      var Y=function(v){return T+ih*(1-v/yMax);};
+      for(var v=0;v<=yMax+1e-6;v+=st){s+='<line x1="'+L+'" y1="'+Y(v).toFixed(1)+'" x2="'+(W-R)+'" y2="'+Y(v).toFixed(1)+'" stroke="'+(v===0?'#cfd6d2':'#eef1ef')+'"/>'
+        +'<text x="'+(L-7)+'" y="'+(Y(v)+3.5).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="#8a9490">'+v+(v?'p':'')+'</text>';}
+      s+='<text x="'+(L-7)+'" y="'+(T-6)+'" text-anchor="end" font-size="9.5" font-weight="800" fill="#2f6f5e">누적</text>';
+      var path=function(arr,upto){var o='';for(var k=0;k<Math.min(arr.length,upto);k++)o+=(k?' L':'M')+X(k).toFixed(1)+' '+Y(arr[k]).toFixed(1);return o;};
+      if(P.any){s+='<path class="rdg-prev" d="'+path(P.cum,P.n)+'" fill="none" stroke="#6a8fd8" stroke-width="2.2" stroke-linejoin="round"/>';
+        var pe=P.cum[P.n-1],px=X(P.n-1);
+        s+='<circle cx="'+px.toFixed(1)+'" cy="'+Y(pe).toFixed(1)+'" r="3.5" fill="#6a8fd8"/>'
+          +'<text x="'+(px-7).toFixed(1)+'" y="'+(Y(pe)-8).toFixed(1)+'" text-anchor="end" font-size="10.5" font-weight="700" fill="#4b6fbf">'+pmN+'월 '+pe+'p</text>';}
+      if(B.any&&todayD>0){s+='<path class="rdg-cur" d="'+path(B.cum,todayD)+'" fill="none" stroke="#e34948" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>';
+        for(i=0;i<todayD;i++){if(!B.pg[i])continue;
+          s+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(B.cum[i]).toFixed(1)+'" r="3.6" fill="#e34948" stroke="#fff" stroke-width="1.4"><title>'+m.slice(5)+'-'+String(i+1).padStart(2,'0')+' · 누적 '+B.cum[i]+'p</title></circle>';}
+        var be=B.cum[todayD-1],bx=X(todayD-1),lx=bx+(todayD>N-5?-8:8),anc=todayD>N-5?'end':'start';
+        s+='<text x="'+lx.toFixed(1)+'" y="'+(Y(be)-9).toFixed(1)+'" text-anchor="'+anc+'" font-size="11.5" font-weight="800" fill="#c0392b">'+be+'p</text>';}
+      if(isCur){var tx=X(todayD-1);s+='<line x1="'+tx.toFixed(1)+'" y1="'+T+'" x2="'+tx.toFixed(1)+'" y2="'+(T+ih)+'" stroke="#e34948" stroke-dasharray="3 3" opacity=".45"/>'
+        +'<text x="'+(tx+4).toFixed(1)+'" y="'+(T+ih-5)+'" font-size="10" fill="#c0392b">오늘</text>';}
+    }
+    /* ---- 아래 칸(또는 유일한 칸): 하루치 — 전달(회색) · 이번달(호박) 막대 나란히 ---- */
+    var TT=two?T2:T,HH=two?ih2:ih;
+    var dmax=Math.max.apply(null,curD.slice(0,todayD).concat(prvD).concat([1]));
+    var dst=niceStep(dmax,two?2:4),dMax=Math.ceil(dmax/dst)*dst;
+    var YD=function(v){return TT+HH*(1-v/dMax);};
+    s+='<text x="'+(L-7)+'" y="'+(TT-6)+'" text-anchor="end" font-size="9.5" font-weight="800" fill="#d99a2b">'+(two?'하루':'하루 읽은 시간')+'</text>';
+    for(v=0;v<=dMax+1e-6;v+=dst){s+='<line x1="'+L+'" y1="'+YD(v).toFixed(1)+'" x2="'+(W-R)+'" y2="'+YD(v).toFixed(1)+'" stroke="'+(v===0?'#e6ddc8':'#f3f0e6')+'"/>'
+      +'<text x="'+(L-7)+'" y="'+(YD(v)+3.5).toFixed(1)+'" text-anchor="end" font-size="9.5" fill="#c08a2e">'+(two?v+(v?'p':''):(v?rdgFmtM(v):'0'))+'</text>';}
+    var fmt=function(v){return two?v+'p':rdgFmtM(v);};
+    for(i=0;i<N;i++){
+      var pv=i<P.n?prvD[i]:0,cv=i<todayD?curD[i]:0,x0=X(i);
+      if(pv){var ph=HH*pv/dMax;s+='<rect class="rdg-pbar" x="'+(x0-bw-0.5).toFixed(1)+'" y="'+(TT+HH-ph).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(2,ph).toFixed(1)+'" rx="2" fill="#b9b3a6" opacity=".55"><title>'+pmN+'.'+(i+1)+' · '+fmt(pv)+'</title></rect>';}
+      if(cv){var ch=HH*cv/dMax;s+='<rect class="rdg-cbar" x="'+(x0+0.5).toFixed(1)+'" y="'+(TT+HH-ch).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(2,ch).toFixed(1)+'" rx="2" fill="#d99a2b"><title>'+moN+'.'+(i+1)+' · '+fmt(cv)+'</title></rect>';}
+    }
+    /* 마우스 영역 */
+    s+='<line id="rdgHover" x1="0" y1="'+T+'" x2="0" y2="'+(H-BM)+'" stroke="#12312b" stroke-width="1" opacity=".3" style="display:none;pointer-events:none"/>';
+    for(i=0;i<N;i++){var xa=L+iw*i/N,xb=L+iw*(i+1)/N;
+      s+='<rect x="'+xa.toFixed(1)+'" y="'+T+'" width="'+(xb-xa).toFixed(1)+'" height="'+(H-BM-T)+'" fill="transparent" onmousemove="rdgTip('+i+',event)"/>';}
+  }
+  var legend='';
+  if(!tz){
+    var curL=(isCur?'이번달':moN+'월')+' ('+m.replace('-','.')+')',prvL=pmN+'월 ('+pm.replace('-','.')+')';
+    legend='<div class="xc-leg rdg-leg">'
+      +(two?'<span style="cursor:default"><i style="background:#e34948"></i>'+curL+' 누적</span><span style="cursor:default"><i style="background:#6a8fd8"></i>'+prvL+' 누적</span>':'')
+      +'<span style="cursor:default"><i style="background:#d99a2b"></i>'+curL+' 하루</span><span style="cursor:default"><i style="background:#b9b3a6"></i>'+prvL+' 하루</span></div>';
+  }
+  var empty=(!B.any&&!P.any)?'<div class="rdg-empty">'+moN+'월과 '+pmN+'월에 기록이 없습니다. 아래에서 기록을 넣거나 ‹ › 로 달을 옮겨 보세요.</div>':'';
+  return '<div class="xc-wrap"><svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block" onmouseleave="rdgTipHide()">'+s+'</svg><div class="xc-tip" id="rdgTip"></div></div>'+legend+empty;
 }
 
 /* ---------- study (단어·영어·지식·문화) ---------- */
