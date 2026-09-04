@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-04 · r126">
+<meta name="hmd-build" content="2026-09-04 · r127">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1778,6 +1778,12 @@
   .wm-ring{fill:none;stroke:#e34948;stroke-width:2;transform-origin:0 0;animation:wmPulse 1.5s ease-out infinite}
   @keyframes wmPulse{0%{transform:scale(.4);opacity:1}100%{transform:scale(1.6);opacity:0}}
   .wm-leaf{position:absolute;inset:0;display:none;z-index:1}.wm-leaf.on{display:block}
+  .wm-lang{display:inline-flex;gap:3px;margin-right:4px}
+  .wm-mk{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11.5px;font-weight:800;color:#12312b;white-space:nowrap}
+  .wm-mk i{width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);flex:none}
+  .wm-mk.cur i{width:16px;height:16px;border-color:#e34948}
+  .wm-mk span{background:rgba(255,255,255,.88);padding:1px 6px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+  .wm-mk em{font-style:normal;font-weight:600;color:#5f6f68}
   .wm-zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:4px;z-index:3}
   .wm-zoom button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:16px;cursor:pointer;color:var(--dark);box-shadow:0 2px 6px rgba(0,0,0,.12)}
   .wm-banner{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:#12312b;color:#fff;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:700;z-index:3;white-space:nowrap}
@@ -3256,7 +3262,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-04 · r126';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-04 · r127';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -7288,13 +7294,13 @@ function wmBuild(){
   ov.addEventListener('click',function(e){if(e.target===ov)wmClose();});
   ov.innerHTML='<div class="wm-box">'
     +'<div class="wm-top"><b>🗺 연대기 지도</b><span class="wm-cnt" id="wmCnt"></span><span class="wm-cats" id="wmCats"></span>'
-    +'<span class="wm-tools"><button type="button" class="lunar-toggle" id="wmBordBtn" onclick="wmBordTgl()">국경</button>'
+    +'<span class="wm-tools"><span id="wmLang" class="wm-lang" style="display:none"></span><button type="button" class="lunar-toggle" id="wmBordBtn" onclick="wmBordTgl()">국경</button>'
     +'<button type="button" class="lunar-toggle" id="wmModeBtn" onclick="wmModeTgl()">OSM 상세</button>'
     +'<span class="bkv-x" onclick="wmClose()" title="닫기 (Esc)">×</span></span></div>'
     +'<div class="wm-body" id="wmBody">'
     +'<svg id="wmSvg" class="wm-svg"><g id="wmG"><g id="wmGrat"></g><path id="wmLand" class="wm-land"/><path id="wmBord" class="wm-bord" style="display:none"/><g id="wmPins"></g></g></svg>'
     +'<div id="wmLeaf" class="wm-leaf"></div>'
-    +'<div class="wm-zoom"><button type="button" onclick="wmZoomBy(1.6)" title="확대">＋</button><button type="button" onclick="wmZoomBy(1/1.6)" title="축소">－</button><button type="button" onclick="wmFit();wmDraw()" title="전체 보기">⌂</button></div>'
+    +'<div class="wm-zoom"><button type="button" onclick="wmZoomBy(1.6)" title="확대">＋</button><button type="button" onclick="wmZoomBy(1/1.6)" title="축소">－</button><button type="button" onclick="wmHome()" title="전체 보기">⌂</button></div>'
     +'<div class="wm-banner" id="wmBanner" style="display:none"></div>'
     +'<div class="wm-card" id="wmCard" style="display:none"></div>'
     +'</div></div>';
@@ -7323,7 +7329,7 @@ function wmOpen(opt){
   else if(opt.center&&chHasLL(opt.center))target=opt.center;
   if(target)wmCenter(target.lat,target.lng,wm.cur!=null?6:4);
   else{var es=wmEntries();if(es.length===1)wmCenter(es[0].lat,es[0].lng,4);else wmFit();}
-  if(wm.mode==='leaf'&&window.L){wmLeafSync();}
+  if(wm.mode==='leaf'&&wm.leaf){wmLeafSync();wmLangBar(true);}
   wmDraw();
 }
 function wmClose(){
@@ -7340,8 +7346,9 @@ function wmSize(){
 function wmFit(){wm.k=wm.fit;wm.tx=(wm.vw-WM_W*wm.k)/2;wm.ty=(wm.vh-WM_H*wm.k)/2;}
 function wmCenter(lat,lng,z){wm.k=wm.fit*(z||4);wm.tx=wm.vw/2-wmX(lng)*wm.k;wm.ty=wm.vh/2-wmY(lat)*wm.k;}
 function wmClampK(k){return Math.max(wm.fit*0.7,Math.min(wm.fit*60,k));}
+function wmHome(){if(wm.mode==='leaf'&&wm.leaf){wm.leaf.jumpTo({center:[20,20],zoom:1});return;}wmFit();wmDraw();}
 function wmZoomAt(f,mx,my){var k2=wmClampK(wm.k*f);f=k2/wm.k;wm.tx=mx-(mx-wm.tx)*f;wm.ty=my-(my-wm.ty)*f;wm.k=k2;wmDraw();}
-function wmZoomBy(f){if(wm.mode==='leaf'&&wm.leaf){wm.leaf.setZoom(wm.leaf.getZoom()+(f>1?1:-1));return;}wmZoomAt(f,wm.vw/2,wm.vh/2);}
+function wmZoomBy(f){if(wm.mode==='leaf'&&wm.leaf){if(f>1)wm.leaf.zoomIn();else wm.leaf.zoomOut();return;}wmZoomAt(f,wm.vw/2,wm.vh/2);}
 function wmPt(ev){var svg=document.getElementById('wmSvg'),r=svg.getBoundingClientRect();return {x:(ev.clientX-r.left)*wm.vw/r.width,y:(ev.clientY-r.top)*wm.vh/r.height};}
 function wmLL(pt){return {lat:90-((pt.y-wm.ty)/wm.k)/WM_H*180,lng:((pt.x-wm.tx)/wm.k)/WM_W*360-180};}
 function wmBindSvg(){
@@ -7428,7 +7435,7 @@ function wmCard(){
     +'<button type="button" class="btn ghost" onclick="wmZoomTo(\''+x.id+'\')">여기로 확대</button></div>';
 }
 function wmZoomTo(id){var x=(db.chrono||[]).find(function(v){return String(v.id)===String(id);});if(!chHasLL(x))return;
-  if(wm.mode==='leaf'&&wm.leaf){wm.leaf.setView([x.lat,x.lng],8);return;}
+  if(wm.mode==='leaf'&&wm.leaf){wm.leaf.flyTo({center:[x.lng,x.lat],zoom:9});return;}
   wmCenter(x.lat,x.lng,Math.max(8,wm.k/wm.fit));wmDraw();}
 function wmGoChrono(id){
   var x=(db.chrono||[]).find(function(v){return String(v.id)===String(id);});if(!x)return;
@@ -7437,51 +7444,91 @@ function wmGoChrono(id){
   if(x.y!=null){chState.c=chTof({y:x.y,m:x.m||1,d:x.d||1});renderChrono();}
   setTimeout(function(){chPopOpen(x.id);},60);
 }
-/* ---- OSM 상세 (Leaflet · 온라인일 때) ---- */
-function wmLeafLoad(cb){
-  if(window.L){cb();return;}
-  if(window.__leafLoading){setTimeout(function(){wmLeafLoad(cb);},300);return;}
-  window.__leafLoading=1;
-  var l=document.createElement('link');l.rel='stylesheet';l.href=SPOT_LEAF+'leaflet.css';document.head.appendChild(l);
-  var sc=document.createElement('script');sc.src=SPOT_LEAF+'leaflet.js';
-  sc.onload=function(){window.__leafLoading=0;cb();};
-  sc.onerror=function(){window.__leafLoading=0;hkChip('상세 지도를 불러오지 못했습니다 · 인터넷 연결을 확인해 주세요');setTimeout(function(){hkChip('');},2200);};
+/* ---- 상세 지도 (MapLibre + OpenFreeMap 벡터 타일 · 온라인일 때) — 이름표 언어를 한국어/영어/현지어로 바꿀 수 있다 ---- */
+var WM_ML='https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl';
+var WM_STYLE='https://tiles.openfreemap.org/styles/liberty';
+wm.lang=(function(){try{return localStorage.getItem('hmd_wmLang')||'ko';}catch(e){return 'ko';}})();
+function wmMlLoad(cb){
+  if(window.maplibregl){cb();return;}
+  if(window.__mlLoading){setTimeout(function(){wmMlLoad(cb);},300);return;}
+  window.__mlLoading=1;
+  var l=document.createElement('link');l.rel='stylesheet';l.href=WM_ML+'.css';document.head.appendChild(l);
+  var sc=document.createElement('script');sc.src=WM_ML+'.js';
+  sc.onload=function(){window.__mlLoading=0;cb();};
+  sc.onerror=function(){window.__mlLoading=0;hkChip('상세 지도를 불러오지 못했습니다 · 인터넷 연결을 확인해 주세요');setTimeout(function(){hkChip('');},2200);};
   document.head.appendChild(sc);
+}
+function wmLangExpr(){
+  var order=wm.lang==='ko'?['name:ko','name:en','name:latin','name']
+           :wm.lang==='en'?['name:en','name:latin','name']
+           :['name'];
+  var e=['coalesce'];order.forEach(function(k){e.push(['get',k]);});
+  return e;
+}
+function wmLangApply(){
+  var m=wm.leaf;if(!m||!m.isStyleLoaded||!m.isStyleLoaded())return;
+  var st=m.getStyle();if(!st||!st.layers)return;
+  var ex=wmLangExpr(),key=wm.lang;
+  if(wm.__langDone===key)return;             /* 같은 언어를 다시 입히지 않는다 (styledata 가 되풀이되지 않게) */
+  wm.__langDone=key;
+  st.layers.forEach(function(L){
+    if(L.type!=='symbol'||!L.layout||L.layout['text-field']==null)return;
+    try{m.setLayoutProperty(L.id,'text-field',ex);}catch(e){}
+  });
+  document.querySelectorAll('#wmLang button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-l')===wm.lang);});
+}
+function wmLangSet(l){wm.lang=l;wm.__langDone=null;try{localStorage.setItem('hmd_wmLang',l);}catch(e){}wmLangApply();}
+function wmLangBar(show){
+  var el=document.getElementById('wmLang');if(!el)return;
+  el.style.display=show?'':'none';
+  el.innerHTML=[['ko','한국어'],['en','English'],['local','현지어']].map(function(x){
+    return '<button type="button" class="lunar-toggle'+(wm.lang===x[0]?' on':'')+'" data-l="'+x[0]+'" onclick="wmLangSet(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');
 }
 function wmModeTgl(){
   if(wm.mode==='leaf'){                      /* → 백지도: 상세 지도의 가운데·확대를 이어받는다 */
     var c=wm.leaf?wm.leaf.getCenter():null,z=wm.leaf?wm.leaf.getZoom():2;
     wm.mode='svg';document.getElementById('wmLeaf').classList.remove('on');document.getElementById('wmSvg').style.display='';
     var mb=document.getElementById('wmModeBtn');if(mb){mb.textContent='OSM 상세';mb.classList.remove('on');}
+    wmLangBar(false);
     if(c)wmCenter(c.lat,c.lng,Math.max(0.8,256*Math.pow(2,z)/WM_W/wm.fit));
     wmDraw();return;
   }
-  wmLeafLoad(function(){
+  wmMlLoad(function(){
     wm.mode='leaf';
     var box=document.getElementById('wmLeaf');box.classList.add('on');document.getElementById('wmSvg').style.display='none';
     var mb=document.getElementById('wmModeBtn');if(mb){mb.textContent='백지도';mb.classList.add('on');}
+    wmLangBar(true);
     if(!wm.leaf){
-      wm.leaf=L.map(box,{zoomControl:false,attributionControl:true,worldCopyJump:true});
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(wm.leaf);
-      wm.leafLayer=L.layerGroup().addTo(wm.leaf);
-      wm.leaf.on('click',function(e){if(wm.pick){var cb=wm.pick;wmClose();cb(Math.round(e.latlng.lat*1e4)/1e4,Math.round(e.latlng.lng*1e4)/1e4);}});
-    }
-    wmLeafSync();
+      var c0=wmLL({x:wm.vw/2,y:wm.vh/2}),z0=Math.max(0.5,Math.min(18,Math.log2(wm.k*WM_W/512)));
+      wm.leaf=new maplibregl.Map({container:box,style:WM_STYLE,center:[c0.lng,Math.max(-85,Math.min(85,c0.lat))],zoom:z0,attributionControl:{compact:true}});
+      wm.leaf.addControl(new maplibregl.NavigationControl({showCompass:false}),'bottom-right');
+      wm.leaf.on('load',function(){wmLangApply();wmLeafPins();});
+      wm.leaf.on('styledata',function(){wmLangApply();});
+      wm.leaf.on('error',function(e){
+        if(wm.__mlErr)return;wm.__mlErr=1;
+        hkChip('상세 지도 타일을 불러오지 못했습니다 · 인터넷 연결을 확인해 주세요');setTimeout(function(){hkChip('');},2600);
+        if(wm.mode==='leaf')wmModeTgl();
+      });
+      wm.leaf.on('click',function(e){if(wm.pick){var cb=wm.pick;wmClose();cb(Math.round(e.lngLat.lat*1e4)/1e4,Math.round(e.lngLat.lng*1e4)/1e4);}});
+      wm.leafMarkers=[];
+    }else wmLeafSync();
   });
 }
 function wmLeafSync(){
   if(!wm.leaf)return;
-  var c=wmLL({x:wm.vw/2,y:wm.vh/2}),z=Math.round(Math.log2(wm.k*WM_W/256));
-  setTimeout(function(){wm.leaf.invalidateSize();wm.leaf.setView([Math.max(-85,Math.min(85,c.lat)),c.lng],Math.max(1,Math.min(18,z)));wmLeafPins();},30);
+  var c=wmLL({x:wm.vw/2,y:wm.vh/2}),z=Math.max(0.5,Math.min(18,Math.log2(wm.k*WM_W/512)));
+  setTimeout(function(){wm.leaf.resize();wm.leaf.jumpTo({center:[c.lng,Math.max(-85,Math.min(85,c.lat))],zoom:z});wmLeafPins();},30);
 }
 function wmLeafPins(){
-  if(!wm.leaf||!wm.leafLayer)return;
-  wm.leafLayer.clearLayers();
+  if(!wm.leaf||!window.maplibregl)return;
+  (wm.leafMarkers||[]).forEach(function(m){try{m.remove();}catch(e){}});wm.leafMarkers=[];
   wmEntries().forEach(function(x){
     var cur=String(x.id)===String(wm.cur);
-    var m=L.circleMarker([x.lat,x.lng],{radius:cur?9:6,color:'#fff',weight:1.5,fillColor:wmColor(x),fillOpacity:.95}).addTo(wm.leafLayer);
-    m.bindTooltip(x.title+(x.y!=null?' · '+wmYear(x):''),{permanent:cur,direction:'right',offset:[8,0]});
-    m.on('click',function(){wmSelect(x.id);});
+    var el=document.createElement('div');el.className='wm-mk'+(cur?' cur':'');
+    el.innerHTML='<i style="background:'+wmColor(x)+'"></i><span>'+esc(x.title)+(x.y!=null?' <em>'+esc(wmYear(x))+'</em>':'')+'</span>';
+    el.addEventListener('click',function(ev){ev.stopPropagation();wmSelect(x.id);});
+    var m=new maplibregl.Marker({element:el,anchor:'left',offset:[-7,0]}).setLngLat([x.lng,x.lat]).addTo(wm.leaf);
+    wm.leafMarkers.push(m);
   });
 }
 /* ================= 퀵 메뉴: 빈 화면 더블클릭 → 방사형 바로가기 ================= */
