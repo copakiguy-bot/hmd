@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-04 · r121">
+<meta name="hmd-build" content="2026-09-04 · r122">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1628,13 +1628,7 @@
   .mv-btn:hover{color:var(--dark)}
   /* 타임라인 빠른 일정 추가 */
   .tl-track[ondblclick]{cursor:copy}
-  .cnfl-list{max-height:60vh;overflow:auto;padding:6px 0}
-  .cnfl-row{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:9px;cursor:pointer;font-size:12.5px}
-  .cnfl-row:hover{background:var(--cream)}
-  .cnfl-d{flex:none;width:86px;color:var(--muted);font-weight:700;font-size:11.5px}
-  .cnfl-t{flex:1;min-width:0;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;padding-right:10px}
-  .cnfl-t .imp-dot{position:static;display:inline-block;margin-left:5px;width:6px;height:6px;vertical-align:middle;box-shadow:none}
-  .cnfl-f{flex:none;max-width:44%;color:#3b5bdb;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tlc-dept .dept-clip{margin-left:3px;font-size:9px;opacity:.8}
   .tlq-ov{position:fixed;inset:0;background:rgba(18,49,43,.42);z-index:136;display:flex;align-items:center;justify-content:center;padding:20px}
   .tlq-box{background:var(--card);border-radius:18px;width:min(560px,94vw);box-shadow:0 24px 70px rgba(0,0,0,.28);overflow:hidden;
     animation:qmPop .18s cubic-bezier(.2,.9,.3,1.15)}
@@ -3204,7 +3198,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-04 · r121';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-04 · r122';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -3824,7 +3818,7 @@ function tlCnGridHTML(W,gridBg){
       var tone=cnDeptTone(org,dp);
       var tall=evh.indexOf(' twol')>=0;
       return '<div class="tlc-row'+(tall?' tall':'')+'">'
-        +'<div class="tlc-dept"'+(tone?' style="color:'+tone+'"':'')+' ondblclick="cnDeptFiles(event,\''+escA(org)+'\',\''+escA(dp)+'\')" title="두 번 누르면 이 세분류에 붙은 문서">'+(dp==='__etc__'?'—':(dp||''))+'</div>'
+        +'<div class="tlc-dept"'+(tone?' style="color:'+tone+'"':'')+' ondblclick="cnDeptFiles(event,\''+escA(org)+'\',\''+escA(dp)+'\')" title="두 번 누르면 이 세분류에 붙은 문서 (붙이기·보기)">'+(dp==='__etc__'?'—':(dp||''))+deptClip(org,dp)+'</div>'
         +'<div class="tlc-track" ondblclick="cnQuickAdd(event,\''+escA(org)+'\',\''+escA(dp)+'\')" title="빈 곳 더블클릭 → 그 시각에 의회 일정 추가" style="width:'+W+'px;background-image:'+gridBg+'">'+evh+nowL+'</div>'
       +'</div>';
     }).join('');
@@ -3909,7 +3903,7 @@ function renderTlCnWeek(inner){
       });
       var tone=cnDeptTone(org,dp);
       return '<div class="tlc-row" style="height:'+H+'px">'
-        +'<div class="tlc-dept"'+(tone?' style="color:'+tone+'"':'')+' ondblclick="cnDeptFiles(event,\''+escA(org)+'\',\''+escA(dp)+'\')" title="두 번 누르면 이 세분류에 붙은 문서">'+(dp==='__etc__'?'—':(dp||''))+'</div>'
+        +'<div class="tlc-dept"'+(tone?' style="color:'+tone+'"':'')+' ondblclick="cnDeptFiles(event,\''+escA(org)+'\',\''+escA(dp)+'\')" title="두 번 누르면 이 세분류에 붙은 문서 (붙이기·보기)">'+(dp==='__etc__'?'—':(dp||''))+deptClip(org,dp)+'</div>'
         +'<div class="tlc-track" ondblclick="cnQuickAddW(event,\''+escA(org)+'\',\''+escA(dp)+'\',\''+d0+'\','+CW+')" data-days="'+escA(days.join(','))+'" title="빈 곳 더블클릭 → 그 날짜에 의회 일정 추가" style="width:'+W+'px;height:'+H+'px;background-image:'+colBg+'">'+tdBar+evh+'</div>'
       +'</div>';
     }).join('');
@@ -5879,28 +5873,13 @@ function cnEvDone(id){var s=schById(id);if(!s)return;s.done=!s.done;save();rende
 /* 세부일정 → 수정 창 (저장하면 다시 세부일정으로) */
 function cnEvEdit(id){var s=schById(id);if(!s)return;cnEvClose();cnNoteClose();
   tlqOpen(s.time||'',{edit:id,after:function(){if(schById(id))cnEvOpen(id);}});}
-/* 세분류 이름 두 번 누르기 → 그 세분류 일정에 붙은 문서 모아 보기 */
+/* 세분류 이름 두 번 누르기 → 그 세분류에 붙은 문서 (일정 문서 뷰어와 같은 창: 붙이기·떼기·게시판에서 고르기) */
 function cnDeptFiles(ev,org,dept){
   ev.stopPropagation();
-  var rows=[];
-  (db.schedules||[]).filter(function(s){return s.cn&&s.cnOrg===org&&(dept==='__etc__'?true:(dept?s.cnDept===dept:!s.cnDept))&&schFiles(s).length;})
-    .sort(function(a,b){return String(b.date).localeCompare(String(a.date))||String(a.time||'').localeCompare(String(b.time||''));})
-    .forEach(function(s){schFiles(s).forEach(function(f,i){rows.push({s:s,f:f,i:i});});});
-  if(!rows.length){hkChip((dept&&dept!=='__etc__'?dept:org)+' · 붙은 문서가 없습니다');setTimeout(function(){hkChip('');},1500);return;}
-  if(rows.length===1){pdfOpen(rows[0].s.id,rows[0].i);return;}
-  cnFlClose();
-  var ov=document.createElement('div');ov.className='tlq-ov';ov.id='cnFlOv';
-  ov.addEventListener('click',function(e){if(e.target===ov)cnFlClose();});
-  ov.innerHTML='<div class="tlq-box"><div class="tlq-top"><b>📎 '+esc(org+(dept&&dept!=='__etc__'?' · '+dept:''))+' 문서</b><span class="tlq-d">'+rows.length+'개</span><span class="tlq-x" onclick="cnFlClose()">✕</span></div>'
-    +'<div class="tlq-body cnfl-list">'+rows.map(function(r){
-      return '<div class="cnfl-row" onclick="cnFlClose();pdfOpen('+r.s.id+','+r.i+')"><span class="cnfl-d">'+esc(String(r.s.date||'').slice(5).replace('-','/'))+(r.s.time?' '+esc(r.s.time):'')+'</span>'
-        +'<span class="cnfl-t">'+esc(r.s.title||'')+impDot(r.s)+'</span><span class="cnfl-f">📎 '+esc(r.f.n||pdfNameOf(r.f.u))+'</span></div>';}).join('')
-    +'</div></div>';
-  document.body.appendChild(ov);
-  document.addEventListener('keydown',cnFlEsc);
+  pdfOpen(deptKey(org,dept),0);
 }
-function cnFlClose(){var e=document.getElementById('cnFlOv');if(e)e.remove();document.removeEventListener('keydown',cnFlEsc);}
-function cnFlEsc(e){if(e.key==='Escape'){e.stopPropagation();cnFlClose();}}
+/* 세분류 이름 옆 클립 (붙은 문서가 있을 때) */
+function deptClip(org,dept){var n=deptFilesOf(org,dept).length;return n?'<span class="ev-clip dept-clip" title="붙은 문서 '+n+'개">📎'+(n>1?'<i>'+n+'</i>':'')+'</span>':'';}
 function cnEvClose(){
   var ov=document.getElementById('cnEvOv');if(ov)ov.classList.remove('on');
   document.removeEventListener('keydown',cnEvEsc);
@@ -6386,8 +6365,22 @@ function pdfUrlFix(u){
 function pdfNameOf(u){try{return decodeURIComponent(String(u).split('?')[0].split('/').pop())||'문서';}catch(e){return '문서';}}
 function schFiles(s){return (s&&Array.isArray(s.files))?s.files:[];}
 function schById(id){return (db.schedules||[]).find(function(x){return x.id===id;});}
+/* 문서를 붙일 수 있는 것: 일정(숫자 id) 또는 세분류('dept:기관|세분류') */
+function deptKey(org,dept){return 'dept:'+(org||'')+'|'+(dept&&dept!=='__etc__'?dept:'');}
+function deptFilesOf(org,dept){var k=deptKey(org,dept);return ((db.cnDeptFiles||{})[k]||{}).files||[];}
+function fhById(id){
+  if(typeof id==='string'&&id.indexOf('dept:')===0){
+    db.cnDeptFiles=db.cnDeptFiles||{};
+    var h=db.cnDeptFiles[id];if(!h){h={files:[]};db.cnDeptFiles[id]=h;}
+    if(!Array.isArray(h.files))h.files=[];
+    var p=id.slice(5).split('|'),org=p[0],dept=p.slice(1).join('|');
+    return {id:id,_dept:true,cn:true,cnOrg:org,cnDept:dept,title:(dept||org)+' 문서',date:'세분류',files:h.files};
+  }
+  return schById(id);
+}
+function jsId(id){return typeof id==='number'?String(id):"'"+String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/</g,'&lt;').replace(/"/g,'&quot;')+"'";}
 function schFileAdd(id,url,name){
-  var s=schById(id);if(!s)return false;
+  var s=fhById(id);if(!s)return false;
   url=pdfUrlFix(url);if(!url)return false;
   if(!Array.isArray(s.files))s.files=[];
   if(s.files.some(function(f){return f.u===url;}))return true;
@@ -6395,7 +6388,7 @@ function schFileAdd(id,url,name){
   save();renderCal();renderSchedule();return true;
 }
 function schFileDel(id,i){
-  var s=schById(id);if(!s||!s.files)return;
+  var s=fhById(id);if(!s||!s.files)return;
   s.files.splice(i,1);save();renderCal();renderSchedule();
   if(document.getElementById('pdfOv'))pdfOpen(id,0);
 }
@@ -6404,7 +6397,7 @@ var pdfSch=null,pdfIdx=0;
 function pdfClose(){var e=document.getElementById('pdfOv');if(e)e.remove();document.removeEventListener('keydown',pdfEsc);pdfSch=null;}
 function pdfEsc(e){if(e.key==='Escape'){e.stopPropagation();pdfClose();}}
 function pdfOpen(id,i){
-  var s=schById(id);if(!s)return;
+  var s=fhById(id);if(!s)return;
   var list=schFiles(s);
   pdfSch=id;pdfIdx=Math.max(0,Math.min(i||0,Math.max(0,list.length-1)));
   pdfClose();pdfSch=id;
@@ -6412,7 +6405,7 @@ function pdfOpen(id,i){
   ov.addEventListener('click',function(e){if(e.target===ov)pdfClose();});
   ov.innerHTML='<div class="pdf-box">'
     +'<div class="pdf-top"><b>'+esc(s.title||'일정')+'</b>'
-    +'<span class="pdf-meta">'+esc(s.date||'')+(s.time?' · '+esc(s.time):'')+(s.cn?' · '+esc(cnLabel(s)):'')+'</span>'
+    +'<span class="pdf-meta">'+(s._dept?'세분류 문서 · '+esc(cnLabel(s)):esc(s.date||'')+(s.time?' · '+esc(s.time):'')+(s.cn?' · '+esc(cnLabel(s)):''))+'</span>'
     +'<span class="pdf-tools" id="pdfTools"></span>'
     +'<span class="pdf-x" onclick="pdfClose()" title="닫기 (Esc)">✕</span></div>'
     +'<div class="pdf-tabs" id="pdfTabs"></div>'
@@ -6423,7 +6416,7 @@ function pdfOpen(id,i){
   pdfPaint();
 }
 function pdfPaint(){
-  var s=schById(pdfSch);if(!s||!document.getElementById('pdfOv'))return;
+  var s=fhById(pdfSch);if(!s||!document.getElementById('pdfOv'))return;
   var list=schFiles(s),f=list[pdfIdx];
   var tabs=document.getElementById('pdfTabs');
   tabs.style.display=list.length>1?'':'none';
@@ -6431,10 +6424,10 @@ function pdfPaint(){
     return '<button class="pdf-tab'+(i===pdfIdx?' on':'')+'" onclick="pdfGo('+i+')" title="'+escA(x.u)+'">'+esc(x.n||pdfNameOf(x.u))+'</button>';}).join('');
   var tools=document.getElementById('pdfTools');
   tools.innerHTML=f?('<a class="pdf-b" href="'+escA(f.u)+'" target="_blank" rel="noopener" title="새 창에서 열기">↗ 새 창</a>'
-    +'<button class="pdf-b" onclick="schFileDel('+s.id+','+pdfIdx+')" title="이 일정에서 문서 떼기">떼기</button>'):'';
+    +'<button class="pdf-b" onclick="schFileDel('+jsId(s.id)+','+pdfIdx+')" title="여기서 문서 떼기">떼기</button>'):'';
   var body=document.getElementById('pdfBody');
   body.innerHTML=f?('<iframe id="pdfFrame" src="'+escA(f.u)+(/\.pdf($|\?)/i.test(f.u)?'#view=FitH':'')+'" title="'+escA(f.n||'')+'"></iframe>')
-    :'<div class="pdf-none">이 일정에 붙은 문서가 없습니다.<br><span>아래에 게시판 주소를 넣거나 «게시판에서 고르기»를 눌러 보세요.</span></div>';
+    :'<div class="pdf-none">'+(s._dept?'이 세분류에':'이 일정에')+' 붙은 문서가 없습니다.<br><span>아래에 게시판 주소를 넣거나 «게시판에서 고르기»를 눌러 보세요.</span></div>';
   document.getElementById('pdfAdd').innerHTML=
     '<input id="pdfUrlIn" class="in" placeholder="문서 주소 붙여넣기 (예: https://'+esc(ghCfg().owner)+'.github.io/'+esc(ghCfg().repo)+'/…​.pdf)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();pdfAddUrl();}">'
     +'<button class="btn ghost" onclick="ghPickOpen(pdfSch)">📄 게시판에서 고르기</button>'
@@ -6445,10 +6438,10 @@ function pdfAddUrl(){
   var el=document.getElementById('pdfUrlIn');if(!el)return;
   var v=el.value.trim();if(!v)return;
   if(!/^https?:\/\//i.test(v)){alert('http로 시작하는 문서 주소를 넣어 주세요.');return;}
-  var s=schById(pdfSch);var before=schFiles(s).length;
+  var s=fhById(pdfSch);var before=schFiles(s).length;
   schFileAdd(pdfSch,v);
-  el.value='';pdfIdx=Math.max(0,schFiles(schById(pdfSch)).length-1);
-  if(schFiles(schById(pdfSch)).length===before)hkChip('이미 붙어 있는 문서입니다');
+  el.value='';pdfIdx=Math.max(0,schFiles(fhById(pdfSch)).length-1);
+  if(schFiles(fhById(pdfSch)).length===before)hkChip('이미 붙어 있는 문서입니다');
   pdfPaint();
 }
 /* ---- 게시판에서 고르기 (공개 저장소 목록 읽기) ---- */
@@ -6501,8 +6494,8 @@ function ghPickTake(path,name){
   var id=window.__ghPickSch;
   var url=ghPageUrl(path);
   if(id!=null){schFileAdd(id,url,name);ghPickClose();
-    if(document.getElementById('pdfOv')){pdfIdx=Math.max(0,schFiles(schById(id)).length-1);pdfPaint();}
-    else pdfOpen(id,Math.max(0,schFiles(schById(id)).length-1));
+    if(document.getElementById('pdfOv')){pdfIdx=Math.max(0,schFiles(fhById(id)).length-1);pdfPaint();}
+    else pdfOpen(id,Math.max(0,schFiles(fhById(id)).length-1));
   }else{                                   /* 일정 만들기 전(폼)에서 고른 경우 */
     schFormFileAdd(url,name);ghPickClose();
   }
