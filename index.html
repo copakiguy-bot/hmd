@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-04 · r134">
+<meta name="hmd-build" content="2026-09-04 · r135">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3435,7 +3435,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-04 · r134';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-04 · r135';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -12432,6 +12432,7 @@ function expTrTip(i,ev){
   if(bv!=null&&av){var df=bv-av;h+='<div style="margin-top:4px;border-top:1px solid rgba(255,255,255,.15);padding-top:4px">평균 대비 <span class="'+(df>0?'up':'dn')+'">'+(df>0?'▲ ':df<0?'▼ ':'= ')+Math.abs(Math.round(df/av*100))+'% ('+(df>=0?'+':'-')+shortWon(Math.abs(df))+')</span></div>';}
   else if(bv!=null&&pv!=null){var df2=bv-pv;h+='<div style="margin-top:4px">전달 대비 <span class="'+(df2>0?'up':'dn')+'">'+(df2>0?'▲':df2<0?'▼':'=')+' '+shortWon(Math.abs(df2))+'</span></div>';}
   var dd=d.B.daily[i];if(i<d.todayD&&dd)h+='<div style="color:#b8c8c0;margin-top:2px">이날 지출 '+shortWon(dd)+'</div>';
+  var pd=(i<d.P.n)?d.P.daily[i]:0;if(pd)h+='<div style="color:#a9bde6;margin-top:2px">전달 이날 지출 '+shortWon(pd)+' · 파란 점을 누르면 내역</div>';
   tip.innerHTML=h;tip.style.display='';
   var wrap=tip.parentElement,rc=wrap.getBoundingClientRect();
   var x=ev.clientX-rc.left+14,y=ev.clientY-rc.top-10;
@@ -12484,17 +12485,29 @@ function expTrendCard(){
     if((i+1)%5===0||i===0)s+='<line x1="'+xx.toFixed(1)+'" y1="'+padT+'" x2="'+xx.toFixed(1)+'" y2="'+(padT+IH)+'" stroke="#f0f2f0"/>';
     s+='<text x="'+xx.toFixed(1)+'" y="'+(H-padB+17)+'" text-anchor="middle" font-size="9.5" fill="'+(isT?'#c0392b':'#8a9490')+'"'+(isT?' font-weight="800"':'')+'>'+moN+'.'+(i+1)+'</text>';}
   function path(arr,upto){var p='';for(var i=0;i<Math.min(arr.length,upto);i++)p+=(i?' L':'M')+X(i).toFixed(1)+' '+Y(arr[i]).toFixed(1);return p;}
+  /* 마우스 영역(하루 하나씩)은 선·점보다 아래에 깔아, 점을 누르면 점이 먼저 받는다 */
+  for(var i2=0;i2<N;i2++){var x0=(i2===0?padL:(X(i2-1)+X(i2))/2),x1=(i2===N-1?W-padR:(X(i2)+X(i2+1))/2);
+    var has=(i2<d.todayD&&d.B.daily[i2]>0),dk2=d.base+'-'+String(i2+1).padStart(2,'0');
+    var hasP=(i2<d.P.n&&d.P.daily[i2]>0),pk2=d.prev+'-'+String(i2+1).padStart(2,'0');
+    s+='<rect x="'+x0.toFixed(1)+'" y="'+padT+'" width="'+(x1-x0).toFixed(1)+'" height="'+IH+'" fill="transparent"'
+      +(has?' style="cursor:pointer" onclick="expDayOpen(\''+dk2+'\')"':(hasP?' style="cursor:pointer" onclick="expDayOpen(\''+pk2+'\')"':''))
+      +' onmousemove="expTrTip('+i2+',event)"/>';}
   /* 평균 (점선) → 전달 (파랑) → 이번달 (빨강, 맨 위) */
-  if(d.avgN){s+='<path d="'+path(d.avg,N)+'" fill="none" stroke="#12312b" stroke-width="2" stroke-dasharray="5 4" opacity=".55"/>';
+  if(d.avgN){s+='<path d="'+path(d.avg,N)+'" fill="none" stroke="#12312b" stroke-width="2" stroke-dasharray="5 4" opacity=".55" style="pointer-events:none"/>';
     s+='<text x="'+(W-padR+2)+'" y="'+(Y(d.avg[N-1])+4).toFixed(1)+'" font-size="10.5" font-weight="700" fill="#5f6f68">평균</text>';}
-  if(d.P.any){s+='<path d="'+path(d.P.cum,d.P.n)+'" fill="none" stroke="#6a8fd8" stroke-width="2.2" stroke-linejoin="round"/>';
+  if(d.P.any){s+='<path d="'+path(d.P.cum,d.P.n)+'" fill="none" stroke="#6a8fd8" stroke-width="2.2" stroke-linejoin="round" style="pointer-events:none"/>';
+    for(i=0;i<d.P.n;i++){                          /* 전달도 지출이 있던 날은 점 · 누르면 그날 내역 */
+      if(!d.P.daily[i])continue;
+      var pk=d.prev+'-'+String(i+1).padStart(2,'0');
+      s+='<circle class="xt-pdot" cx="'+X(i).toFixed(1)+'" cy="'+Y(d.P.cum[i]).toFixed(1)+'" r="3.6" fill="#6a8fd8" stroke="#fff" stroke-width="1.4" style="cursor:pointer" onmousemove="expTrTip('+i+',event)" onclick="expDayOpen(\''+pk+'\')"><title>'
+        +'전달 '+(i+1)+'일 · '+won(d.P.daily[i])+' · 눌러서 내역 보기</title></circle>';}
     var pe=d.P.cum[d.P.n-1];s+='<circle cx="'+X(d.P.n-1).toFixed(1)+'" cy="'+Y(pe).toFixed(1)+'" r="4" fill="#6a8fd8"/>';
     s+='<text x="'+(X(d.P.n-1)-8).toFixed(1)+'" y="'+(Y(pe)-9).toFixed(1)+'" text-anchor="end" font-size="11" font-weight="700" fill="#4b6fbf">전달 '+shortWon(pe)+'</text>';}
-  if(d.B.any&&d.todayD>0){s+='<path d="'+path(d.B.cum,d.todayD)+'" fill="none" stroke="#e34948" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>';
+  if(d.B.any&&d.todayD>0){s+='<path d="'+path(d.B.cum,d.todayD)+'" fill="none" stroke="#e34948" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" style="pointer-events:none"/>';
     for(i=0;i<d.todayD;i++){                       /* 그날 지출이 있으면 점 · 누르면 내역 */
       if(!d.B.daily[i])continue;
       var dk=d.base+'-'+String(i+1).padStart(2,'0');
-      s+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(d.B.cum[i]).toFixed(1)+'" r="4.5" fill="#e34948" stroke="#fff" stroke-width="1.6" style="cursor:pointer" onclick="expDayOpen(\''+dk+'\')"><title>'
+      s+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(d.B.cum[i]).toFixed(1)+'" r="4.5" fill="#e34948" stroke="#fff" stroke-width="1.6" style="cursor:pointer" onmousemove="expTrTip('+i+',event)" onclick="expDayOpen(\''+dk+'\')"><title>'
         +(i+1)+'일 · '+won(d.B.daily[i])+' · 눌러서 내역 보기</title></circle>';}
     var be=d.B.cum[d.todayD-1],bx=X(d.todayD-1);
     s+='<circle cx="'+bx.toFixed(1)+'" cy="'+Y(be).toFixed(1)+'" r="5" fill="#e34948" stroke="#fff" stroke-width="2"/>';
@@ -12504,12 +12517,6 @@ function expTrendCard(){
     s+='<line x1="'+tx.toFixed(1)+'" y1="'+padT+'" x2="'+tx.toFixed(1)+'" y2="'+(padT+IH)+'" stroke="#e34948" stroke-dasharray="3 3" opacity=".45"/>';
     s+='<text x="'+(tx+4).toFixed(1)+'" y="'+(padT+IH-6)+'" text-anchor="start" font-size="10.5" fill="#c0392b">오늘</text>';}
   s+='<line id="xtHover" x1="0" y1="'+padT+'" x2="0" y2="'+(padT+IH)+'" stroke="#12312b" stroke-width="1" opacity=".35" style="display:none;pointer-events:none"/>';
-  /* 마우스 영역: 하루 하나씩 */
-  for(var i2=0;i2<N;i2++){var x0=(i2===0?padL:(X(i2-1)+X(i2))/2),x1=(i2===N-1?W-padR:(X(i2)+X(i2+1))/2);
-    var has=(i2<d.todayD&&d.B.daily[i2]>0),dk2=d.base+'-'+String(i2+1).padStart(2,'0');
-    s+='<rect x="'+x0.toFixed(1)+'" y="'+padT+'" width="'+(x1-x0).toFixed(1)+'" height="'+IH+'" fill="transparent"'
-      +(has?' style="cursor:pointer" onclick="expDayOpen(\''+dk2+'\')"':'')
-      +' onmousemove="expTrTip('+i2+',event)"/>';}
   /* 머리글 요약: 같은 날짜 기준 평균 대비 + 이 속도면 월말 얼마 */
   var summ='',bi=d.todayD-1,bnow=d.B.any?d.B.cum[bi]:0;
   if(d.avgN&&d.B.any&&d.avg[bi]>0){var df=bnow-d.avg[bi];
@@ -12525,7 +12532,7 @@ function expTrendCard(){
   var legend='<div class="xc-leg"><span style="cursor:default"><i style="background:#e34948"></i>'+(d.isCur?'이번달':(+d.base.slice(5))+'월')+' ('+d.base.replace('-','.')+')</span>'
     +'<span style="cursor:default"><i style="background:#6a8fd8"></i>전달 ('+d.prev.replace('-','.')+')</span>'
     +'<span style="cursor:default"><i style="background:#12312b;opacity:.6"></i>평균 (지난 '+d.avgN+'달)</span>'
-    +'<span style="cursor:default;color:var(--muted);margin-left:auto">세로축은 1일부터 그날까지 쌓인 금액 · 점을 누르면 그날 지출 내역</span></div>';
+    +'<span style="cursor:default;color:var(--muted);margin-left:auto">세로축은 1일부터 그날까지 쌓인 금액 · 빨간 점 = 이번달, 파란 점 = 전달 · 점을 누르면 그날 지출 내역</span></div>';
   var body=(!d.B.any&&!d.P.any&&!d.avgN)?'<div class="empty">'+(expTrCat?'«'+esc(expTrCat)+'» ':'')+'지출 기록이 없습니다.</div>'
     :'<div class="xc-wrap"><svg viewBox="0 0 '+W+' '+H+'" onmouseleave="expTrTipHide()">'+s+'</svg><div class="xc-tip" id="xtTip"></div></div>'+legend;
   return '<div class="card">'+head+body+'</div>';
