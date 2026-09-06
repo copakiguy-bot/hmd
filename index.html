@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-04 · r132">
+<meta name="hmd-build" content="2026-09-04 · r134">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -839,6 +839,20 @@
   .bx-paste{border:1px dashed var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;background:#fbfaf5}
   .bx-paste-h{font-size:11.5px;color:var(--muted);margin-bottom:6px;line-height:1.5}
   @media(max-width:900px){.bx-tiles{grid-template-columns:1fr}.bx-charts{grid-template-columns:1fr}}
+  /* 초과근무 계산기 */
+  .ot-wrap{display:flex;gap:18px;align-items:stretch;flex-wrap:wrap;margin-top:6px}
+  .ot-form{flex:1;min-width:260px;display:flex;flex-direction:column;gap:8px}
+  .ot-form label{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--dark)}
+  .ot-form label>span:first-child{width:64px;flex:none;color:var(--muted);font-weight:700}
+  .ot-form .in{width:120px;font-size:15px;padding:8px 10px;font-variant-numeric:tabular-nums}
+  .ot-min{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--muted)}
+  .ot-min .in{width:84px;text-align:right}
+  .ot-note{font-style:normal;font-size:11.5px;color:var(--muted);font-weight:500}
+  .ot-result{flex:1;min-width:240px;border:1px solid var(--line);border-radius:14px;background:#fbfaf5;padding:18px 20px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+  .ot-big{font-size:34px;font-weight:800;color:var(--dark);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .ot-big.neg{color:#b23b3b}.ot-big.muted{color:var(--muted)}
+  .ot-sub{font-size:12.5px;color:var(--muted);margin-top:6px}
+  .ot-eq{font-size:11.5px;color:#8a9490;margin-top:8px;font-variant-numeric:tabular-nums}
   /* 리포트 (화면) */
   .bx-rep-ov{display:none;position:fixed;inset:0;z-index:170;background:rgba(18,49,43,.55);align-items:flex-start;justify-content:center;padding:14px;overflow:auto}
   .bx-rep-ov.on{display:flex}
@@ -2606,6 +2620,7 @@
     <div class="page-head"><h1>Etc</h1>
       <p><span id="bxSecBtns" style="display:inline-flex;gap:5px;vertical-align:middle"></span>
          <span class="rdl-back" style="margin-left:14px" onclick="go('council')">회기 흐름표 →</span></p></div>
+    <div id="etcBizx">
     <div class="card" id="bxTopCard">
       <h3><span class="dot" style="background:#2a78d6"></span> <span id="bxTitle">부의장 업무추진비</span>
         <span class="tl-datenav" style="margin-left:10px"><button type="button" onclick="bxYearShift(-1)" title="지난해">‹</button><span class="more" id="bxYearLbl" style="margin-left:0"></span><button type="button" onclick="bxYearShift(1)" title="다음해">›</button></span>
@@ -2625,6 +2640,19 @@
       <div id="bxPaste" style="display:none"></div>
       <div id="bxForm"></div>
       <div id="bxTable" class="rdl-wrap"></div>
+    </div>
+    </div>
+    <div class="card" id="etcOt" style="display:none">
+      <h3><span class="dot" style="background:#7a6bd1"></span> 초과근무 계산기 <span class="more">퇴근 − (출근 + 제외시간 + 추가제외)</span></h3>
+      <div class="ot-wrap">
+        <div class="ot-form">
+          <label><span>출근</span><input id="otIn" class="in" inputmode="numeric" placeholder="0900" onblur="this.value=normTime(this.value);otCalc()" oninput="otCalc()"></label>
+          <label><span>퇴근</span><input id="otOut" class="in" inputmode="numeric" placeholder="2130" onblur="this.value=normTime(this.value);otCalc()" oninput="otCalc()"></label>
+          <label><span>제외시간</span><span class="ot-min"><input id="otEx" class="in" inputmode="numeric" value="600" oninput="otCalc()"> 분 <em class="ot-note">(10시간)</em></span></label>
+          <label><span>추가제외</span><span class="ot-min"><input id="otEx2" class="in" inputmode="numeric" value="0" placeholder="0" oninput="otCalc()"> 분</span></label>
+        </div>
+        <div class="ot-result" id="otResult"></div>
+      </div>
     </div>
   </section>
   <section class="view" id="view-council">
@@ -3407,7 +3435,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-04 · r132';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-04 · r134';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -7713,6 +7741,29 @@ function wmLeafPins(){
     wm.leafMarkers.push(new maplibregl.Marker({element:te,anchor:'left',offset:[-7,0]}).setLngLat([wm.tmp.lng,wm.tmp.lat]).addTo(wm.leaf));
   }
 }
+/* ================= Etc · 초과근무 계산기 ================= */
+var etcSec=(function(){try{return localStorage.getItem('hmd_etcSec')||'bizx';}catch(e){return 'bizx';}})();
+function etcSecSet(k){etcSec=k;try{localStorage.setItem('hmd_etcSec',k);}catch(e){}renderEtc();}
+function otMin(t){var m=/^(\d{1,2}):(\d{2})$/.exec(normTime(String(t||'')));return m?Number(m[1])*60+Number(m[2]):null;}
+function otFmt(m){var neg=m<0;m=Math.abs(m);var h=Math.floor(m/60),mm=m%60;return (neg?'−':'')+(h?h+'시간':'')+(mm||!h?(h?' ':'')+mm+'분':'');}
+function otCompute(){
+  var a=otMin((document.getElementById('otIn')||{}).value),b=otMin((document.getElementById('otOut')||{}).value);
+  var ex=Number(String((document.getElementById('otEx')||{}).value||'').replace(/[^0-9]/g,''))||0;
+  var ex2=Number(String((document.getElementById('otEx2')||{}).value||'').replace(/[^0-9]/g,''))||0;
+  if(a==null||b==null)return {ok:false,ex:ex,ex2:ex2};
+  var work=b-a;if(work<0)work+=24*60;              /* 자정을 넘긴 퇴근 */
+  return {ok:true,a:a,b:b,ex:ex,ex2:ex2,work:work,res:work-ex-ex2};
+}
+function otCalc(){
+  var el=document.getElementById('otResult');if(!el)return;
+  var c=otCompute();
+  var nt=document.querySelector('.ot-note');if(nt)nt.textContent=c.ex?'('+otFmt(c.ex)+')':'';
+  if(!c.ok){el.innerHTML='<div class="ot-big muted">—</div><div class="ot-sub">출근·퇴근 시각을 넣으면 바로 계산됩니다 (0900 처럼 쳐도 됩니다)</div>';return;}
+  el.innerHTML='<div class="ot-big'+(c.res<0?' neg':'')+'">'+otFmt(c.res)+'</div>'
+    +'<div class="ot-sub">'+(c.res/60).toFixed(2)+'시간 · 체류 '+otFmt(c.work)+' − 제외 '+otFmt(c.ex+c.ex2)+(c.b<c.a?' · 자정 넘김':'')+'</div>'
+    +'<div class="ot-eq">'+normTime(String(document.getElementById('otOut').value))+' − ('+normTime(String(document.getElementById('otIn').value))+' + '+otFmt(c.ex)+(c.ex2?' + '+otFmt(c.ex2):'')+')</div>';
+}
+function otRender(){otCalc();}
 /* ================= Etc · 부의장 업무추진비 집행내역 ================= */
 var BX_WHO=['1부의장','2부의장'], BX_COL={'1부의장':'#2a78d6','2부의장':'#eb6834'};
 var BX_HOWS=['만찬','오찬','조찬','차담회','격려품','기타'];
@@ -7760,7 +7811,11 @@ function bxHowGroup(h){h=String(h||'');if(/만찬/.test(h))return '만찬';if(/�
 function renderEtc(){
   var pane=document.getElementById('view-etc');if(!pane)return;
   bxSeed();
-  var sb=document.getElementById('bxSecBtns');if(sb)sb.innerHTML='<button class="lunar-toggle on">업무추진비</button>';
+  var sb=document.getElementById('bxSecBtns');
+  if(sb)sb.innerHTML=[['bizx','업무추진비'],['ot','초과계산기']].map(function(x){return '<button class="lunar-toggle'+(etcSec===x[0]?' on':'')+'" onclick="etcSecSet(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');
+  var eb=document.getElementById('etcBizx'),eo=document.getElementById('etcOt');
+  if(eb)eb.style.display=etcSec==='ot'?'none':'';if(eo)eo.style.display=etcSec==='ot'?'':'none';
+  if(etcSec==='ot'){otRender();return;}
   var y=bxYearNow();
   var yl=document.getElementById('bxYearLbl');if(yl)yl.textContent=y+'년';
   var tt=document.getElementById('bxTitle');if(tt)tt.textContent=y+'년 부의장 업무추진비';
