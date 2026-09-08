@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-04 · r140">
+<meta name="hmd-build" content="2026-09-04 · r142">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1868,6 +1868,16 @@
   .chimg-ov{display:none;position:fixed;inset:0;z-index:180;background:rgba(10,20,17,.88);align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:20px;cursor:zoom-out}
   .chimg-ov.on{display:flex}.chimg-ov img{max-width:96vw;max-height:86vh;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
   .chimg-cap{color:#e8efec;font-size:13px;font-weight:700}
+  .ch-mind{display:none;position:absolute;left:10px;top:10px;z-index:7;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 34px rgba(18,49,43,.22);overflow:hidden;cursor:default}
+  .ch-mind.on{display:block}
+  .ch-mind.moving{box-shadow:0 18px 44px rgba(18,49,43,.32)}
+  .ch-mind-h{display:flex;align-items:center;gap:6px;padding:4px 8px 4px 8px;border-bottom:1px solid var(--line);background:#fbfaf5;font-size:10.5px;font-weight:800;color:var(--dark);cursor:grab;user-select:none;touch-action:none}
+  .ch-mind.moving .ch-mind-h{cursor:grabbing}
+  .ch-mind-grip{color:#b3bcb7;font-size:10px;letter-spacing:-2px}
+  .ch-mind-x{margin-left:auto;cursor:pointer;color:var(--muted);font-size:15px;line-height:1;padding:0 3px}.ch-mind-x:hover{color:var(--dark)}
+  .ch-mind-cv{overflow:auto;background:#fbfbf8;position:relative}
+  .ch-mind-cv .mind-canvas{position:relative}
+  .ch-mind .mnode.root .mtext{font-size:13.5px}
   .chimg-prev{display:none;position:absolute;width:232px;background:#fff;border-radius:12px;padding:6px;box-shadow:0 10px 30px rgba(18,49,43,.3);pointer-events:none;z-index:6}
   .chimg-prev.on{display:block}
   .chimg-prev img{display:block;width:220px;height:150px;object-fit:cover;border-radius:8px;background:#eee}
@@ -3488,7 +3498,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-04 · r140';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-04 · r142';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -5368,7 +5378,8 @@ function mindKey(e,id){if(e.key==='Tab'){e.preventDefault();e.target.blur();mind
 function mindDepth(x,n){var d=0,c=n;while(c&&c.p){var pn=x.mind.find(function(a){return a.id===c.p;});if(!pn)break;d++;c=pn;}return d;}
 var MB=["#2f6f5e","#c99a2e","#d0574f","#4a76c4","#9c6ade","#3a9e93","#e07b39","#5aa469","#b8477e","#3aa0c9","#7a6cd6","#c25e8a"];
 var MBG=["#dbeee6","#fbe6b8","#f7d3d1","#dde7f8","#ece0fb","#d6f0ec","#fce3d1","#dff0e2","#f9d9e7","#d5eef7","#e6e1fb","#f7dde8"];
-function mindEdit(id,t){var x=curIdeaObj();if(!x)return;var n=x.mind.find(function(a){return a.id===id;});if(n){n.t=String(t).trim();save();}}
+function mindEdit(id,t){var x=curIdeaObj();if(!x)return;var n=x.mind.find(function(a){return a.id===id;});if(n){n.t=String(t).trim();save();
+  if(mindIsRoot(n)&&window.__mindCtx&&window.__mindCtx.onRoot)window.__mindCtx.onRoot(n.t);}}
 function mindDel(id){var x=curIdeaObj();if(!x)return;var tn=mindNodeById(x,id);if(!tn)return;
   if(mindIsRoot(tn)&&mindRootsOf(x).length<=1)return;var rm=[id],ch=true;while(ch){ch=false;x.mind.forEach(function(n){if(rm.indexOf(n.p)>=0&&rm.indexOf(n.id)<0){rm.push(n.id);ch=true;}});}x.mind=x.mind.filter(function(n){return rm.indexOf(n.id)<0;});save();renderMind();}
 function mindNodeById(x,id){return x.mind.find(function(a){return a.id===id;});}
@@ -5520,9 +5531,10 @@ function renderMind(){
   x.mind.forEach(function(n){var p=pos[n.id];if(!p)return;
     minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x+p.w);
     minY=Math.min(minY,mindTop(p));maxY=Math.max(maxY,mindBot(p));});
-  var padX=100,padY=80, offX=padX-minX, offY=padY-minY;
-  var W=Math.max(560,(maxX-minX)+padX*2), H=Math.max(340,(maxY-minY)+padY*2);
-  var cw=el.clientWidth||0, ch=el.clientHeight||0;
+  var compact=!!(window.__mindCtx&&window.__mindCtx.compact);
+  var padX=compact?28:100,padY=compact?22:80, offX=padX-minX, offY=padY-minY;
+  var W=compact?((maxX-minX)+padX*2):Math.max(560,(maxX-minX)+padX*2), H=compact?((maxY-minY)+padY*2):Math.max(340,(maxY-minY)+padY*2);
+  var cw=compact?0:(el.clientWidth||0), ch=compact?0:(el.clientHeight||0);
   if(cw>W){offX+=(cw-W)/2;W=cw;}
   if(ch>H){offY+=(ch-H)/2;H=ch;}
   var shape=mindShape(x), multi=mindRootsOf(x).length>1;
@@ -5540,6 +5552,10 @@ function renderMind(){
   el.innerHTML='<div class="mind-canvas" style="width:'+W+'px;height:'+H+'px"><svg class="mind-svg" width="'+W+'" height="'+H+'">'+mindConnectors(x,pos,offX,offY)+'</svg>'+nodesHTML+'</div>';
   var sel=document.getElementById('mindModeSel');if(sel)sel.value=mindMode(x);
   var shs=document.getElementById('mindShapeSel');if(shs)shs.value=shape;
+  if(compact){if(typeof chMindFit==='function')chMindFit();if(mindHoldScroll){el.scrollLeft=keepL;el.scrollTop=keepT;}
+    if(window.__mindCtx.canvas==='chMindCanvas'){var lb=document.querySelector('text.ch-lbl[data-id="'+x.id+'"]');   /* 제목 옆 ✦ 표시만 바로 갱신 */
+      if(lb){var has=x.mind.length>1,txt=lb.lastChild;if(txt&&txt.nodeType===3){var t0=txt.nodeValue.replace(/ ✦$/,'');txt.nodeValue=has?t0+' ✦':t0;}lb.classList.toggle('hasmind',has);}}
+    return;}
   if(mindHoldScroll){el.scrollLeft=keepL;el.scrollTop=keepT;}
   else{var rp=pos[x.mind[0].id];if(rp){el.scrollLeft=Math.max(0,offX+rp.x-el.clientWidth/2);el.scrollTop=Math.max(0,offY+rp.y-el.clientHeight/2);}}
 }
@@ -7173,7 +7189,7 @@ function chAdd(){
   if(m&&d>chDim(y,m))d=chDim(y,m);
   if(chEditId!=null){
     var x=(db.chrono||[]).find(function(v){return v.id===chEditId;});
-    if(x){x.y=y;x.m=m;x.d=d;x.title=title;x.detail=detail;x.cats=chSelCats.slice();chPlaceApply(x);}
+    if(x){x.y=y;x.m=m;x.d=d;x.title=title;x.detail=detail;x.cats=chSelCats.slice();chPlaceApply(x);if(x.mind&&x.mind[0])x.mind[0].t=title;}
   }else{
     var nx={id:uid(),y:y,m:m,d:d,title:title,detail:detail,cats:chSelCats.slice()};chPlaceApply(nx);
     db.chrono.push(nx);
@@ -7393,8 +7409,8 @@ function renderChrono(){
         s+='<circle data-id="'+g.e.id+'" class="ch-yo" cx="'+g.x.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="6" fill="#fff" stroke="'+col+'" stroke-width="2.3" stroke-dasharray="3 2" style="cursor:pointer"><title>'+esc(g.e.title)+' · 월일 미상</title></circle>';
       else
         s+='<circle data-id="'+g.e.id+'" cx="'+g.x.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="5.5" fill="'+col+'" stroke="#fff" stroke-width="1.5" style="cursor:pointer"/>';
-      if(gi===0)
-        s+='<text x="'+(g.x+9).toFixed(1)+'" y="'+(cy+3.5).toFixed(1)+'" font-size="10.5" font-weight="700" fill="#3a4a44" style="pointer-events:none">'+(g.labW!=null?'<title>'+esc(g.e.title)+'</title>':'')+esc(chFitTitle(g.e.title,g.labW))+'</text>';
+      if(gi===0){var hasMind=!!(g.e.mind&&g.e.mind.length>1);
+        s+='<text class="ch-lbl'+(hasMind?' hasmind':'')+'" data-id="'+g.e.id+'" x="'+(g.x+9).toFixed(1)+'" y="'+(cy+3.5).toFixed(1)+'" font-size="10.5" font-weight="700" fill="#3a4a44" style="cursor:pointer">'+(g.labW!=null?'<title>'+esc(g.e.title)+' · 누르면 마인드맵</title>':'<title>누르면 마인드맵</title>')+esc(chFitTitle(g.e.title,g.labW))+(hasMind?' ✦':'')+'</text>';}
     });
   });
   if(!(db.chrono||[]).length)
@@ -7442,6 +7458,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&chLinkFrom!
   var down=null,moved=false;
   function tAtX(clientX){var GL=118,innerW=(wrap.clientWidth||1000)-GL-8;var mx=clientX-wrap.getBoundingClientRect().left-GL;return chState.c+(mx-innerW/2)/chState.ppy;}
   wrap.addEventListener('mousedown',function(e){
+    if(e.target.closest&&e.target.closest('#chMind')){down=null;return;}   /* 마인드맵 창 안에서는 그래프를 끌지 않는다 */
     var c=e.target.closest?e.target.closest('circle[data-id]'):null;
     if(c&&e.button===0&&chLinkFrom==null){                  /* 점 위: 점을 끌어 옮긴다 */
       var ev=(db.chrono||[]).find(function(v){return String(v.id)===c.getAttribute('data-id');});
@@ -7466,6 +7483,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&chLinkFrom!
     }
     chDragDot=null;down=null;wrap.classList.remove('drag');wrap.classList.remove('dotdrag');});
   wrap.addEventListener('wheel',function(e){
+    if(e.target.closest&&e.target.closest('#chMind'))return;              /* 창 안에서는 창이 스크롤 */
     e.preventDefault();
     if(chState.ppy==null)return;
     var GL=118,innerW=(wrap.clientWidth||1000)-GL-8;
@@ -7478,9 +7496,12 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&chLinkFrom!
   },{passive:false});
   wrap.addEventListener('click',function(e){
     if(moved)return;
+    if(e.target.closest&&e.target.closest('#chMind'))return;          /* 마인드맵 창 안 */
+    var lb=e.target.closest?e.target.closest('text.ch-lbl'):null;
+    if(lb){chTipHide();chMindOpen(lb.getAttribute('data-id'));return;}
     var c=e.target.closest?e.target.closest('circle[data-id]'):null;
     if(chLinkFrom!=null){if(c)chLinkTo(c.getAttribute('data-id'));else chLinkCancel();return;}
-    if(!c){chTipHide();return;}
+    if(!c){chTipHide();chMindClose();return;}
     var x=(db.chrono||[]).find(function(v){return String(v.id)===c.getAttribute('data-id');});if(!x)return;
     var tip=document.getElementById('chTip');
     tip.textContent=chDateStr(x.y,x.m,x.d);
@@ -7491,6 +7512,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&chLinkFrom!
   wrap.addEventListener('mouseover',function(e){var c=e.target.closest?e.target.closest('circle[data-id]'):null;chImgPrev(c);});
   wrap.addEventListener('mouseleave',function(){chImgPrev(null);});
   wrap.addEventListener('dblclick',function(e){
+    if(e.target.closest&&e.target.closest('#chMind'))return;
     var c=e.target.closest?e.target.closest('circle[data-id]'):null;
     if(c){chTipHide();chImgPrev(null);chPopOpen(c.getAttribute('data-id'));return;}
     if(!chState.ppy)return;
@@ -7623,6 +7645,68 @@ function chPlaceViewPaint(){
   b.classList.toggle('ghost',true);
   b.title=chPlaceLL?'이 좌표를 지도에서 보기':'지명으로 찾아 지도에서 보기';
 }
+/* ---- 사건 마인드맵: 제목을 누르면 그래프 오른쪽 위에, 뿌리 = 사건 제목 ---- */
+var CH_MIND_SCALE=10.5/13.5;                      /* 마인드맵 글씨를 제목 글씨(10.5px)에 맞춘다 */
+var chMindId=null;
+function chMindOpen(id){
+  var x=(db.chrono||[]).find(function(v){return String(v.id)===String(id);});if(!x)return;
+  var wrap=document.getElementById('chWrap');if(!wrap)return;
+  if(!Array.isArray(x.mind)||!x.mind.length){x.mind=[{id:1,t:x.title,p:0}];save();}
+  else if(x.mind[0].t!==x.title){x.mind[0].t=x.title;}
+  var box=document.getElementById('chMind');
+  if(!box){box=document.createElement('div');box.id='chMind';box.className='ch-mind';
+    box.innerHTML='<div class="ch-mind-h" title="끌어서 옮기기"><span class="ch-mind-grip">⋮⋮</span><span class="ch-mind-t">마인드맵</span><i class="ch-mind-x" onclick="chMindClose()" title="닫기 (Esc)">×</i></div><div id="chMindCanvas" class="ch-mind-cv"></div>';
+    wrap.appendChild(box);chMindDragBind(box);}
+  box.__anchor=String(x.id);box.__moved=false;
+  chMindId=x.id;
+  window.__mindCtx={obj:x,canvas:'chMindCanvas',compact:true,scale:CH_MIND_SCALE,onRoot:function(t){
+    var ev=(db.chrono||[]).find(function(v){return String(v.id)===String(chMindId);});if(!ev||!t)return;
+    if(ev.title!==t){ev.title=t;save();renderChrono();}}};
+  box.classList.add('on');
+  renderMind();chMindFit();
+  document.addEventListener('keydown',chMindEsc);
+}
+function chMindFit(){
+  var box=document.getElementById('chMind'),cv=document.getElementById('chMindCanvas'),wrap=document.getElementById('chWrap');
+  if(!box||!cv||!wrap)return;
+  var mc=cv.querySelector('.mind-canvas');if(!mc)return;
+  var s=CH_MIND_SCALE,W=parseFloat(mc.style.width)||400,H=parseFloat(mc.style.height)||200;
+  mc.style.transform='scale('+s+')';mc.style.transformOrigin='0 0';mc.style.minWidth='0';mc.style.minHeight='0';
+  mc.style.marginRight=(-W*(1-s))+'px';mc.style.marginBottom=(-H*(1-s))+'px';
+  var maxW=Math.max(220,wrap.clientWidth-24),maxH=Math.max(140,wrap.clientHeight-24-34);
+  var w=Math.min(maxW,Math.ceil(W*s)+2),h=Math.min(maxH,Math.ceil(H*s)+2);
+  box.style.width=w+'px';cv.style.height=h+'px';
+  chMindPlace();
+}
+/* 창 자리: 제목 바로 오른쪽 옆 (오른쪽이 모자라면 점 왼쪽, 아래가 모자라면 위로) — 사용자가 끌어 옮긴 뒤엔 그 자리 그대로 */
+function chMindPlace(){
+  var box=document.getElementById('chMind'),wrap=document.getElementById('chWrap');if(!box||!wrap||box.__moved)return;
+  var lb=wrap.querySelector('text.ch-lbl[data-id="'+box.__anchor+'"]');
+  var wr=wrap.getBoundingClientRect(),bw=box.offsetWidth,bh=box.offsetHeight,W=wrap.clientWidth,H=wrap.clientHeight,x,y;
+  if(lb){var r=lb.getBoundingClientRect();x=r.right-wr.left+8;y=r.top-wr.top+r.height/2-bh/2;
+    if(x+bw>W-8){var c=wrap.querySelector('circle[data-id="'+box.__anchor+'"]');var cl=c?c.getBoundingClientRect().left-wr.left:r.left-wr.left;x=cl-10-bw;}
+  }else{x=W-bw-10;y=10;}
+  x=Math.max(8,Math.min(W-bw-8,x));y=Math.max(8,Math.min(H-bh-8,y));
+  box.style.left=x+'px';box.style.top=y+'px';box.style.right='auto';
+}
+function chMindDragBind(box){
+  var h=box.querySelector('.ch-mind-h'),d=null;
+  h.addEventListener('pointerdown',function(e){
+    if(e.target.closest('.ch-mind-x'))return;
+    d={x:e.clientX,y:e.clientY,l:box.offsetLeft,t:box.offsetTop};h.setPointerCapture(e.pointerId);box.classList.add('moving');e.preventDefault();});
+  h.addEventListener('pointermove',function(e){
+    if(!d)return;var wrap=document.getElementById('chWrap'),W=wrap.clientWidth,H=wrap.clientHeight;
+    var nl=Math.max(0,Math.min(W-box.offsetWidth,d.l+e.clientX-d.x)),nt=Math.max(0,Math.min(H-box.offsetHeight,d.t+e.clientY-d.y));
+    box.style.left=nl+'px';box.style.top=nt+'px';box.style.right='auto';box.__moved=true;});
+  var up=function(){d=null;box.classList.remove('moving');};
+  h.addEventListener('pointerup',up);h.addEventListener('pointercancel',up);
+}
+function chMindClose(){
+  var box=document.getElementById('chMind');if(box)box.classList.remove('on');
+  if(window.__mindCtx&&window.__mindCtx.canvas==='chMindCanvas')window.__mindCtx=null;
+  chMindId=null;document.removeEventListener('keydown',chMindEsc);
+}
+function chMindEsc(e){if(e.key==='Escape'&&!document.querySelector('#chpOv.on')){e.stopPropagation();chMindClose();}}
 /* ---- 사건 이미지 (자료 게시판에서 고른 그림) ---- */
 function chImgOf(x){return (x&&x.img&&x.img.u)?x.img.u:'';}
 function chPopImg(){
