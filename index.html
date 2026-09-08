@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-04 · r143">
+<meta name="hmd-build" content="2026-09-04 · r144">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2985,7 +2985,7 @@
       </div>
       <div id="chWrap"><svg id="chSvg"></svg><div class="ch-tip" id="chTip"></div></div>
       <div id="chNoDates"></div>
-      <p style="font-size:12px;color:var(--muted);margin-top:8px">끌어서 이동 · 휠로 확대/축소 · 점 한 번 = 날짜 · 두 번 = 세부 내용</p>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px">끌어서 이동 · 휠로 확대/축소 · 점 한 번 = 날짜 · 두 번 = 세부 내용 · 제목 한 번 = 수정 · 두 번 = 마인드맵</p>
     </div>
       <div class="card">
       <h3><span class="dot" style="background:var(--yellow)"></span> 사건 기록 <span class="more" id="chCount"></span></h3>
@@ -3499,7 +3499,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-04 · r143';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-04 · r144';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -7445,7 +7445,7 @@ function renderChrono(){
         geoLab+='<text x="'+(xa+6).toFixed(1)+'" y="'+(GT+13)+'" font-size="10" font-weight="700" fill="'+g.c+'" letter-spacing=".5" paint-order="stroke" stroke="#fff" stroke-width="3" style="pointer-events:none">'+g.n+'</text>';
     });
   }
-  var yoSolid=spanY>=1e5;   /* 이 폭에서는 월·일 미상 표시가 무의미 → 채운 점으로 */
+  var yoSolid=true;         /* 월·일 미상도 보통 점과 똑같이 그린다 (r144) */
   var mode=ppy>=12000?'day':ppy>=576?'month':ppy>=48?'year':'big';
   var tt,p,yy,mm,dd;
   if(mode==='big'||mode==='year'){
@@ -7537,7 +7537,7 @@ function renderChrono(){
       else
         s+='<circle data-id="'+g.e.id+'" cx="'+g.x.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="5.5" fill="'+col+'" stroke="#fff" stroke-width="1.5" style="cursor:pointer"/>';
       if(gi===0){var hasMind=!!(g.e.mind&&g.e.mind.length>1);
-        s+='<text class="ch-lbl'+(hasMind?' hasmind':'')+'" data-id="'+g.e.id+'" x="'+(g.x+9).toFixed(1)+'" y="'+(cy+3.5).toFixed(1)+'" font-size="10.5" font-weight="700" fill="#3a4a44" style="cursor:pointer">'+(g.labW!=null?'<title>'+esc(g.e.title)+' · 누르면 마인드맵</title>':'<title>누르면 마인드맵</title>')+esc(chFitTitle(g.e.title,g.labW))+(hasMind?' ✦':'')+'</text>';}
+        s+='<text class="ch-lbl'+(hasMind?' hasmind':'')+'" data-id="'+g.e.id+'" x="'+(g.x+9).toFixed(1)+'" y="'+(cy+3.5).toFixed(1)+'" font-size="10.5" font-weight="700" fill="#3a4a44" style="cursor:pointer">'+(g.labW!=null?'<title>'+esc(g.e.title)+' · 한 번 = 수정 · 두 번 = 마인드맵</title>':'<title>한 번 = 수정 · 두 번 = 마인드맵</title>')+esc(chFitTitle(g.e.title,g.labW))+(hasMind?' ✦':'')+'</text>';}
     });
   });
   if(!(db.chrono||[]).length)
@@ -7625,7 +7625,8 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&chLinkFrom!
     if(moved)return;
     if(e.target.closest&&e.target.closest('#chMind'))return;          /* 마인드맵 창 안 */
     var lb=e.target.closest?e.target.closest('text.ch-lbl'):null;
-    if(lb){chTipHide();chMindOpen(lb.getAttribute('data-id'));return;}
+    if(lb){chTipHide();var lid=lb.getAttribute('data-id');clearTimeout(window.__chLblT);
+      window.__chLblT=setTimeout(function(){chEdit(lid);},260);return;}   /* 한 번 = 아래 수정 칸 · 두 번 = 마인드맵 */
     var c=e.target.closest?e.target.closest('circle[data-id]'):null;
     if(chLinkFrom!=null){if(c)chLinkTo(c.getAttribute('data-id'));else chLinkCancel();return;}
     if(!c){chTipHide();chMindClose();return;}
@@ -7640,6 +7641,8 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&chLinkFrom!
   wrap.addEventListener('mouseleave',function(){chImgPrev(null);});
   wrap.addEventListener('dblclick',function(e){
     if(e.target.closest&&e.target.closest('#chMind'))return;
+    var lb2=e.target.closest?e.target.closest('text.ch-lbl'):null;
+    if(lb2){clearTimeout(window.__chLblT);chTipHide();chMindOpen(lb2.getAttribute('data-id'));return;}
     var c=e.target.closest?e.target.closest('circle[data-id]'):null;
     if(c){chTipHide();chImgPrev(null);chPopOpen(c.getAttribute('data-id'));return;}
     if(!chState.ppy)return;
