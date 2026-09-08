@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-04 · r138">
+<meta name="hmd-build" content="2026-09-04 · r139">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1861,6 +1861,18 @@
   .ch-yhint code{background:var(--cream);border-radius:5px;padding:0 5px}
   .ch-yhint .bad{color:var(--red)}
   #chSvg{display:block;width:100%;height:100%}
+  .chp-img{margin:8px 0 10px}
+  .chp-img img{display:block;max-width:100%;max-height:300px;border-radius:10px;cursor:zoom-in;box-shadow:0 4px 14px rgba(18,49,43,.18);margin:0 auto}
+  .chp-img-t{display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--muted);margin-top:5px;justify-content:center}
+  .chp-img-t i{font-style:normal;cursor:pointer;color:#b23b3b;font-weight:700}.chp-img-t i:hover{text-decoration:underline}
+  .chimg-ov{display:none;position:fixed;inset:0;z-index:180;background:rgba(10,20,17,.88);align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:20px;cursor:zoom-out}
+  .chimg-ov.on{display:flex}.chimg-ov img{max-width:96vw;max-height:86vh;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .chimg-cap{color:#e8efec;font-size:13px;font-weight:700}
+  .chimg-prev{display:none;position:absolute;width:232px;background:#fff;border-radius:12px;padding:6px;box-shadow:0 10px 30px rgba(18,49,43,.3);pointer-events:none;z-index:6}
+  .chimg-prev.on{display:block}
+  .chimg-prev img{display:block;width:220px;height:150px;object-fit:cover;border-radius:8px;background:#eee}
+  .chimg-prev span{display:block;font-size:11.5px;font-weight:700;color:var(--dark);margin:5px 2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ghp-i.dim{opacity:.4;cursor:default}
   .ch-tip{display:none;position:absolute;background:var(--dark);color:#fff;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:8px;pointer-events:none;white-space:nowrap;z-index:5}
   .ch-tip.on{display:block}
   .chp-ov{display:none;position:fixed;inset:0;z-index:150;background:rgba(18,49,43,.30);align-items:center;justify-content:center;padding:16px}
@@ -3399,10 +3411,12 @@
     <div class="chp-head"><b id="chpTitle"></b><span class="chp-x" onclick="chPopClose()" title="닫기">×</span></div>
     <div class="chp-date" id="chpDate"></div>
     <div class="chp-cats" id="chpCats"></div>
+    <div class="chp-img" id="chpImg" style="display:none"></div>
     <div class="chp-body" id="chpBody"></div>
     <div class="chp-links" id="chpLinks"></div>
     <div class="chp-foot">
       <button class="btn ghost" id="chpMapBtn" onclick="chPopMap()">🗺 지도보기</button>
+      <button class="btn ghost" id="chpImgBtn" onclick="chPopImg()">🖼 이미지 등록</button>
       <button class="btn ghost" onclick="chPopLink()">선 잇기</button>
       <button class="btn ghost" onclick="chPopEdit()">수정</button>
       <button class="btn ghost" onclick="chPopDel()">삭제</button>
@@ -3474,7 +3488,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-04 · r138';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-04 · r139';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -6773,15 +6787,16 @@ function ghApi(path){var g=ghCfg();
     +'?ref='+encodeURIComponent(g.branch);}
 function ghPageUrl(path){var g=ghCfg();
   return 'https://'+g.owner+'.github.io/'+g.repo+'/'+String(path||'').split('/').filter(Boolean).map(encodeURIComponent).join('/');}
-function ghPickClose(){var e=document.getElementById('ghpOv');if(e)e.remove();document.removeEventListener('keydown',ghPickEsc);}
+function ghPickClose(){var e=document.getElementById('ghpOv');if(e)e.remove();document.removeEventListener('keydown',ghPickEsc);ghPickOpt=null;}
 function ghPickEsc(e){if(e.key==='Escape'){e.stopPropagation();ghPickClose();}}
-function ghPickOpen(schedId,path){
+var ghPickOpt=null;
+function ghPickOpen(schedId,path,opt){
   ghPickClose();
-  window.__ghPickSch=schedId;
+  window.__ghPickSch=schedId;ghPickOpt=opt||null;
   var ov=document.createElement('div');ov.className='ghp-ov';ov.id='ghpOv';
   ov.addEventListener('click',function(e){if(e.target===ov)ghPickClose();});
   ov.innerHTML='<div class="ghp-box">'
-    +'<div class="ghp-top"><b>📄 게시판에서 고르기</b><span class="ghp-path" id="ghpPath"></span>'
+    +'<div class="ghp-top"><b>'+esc((opt&&opt.title)||'📄 게시판에서 고르기')+'</b><span class="ghp-path" id="ghpPath"></span>'
     +'<span class="pdf-x" onclick="ghPickClose()">✕</span></div>'
     +'<div class="ghp-boards" id="ghpBoards"></div>'
     +'<div class="ghp-list" id="ghpList"><div class="ghp-msg">불러오는 중…</div></div></div>';
@@ -6814,7 +6829,8 @@ function ghPickLoad(path){
       +dirs.map(function(x){return '<div class="ghp-i dir" onclick="ghPickLoad(\''+escA(x.path)+'\')"><span class="ic">📁</span>'+esc(x.name)+'</div>';}).join('')
       +files.map(function(x){
         var pdf=/\.pdf$/i.test(x.name),img=/\.(png|jpe?g|gif|webp|svg|bmp|heic)$/i.test(x.name);
-        return '<div class="ghp-i'+(pdf?' pdf':'')+'" onclick="ghPickTake(\''+escA(x.path)+'\',\''+escA(x.name)+'\')">'
+        var dim=(ghPickOpt&&ghPickOpt.imgOnly&&!img);
+        return '<div class="ghp-i'+(pdf?' pdf':'')+(dim?' dim':'')+'"'+(dim?' title="이미지만 고를 수 있습니다"':' onclick="ghPickTake(\''+escA(x.path)+'\',\''+escA(x.name)+'\')"')+'>'
           +'<span class="ic">'+(pdf?'📕':img?'🖼':'📄')+'</span>'+esc(x.name)
           +'<span class="sz">'+(x.size?Math.round(x.size/1024)+'KB':'')+'</span></div>';}).join('')
       +((dirs.length+files.length)?'':'<div class="ghp-msg">이 폴더에 파일이 없습니다.</div>');
@@ -6826,6 +6842,7 @@ function ghPickLoad(path){
 function ghPickTake(path,name){
   var id=window.__ghPickSch;
   var url=ghPageUrl(path);
+  if(ghPickOpt&&ghPickOpt.cb){var cb=ghPickOpt.cb;ghPickClose();cb(url,name);return;}
   if(id!=null){schFileAdd(id,url,name);ghPickClose();
     if(document.getElementById('pdfOv')){pdfIdx=Math.max(0,schFiles(fhById(id)).length-1);pdfPaint();}
     else pdfOpen(id,Math.max(0,schFiles(fhById(id)).length-1));
@@ -7465,9 +7482,11 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&chLinkFrom!
     tip.style.top=(parseFloat(c.getAttribute('cy'))-30)+'px';
     tip.classList.add('on');
   });
+  wrap.addEventListener('mouseover',function(e){var c=e.target.closest?e.target.closest('circle[data-id]'):null;chImgPrev(c);});
+  wrap.addEventListener('mouseleave',function(){chImgPrev(null);});
   wrap.addEventListener('dblclick',function(e){
     var c=e.target.closest?e.target.closest('circle[data-id]'):null;
-    if(c){chTipHide();chPopOpen(c.getAttribute('data-id'));return;}
+    if(c){chTipHide();chImgPrev(null);chPopOpen(c.getAttribute('data-id'));return;}
     if(!chState.ppy)return;
     /* 빈 곳: 그 자리의 연도·레인으로 새 사건 입력 */
     var t=tAtX(e.clientX),H=wrap.clientHeight||540,GT=8,GB=24,innerH=H-GT-GB;
@@ -7493,7 +7512,13 @@ function chPopOpen(id){
   chPopId=x.id;
   document.getElementById('chpTitle').textContent=x.title;
   document.getElementById('chpDate').textContent=((x.y==null)?'날짜 없음':chDateStr(x.y,x.m,x.d))+(x.place?' · 📍 '+x.place:(chHasLL(x)?' · 📍 '+x.lat.toFixed(2)+', '+x.lng.toFixed(2):''));
-  var mb=document.getElementById('chpMapBtn');if(mb)mb.textContent=chHasLL(x)?'🗺 지도보기':'📍 장소 넣기';
+  var mb=document.getElementById('chpMapBtn');if(mb)mb.textContent=chHasLL(x)?'🗺 지도보기':'📍 장소 등록';
+  var ib=document.getElementById('chpImgBtn');if(ib)ib.textContent=chImgOf(x)?'🖼 이미지 바꾸기':'🖼 이미지 등록';
+  var im=document.getElementById('chpImg');
+  if(im){var iu=chImgOf(x);
+    if(iu){im.style.display='';im.innerHTML='<img src="'+escA(iu)+'" alt="'+escA(x.title)+'" onclick="chImgView(\''+x.id+'\')" title="누르면 크게">'
+      +'<div class="chp-img-t"><span>'+esc(x.img&&x.img.n?x.img.n:pdfNameOf(iu))+'</span><i onclick="chImgClear(\''+x.id+'\')" title="이미지 떼기">× 떼기</i></div>';}
+    else{im.style.display='none';im.innerHTML='';}}
   document.getElementById('chpCats').innerHTML=(x.cats||[]).map(function(c){return '<span style="background:'+(CH_COLOR[c]||'#12312b')+'">'+esc(c)+'</span>';}).join('');
   document.getElementById('chpBody').textContent=x.detail||'(세부 내용 없음)';
   var lk=document.getElementById('chpLinks');
@@ -7591,6 +7616,43 @@ function chPlaceViewPaint(){
   var b=document.getElementById('chPlaceView');if(!b)return;
   b.classList.toggle('ghost',true);
   b.title=chPlaceLL?'이 좌표를 지도에서 보기':'지명으로 찾아 지도에서 보기';
+}
+/* ---- 사건 이미지 (자료 게시판에서 고른 그림) ---- */
+function chImgOf(x){return (x&&x.img&&x.img.u)?x.img.u:'';}
+function chPopImg(){
+  var x=(db.chrono||[]).find(function(v){return String(v.id)===String(chPopId);});if(!x)return;
+  var id=x.id;
+  ghPickOpen(null,null,{title:'🖼 이미지 고르기',imgOnly:true,cb:function(url,name){
+    var ev=(db.chrono||[]).find(function(v){return String(v.id)===String(id);});if(!ev)return;
+    ev.img={u:url,n:name||pdfNameOf(url)};save();renderChrono();
+    if(document.querySelector('#chpOv.on'))chPopOpen(id);
+    hkChip('이미지를 붙였습니다');setTimeout(function(){hkChip('');},1400);
+  }});
+}
+function chImgClear(id){
+  var x=(db.chrono||[]).find(function(v){return String(v.id)===String(id);});if(!x)return;
+  delete x.img;save();renderChrono();if(document.querySelector('#chpOv.on'))chPopOpen(id);
+}
+function chImgView(id){
+  var x=(db.chrono||[]).find(function(v){return String(v.id)===String(id);});if(!x||!chImgOf(x))return;
+  var ov=document.getElementById('chImgOv');
+  if(!ov){ov=document.createElement('div');ov.id='chImgOv';ov.className='chimg-ov';ov.onclick=function(){ov.classList.remove('on');};document.body.appendChild(ov);}
+  ov.innerHTML='<img src="'+escA(chImgOf(x))+'" alt=""><div class="chimg-cap">'+esc(x.title)+(x.y!=null?' · '+esc(chDateStr(x.y,x.m,x.d)):'')+'</div>';
+  ov.classList.add('on');
+}
+/* 점 위에 마우스를 올리면 그림 미리보기 */
+function chImgPrev(c){
+  var box=document.getElementById('chImgPrev');
+  if(!c){if(box)box.classList.remove('on');return;}
+  var x=(db.chrono||[]).find(function(v){return String(v.id)===c.getAttribute('data-id');});
+  var u=chImgOf(x);if(!u){if(box)box.classList.remove('on');return;}
+  var wrap=document.getElementById('chWrap');
+  if(!box){box=document.createElement('div');box.id='chImgPrev';box.className='chimg-prev';wrap.appendChild(box);}
+  if(box.getAttribute('data-id')!==String(x.id)){box.setAttribute('data-id',String(x.id));box.innerHTML='<img src="'+escA(u)+'" alt=""><span>'+esc(x.title)+'</span>';}
+  var cx=parseFloat(c.getAttribute('cx')),cy=parseFloat(c.getAttribute('cy')),W=wrap.clientWidth||800,H=wrap.clientHeight||540;
+  var bw=232,bh=190,left=cx+14,top=cy-bh/2;
+  if(left+bw>W-6)left=cx-14-bw;if(top<6)top=6;if(top+bh>H-6)top=H-6-bh;
+  box.style.left=left+'px';box.style.top=top+'px';box.classList.add('on');
 }
 function chPopMap(){
   var x=(db.chrono||[]).find(function(v){return String(v.id)===String(chPopId);});if(!x)return;
