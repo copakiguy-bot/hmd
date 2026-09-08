@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-04 · r142">
+<meta name="hmd-build" content="2026-09-04 · r143">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3031,7 +3031,8 @@
       <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
         <div style="font-size:13px;font-weight:800;color:var(--dark);margin-bottom:4px">되돌리기 (자동 백업)</div>
         <div style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:10px">
-          하루에 한 번, 그리고 클라우드에서 불러오기 직전에 이 기기에 사본을 남깁니다. 내용이 갑자기 사라졌을 때 되돌릴 수 있습니다.</div>
+          하루에 한 번, 그리고 클라우드에서 통째로 불러오기 직전에 이 기기에 사본을 남깁니다(최근 6개 + 날짜별 1개). 내용이 사라졌을 때
+          «빠진 항목 합치기»를 누르면 그 백업에만 있는 항목을 지금 내용에 더하고, «되돌리기»는 그 시점으로 통째로 바꿉니다.</div>
         <div style="display:flex;gap:10px;margin-bottom:10px">
           <button class="btn ghost" onclick="backupSave('직접 저장');renderBackupUI();">지금 백업 만들기</button>
         </div>
@@ -3498,7 +3499,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-04 · r142';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-04 · r143';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -3658,8 +3659,9 @@ function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.work)r
   __seeded=true;return seed();}
 const BK_KEY='hmd_backups';
 function save(){
-  /* 첫 로드의 «자동 정리(마이그레이션)»가 최신 시각을 찍어 클라우드를 덮어쓰는 사고를 막는다 */
-  if(!__boot)db.__updated=Date.now();
+  /* 첫 로드의 «자동 정리(마이그레이션)»나 첫 클라우드 확인 전의 저장이 최신 시각을 찍어
+     오래된 기기가 클라우드를 덮어쓰는 사고를 막는다 (동기화 코드가 없으면 __syncReady 는 곧바로 true) */
+  if(!__boot&&(typeof __syncReady==='undefined'||__syncReady||!syncCode()))db.__updated=Date.now();
   localStorage.setItem(KEY,JSON.stringify(db));backupTick();cloudPushDebounced();}
 /* 하루 한 번, 그리고 덮어쓰기 직전에 로컬 스냅샷을 남긴다 (최대 8개) */
 /* 데이터가 얼마나 들어있는지 (동기화 사고 방지용) */
@@ -3684,7 +3686,12 @@ function backupSave(tag){
   try{
     var list=backupList();
     list.unshift({t:Date.now(),tag:tag||'자동',data:JSON.stringify(db)});
-    list=list.slice(0,8);
+    /* 최근 6개는 모두, 그보다 오래된 것은 날짜마다 하나씩 (최대 12개) — 중요한 시점이 금방 밀려나지 않게 */
+    var keep=[],days={};
+    list.forEach(function(b,i){var d=new Date(b.t).toDateString();
+      if(i<6){keep.push(b);days[d]=1;return;}
+      if(!days[d]&&keep.length<12){days[d]=1;keep.push(b);}});
+    list=keep;
     localStorage.setItem(BK_KEY,JSON.stringify(list));
   }catch(e){}
 }
@@ -3696,6 +3703,84 @@ function backupTick(){
   var list=backupList();
   if(list.length&&new Date(list[0].t).toDateString()===new Date().toDateString())return;
   backupSave('자동(하루 1회)');
+}
+/* ================= 기기 간 «합치기» 동기화 =================
+   예전에는 시각이 더 최신인 쪽 파일이 통째로 이기는 방식이라, 오래된 기기가 한 번만 저장해도
+   다른 기기에서 쓴 내용이 사라질 수 있었다. 이제는 항목(id) 단위로 세 갈래(이 기기·클라우드·마지막으로 맞춘 상태) 를 비교해
+   양쪽에서 새로 넣은 것은 모두 살리고, 한쪽에서 지운 것만 지우고, 같은 항목을 양쪽에서 고쳤을 때만 더 최신 쪽을 쓴다. */
+var SYNC_BASE_KEY='hmd_syncBase';
+function syncBaseGet(){try{var s=localStorage.getItem(SYNC_BASE_KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
+function syncBaseSet(d){try{localStorage.setItem(SYNC_BASE_KEY,JSON.stringify(d));}catch(e){}}
+function smSame(a,b){return JSON.stringify(a)===JSON.stringify(b);}
+function smObj(v){return v!==null&&typeof v==='object'&&!Array.isArray(v);}
+function smIdArr(v){return Array.isArray(v)&&v.every(function(x){return smObj(x)&&x.id!==undefined&&x.id!==null;});}
+function smScalarArr(v){return Array.isArray(v)&&v.every(function(x){return !smObj(x)&&!Array.isArray(x);});}
+function smMergeIdArr(L,R,B,lNewer){
+  var lm={},rm={},bm={},order=[],seen={};
+  L.forEach(function(x){lm[String(x.id)]=x;});R.forEach(function(x){rm[String(x.id)]=x;});(B||[]).forEach(function(x){bm[String(x.id)]=x;});
+  /* 순서는 클라우드(공통) 것을 따르고, 이 기기에만 있는 것은 뒤에 — 기기마다 결과가 같아져 서로 되풀이해 올리지 않는다 */
+  R.forEach(function(x){order.push(String(x.id));seen[String(x.id)]=1;});
+  L.forEach(function(x){var k=String(x.id);if(!seen[k]){order.push(k);seen[k]=1;}});
+  var out=[];
+  order.forEach(function(k){
+    var l=lm[k],r=rm[k],b=bm[k];
+    if(l&&r){if(smSame(l,r))out.push(l);else out.push(smMergeVal(l,r,b,lNewer));return;}
+    if(l&&!r){if(b&&smSame(l,b))return;out.push(l);return;}     /* 클라우드에서 지운 것 (이 기기는 안 고침) → 지움 · 아니면 이 기기의 새 항목 */
+    if(!l&&r){if(b&&smSame(r,b))return;out.push(r);return;}     /* 이 기기에서 지운 것 → 지움 · 아니면 클라우드의 새 항목 */
+  });
+  return out;
+}
+function smMergeVal(l,r,b,lNewer){
+  if(l===undefined)return (b!==undefined&&smSame(r,b))?undefined:r;
+  if(r===undefined)return (b!==undefined&&smSame(l,b))?undefined:l;
+  if(smSame(l,r))return l;
+  if(smIdArr(l)&&smIdArr(r))return smMergeIdArr(l,r,smIdArr(b)?b:null,lNewer);
+  if(smScalarArr(l)&&smScalarArr(r)){
+    var bs=smScalarArr(b)?b:null,out=[];
+    l.forEach(function(x){if(bs&&bs.indexOf(x)>=0&&r.indexOf(x)<0)return;out.push(x);});          /* 클라우드에서 뺀 것 */
+    r.forEach(function(x){if(out.indexOf(x)>=0)return;if(bs&&bs.indexOf(x)>=0)return;out.push(x);});/* 클라우드의 새 것 */
+    return out;
+  }
+  if(smObj(l)&&smObj(r)){
+    var bo=smObj(b)?b:{},keys={},o={};
+    Object.keys(l).forEach(function(k){keys[k]=1;});Object.keys(r).forEach(function(k){keys[k]=1;});Object.keys(bo).forEach(function(k){keys[k]=1;});
+    Object.keys(keys).forEach(function(k){
+      if(k==='__updated'||k==='__ver')return;
+      var v=smMergeVal(l[k],r[k],bo[k],lNewer);
+      if(v!==undefined)o[k]=v;
+    });
+    return o;
+  }
+  if(b!==undefined){if(smSame(l,b))return r;if(smSame(r,b))return l;}
+  return lNewer?l:r;
+}
+function syncMerge(local,remote,base,lNewer){
+  var m=smMergeVal(local,remote,base||undefined,lNewer)||{};
+  return m;
+}
+function smStrip(d){var o={};Object.keys(d||{}).forEach(function(k){if(k!=='__updated'&&k!=='__ver')o[k]=d[k];});return o;}
+/* 백업에서 «빠진 항목만» 찾아 넣기 (id 가 있는 목록만 · 지금 내용은 건드리지 않음) */
+function smAddMissing(dst,src,path){
+  var n=0;
+  if(smIdArr(dst)&&smIdArr(src)){var have={};dst.forEach(function(x){have[String(x.id)]=1;});
+    src.forEach(function(x){if(!have[String(x.id)]){dst.push(JSON.parse(JSON.stringify(x)));n++;}});return n;}
+  if(smObj(dst)&&smObj(src)){Object.keys(src).forEach(function(k){if(k==='__updated')return;
+    if(dst[k]===undefined){if(Array.isArray(src[k])||smObj(src[k])){dst[k]=JSON.parse(JSON.stringify(src[k]));n+=smCountIds(src[k]);}return;}
+    n+=smAddMissing(dst[k],src[k],(path||'')+'/'+k);});}
+  return n;
+}
+function smCountIds(v){var n=0;if(smIdArr(v))return v.length;if(Array.isArray(v))return 0;if(smObj(v))Object.keys(v).forEach(function(k){n+=smCountIds(v[k]);});return n;}
+function backupMerge(i){
+  var list=backupList(),b=list[i];if(!b)return;
+  var src;try{src=JSON.parse(b.data);}catch(e){alert('백업을 읽지 못했습니다.');return;}
+  var probe=JSON.parse(JSON.stringify(db));var n=smAddMissing(probe,src);
+  if(!n){alert('이 백업에는 지금 없는 항목이 없습니다.');return;}
+  if(!confirm(new Date(b.t).toLocaleString('ko-KR')+' 백업에만 있는 항목 '+n+'건을 지금 내용에 더할까요?\n\n지금 있는 내용은 그대로 두고, 빠진 것만 채웁니다.\n(일부러 지운 항목이 다시 살아날 수 있습니다)'))return;
+  backupSave('합치기 직전');
+  smAddMissing(db,src);ensureFields();db.__updated=Date.now();
+  localStorage.setItem(KEY,JSON.stringify(db));renderAll();renderBackupUI();
+  if(syncCode())cloudPush();
+  alert(n+'건을 채웠습니다.'+(syncCode()?'\n클라우드에도 올렸습니다.':''));
 }
 function backupRestore(i){
   var list=backupList(), b=list[i];if(!b)return;
@@ -3716,6 +3801,7 @@ function renderBackupUI(){
     return '<div class="bk-row" title="'+escA(br)+'"><span class="bk-t">'+esc(new Date(b.t).toLocaleString('ko-KR'))+'</span>'+
       '<span class="bk-tag">'+esc(b.tag||'')+'</span>'+
       '<span class="bk-n">'+n+'건</span>'+
+      '<button class="btn ghost" style="flex:none;padding:5px 11px;font-size:12px" onclick="backupMerge('+i+')" title="이 백업에만 있는 항목을 지금 내용에 더합니다 (지금 것은 그대로)">빠진 항목 합치기</button>'+
       '<button class="btn ghost" style="flex:none;padding:5px 11px;font-size:12px" onclick="backupRestore('+i+')">되돌리기</button></div>';
   }).join(''):'<div class="empty" style="padding:10px 0">아직 백업이 없습니다.</div>';
 }
@@ -5288,7 +5374,18 @@ function setSyncStatus(t){var el=document.getElementById('syncStatus');if(el)el.
 function renderSyncUI(){var inp=document.getElementById('syncInput');if(inp&&!inp.value)inp.value=syncCode();if(syncCode())setSyncStatus('연결됨: '+syncCode());}
 function cloudPushDebounced(){if(!syncCode())return;
   if(!__syncReady){__pushPending=true;return;}          /* 첫 불러오기 전에는 보류 */
-  clearTimeout(__pushT);__pushT=setTimeout(cloudPush,900);}
+  clearTimeout(__pushT);__pushT=setTimeout(cloudSyncUp,900);}
+/* 올리기 전에 반드시 클라우드를 한 번 읽어 합친다 — 다른 기기가 방금 넣은 것을 지우고 올리는 일이 없게 */
+var __syncUpBusy=false,__syncUpAgain=false;
+function cloudSyncUp(){
+  if(__syncUpBusy){__syncUpAgain=true;return;}
+  __syncUpBusy=true;
+  cloudPull(false,function(found){
+    __syncUpBusy=false;
+    if(!found)cloudPush();                               /* 클라우드가 비어 있으면 그냥 올린다 */
+    if(__syncUpAgain){__syncUpAgain=false;cloudSyncUp();}
+  },true);
+}
 var __pushPending=false;
 function syncReady(){
   if(__syncReady)return;
@@ -5296,22 +5393,52 @@ function syncReady(){
   __seeded=false;        /* 첫 불러오기가 끝나면 «예시 데이터로 시작» 상태는 해제 */
   if(__pushPending){__pushPending=false;cloudPushDebounced();}
 }
-function cloudPush(){var c=syncCode();if(!c)return;if(!db.__updated)db.__updated=Date.now();fetch(SUPA_URL+'/rest/v1/store?on_conflict=key',{method:'POST',headers:Object.assign({},cloudHeaders(),{Prefer:'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({key:c,data:db,updated_at:new Date().toISOString()})}).then(function(r){setSyncStatus(r.ok?('저장됨 · '+c):('저장 오류 '+r.status));}).catch(function(){setSyncStatus('오프라인 (로컬만 저장)');});}
+var __cloudVer=null,__cloudExists=null,__pushRetry=0;                /* 마지막으로 읽은 클라우드 판 번호 · 클라우드에 줄이 있는지 */
+/* 올릴 때는 «내가 마지막으로 읽은 판»일 때만 바뀌도록 조건을 건다 — 그 사이 다른 기기가 올렸으면 다시 읽어 합친 뒤 올린다 */
+function cloudPush(){var c=syncCode();if(!c)return;if(!db.__updated)db.__updated=Date.now();
+  var cv=__cloudVer,nv=(Number(cv)||0)+1;db.__ver=nv;var snap=JSON.stringify(db);
+  var body=JSON.stringify({key:c,data:JSON.parse(snap),updated_at:new Date().toISOString()});
+  var okDone=function(){__cloudVer=nv;__cloudExists=true;try{localStorage.setItem(KEY,snap);localStorage.setItem(SYNC_BASE_KEY,snap);}catch(e){}setSyncStatus('저장됨 · '+c);};
+  if(__cloudExists===false){                            /* 클라우드에 아직 없음 → 새로 만든다 */
+    fetch(SUPA_URL+'/rest/v1/store?on_conflict=key',{method:'POST',headers:Object.assign({},cloudHeaders(),{Prefer:'resolution=merge-duplicates,return=minimal'}),body:body})
+      .then(function(r){if(r.ok)okDone();else setSyncStatus('저장 오류 '+r.status);}).catch(function(){setSyncStatus('오프라인 (로컬만 저장)');});
+    return;
+  }
+  var filt='key=eq.'+encodeURIComponent(c)+'&'+(cv==null?'data->>__ver=is.null':'data->>__ver=eq.'+encodeURIComponent(String(cv)));
+  fetch(SUPA_URL+'/rest/v1/store?'+filt,{method:'PATCH',headers:Object.assign({},cloudHeaders(),{Prefer:'return=representation'}),body:body})
+    .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+    .then(function(rows){
+      if(Array.isArray(rows)&&rows.length){__pushRetry=0;okDone();return;}
+      /* 조건에 안 맞음 = 그 사이 다른 기기가 올렸다 → 다시 읽어 합친 뒤 올린다 (연속 6번까지) */
+      if(++__pushRetry>6){__pushRetry=0;setSyncStatus('⚠ 저장 충돌이 계속됩니다 · 잠시 뒤 다시 시도');setTimeout(cloudSyncUp,15000);return;}
+      setSyncStatus('다른 기기 변경과 합치는 중…');setTimeout(cloudSyncUp,250+Math.random()*400);
+    }).catch(function(e){setSyncStatus(/^\d+$/.test(String(e.message))?('저장 오류 '+e.message):'오프라인 (로컬만 저장)');});}
 function cloudPull(ask,cb,quiet){var c=syncCode();if(!c){if(cb)cb(false);return;}
   if(!quiet)setSyncStatus('불러오는 중…');fetch(SUPA_URL+'/rest/v1/store?key=eq.'+encodeURIComponent(c)+'&select=data',{headers:cloudHeaders()}).then(function(r){return r.json();}).then(function(j){if(Array.isArray(j)&&j.length&&j[0].data){var rd=j[0].data, rt=Number(rd&&rd.__updated)||0, lt=Number(db&&db.__updated)||0;
+      __cloudExists=true;__cloudVer=(rd.__ver==null)?null:Number(rd.__ver);
       var rn=dbSize(rd), ln=dbSize(db);
       if(__seeded){                          /* 이 기기엔 저장된 게 없었다 → 클라우드 것이 정답 */
         db=rd;ensureFields();__seeded=false;localStorage.setItem(KEY,JSON.stringify(db));
         renderAll();renderBackupUI();setSyncStatus('불러옴 · 연결됨: '+c);if(cb)cb(true);return;}
-      if(!ask&&lt>rt){                       /* 이 기기 것이 더 최신이면 덮어쓰지 않고 올린다 */
-        if(quiet){if(cb)cb(true);return;}    /* 자동 확인일 땐 조용히 넘어간다 */
-        if(ln+3<rn*0.7){                     /* 단, 이 기기가 훨씬 적으면 올리지 않는다 */
-          setSyncStatus('⚠ 이 기기가 클라우드보다 적어 올리지 않았습니다');
-          alert('클라우드에 올리지 않았습니다.\n\n이 기기  : '+ln+'건\n클라우드 : '+rn+'건\n\n'
-            +'이 기기 쪽이 크게 적어 덮어쓰지 않았습니다.\n'
-            +'설정 → 동기화에서 «클라우드에서 불러오기»로 받아오세요.');
-          if(cb)cb(true);return;}
-        setSyncStatus('이 기기가 최신 · 연결됨: '+c);cloudPush();if(cb)cb(true);return;}
+      if(!ask){                              /* 자동 동기화: 통째로 바꾸지 않고 항목 단위로 합친다 */
+        if(smSame(smStrip(rd),smStrip(db))){syncBaseSet(db);setSyncStatus('연결됨: '+c);if(cb)cb(true);return;}
+        var base=syncBaseGet();
+        /* 클라우드 판 번호가 내가 알던 것보다 뒤로 갔으면(옛 판 앱이 통째로 덮어씀) 지움으로 보지 않고 모두 살린다 */
+        if(base&&base.__ver!=null&&(rd.__ver==null||Number(rd.__ver)<Number(base.__ver)))base=null;
+        var merged=syncMerge(db,rd,base,lt>=rt);
+        merged.__updated=Math.max(lt,rt);merged.__ver=rd.__ver;
+        var chL=!smSame(smStrip(merged),smStrip(db)), chR=!smSame(smStrip(merged),smStrip(rd));
+        var got=chL?Math.max(0,dbSize(merged)-ln):0, sent=chR?Math.max(0,dbSize(merged)-rn):0;
+        if(chL){
+          if(liveBusy()){__livePending=true;if(cb)cb(true);return;}   /* 쓰는 중이면 잠시 뒤에 */
+          db=merged;ensureFields();localStorage.setItem(KEY,JSON.stringify(db));
+          liveKeepInputs(function(){renderAll();renderBackupUI();});
+          if(quiet)liveFlash('다른 기기의 변경 내용을 합쳤습니다'+(got?' · +'+got+'건':''));
+        }
+        if(chR){db.__updated=Date.now();localStorage.setItem(KEY,JSON.stringify(db));cloudPush();}
+        else syncBaseSet(db);
+        setSyncStatus((chL||chR)?('합침 · 연결됨: '+c+(got?' · 받음 '+got+'건':'')+(sent?' · 올림 '+sent+'건':'')):('연결됨: '+c));
+        if(cb)cb(true);return;}
       if(ask){
         if(!confirm('클라우드에 저장된 데이터를 이 기기로 불러올까요?\n\n'
           +'클라우드 : '+rn+'건  ('+dbBrief(rd)+')\n'
@@ -5338,7 +5465,7 @@ function cloudPull(ask,cb,quiet){var c=syncCode();if(!c){if(cb)cb(false);return;
       db=rd;ensureFields();localStorage.setItem(KEY,JSON.stringify(db));renderAll();renderBackupUI();
       setSyncStatus('불러옴 · 연결됨: '+c);
       if(quiet)liveFlash('다른 기기의 변경 내용을 반영했습니다');
-      if(cb)cb(true);}else{setSyncStatus('연결됨: '+c);if(cb)cb(false);}}).catch(function(){setSyncStatus('오프라인');if(cb)cb(false);});}
+      if(cb)cb(true);}else{__cloudExists=false;__cloudVer=null;setSyncStatus('연결됨: '+c);if(cb)cb(false);}}).catch(function(){setSyncStatus('오프라인');if(cb)cb(false);});}
 function setSyncCode(){var el=document.getElementById('syncInput');var v=el.value.trim();if(!v){alert('동기화 코드를 입력하세요.');return;}localStorage.setItem(SYNC_KEY,v);cloudPull(true,function(found){if(!found)cloudPush();});}
 function clearSyncCode(){localStorage.removeItem(SYNC_KEY);var inp=document.getElementById('syncInput');if(inp)inp.value='';setSyncStatus('연결 해제됨 (이 기기)');}
 let curIdea=null;
@@ -15151,6 +15278,23 @@ function liveBusy(){
   if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.isContentEditable))return true;
   return false;
 }
+/* 화면을 다시 그릴 때, 아직 저장하지 않은 입력칸 내용을 지키기 */
+function liveKeepInputs(fn){
+  var kept=[];
+  document.querySelectorAll('input[id],textarea[id],select[id]').forEach(function(el){
+    if(el.type==='checkbox'||el.type==='radio'||el.type==='hidden'||el.readOnly)return;
+    var v=el.value;if(v==null||v==='')return;
+    if(el.tagName==='SELECT'&&el.selectedIndex===0)return;
+    if(el.type==='date'&&v===today())return;
+    kept.push({id:el.id,v:v,tag:el.tagName});
+  });
+  var act=document.activeElement&&document.activeElement.id;
+  fn();
+  kept.forEach(function(k){var el=document.getElementById(k.id);if(!el)return;
+    if(el.tagName==='SELECT'){el.value=k.v;return;}
+    if(el.value===''||el.type==='date')el.value=k.v;});
+  if(act){var a=document.getElementById(act);if(a&&a.focus)try{a.focus();}catch(e){}}
+}
 /* 같은 브라우저의 다른 탭이 저장했을 때 */
 function liveApplyLocal(){
   if(liveBusy()){__livePending=true;return;}
@@ -15158,7 +15302,9 @@ function liveApplyLocal(){
   try{fresh=JSON.parse(localStorage.getItem(KEY));}catch(e){}
   if(!fresh||!fresh.work)return;
   if(Number(fresh.__updated||0)<=Number(db&&db.__updated||0))return;
-  db=fresh;ensureFields();renderAll();renderBackupUI();
+  if(smSame(smStrip(fresh),smStrip(db))){db.__updated=fresh.__updated;return;}
+  db=syncMerge(db,fresh,null,false);db.__updated=fresh.__updated;ensureFields();
+  liveKeepInputs(function(){renderAll();renderBackupUI();});
   liveFlash('다른 창의 변경 내용을 반영했습니다');
 }
 window.addEventListener('storage',function(e){
