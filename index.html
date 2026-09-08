@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-04 · r137">
+<meta name="hmd-build" content="2026-09-04 · r138">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -656,6 +656,24 @@
   .ghp-top{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);flex:none}
   .ghp-top b{font-size:13.5px;color:var(--dark);flex:none}
   .ghp-path{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+  .ghp-boards{display:flex;gap:5px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap;flex:none;background:#fbfaf5}
+  .ghp-szmini{margin-left:auto;font-size:11px;color:var(--muted)}
+  .pdf-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#2a2d2b;overflow:auto}
+  .pdf-img img{max-width:100%;max-height:100%;object-fit:contain}
+  .gh-row{border:1px solid var(--line);border-radius:12px;padding:9px 12px;margin-bottom:8px;background:#fff}
+  .gh-row.on{border-color:#24292f;box-shadow:0 0 0 1px #24292f inset}
+  .gh-row-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .gh-nm{font-weight:800;color:var(--dark);font-size:13.5px}
+  .gh-cur{font-size:10.5px;font-weight:800;color:#fff;background:#24292f;border-radius:999px;padding:2px 8px}
+  .gh-url{font-size:11.5px;color:var(--muted);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .gh-url:hover{color:var(--green);text-decoration:underline}
+  .gh-row-t{margin-left:auto;display:inline-flex;gap:4px}.gh-row-t .btn,.gh-row-h .btn{padding:4px 9px;font-size:11.5px}
+  .gh-sz{font-size:11.5px;color:var(--text);margin-top:7px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .gh-sz.muted{color:var(--muted)}.gh-sz.err{color:#b23b3b}.gh-sz em{font-style:normal;color:#b23b3b;font-weight:700}
+  .gh-szbar{width:140px;height:8px;border-radius:999px;background:var(--cream);overflow:hidden;flex:none}
+  .gh-szbar i{display:block;height:100%;border-radius:999px;background:#2f6f5e}.gh-szbar.warn i{background:#d99a2b}.gh-szbar.bad i{background:#b23b3b}
+  .gh-add{border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin-top:6px;background:#fbfaf5}
+  .gh-add-h{font-size:12.5px;font-weight:800;color:var(--dark);margin-bottom:8px}.gh-add-h span{font-weight:500;color:var(--muted);font-size:11.5px;margin-left:6px}
   .ghp-list{overflow:auto;padding:8px}
   .ghp-i{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;cursor:pointer;font-size:13px;color:var(--text)}
   .ghp-i:hover{background:var(--cream)}
@@ -3037,15 +3055,19 @@
       <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:10px">
         파일은 HMD에 담지 않고 <b>깃허브 게시판</b>에 올려 둔 문서의 <b>주소만</b> 일정에 붙입니다.
         일정 옆 <b>📎</b>를 누르면 그 자리에서 PDF가 열립니다. 공개 저장소여야 목록을 읽고 볼 수 있습니다.</p>
-      <div class="inrow" style="flex-wrap:wrap">
-        <input id="ghOwner" class="in" style="flex:1;min-width:150px" placeholder="사용자/조직 (owner)">
-        <input id="ghRepo" class="in" style="flex:1;min-width:130px" placeholder="저장소 (repo)">
-        <input id="ghBranch" class="in" style="flex:none;width:110px" placeholder="브랜치">
-        <input id="ghFolder" class="in" style="flex:1;min-width:130px" placeholder="폴더 (비우면 전체)">
-        <button class="btn y" style="flex:none" onclick="ghCfgSave()">저장</button>
-        <button class="btn ghost" style="flex:none" onclick="ghPickOpen(null)">목록 열어보기</button>
+      <div id="ghBoards"></div>
+      <div class="gh-add" id="ghAddBox">
+        <div class="gh-add-h">게시판 추가 <span>공개 저장소 하나가 게시판 하나 · GitHub Pages(Settings → Pages → main / root)를 켜 두어야 파일이 열립니다</span></div>
+        <div class="inrow" style="flex-wrap:wrap">
+          <input id="ghName" class="in" style="flex:1;min-width:120px" placeholder="이름 (예: 자료 게시판)">
+          <input id="ghOwner" class="in" style="flex:1;min-width:140px" placeholder="사용자/조직 (owner)">
+          <input id="ghRepo" class="in" style="flex:1;min-width:120px" placeholder="저장소 (repo)">
+          <input id="ghBranch" class="in" style="flex:none;width:96px" placeholder="브랜치" value="main">
+          <input id="ghFolder" class="in" style="flex:1;min-width:120px" placeholder="폴더 (비우면 전체)">
+          <button class="btn y" style="flex:none" onclick="ghCfgSave()">추가</button>
+        </div>
       </div>
-      <div id="ghCfgStatus" style="margin-top:8px;font-size:13px;color:var(--muted)"></div>
+      <div id="ghCfgStatus" style="margin-top:8px;font-size:12.5px;color:var(--muted)"></div>
     </div>
     <div class="card">
       <h3><span class="dot" style="background:#4285f4"></span> 구글 캘린더 내보내기</h3>
@@ -3452,7 +3474,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-04 · r137';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-04 · r138';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -6599,13 +6621,58 @@ function cnQuickAddW(ev,org,dept,d0,CW){          /* 주 보기: 가로 = 날짜
 
 /* ================= 일정에 붙인 문서(PDF) · 뷰어 ================= */
 /* 파일은 HMD에 담지 않고 «부의장실 게시판»(깃허브)에 있는 주소만 적어 둔다 */
+/* 게시판 여러 개: db.ghBoards[] · 지금 고른 게시판 = db.ghActive (예전 db.gh 하나짜리 설정은 첫 게시판으로 옮긴다) */
+function ghBoards(){
+  if(!Array.isArray(db.ghBoards)||!db.ghBoards.length){
+    var g=db.gh||{};
+    db.ghBoards=[{id:1,name:'업무 게시판',owner:g.owner||'copakiguy-bot',repo:g.repo||'rainstop',branch:g.branch||'main',folder:g.folder||''}];
+  }
+  db.ghBoards.forEach(function(b){if(!b.branch)b.branch='main';if(b.folder==null)b.folder='';if(!b.name)b.name=b.repo;});
+  return db.ghBoards;
+}
 function ghCfg(){
-  var g=db.gh||(db.gh={});
-  if(!g.owner)g.owner='copakiguy-bot';
-  if(!g.repo)g.repo='rainstop';
-  if(!g.branch)g.branch='main';
-  if(g.folder==null)g.folder='';
-  return g;
+  var L=ghBoards();
+  var b=L.find(function(x){return x.id===db.ghActive;});
+  if(!b){b=L[0];db.ghActive=b.id;}
+  return b;
+}
+function ghSetActive(id){db.ghActive=id;save();}
+var ghSizeCache={};
+function ghSizeKey(b){return b.owner+'/'+b.repo+'@'+b.branch+'/'+(b.folder||'');}
+function ghFmtMB(kb){var mb=kb/1024;return mb>=1024?(mb/1024).toFixed(2)+' GB':mb>=10?Math.round(mb)+' MB':mb.toFixed(1)+' MB';}
+/* 용량 확인: 저장소 크기(API size, KB) + 폴더 안 파일 합계(트리) — 결과는 화면이 살아 있는 동안 기억 */
+function ghSizeCheck(id,cb){
+  var b=ghBoards().find(function(x){return x.id===id;});if(!b)return;
+  var key=ghSizeKey(b),c=ghSizeCache[key];
+  if(c&&c.at&&Date.now()-c.at<10*60*1000){cb&&cb(c);return;}
+  ghSizeCache[key]={loading:true};
+  var base='https://api.github.com/repos/'+encodeURIComponent(b.owner)+'/'+encodeURIComponent(b.repo);
+  var out={at:Date.now()};
+  fetch(base).then(function(r){if(!r.ok)throw new Error('저장소 '+r.status);return r.json();}).then(function(j){
+    out.repoKB=Number(j.size)||0;out.isPrivate=!!j.private;out.pages=!!j.has_pages;
+    return fetch(base+'/git/trees/'+encodeURIComponent(b.branch)+'?recursive=1');
+  }).then(function(r){if(!r.ok)throw new Error('트리 '+r.status);return r.json();}).then(function(j){
+    var pre=b.folder?b.folder.replace(/^\/+|\/+$/g,'')+'/':'';var n=0,bytes=0,all=0,allN=0,big=null;
+    (j.tree||[]).forEach(function(t){if(t.type!=='blob')return;var sz=Number(t.size)||0;all+=sz;allN++;
+      if(!pre||t.path.indexOf(pre)===0){n++;bytes+=sz;if(!big||sz>big.size)big={path:t.path,size:sz};}});
+    out.files=n;out.bytes=bytes;out.allFiles=allN;out.allBytes=all;out.big=big;out.truncated=!!j.truncated;
+    ghSizeCache[key]=out;cb&&cb(out);
+  }).catch(function(e){out.err=String(e.message||e);ghSizeCache[key]=out;cb&&cb(out);});
+}
+function ghSizeHTML(id){
+  var b=ghBoards().find(function(x){return x.id===id;});if(!b)return '';
+  var c=ghSizeCache[ghSizeKey(b)];
+  if(!c)return '<span class="gh-sz muted">용량 미확인</span>';
+  if(c.loading)return '<span class="gh-sz muted">확인 중…</span>';
+  if(c.err)return '<span class="gh-sz err">확인 실패 · '+esc(c.err)+(/404/.test(c.err)?' (이름이 틀렸거나 비공개)':'')+'</span>';
+  var LIM=1024*1024;                                 /* Pages 한도 1 GB (KB) */
+  var pct=Math.min(100,Math.round(c.repoKB/LIM*100));
+  var cls=pct>=90?'bad':pct>=70?'warn':'ok';
+  return '<div class="gh-sz"><div class="gh-szbar '+cls+'"><i style="width:'+Math.max(1,pct)+'%"></i></div>'
+    +'<span>저장소 <b>'+ghFmtMB(c.repoKB)+'</b> / 1 GB ('+pct+'%)'
+    +' · 게시판 파일 <b>'+c.files+'개 · '+ghFmtMB(c.bytes/1024)+'</b>'+(b.folder?'':'')
+    +(c.big?' · 가장 큰 파일 '+esc(c.big.path.split('/').pop())+' '+ghFmtMB(c.big.size/1024):'')
+    +(c.pages===false?' · <em>Pages 꺼짐</em>':'')+(c.truncated?' · 목록 일부만 셈':'')+'</span></div>';
 }
 /* raw·blob 주소는 그대로 열면 내려받기가 되므로 github.io(Pages) 주소로 바꿔 준다 */
 function pdfUrlFix(u){
@@ -6680,7 +6747,8 @@ function pdfPaint(){
   tools.innerHTML=f?('<a class="pdf-b" href="'+escA(f.u)+'" target="_blank" rel="noopener" title="새 창에서 열기">↗ 새 창</a>'
     +'<button class="pdf-b" onclick="schFileDel('+jsId(s.id)+','+pdfIdx+')" title="여기서 문서 떼기">떼기</button>'):'';
   var body=document.getElementById('pdfBody');
-  body.innerHTML=f?('<iframe id="pdfFrame" src="'+escA(f.u)+(/\.pdf($|\?)/i.test(f.u)?'#view=FitH':'')+'" title="'+escA(f.n||'')+'"></iframe>')
+  var isImg=f&&/\.(png|jpe?g|gif|webp|svg|bmp)($|\?)/i.test(f.u);
+  body.innerHTML=f?(isImg?'<div class="pdf-img"><img src="'+escA(f.u)+'" alt="'+escA(f.n||'')+'"></div>':'<iframe id="pdfFrame" src="'+escA(f.u)+(/\.pdf($|\?)/i.test(f.u)?'#view=FitH':'')+'" title="'+escA(f.n||'')+'"></iframe>')
     :'<div class="pdf-none">'+(s._dept?'이 세분류에':'이 일정에')+' 붙은 문서가 없습니다.<br><span>아래에 게시판 주소를 넣거나 «게시판에서 고르기»를 눌러 보세요.</span></div>';
   document.getElementById('pdfAdd').innerHTML=
     '<input id="pdfUrlIn" class="in" placeholder="문서 주소 붙여넣기 (예: https://'+esc(ghCfg().owner)+'.github.io/'+esc(ghCfg().repo)+'/…​.pdf)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();pdfAddUrl();}">'
@@ -6715,11 +6783,22 @@ function ghPickOpen(schedId,path){
   ov.innerHTML='<div class="ghp-box">'
     +'<div class="ghp-top"><b>📄 게시판에서 고르기</b><span class="ghp-path" id="ghpPath"></span>'
     +'<span class="pdf-x" onclick="ghPickClose()">✕</span></div>'
+    +'<div class="ghp-boards" id="ghpBoards"></div>'
     +'<div class="ghp-list" id="ghpList"><div class="ghp-msg">불러오는 중…</div></div></div>';
   document.body.appendChild(ov);
   document.addEventListener('keydown',ghPickEsc);
+  ghPickBoardsPaint();
   ghPickLoad(path||ghCfg().folder||'');
 }
+function ghPickBoardsPaint(){
+  var el=document.getElementById('ghpBoards');if(!el)return;
+  var L=ghBoards(),cur=ghCfg();
+  el.style.display=L.length>1?'':'none';
+  el.innerHTML=L.map(function(b){return '<button type="button" class="lunar-toggle'+(b.id===cur.id?' on':'')+'" onclick="ghPickBoard('+b.id+')">'+esc(b.name)+'</button>';}).join('')
+    +'<span class="ghp-szmini" id="ghpSz"></span>';
+  ghSizeCheck(cur.id,function(c){var m=document.getElementById('ghpSz');if(m&&!c.err&&!c.loading)m.textContent=ghFmtMB(c.repoKB)+' / 1 GB';});
+}
+function ghPickBoard(id){ghSetActive(id);ghPickBoardsPaint();ghPickLoad(ghCfg().folder||'');}
 function ghPickLoad(path){
   var box=document.getElementById('ghpList');if(!box)return;
   var g=ghCfg();
@@ -6734,9 +6813,9 @@ function ghPickLoad(path){
     box.innerHTML=up
       +dirs.map(function(x){return '<div class="ghp-i dir" onclick="ghPickLoad(\''+escA(x.path)+'\')"><span class="ic">📁</span>'+esc(x.name)+'</div>';}).join('')
       +files.map(function(x){
-        var pdf=/\.pdf$/i.test(x.name);
+        var pdf=/\.pdf$/i.test(x.name),img=/\.(png|jpe?g|gif|webp|svg|bmp|heic)$/i.test(x.name);
         return '<div class="ghp-i'+(pdf?' pdf':'')+'" onclick="ghPickTake(\''+escA(x.path)+'\',\''+escA(x.name)+'\')">'
-          +'<span class="ic">'+(pdf?'📕':'📄')+'</span>'+esc(x.name)
+          +'<span class="ic">'+(pdf?'📕':img?'🖼':'📄')+'</span>'+esc(x.name)
           +'<span class="sz">'+(x.size?Math.round(x.size/1024)+'KB':'')+'</span></div>';}).join('')
       +((dirs.length+files.length)?'':'<div class="ghp-msg">이 폴더에 파일이 없습니다.</div>');
   }).catch(function(e){
@@ -6754,20 +6833,54 @@ function ghPickTake(path,name){
     schFormFileAdd(url,name);ghPickClose();
   }
 }
+var ghEditId=null;
 function ghCfgSave(){
-  var g=ghCfg();
   var v=function(i){var e=document.getElementById(i);return e?e.value.trim():'';};
-  g.owner=v('ghOwner')||g.owner;g.repo=v('ghRepo')||g.repo;g.branch=v('ghBranch')||'main';
-  g.folder=v('ghFolder').replace(/^\/+|\/+$/g,'');
-  save();ghCfgPaint();hkChip('문서 게시판 설정을 저장했습니다');
+  var owner=v('ghOwner'),repo=v('ghRepo');
+  if(!owner||!repo){alert('사용자(owner)와 저장소(repo) 이름을 넣어주세요.');return;}
+  var L=ghBoards(),b=ghEditId!=null?L.find(function(x){return x.id===ghEditId;}):null;
+  if(!b){b={id:uid()};L.push(b);}
+  b.name=v('ghName')||repo;b.owner=owner;b.repo=repo;b.branch=v('ghBranch')||'main';b.folder=v('ghFolder').replace(/^\/+|\/+$/g,'');
+  ghCfg();                                          /* 기본 게시판이 정해져 있지 않으면 첫 게시판으로 */
+  var was=ghEditId!=null;ghEditId=null;
+  save();ghCfgPaint();hkChip(was?'게시판을 고쳤습니다':'게시판을 추가했습니다 · '+b.name);setTimeout(function(){hkChip('');},1600);
+  ghSizeCheck(b.id,function(){ghCfgPaint();});
 }
+function ghBoardEdit(id){ghEditId=id;ghCfgPaint();var e=document.getElementById('ghName');if(e){e.focus();e.scrollIntoView({behavior:'smooth',block:'center'});}}
+function ghBoardEditCancel(){ghEditId=null;ghCfgPaint();}
+function ghBoardDel(id){
+  var L=ghBoards(),b=L.find(function(x){return x.id===id;});if(!b)return;
+  if(L.length<=1){alert('게시판은 하나는 남겨 두어야 합니다.');return;}
+  if(!confirm('「'+b.name+'」 게시판 설정을 지울까요? (깃허브의 파일은 그대로 남습니다)'))return;
+  db.ghBoards=L.filter(function(x){return x.id!==id;});
+  if(db.ghActive===id)db.ghActive=db.ghBoards[0].id;
+  save();ghCfgPaint();
+}
+function ghBoardUse(id){ghSetActive(id);ghCfgPaint();}
+function ghBoardSize(id){ghSizeCheck(id,function(){ghCfgPaint();});ghCfgPaint();}
 function ghCfgPaint(){
-  var g=ghCfg();
-  [['ghOwner',g.owner],['ghRepo',g.repo],['ghBranch',g.branch],['ghFolder',g.folder]].forEach(function(p){
-    var e=document.getElementById(p[0]);if(e&&document.activeElement!==e)e.value=p[1]||'';});
+  var box=document.getElementById('ghBoards');if(!box)return;
+  var L=ghBoards(),cur=ghCfg();
+  box.innerHTML=L.map(function(b){
+    var on=b.id===cur.id;
+    return '<div class="gh-row'+(on?' on':'')+'"><div class="gh-row-h">'
+      +'<span class="gh-nm">'+esc(b.name)+'</span>'+(on?'<span class="gh-cur">기본</span>':'<button type="button" class="btn ghost" onclick="ghBoardUse('+b.id+')">기본으로</button>')
+      +'<a class="gh-url" href="'+escA(ghPageUrlOf(b,b.folder))+'" target="_blank" rel="noopener">'+esc(b.owner+'/'+b.repo+(b.folder?' / '+b.folder:''))+' ↗</a>'
+      +'<span class="gh-row-t"><button type="button" class="btn ghost" onclick="ghSetActive('+b.id+');ghPickOpen(null)">목록</button>'
+      +'<button type="button" class="btn ghost" onclick="ghBoardSize('+b.id+')">용량 확인</button>'
+      +'<button type="button" class="btn ghost" onclick="ghBoardEdit('+b.id+')">✎</button>'
+      +'<button type="button" class="btn ghost" onclick="ghBoardDel('+b.id+')">×</button></span></div>'
+      +ghSizeHTML(b.id)+'</div>';
+  }).join('');
+  var e=ghEditId!=null?L.find(function(x){return x.id===ghEditId;}):null;
+  [['ghName',e?e.name:''],['ghOwner',e?e.owner:''],['ghRepo',e?e.repo:''],['ghBranch',e?e.branch:'main'],['ghFolder',e?e.folder:'']].forEach(function(p){
+    var el=document.getElementById(p[0]);if(el&&document.activeElement!==el)el.value=p[1]||'';});
+  var h=document.querySelector('#ghAddBox .gh-add-h');if(h)h.firstChild.textContent=e?('「'+e.name+'」 고치기 '):'게시판 추가 ';
+  var btn=document.querySelector('#ghAddBox .btn.y');if(btn)btn.textContent=e?'저장':'추가';
   var st=document.getElementById('ghCfgStatus');
-  if(st)st.innerHTML='지금 보는 곳: <b>'+esc(ghPageUrl(g.folder))+'</b>';
+  if(st)st.innerHTML=(e?'<span class="rdl-back" onclick="ghBoardEditCancel()">고치기 취소</span> · ':'')+'일정·세분류에 문서를 붙일 때는 «게시판에서 고르기» 창 위쪽 버튼으로 게시판을 바꿀 수 있습니다 · 한도: 파일 하나 25 MiB(웹 업로드)·100 MiB(명령줄), Pages 사이트 1 GB';
 }
+function ghPageUrlOf(b,path){return 'https://'+b.owner+'.github.io/'+b.repo+'/'+String(path||'').split('/').filter(Boolean).map(encodeURIComponent).join('/');}
 /* ---- 일정 추가 폼·빠른 추가 창에 붙일 문서 ---- */
 var schFormFiles=[];
 function schFormFileAdd(u,n){u=pdfUrlFix(u);if(!u)return;
