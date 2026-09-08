@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-04 · r139">
+<meta name="hmd-build" content="2026-09-04 · r140">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3488,7 +3488,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-04 · r139';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-04 · r140';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -6787,7 +6787,7 @@ function ghApi(path){var g=ghCfg();
     +'?ref='+encodeURIComponent(g.branch);}
 function ghPageUrl(path){var g=ghCfg();
   return 'https://'+g.owner+'.github.io/'+g.repo+'/'+String(path||'').split('/').filter(Boolean).map(encodeURIComponent).join('/');}
-function ghPickClose(){var e=document.getElementById('ghpOv');if(e)e.remove();document.removeEventListener('keydown',ghPickEsc);ghPickOpt=null;}
+function ghPickClose(){var e=document.getElementById('ghpOv');if(e)e.remove();document.removeEventListener('keydown',ghPickEsc);ghPickOpt=null;window.__ghpFell=0;}
 function ghPickEsc(e){if(e.key==='Escape'){e.stopPropagation();ghPickClose();}}
 var ghPickOpt=null;
 function ghPickOpen(schedId,path,opt){
@@ -6835,6 +6835,12 @@ function ghPickLoad(path){
           +'<span class="sz">'+(x.size?Math.round(x.size/1024)+'KB':'')+'</span></div>';}).join('')
       +((dirs.length+files.length)?'':'<div class="ghp-msg">이 폴더에 파일이 없습니다.</div>');
   }).catch(function(e){
+    /* 설정한 폴더가 없으면(404) 저장소 전체 목록으로 대신 보여준다 */
+    if(String(e.message)==='404'&&path&&path===(g.folder||'')&&!window.__ghpFell){window.__ghpFell=1;
+      fetch(ghApi('')).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();}).then(function(){
+        hkChip('폴더 «'+path+'»가 없어 저장소 전체를 보여줍니다 · 설정에서 폴더를 비우거나 고쳐 주세요');setTimeout(function(){hkChip('');},3200);
+        ghPickLoad('');}).catch(function(){window.__ghpFell=0;box.innerHTML='<div class="ghp-msg">목록을 불러오지 못했습니다 (404)<br><span>설정 → 문서 게시판에서 사용자·저장소 이름을 확인해 주세요. 비공개 저장소는 목록을 읽을 수 없습니다.</span></div>';});
+      return;}
     box.innerHTML='<div class="ghp-msg">목록을 불러오지 못했습니다 ('+esc(String(e.message||e))+')<br>'
       +'<span>설정 → 문서 게시판에서 사용자·저장소 이름을 확인해 주세요. 비공개 저장소는 목록을 읽을 수 없습니다.</span></div>';
   });
