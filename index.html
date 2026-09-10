@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-04 · r144">
+<meta name="hmd-build" content="2026-09-10 · r146">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1137,6 +1137,18 @@
     border-radius:20px;padding:4px 11px;white-space:nowrap;flex:none}
   .fw-rich{width:100%;min-height:46vh;font-family:'Gowun Dodum',sans-serif;font-size:11pt;line-height:1.85;background:var(--cream);border:1px solid transparent;border-radius:14px;padding:15px 17px;outline:none;overflow:auto;white-space:pre-wrap;word-break:break-word}
   .fw-rich:focus{border-color:var(--yellow);background:#fff}
+  /* ===== 코넬 노트 틀 (단서 · 노트 · 요약) — 편집기와 보기 화면에 같이 쓰인다 ===== */
+  table.cornell{width:100%;border-collapse:collapse;table-layout:fixed;margin:6px 0 10px;font-size:inherit;line-height:1.7;white-space:pre-wrap}
+  table.cornell td{border:1.5px solid #cfc7b2;vertical-align:top;padding:8px 10px;min-width:0;word-break:break-word;position:relative;background:transparent}
+  /* 칸 이름은 흐름 밖(왼쪽 위 구석)에 두어 본문 줄과 줄선이 어긋나지 않게 */
+  table.cornell td[data-l],table.cornell td.cn-cue{padding-top:1.7em}   /* 단서 칸도 노트 첫 줄과 높이를 맞춘다 */
+  table.cornell td[data-l]::before{content:attr(data-l);position:absolute;left:10px;top:5px;font-size:10.5px;line-height:1;font-weight:800;color:#b3a57d;letter-spacing:.5px;user-select:none;pointer-events:none;font-family:'Gowun Dodum',sans-serif;white-space:normal}
+  table.cornell td.cn-cue{width:29%;border-right:2.5px solid #d9b95a}
+  /* 노트 칸: 줄 간격(1.7em)마다 연한 줄선 */
+  table.cornell td.cn-note{height:240px;background-clip:content-box;background-origin:content-box;
+    background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(1.7em - 1px),#d9d2be calc(1.7em - 1px),#d9d2be 1.7em)}
+  table.cornell .cn-sum td{height:84px;border-top:2.5px solid #d9b95a}
+  .fw-tools .fw-cornell{font-weight:800;letter-spacing:-.2px;background:#fffbea;border-color:#e6d48e}
   /* 제곱(윗첨자)·아래첨자: 줄 간격을 밀지 않게 */
   sup,sub{font-size:.68em;line-height:0;position:relative;vertical-align:baseline}
   sup{top:-.5em}
@@ -1296,6 +1308,9 @@
   .fw.theme-dev .fw-kind button.on{background:#238636;border-color:#238636;color:#fff}
   .fw.theme-dev .fw-tools{display:none}
   .fw.theme-dev .fw-lbl{color:#8b949e}
+  .fw.theme-dev table.cornell td{border-color:#30363d;color:#c9d1d9}
+  .fw.theme-dev table.cornell td.cn-note{background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(1.7em - 1px),#30363d calc(1.7em - 1px),#30363d 1.7em)}
+  .fw.theme-dev table.cornell td[data-l]::before{color:#8b949e}
   .fw.theme-dev .fw-body .in{background:#21262d;border-color:#30363d;color:#c9d1d9}
   .fw.theme-dev .fw-devwrap{display:flex;background:#1e2227;border:1px solid #30363d;border-radius:10px;overflow:hidden}
   .fw.theme-dev .fw-gutter{flex:none;min-width:42px;padding:15px 9px 15px 4px;text-align:right;
@@ -3499,7 +3514,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-04 · r144';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-10 · r146';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -15053,6 +15068,7 @@ function fwToolbar(ed){
     +'<button type="button" class="fw-hl fw-hl-off" data-hl="transparent" title="음영 지우기">×</button>'
     +'<span class="fw-sep"></span>'
     +'<button type="button" class="fw-symbtn" title="특수기호 (낫표·화살괄호·수식 …)">※</button>'
+    +'<button type="button" class="fw-cornell" title="코넬 노트 틀 넣기 (단서 | 노트 · 요약)">코넬</button>'
     +'<span class="fw-now" title="지금 쓰는 글씨체·크기">고운돋움 · 11pt</span>';
   var now=bar.querySelector('.fw-now');
   var selFont=bar.querySelector('select[data-c="fontName"]'), selSize=bar.querySelector('select[data-c="fontSize"]');
@@ -15099,6 +15115,7 @@ function fwToolbar(ed){
   bar.querySelectorAll('button').forEach(function(btn){
     btn.addEventListener('mousedown',function(e){e.preventDefault();});   // 선택 유지
     if(btn.classList.contains('fw-symbtn'))return;                        // 특수기호는 따로 처리
+    if(btn.classList.contains('fw-cornell')){btn.addEventListener('click',function(){fwCornell(ed);setTimeout(upd,0);});return;}
     btn.addEventListener('click',function(){
       var col=btn.getAttribute('data-col'), hl=btn.getAttribute('data-hl');
       if(col)run('foreColor',col);
@@ -15111,6 +15128,52 @@ function fwToolbar(ed){
     sel.addEventListener('change',function(){if(this.value){run(sel.getAttribute('data-c'),this.value);}});
   });
   return bar;
+}
+/* ---- 코넬 노트 틀: 커서 자리에 「제목·날짜 / 단서 | 노트 / 요약」 표를 넣는다 ---- */
+function fwCornellHTML(id){
+  return '<table class="cornell" data-cn="'+id+'">'
+    +'<colgroup><col style="width:29%"><col></colgroup>'
+    +'<tr class="cn-mid"><td class="cn-cue"><br></td><td class="cn-note" data-l="노트"><br></td></tr>'
+    +'<tr class="cn-sum"><td colspan="2" data-l="요약"><br></td></tr>'
+    +'</table><div><br></div>';
+}
+function fwCornell(ed){
+  if(!ed)return null;
+  var id='cn'+Date.now().toString(36);
+  var html=fwCornellHTML(id);
+  var inside=false;   /* 커서가 글 안에 있으면 그 자리, 아니면 맨 끝 */
+  try{var s=window.getSelection();inside=!!(s&&s.rangeCount&&ed.contains(s.getRangeAt(0).commonAncestorContainer));}catch(e){}
+  ed.focus();
+  var done=false;
+  if(inside){try{done=document.execCommand('insertHTML',false,html);}catch(e){done=false;}}
+  var tb=ed.querySelector('table.cornell[data-cn="'+id+'"]');
+  if(!done||!tb){                                   /* 커서가 없거나 넣기가 막히면 맨 끝에 붙인다 */
+    if(tb)tb.remove();
+    var box=document.createElement('div');box.innerHTML=html;
+    while(box.firstChild)ed.appendChild(box.firstChild);
+    tb=ed.querySelector('table.cornell[data-cn="'+id+'"]');
+  }
+  if(!ed.__cnKey){ed.__cnKey=true;ed.addEventListener('keydown',fwCornellKey);}
+  /* 커서를 「노트」 칸에 둔다 */
+  var note=tb?tb.querySelector('td.cn-note'):null;
+  if(note){try{var r=document.createRange();r.setStart(note,0);r.collapse(true);var sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);}catch(e){}}
+  try{ed.dispatchEvent(new Event('input',{bubbles:true}));}catch(e){}
+  if(tb&&tb.scrollIntoView)tb.scrollIntoView({block:'nearest'});
+  return tb;
+}
+/* 코넬 표 안에서 Tab = 다음 칸, Shift+Tab = 이전 칸 */
+function fwCornellKey(e){
+  if(e.key!=='Tab'||e.ctrlKey||e.metaKey||e.altKey)return;
+  var s;try{s=window.getSelection();}catch(x){return;}
+  if(!s||!s.rangeCount)return;
+  var n=s.getRangeAt(0).startContainer;if(n&&n.nodeType===3)n=n.parentNode;
+  var td=n&&n.closest?n.closest('table.cornell td'):null;
+  if(!td)return;
+  var tds=Array.prototype.slice.call(td.closest('table.cornell').querySelectorAll('td'));
+  var i=tds.indexOf(td)+(e.shiftKey?-1:1);
+  if(i<0||i>=tds.length)return;
+  e.preventDefault();
+  try{var r=document.createRange();r.selectNodeContents(tds[i]);r.collapse(!tds[i].textContent.trim());s.removeAllRanges();s.addRange(r);}catch(x){}
 }
 /* ---- 서식 없는 칸(그냥 입력칸)에서의 제곱: 유니코드 윗첨자 글자로 바꾼다 ---- */
 var FW_SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹',
