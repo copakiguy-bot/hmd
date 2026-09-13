@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-10 · r146">
+<meta name="hmd-build" content="2026-09-13 · r149">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1149,6 +1149,19 @@
     background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(1.7em - 1px),#d9d2be calc(1.7em - 1px),#d9d2be 1.7em)}
   table.cornell .cn-sum td{height:84px;border-top:2.5px solid #d9b95a}
   .fw-tools .fw-cornell{font-weight:800;letter-spacing:-.2px;background:#fffbea;border-color:#e6d48e}
+  /* ===== 관심도서 ===== */
+  .wish-list{display:flex;flex-direction:column;gap:8px}
+  .wish-row{display:flex;align-items:center;gap:12px;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:#fff}
+  .wish-cv{width:38px;height:54px;object-fit:cover;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.18);flex:none}
+  .wish-cv-x{display:flex;align-items:center;justify-content:center;background:var(--cream);box-shadow:none;font-size:18px}
+  .wish-b{flex:1;min-width:0}
+  .wish-t{font-weight:800;color:var(--dark);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .wish-s{font-size:12.5px;color:var(--text);margin-top:2px}
+  .wish-m{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .wish-busy{font-size:11px;color:#c9a227;font-weight:600}
+  .wish-lk{border:1px solid var(--line);background:#fff;border-radius:6px;font-size:11px;padding:1px 7px;cursor:pointer;color:var(--text);margin-left:4px}
+  .wish-act{display:flex;align-items:center;gap:10px;flex:none}
+  @media (max-width:640px){.wish-row{flex-wrap:wrap}.wish-act{width:100%;justify-content:flex-end}}
   /* 제곱(윗첨자)·아래첨자: 줄 간격을 밀지 않게 */
   sup,sub{font-size:.68em;line-height:0;position:relative;vertical-align:baseline}
   sup{top:-.5em}
@@ -2417,6 +2430,8 @@
   .hm-bt td{padding:7px 6px;border-bottom:1px solid var(--line);font-weight:700;color:var(--dark);
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .hm-bt td.amt.over{color:var(--red);font-weight:800}
+  .hm-bt tr.hm-bt-zero td{color:var(--muted);font-weight:600}
+  .hm-bt tr.hm-bt-zero td .sw{opacity:.45}
   .hm-bt td .sw{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:7px;vertical-align:middle}
   .hm-bt tbody tr:last-child td{border-bottom:1px solid var(--line)}
   .hm-bt tfoot td{padding-top:9px;font-weight:800;border-bottom:none}
@@ -2795,6 +2810,16 @@
           <thead><tr><th>도서명</th><th>저자/역자</th><th>출판사</th><th class="amt">총p</th><th>기간</th><th>카테고리</th><th></th></tr></thead>
           <tbody id="bookBody"></tbody>
         </table></div>
+      </div>
+      <div class="card" id="wishCard">
+        <h3><span class="dot" style="background:#c9a227"></span> 관심도서 <span class="more" id="wishCnt"></span>
+          <span class="more" style="margin-left:auto;font-weight:400">읽고 싶은 책 · ISBN을 넣으면 표지·저자를 찾아옵니다</span></h3>
+        <div class="inrow wish-inrow">
+          <input id="wTitle" class="in" style="flex:1.6" placeholder="제목" onkeydown="if(event.key==='Enter'){event.preventDefault();addWish();}">
+          <input id="wIsbn" class="in" inputmode="numeric" style="flex:1" placeholder="ISBN (선택)" onkeydown="if(event.key==='Enter'){event.preventDefault();addWish();}">
+          <button class="btn y" style="flex:none" onclick="addWish()">등록</button>
+        </div>
+        <div id="wishList" style="margin-top:12px"></div>
       </div>
     </div>
 
@@ -3221,7 +3246,7 @@
         <span style="margin-left:8px;display:inline-flex;gap:5px;vertical-align:middle">
           <button id="tlModeDaily" class="lunar-toggle on" onclick="tlDailyClick()">Daily</button>
           <button id="tlModeCn" class="lunar-toggle" onclick="tlCnClick()">의회일정</button>
-          <button id="tlModeImp" class="lunar-toggle imp" onclick="tlImpClick()" title="주요일정만 보기 (D·F)"><i></i>주요일정</button>
+          <button id="tlModeImp" class="lunar-toggle imp on" onclick="tlImpClick()" title="주요일정 필터 · 항상 켜져 있음 — 누르면 의회일정 날짜축으로"><i></i>주요일정</button>
           <button id="tlModeProject" class="lunar-toggle" onclick="tlSetMode('project')">Project</button>
         </span>
         <span class="tl-datenav"><button type="button" onclick="tlDayShift(-1)" title="전날">‹</button><span class="more" id="tlLabel" style="margin-left:0"></span><button type="button" onclick="tlDayShift(1)" title="다음날">›</button></span></h3>
@@ -3514,7 +3539,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-10 · r146';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-13 · r149';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -3530,7 +3555,7 @@ function ensureFields(){
   if(!db||typeof db!=='object')db=seed();
   /* 어떤 경로로 들어온 데이터든 기본 뼈대는 반드시 갖춰 둔다 (동기화·백업 복원 대비) */
   ['work','study','reading','assets','inbox','diary','sessions','schedules',
-   'tlRoutines','tlProjects','routines','fixed','workCats','zk','chrono','chronoLinks'].forEach(function(k){
+   'tlRoutines','tlProjects','routines','fixed','workCats','zk','chrono','chronoLinks','wishBooks'].forEach(function(k){
     if(!Array.isArray(db[k]))db[k]=[];});
   /* null·문자열 같은 깨진 항목이 섞여 있으면 부팅이 그 자리에서 죽는다 — 목록에서 걸러낸다 */
   ['work','study','reading','assets','inbox','diary','sessions','schedules',
@@ -3995,8 +4020,8 @@ var TL_START=6, TL_END=24, TL_HW=68;   /* 시작·끝 시각, 시간당 픽셀 (
 function toggleTimeline(){toggleCalSub('tl');}
 function tlParseMin(t){var m=/^(\d{1,2}):(\d{2})$/.exec(String(t||'').trim());if(!m)return null;var h=+m[1],mm=+m[2];if(h>23||mm>59)return null;return h*60+mm;}
 var tlMode='daily';   /* 'daily'(기본) | 'project' */
-var tlDailyOn=true, tlCn=false;   /* daily 모드 안: 데일리·의회 각각 토글 (둘 다 끌 수는 없다) */
-var tlCnScale='month';  /* 의회 트랙: 'day' 시간축 | 'week' 2주 | 'month' 한 달 — 기본은 한달단위 */
+var tlDailyOn=true, tlCn=false;   /* daily 모드 안: 데일리 ↔ 의회일정 둘 중 하나만 켜진다 */
+var tlCnScale='month';  /* 의회 트랙: 'day' 시간축(Time) | 'month' 날짜축 한 달(Day, 1일~말일) */
 var tlCnFrom=null;      /* 주·월 보기의 첫 날 (기본 오늘 · 위 ‹ › 로 한 주/한 달씩 넘긴다) */
 function tlCnStart(){return tlCnFrom||today();}
 function tlCnRange(){
@@ -4025,13 +4050,13 @@ function tlCnScrollToday(ti,CW){
   if(typeof tlcStickyApply==='function')tlcStickyApply();
 }
 function tlCnGoToday(){tlCnFrom=null;renderTimeline();}
-var tlCnImp=false;      /* 주요일정만 보기 */
-function tlCnScaleSet(s){tlCnScale=(s==='day'||s==='week')?s:'month';tlModeBtns();renderTimeline();}
+var tlCnImp=true;       /* 주요일정 필터: 항상 켜져 있다 — 의회일정 날짜축(Day)은 빨간 점 일정만 보여준다 */
+function tlCnScaleSet(s){tlCnScale=(s==='day')?'day':'month';tlModeBtns();renderTimeline();}
 function tlModeBtns(){
   var bd=document.getElementById('tlModeDaily'),bc=document.getElementById('tlModeCn'),bp=document.getElementById('tlModeProject');
   if(bd)bd.classList.toggle('on',tlMode==='daily'&&tlDailyOn);
   if(bc)bc.classList.toggle('on',tlMode==='daily'&&tlCn);
-  var bi=document.getElementById('tlModeImp');if(bi)bi.classList.toggle('on',tlMode==='daily'&&tlCn&&tlCnImp);
+  var bi=document.getElementById('tlModeImp');if(bi)bi.classList.toggle('on',tlMode==='daily');
   if(bp)bp.classList.toggle('on',tlMode==='project');
 }
 /* ===== 의회 타임라인 머리띠: 일단위·주단위 + 기관 고르기 (트랙 바로 위, 가로 스크롤에 틀고정) ===== */
@@ -4049,9 +4074,7 @@ function tlcBarHTML(st){
   return '<div class="tlc-bar"'+(st?' style="'+st+'"':'')+'>'
     +'<span class="tlc-bar-g">'
     +'<button class="lunar-toggle'+(tlCnScale==='day'?' on':'')+'" onclick="tlCnScaleSet(\'day\')" title="시간축 (하루)">Time</button>'
-    +'<button class="lunar-toggle'+(tlCnScale==='week'?' on':'')+'" onclick="tlCnScaleSet(\'week\')" title="날짜축 (오늘부터 2주)">Day</button>'
-    +'<button class="lunar-toggle'+(tlCnScale==='month'?' on':'')+'" onclick="tlCnScaleSet(\'month\')" title="달력 달 (1일~말일)">Month</button></span>'
-    +(tlCnImp?'<span class="tlc-bar-sep"></span><span class="tlc-imp-note"><i></i>주요일정만 보는 중</span>':'')
+    +'<button class="lunar-toggle'+(tlCnScale==='month'?' on':'')+'" onclick="tlCnScaleSet(\'month\')" title="날짜축 · 한 달 단위 (1일~말일) · 주요일정만">Day</button></span>'
     +'<span class="tlc-bar-sep"></span>'
     +'<span class="tlc-bar-g">'
     +'<button class="lunar-toggle'+(!tlCnOrgSel.length?' on':'')+'" onclick="tlCnOrgSet(\'\')" title="모든 기관">전체</button>'
@@ -4059,33 +4082,29 @@ function tlcBarHTML(st){
     +'</span></div>';
 }
 function tlSetMode(m){tlMode=m;tlModeBtns();renderTimeline();}
+/* Daily ↔ 의회일정: 둘 중 하나만 켜진다 */
 function tlDailyClick(){
-  if(tlMode!=='daily'){tlMode='daily';tlDailyOn=true;}
-  else if(tlCn)tlDailyOn=!tlDailyOn;          /* 의회가 켜져 있을 때만 꺼서 «의회 단독»이 된다 */
+  tlMode='daily';tlDailyOn=true;tlCn=false;
   tlModeBtns();renderTimeline();
 }
 function tlCnClick(){
-  if(tlMode!=='daily')tlMode='daily';
-  tlCn=!tlCn;
-  if(!tlCn){tlCnImp=false;if(!tlDailyOn)tlDailyOn=true;}
+  tlMode='daily';tlCn=true;tlDailyOn=false;
   tlModeBtns();renderTimeline();
 }
-/* 주요일정만: 의회 트랙에서 빨간 점 붙은 일정만 남긴다 (의회 트랙이 꺼져 있으면 켠다) */
+/* 주요일정: 항상 켜진 필터 (끌 수 없다) — 누르면 의회일정 날짜축(Day)으로 간다 */
 function tlImpClick(){
-  if(tlMode!=='daily')tlMode='daily';
-  tlCnImp=!tlCnImp;
-  if(tlCnImp)tlCn=true;
+  tlMode='daily';tlCn=true;tlDailyOn=false;tlCnImp=true;tlCnScale='month';
   tlModeBtns();renderTimeline();
 }
 function tlImpShow(){   /* D·F 첫 화면: 스케줄 → 타임라인 → 의회 주단위 → 주요일정만 */
   goTop('cal');
   var c=document.getElementById('timelineCard');
   if(c&&c.style.display==='none'&&typeof toggleCalSub==='function')toggleCalSub('tl');
-  tlMode='daily';tlCn=true;tlCnImp=true;tlCnScale='month';tlCnFrom=null;
+  tlMode='daily';tlCn=true;tlDailyOn=false;tlCnImp=true;tlCnScale='month';tlCnFrom=null;
   tlModeBtns();renderTimeline();
   setTimeout(function(){var el=document.getElementById('timelineCard');if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'start'});},60);
 }
-function cnImpOk(s){return !tlCnImp||!!(s&&s.imp);}
+function cnImpOk(s){return !tlCnImp||tlCnScale==='day'||!!(s&&s.imp);}   /* Time(시간축)에서는 전부, Day(날짜축)에서는 주요일정만 */
 function renderTimeline(){
   var inner=document.getElementById('tlInner'),card=document.getElementById('timelineCard');
   if(!inner||!card||card.style.display==='none')return;
@@ -4251,7 +4270,7 @@ function renderTlCnWeek(inner){
     if(!days.length){
       inner.style.width='';
       inner.innerHTML=tlcBarHTML('margin-left:-108px;margin-bottom:4px')
-        +'<div class="tlcw-none">'+esc(tlCnRangeLabel())+' 사이에 주요일정이 없습니다. 위 ‹ › 로 기간을 넘기거나 「주요일정」을 꺼 보세요.</div>';
+        +'<div class="tlcw-none">'+esc(tlCnRangeLabel())+' 사이에 주요일정이 없습니다. 위 ‹ › 로 달을 넘기거나 Time 에서 그날 일정을 보세요.</div>';
       tlcStickyBind();return;
     }
   }
@@ -5796,7 +5815,7 @@ function selectDate(k){selDate=k;renderCal();renderSchedule();}
 function shiftDayStr(k,n){var t=new Date(k+'T00:00:00');t.setDate(t.getDate()+n);
   return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');}
 function tlDayShift(n){
-  if(tlMode==='daily'&&tlCn&&tlCnScale!=='day'){          /* 주·월 보기: 한 주 / 한 달씩 */
+  if(tlMode==='daily'&&tlCn&&tlCnScale!=='day'){          /* 날짜축(Day): 한 달씩 */
     var from=tlCnStart();
     if(tlCnScale==='month'){var t=new Date(from+'T00:00:00');t.setDate(1);t.setMonth(t.getMonth()+n);
       tlCnFrom=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-01';}
@@ -10996,13 +11015,84 @@ function renderReadingInputs(){
       <div class="body"><span contenteditable onblur="editExcerpt(${b.id},${e.id},'text',this.innerHTML)">${fwR(e.text)}</span></div></div>`).join(''))
     :'<div class="empty">오늘 추가한 발췌가 없습니다.</div>';
 }
+/* ---------- 관심도서: 읽고 싶은 책을 제목(+ISBN)만으로 적어 둔다 ---------- */
+var __wishBusy={};
+function wishArr(){if(!Array.isArray(db.wishBooks))db.wishBooks=[];return db.wishBooks;}
+function wishById(id){return wishArr().find(function(w){return String(w.id)===String(id);});}
+function addWish(){
+  var tEl=document.getElementById('wTitle'),iEl=document.getElementById('wIsbn');if(!tEl||!iEl)return;
+  var t=String(tEl.value||'').trim(), isbn=String(iEl.value||'').replace(/[^0-9Xx]/g,'');
+  if(!t&&isbn.length<10){alert('제목을 입력하세요. (ISBN만 넣어도 조회해서 제목을 채웁니다)');return;}
+  var w={id:uid(),title:t,isbn:isbn,author:'',publisher:'',cover:'',pages:'',added:today()};
+  wishArr().push(w);save();
+  tEl.value='';iEl.value='';renderWish();tEl.focus();
+  if(isbn.length>=10)wishLookup(w.id);
+}
+/* ISBN → 서지정보(제목·저자·출판사·표지·쪽수)를 채운다 (기존 책 등록과 같은 경로) */
+function wishLookup(id){
+  var w=wishById(id);if(!w||!w.isbn||__wishBusy[id])return;
+  __wishBusy[id]=true;renderWish();
+  var done=function(info){
+    delete __wishBusy[id];var x=wishById(id);
+    if(x){
+      if(info){
+        if(info.title&&!x.title)x.title=String(info.title).trim();
+        if(info.authors)x.author=info.authors;
+        if(info.publisher)x.publisher=String(info.publisher).trim();
+        if(info.cover)x.cover=info.cover;
+        if(info.pages)x.pages=Number(info.pages)||'';
+        x.looked=1;
+      }else x.looked=0;
+      save();
+    }
+    renderWish();
+  };
+  try{isbnLookupTo(w.isbn,done);}catch(e){done(null);}
+}
+function delWish(id){
+  var w=wishById(id);if(!w)return;
+  if(!confirm('「'+(w.title||w.isbn)+'」을(를) 관심도서에서 지울까요?'))return;
+  db.wishBooks=wishArr().filter(function(x){return String(x.id)!==String(id);});
+  save();renderWish();
+}
+/* 관심도서 → 독서목록으로 옮긴다 (오늘부터 읽는 중) */
+function wishToBook(id){
+  var w=wishById(id);if(!w)return;
+  if(!w.title){alert('제목이 없습니다. 먼저 ISBN 조회로 제목을 채우거나 제목을 넣어 주세요.');return;}
+  db.reading.push({id:uid(),title:w.title,author:w.author||'',publisher:w.publisher||'',
+    totalPages:w.pages||'',start:today(),end:'',category:'',link:'',cover:w.cover||'',isbn:w.isbn||'',
+    chapters:[],excerpts:[]});
+  db.wishBooks=wishArr().filter(function(x){return String(x.id)!==String(id);});
+  save();renderReading();if(typeof renderCal==='function')renderCal();
+}
+function renderWish(){
+  var box=document.getElementById('wishList'),cnt=document.getElementById('wishCnt');
+  if(!box)return;
+  var arr=wishArr().slice().reverse();
+  if(cnt)cnt.textContent=arr.length?arr.length+'권':'';
+  if(!arr.length){box.innerHTML='<div class="empty">아직 관심도서가 없습니다. 제목(과 ISBN)을 넣고 등록하세요.</div>';return;}
+  box.innerHTML='<div class="wish-list">'+arr.map(function(w){
+    var busy=!!__wishBusy[w.id];
+    var sub=[w.author,w.publisher].filter(Boolean).join(' · ');
+    var meta=[w.isbn?'ISBN '+w.isbn:'',w.pages?w.pages+'p':'',w.added?fmtK(w.added)+' 등록':''].filter(Boolean).join(' · ');
+    return '<div class="wish-row" data-id="'+w.id+'">'
+      +(w.cover?'<img class="wish-cv" src="'+escA(w.cover)+'" alt="" onerror="this.style.display=\'none\'">':'<div class="wish-cv wish-cv-x">📖</div>')
+      +'<div class="wish-b"><div class="wish-t">'+(w.title?esc(w.title):'<span style="color:var(--muted)">제목 없음</span>')
+      +(busy?' <span class="wish-busy">조회 중…</span>':'')+'</div>'
+      +(sub?'<div class="wish-s">'+esc(sub)+'</div>':'')
+      +'<div class="wish-m">'+esc(meta)+(w.isbn&&!busy&&!w.author?' <button type="button" class="wish-lk" onclick="wishLookup('+w.id+')">'+(w.looked===0?'다시 조회':'조회')+'</button>':'')+'</div></div>'
+      +'<div class="wish-act"><button type="button" class="btn ghost" style="padding:6px 10px;font-size:12px" title="독서목록으로 옮기기 (오늘부터 읽는 중)" onclick="wishToBook('+w.id+')">📚 독서목록으로</button>'
+      +'<span class="del" title="지우기" onclick="delWish('+w.id+')">×</span></div>'
+      +'</div>';
+  }).join('')+'</div>';
+}
 /* 독서 세부페이지: 독서목록 + 상세(누적) */
 function renderReading(){
   renderReadingInputs();
   const listWrap=document.getElementById('readingList'),detWrap=document.getElementById('bookDetail');
   if(readOpenId&&bookById(readOpenId)){listWrap.style.display='none';detWrap.style.display='block';renderBookDetail(bookById(readOpenId));return;}
   readOpenId=null;detWrap.style.display='none';listWrap.style.display='block';
-  renderRdPlan();
+  renderRdPlan();renderWish();
   document.getElementById('readCnt').textContent=db.reading.length+'권';
   const tb=document.getElementById('bookBody');
   if(!db.reading.length){tb.innerHTML='<tr><td colspan="7" class="empty">등록된 책이 없습니다. 대시보드 「독서」에서 책을 추가하세요.</td></tr>';return;}
@@ -12826,8 +12916,8 @@ function assetInputRow(type){
     <input type="date" id="eDate" class="in" style="flex:none;width:148px" value="${today()}">
     ${led?`<select id="eType" class="in led-type" style="flex:none;width:86px" onchange="ledTypeSet(this.value)"><option${ledType==='지출'?' selected':''}>지출</option><option${ledType==='수입'?' selected':''}>수입</option></select>`:''}
     <select id="eCat" class="in" style="flex:1">${ASSET_CATS[type].map(c=>`<option>${esc(c)}</option>`).join('')}</select>
-    <input id="eItem" class="in" style="flex:1.6" placeholder="내역">
     <input id="eAmt" class="in" inputmode="numeric" style="flex:1" placeholder="금액" oninput="fmtNum(this)">
+    <input id="eItem" class="in" style="flex:1.6" placeholder="내역">
     <input id="eNote" class="in" style="flex:1" placeholder="비고">
     <button class="btn y" style="flex:none" onclick="addAssetDetail('${led?'led':type}')">추가</button>
   </div>`;
@@ -13163,7 +13253,9 @@ function paneExpense(){
       <tbody id="expLedgerBody">${assetLedger('지출')}</tbody></table></div><div id="expPager">${expPagerHTML()}</div></div>
     <div class="card"><h3><span class="dot" style="background:${expPieKind==='수입'?'var(--green)':'var(--red)'}"></span> <span style="white-space:nowrap">${expMon()===thisMonth()?'이달의':(+expMon().slice(5,7))+'월'} 지출/수입</span> ${assetKindBtns(expPieKind,'expPieKindSet')} <span class="more">${won(monSum)}</span>
       <span class="tl-datenav"><button type="button" onclick="expMonShift(-1)" title="지난달">‹</button><span class="more" style="margin-left:0">${expMon().replace('-','.')}</span><button type="button" onclick="expMonShift(1)" title="다음달">›</button></span></h3>
-      ${monSum?donutFromMap(pieMon,300,true,function(c){return assetCatColor(expPieKind,c);}):'<div class="empty">'+(+expMon().slice(5,7))+'월 '+expPieKind+'이 없습니다.</div>'}</div>
+      ${expPieKind==='지출'
+        ?((monSum?'':'<div class="empty" style="padding:14px 0 4px">'+(+expMon().slice(5,7))+'월 지출이 없습니다.</div>')+hmDonut(pieMon,300))
+        :(monSum?donutFromMap(pieMon,300,true,function(c){return assetCatColor(expPieKind,c);}):'<div class="empty">'+(+expMon().slice(5,7))+'월 '+expPieKind+'이 없습니다.</div>')}</div>
   </div>
   ${expCmpView==='bars'?expCmpSVG():expTrendCard()}
   <div class="g2">
@@ -13417,24 +13509,27 @@ function hmExpChartHTML(){
     if(v)pie[c]=v;spent+=v;
   });
   return hmT('이번달 지출','자산 →',"go('assets')",'var(--red)')
-    +(spent?hmDonut(pie,300):'<div class="hm-empty">이번달 지출이 없습니다.</div>');
+    +(spent?'':'<div class="hm-empty">이번달 지출이 없습니다.</div>')+hmDonut(pie,300);
 }
 /* 자산 도넛 + 범례에 설정액·잔액을 덧붙인 버전 */
 function hmDonut(map,size){
+  /* 도넛 조각은 쓴 카테고리만, 표에는 지출 카테고리 전부(안 쓴 것도 설정액·잔액 표시) */
   var entries=Object.entries(map).filter(function(e){return e[1]>0;});
   var total=entries.reduce(function(s,e){return s+e[1];},0);
+  var listed=ASSET_CATS.지출.map(function(c){return [c,Number(map[c])||0];});
+  Object.keys(map).forEach(function(c){if(ASSET_CATS.지출.indexOf(c)<0&&map[c]>0)listed.push([c,map[c]]);});
   var off=25,seg='<circle cx="21" cy="21" r="15.9" fill="none" stroke="#eee" stroke-width="6"/>';
   entries.forEach(function(e,i){var p=total?e[1]/total*100:0;
     seg+='<circle cx="21" cy="21" r="15.9" fill="none" stroke="'+expCatColor(e[0])+'" stroke-width="6" stroke-dasharray="'+p+' '+(100-p)+'" stroke-dashoffset="'+off+'"/>';off-=p;});
   var svg='<svg width="'+size+'" height="'+size+'" viewBox="0 0 42 42">'+seg
     +'<text x="21" y="22.5" text-anchor="middle" font-size="4.2" font-weight="700" fill="#12312b">'+shortWon(total)+'</text></svg>';
   var setT=0,spT=0;
-  var rows=entries.map(function(e,i){
+  var rows=listed.map(function(e,i){
     var set=db.budget[e[0]]||0,left=set-e[1];
     setT+=set;spT+=e[1];
-    return '<tr><td><span class="sw" style="background:'+expCatColor(e[0])+'"></span>'+esc(e[0])+'</td>'
+    return '<tr'+(e[1]?'':' class="hm-bt-zero"')+'><td><span class="sw" style="background:'+expCatColor(e[0])+'"></span>'+esc(e[0])+'</td>'
       +'<td class="amt">'+(set?set.toLocaleString()+'원':'—')+'</td>'
-      +'<td class="amt">'+e[1].toLocaleString()+'원</td>'
+      +'<td class="amt">'+(e[1]?e[1].toLocaleString()+'원':'0원')+'</td>'
       +'<td class="amt'+(set&&left<0?' over':'')+'">'+(set?left.toLocaleString()+'원':'—')+'</td></tr>';
   }).join('');
   var leftT=setT-spT;
