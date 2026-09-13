@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-13 · r149">
+<meta name="hmd-build" content="2026-09-13 · r150">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -594,9 +594,9 @@
   .tl-ev .imp-dot,.tlcw-ev .imp-dot{position:absolute;top:2px;right:2px;width:5px;height:5px;margin:0;box-shadow:0 0 0 1px #fff}
   .tl-ev.imp,.tlcw-ev.imp{padding-right:9px}
   /* 주·월 보기 오늘: 칸 시작 자리의 빨간 세로줄 */
-  .tlcw-now{position:absolute;top:0;bottom:0;width:2px;background:#e34948;pointer-events:none;z-index:2}
+  .tlcw-now{position:absolute;top:0;bottom:0;width:2.5px;background:#e34948;pointer-events:none;z-index:4;box-shadow:0 0 0 1px rgba(255,255,255,.6)}
   .tlcw-head .tlcw-now{border-radius:2px 2px 0 0}
-  .tlcw-today{background:rgba(227,73,72,.05)}
+  .tlcw-today{background:rgba(227,73,72,.07)}
   .tlcw-none{margin:12px 0 4px -108px;font-size:12.5px;color:var(--muted);background:var(--cream);border-radius:10px;padding:12px 14px;width:max-content;max-width:100%}
   .tl-today-btn{margin-left:6px;font-size:10.5px;font-weight:800;color:var(--dark);background:var(--cream);border-radius:999px;padding:1px 8px;cursor:pointer}
   .tl-today-btn:hover{background:var(--yellow)}
@@ -704,7 +704,10 @@
     font-size:10.5px;font-weight:700;color:var(--muted);z-index:5;cursor:pointer;user-select:none;-webkit-user-select:none;
     background:rgba(255,255,255,.92);border-radius:5px;padding-left:2px}
   .tlc-dept:hover{background:#fff;color:var(--dark)}
-  .tlc-track{position:relative;height:32px}
+  .tlc-track{position:relative;height:32px;background-color:var(--cream)}   /* 데일리 트랙처럼 빈 여백에 음영 */
+  .tlc-group:first-child .tlc-row:first-child .tlc-track{border-radius:12px 12px 0 0}
+  .tlc-group:last-child .tlc-row:last-child .tlc-track{border-radius:0 0 12px 12px}
+  .tlc-group:first-child .tlc-row:first-child:last-child .tlc-track{border-radius:12px}
   .tlc-row.tall .tlc-track{height:46px}
   .tl-ev.twol{height:34px;align-items:flex-start;padding-top:2px}
   .tl-ev.twol b{white-space:normal;display:-webkit-box;width:100%;flex:1;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.35;max-width:none;word-break:keep-all;overflow-wrap:anywhere}
@@ -3246,7 +3249,7 @@
         <span style="margin-left:8px;display:inline-flex;gap:5px;vertical-align:middle">
           <button id="tlModeDaily" class="lunar-toggle on" onclick="tlDailyClick()">Daily</button>
           <button id="tlModeCn" class="lunar-toggle" onclick="tlCnClick()">의회일정</button>
-          <button id="tlModeImp" class="lunar-toggle imp on" onclick="tlImpClick()" title="주요일정 필터 · 항상 켜져 있음 — 누르면 의회일정 날짜축으로"><i></i>주요일정</button>
+          <button id="tlModeImp" class="lunar-toggle imp on" onclick="tlImpClick()" title="주요일정(빨간 점) 표시 · 항상 켜져 있음 — 누르면 의회일정 날짜축으로"><i></i>주요일정</button>
           <button id="tlModeProject" class="lunar-toggle" onclick="tlSetMode('project')">Project</button>
         </span>
         <span class="tl-datenav"><button type="button" onclick="tlDayShift(-1)" title="전날">‹</button><span class="more" id="tlLabel" style="margin-left:0"></span><button type="button" onclick="tlDayShift(1)" title="다음날">›</button></span></h3>
@@ -3539,7 +3542,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-13 · r149';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-13 · r150';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4050,7 +4053,7 @@ function tlCnScrollToday(ti,CW){
   if(typeof tlcStickyApply==='function')tlcStickyApply();
 }
 function tlCnGoToday(){tlCnFrom=null;renderTimeline();}
-var tlCnImp=true;       /* 주요일정 필터: 항상 켜져 있다 — 의회일정 날짜축(Day)은 빨간 점 일정만 보여준다 */
+var tlCnImp=true;       /* 주요일정 표시: 항상 켜져 있다 (빨간 점·빨간 띠) — 다른 의회 일정도 같이 보인다 */
 function tlCnScaleSet(s){tlCnScale=(s==='day')?'day':'month';tlModeBtns();renderTimeline();}
 function tlModeBtns(){
   var bd=document.getElementById('tlModeDaily'),bc=document.getElementById('tlModeCn'),bp=document.getElementById('tlModeProject');
@@ -4074,7 +4077,7 @@ function tlcBarHTML(st){
   return '<div class="tlc-bar"'+(st?' style="'+st+'"':'')+'>'
     +'<span class="tlc-bar-g">'
     +'<button class="lunar-toggle'+(tlCnScale==='day'?' on':'')+'" onclick="tlCnScaleSet(\'day\')" title="시간축 (하루)">Time</button>'
-    +'<button class="lunar-toggle'+(tlCnScale==='month'?' on':'')+'" onclick="tlCnScaleSet(\'month\')" title="날짜축 · 한 달 단위 (1일~말일) · 주요일정만">Day</button></span>'
+    +'<button class="lunar-toggle'+(tlCnScale==='month'?' on':'')+'" onclick="tlCnScaleSet(\'month\')" title="날짜축 · 한 달 단위 (1일~말일)">Day</button></span>'
     +'<span class="tlc-bar-sep"></span>'
     +'<span class="tlc-bar-g">'
     +'<button class="lunar-toggle'+(!tlCnOrgSel.length?' on':'')+'" onclick="tlCnOrgSet(\'\')" title="모든 기관">전체</button>'
@@ -4104,7 +4107,7 @@ function tlImpShow(){   /* D·F 첫 화면: 스케줄 → 타임라인 → 의�
   tlModeBtns();renderTimeline();
   setTimeout(function(){var el=document.getElementById('timelineCard');if(el&&el.scrollIntoView)el.scrollIntoView({behavior:'smooth',block:'start'});},60);
 }
-function cnImpOk(s){return !tlCnImp||tlCnScale==='day'||!!(s&&s.imp);}   /* Time(시간축)에서는 전부, Day(날짜축)에서는 주요일정만 */
+function cnImpOk(s){return true;}   /* 주요일정은 항상 켜진 표시(빨간 점·빨간 띠)일 뿐, 다른 의회 일정을 숨기지 않는다 */
 function renderTimeline(){
   var inner=document.getElementById('tlInner'),card=document.getElementById('timelineCard');
   if(!inner||!card||card.style.display==='none')return;
@@ -4232,7 +4235,7 @@ function tlCnGridHTML(W,gridBg){
         var need2=Math.ceil(tlTextW(sh))+16+(schFiles(s).length?(schFiles(s).length>1?26:18):0)+(s.imp?12:0);
         var two=need2>256, bw2=two?256:Math.max(need2,26);
         return '<div class="tl-ev cn tlc-ev'+cnMemoCls(s)+(s.imp?' imp':'')+(two?' twol':'')+'" data-k="s" data-id="'+s.id+'" style="left:'+left+'px;top:3px;width:'+bw2
-          +'px;color:'+col+';background:'+(hlOk(s.hl)?s.hl:CN_MONO_BG)+';border-left:3px solid '+CN_MONO_BAR+'" title="'+escA(cnLabel(s)+' \u00b7 '+lbl+' ('+tlFmt(mn)+'~'+tlFmt(endMn)+')'+(cnNoteHas(s)?' \u00b7 \ud83d\udcdd 메모 있음':'')+' — 한 번 누르면 세부일정 · 두 번 = 붙은 문서')+'">'
+          +'px;color:'+col+';background:'+(hlOk(s.hl)?s.hl:CN_MONO_BG)+';border-left:3px solid '+(s.imp?'#e34948':CN_MONO_BAR)+'" title="'+escA(cnLabel(s)+' \u00b7 '+lbl+' ('+tlFmt(mn)+'~'+tlFmt(endMn)+')'+(cnNoteHas(s)?' \u00b7 \ud83d\udcdd 메모 있음':'')+' — 한 번 누르면 세부일정 · 두 번 = 붙은 문서')+'">'
           +'<b>'+esc(sh)+'</b>'+impDot(s)+pdfClip(s)+'</div>';
       }).join('');
       var tone=cnDeptTone(org,dp);
@@ -4264,17 +4267,8 @@ function renderTlCnWeek(inner){
   var cnEvs=(db.schedules||[]).filter(function(s){return s.cn&&s.date>=d0&&s.date<=d1&&cnImpOk(s);});
   var days=[],d=d0,g=0;
   while(d<=d1&&g<62){days.push(d);d=shiftDayStr(d,1);g++;}
-  if(tlCnImp){                                             /* 주요일정만: 일정이 있는 날만 남긴다 */
-    var has={};cnEvs.forEach(function(s){has[s.date]=1;});
-    days=days.filter(function(x){return has[x];});
-    if(!days.length){
-      inner.style.width='';
-      inner.innerHTML=tlcBarHTML('margin-left:-108px;margin-bottom:4px')
-        +'<div class="tlcw-none">'+esc(tlCnRangeLabel())+' 사이에 주요일정이 없습니다. 위 ‹ › 로 달을 넘기거나 Time 에서 그날 일정을 보세요.</div>';
-      tlcStickyBind();return;
-    }
-  }
-  var CW=(tlCnScale==='month'&&!tlCnImp)?76:96,W=days.length*CW;
+  /* 한 달의 모든 날짜를 그린다 (일정 없는 날도 칸은 있다) */
+  var CW=76,W=days.length*CW;
   var wdn=['일','월','화','수','목','금','토'];
   var head=days.map(function(x,i){
     var w=new Date(x+'T00:00:00').getDay();
@@ -4315,7 +4309,7 @@ function renderTlCnWeek(inner){
         (byDay[x]||[]).forEach(function(s){
           var col=CN_MONO,h=chipH(s);
           evh+='<div class="tlcw-ev'+(s.done?' done':'')+cnMemoCls(s)+(s.imp?' imp':'')+(h>19?' twol':'')+'" data-sid="'+s.id+'" onclick="cnChipTap(event,'+s.id+')" ondblclick="cnChipDbl(event,'+s.id+')" style="left:'+(i*CW+2)
-            +'px;top:'+top+'px;width:'+(CW-6)+'px;height:'+h+'px;color:'+col+';background:'+(hlOk(s.hl)?s.hl:CN_MONO_BG)+';border-left:3px solid '+CN_MONO_BAR+'" title="'
+            +'px;top:'+top+'px;width:'+(CW-6)+'px;height:'+h+'px;color:'+col+';background:'+(hlOk(s.hl)?s.hl:CN_MONO_BG)+';border-left:3px solid '+(s.imp?'#e34948':CN_MONO_BAR)+'" title="'
             +escA(cnLabel(s)+' · '+(s.time?s.time+' · ':'')+(s.title||'')+' — 누르면 세부일정 · 두 번 누르면 붙은 문서')+'">'
             +'<span class="t">'+esc(chipTxt(s))+'</span>'+impDot(s)+pdfClip(s)+'</div>';
           top+=h+4;
