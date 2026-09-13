@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-13 · r150">
+<meta name="hmd-build" content="2026-09-13 · r151">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1164,6 +1164,8 @@
   .wish-busy{font-size:11px;color:#c9a227;font-weight:600}
   .wish-lk{border:1px solid var(--line);background:#fff;border-radius:6px;font-size:11px;padding:1px 7px;cursor:pointer;color:var(--text);margin-left:4px}
   .wish-act{display:flex;align-items:center;gap:10px;flex:none}
+  .rd-wait-badge{display:inline-block;font-size:10px;font-weight:800;color:#7a6a2a;background:#f6ecc2;border-radius:10px;padding:2px 8px;vertical-align:middle}
+  .rd-filt{margin-left:10px;display:inline-flex;gap:4px;vertical-align:middle}
   @media (max-width:640px){.wish-row{flex-wrap:wrap}.wish-act{width:100%;justify-content:flex-end}}
   /* 제곱(윗첨자)·아래첨자: 줄 간격을 밀지 않게 */
   sup,sub{font-size:.68em;line-height:0;position:relative;vertical-align:baseline}
@@ -2780,7 +2782,7 @@
         <div id="rdPlan"></div>
       </div>
       <div class="card">
-        <h3><span class="dot" style="background:var(--green)"></span> 독서목록 <span class="more" id="readCnt"></span>
+        <h3><span class="dot" style="background:var(--green)"></span> 독서목록 <span class="more" id="readCnt"></span><span id="rdFiltBtns"></span>
           <button class="btn ghost" style="margin-left:auto;padding:7px 12px" onclick="toggleNewBook()">＋ 책 추가</button></h3>
         <div id="newBookForm" style="display:none;margin-bottom:16px;border-bottom:1px solid var(--line);padding-bottom:16px">
           <div class="form">
@@ -3542,7 +3544,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-13 · r150';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-13 · r151';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4267,8 +4269,8 @@ function renderTlCnWeek(inner){
   var cnEvs=(db.schedules||[]).filter(function(s){return s.cn&&s.date>=d0&&s.date<=d1&&cnImpOk(s);});
   var days=[],d=d0,g=0;
   while(d<=d1&&g<62){days.push(d);d=shiftDayStr(d,1);g++;}
-  /* 한 달의 모든 날짜를 그린다 (일정 없는 날도 칸은 있다) */
-  var CW=76,W=days.length*CW;
+  /* 한 달의 모든 날짜를 그린다 (일정 없는 날도 칸은 있다) · 칸을 넓혀 칩에 시각까지 */
+  var CW=104,W=days.length*CW;
   var wdn=['일','월','화','수','목','금','토'];
   var head=days.map(function(x,i){
     var w=new Date(x+'T00:00:00').getDay();
@@ -10694,7 +10696,8 @@ function bkEditOpen(id){
     +'<div class="two">'+F('title','도서명')+F('author','저자 / 역자')+'</div>'
     +'<div class="two">'+F('publisher','출판사')+F('totalPages','총페이지','number')+'</div>'
     +'<div class="two">'+F('start','시작일','date')+F('end','종료일 (읽는 중이면 비움)','date')+'</div>'
-    +'<div class="two">'+F('category','카테고리')+F('link','연결 (링크)')+'</div>'
+    +'<div class="two"><div class="field"><label>상태 <span class="lb-sub">· 읽는 중 / 대기 / 완독</span></label>'+bkStatusSel(id,'bke_status')+'</div>'+F('category','카테고리')+'</div>'
+    +'<div class="two">'+F('link','연결 (링크)')+'<div class="field"></div></div>'
     +'<div class="field"><label>표지 이미지 주소</label><div style="display:flex;gap:8px;align-items:center"><input id="bke_cover" value="'+escA(b.cover||'')+'" placeholder="https://…" oninput="bkEditSet('+id+',\'cover\',this.value)" style="flex:1"><img id="bkeCoverPrev" src="'+escA(String(b.cover||''))+'" style="'+(b.cover?'':'display:none;')+'height:52px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.15)" onerror="this.style.display=\'none\'" alt=""></div></div>'
     +'<div class="field"><label>목차 <span class="lb-sub">· 부 · 장 · 절 — 고치면 바로 저장</span></label><div class="toc-box" id="tocBox_bke"></div></div>'
     +'</div></div></div>';
@@ -10713,6 +10716,7 @@ function bkEditSet(id,k,v){
   var b=bookById(id);if(!b)return;
   if(k==='totalPages')b[k]=Number(v)||'';
   else b[k]=String(v).trim();
+  if(k==='end'){if(b.end)b.status='';var ss=document.getElementById('bke_status');if(ss)ss.value=bkStatus(b);}
   if(k==='cover'){var im=document.getElementById('bkeCoverPrev');if(im){im.src=b.cover;im.style.display=b.cover?'':'none';}}
   clearTimeout(window.__bkeT);window.__bkeT=setTimeout(function(){save();bkEditMark();bkEditAfter();},350);
 }
@@ -10940,7 +10944,8 @@ function bkAutoSave(id){
     if(v('ebPub')!=null)b.publisher=v('ebPub').trim();
     if(v('ebPages')!=null)b.totalPages=Number(v('ebPages'))||'';
     if(v('ebStart')!=null)b.start=v('ebStart');
-    if(v('ebEnd')!=null)b.end=v('ebEnd');
+    if(v('ebEnd')!=null){b.end=v('ebEnd');if(b.end)b.status='';}
+    var ss=document.getElementById('ebStatus');if(ss)ss.value=bkStatus(b);
     if(v('ebCat')!=null)b.category=v('ebCat').trim();
     if(v('ebLink')!=null)b.link=v('ebLink').trim();
     if(v('ebCover')!=null)b.cover=v('ebCover').trim();
@@ -11009,6 +11014,32 @@ function renderReadingInputs(){
       <div class="body"><span contenteditable onblur="editExcerpt(${b.id},${e.id},'text',this.innerHTML)">${fwR(e.text)}</span></div></div>`).join(''))
     :'<div class="empty">오늘 추가한 발췌가 없습니다.</div>';
 }
+/* ---------- 책 상태: 읽는 중 · 대기 · 완독 ---------- */
+function bkStatus(b){if(!b)return 'reading';if(b.end)return 'done';if(b.status==='wait')return 'wait';return 'reading';}
+var BK_ST_KO={reading:'읽는 중',wait:'대기',done:'완독'};
+function bkStatusSel(id,elId){
+  var b=bookById(id),st=bkStatus(b);
+  return '<select id="'+elId+'" class="in" onchange="bkStatusSet('+id+',this.value)" title="대기 = 사놓고 아직 안 읽는 책 · 완독을 고르면 종료일이 오늘로">'
+    +['reading','wait','done'].map(function(k){return '<option value="'+k+'"'+(k===st?' selected':'')+'>'+BK_ST_KO[k]+'</option>';}).join('')+'</select>';
+}
+function bkStatusSet(id,st){
+  var b=bookById(id);if(!b)return;
+  if(st==='done'){b.status='';if(!b.end)b.end=today();}
+  else if(st==='wait'){b.status='wait';b.end='';}
+  else{b.status='';b.end='';}
+  save();
+  ['bke_end','ebEnd'].forEach(function(i){var e=document.getElementById(i);if(e)e.value=b.end||'';});
+  if(typeof bkEditMark==='function'&&document.getElementById('bkEditOv'))bkEditMark();
+  var m=document.getElementById('ebAutoMsg');if(m){m.textContent='저장됨 ✓';}
+  if(typeof bkEditAfter==='function')bkEditAfter();else{renderReading();renderCal();}
+}
+/* 독서목록 걸러보기: 전체 · 읽는 중 · 대기 · 완독 */
+var rdListFilter=(function(){try{return localStorage.getItem('hmd_rdListFilter')||'all';}catch(e){return 'all';}})();
+function rdListFilterSet(f){rdListFilter=f;try{localStorage.setItem('hmd_rdListFilter',f);}catch(e){}renderReading();}
+function rdListBtns(){
+  return '<span class="led-kind rd-filt">'+[['all','전체'],['reading','읽는 중'],['wait','대기'],['done','완독']].map(function(k){
+    return '<button type="button" class="lunar-toggle'+(rdListFilter===k[0]?' on':'')+'" onclick="rdListFilterSet(\''+k[0]+'\')">'+k[1]+'</button>';}).join('')+'</span>';
+}
 /* ---------- 관심도서: 읽고 싶은 책을 제목(+ISBN)만으로 적어 둔다 ---------- */
 var __wishBusy={};
 function wishArr(){if(!Array.isArray(db.wishBooks))db.wishBooks=[];return db.wishBooks;}
@@ -11075,7 +11106,7 @@ function renderWish(){
       +(busy?' <span class="wish-busy">조회 중…</span>':'')+'</div>'
       +(sub?'<div class="wish-s">'+esc(sub)+'</div>':'')
       +'<div class="wish-m">'+esc(meta)+(w.isbn&&!busy&&!w.author?' <button type="button" class="wish-lk" onclick="wishLookup('+w.id+')">'+(w.looked===0?'다시 조회':'조회')+'</button>':'')+'</div></div>'
-      +'<div class="wish-act"><button type="button" class="btn ghost" style="padding:6px 10px;font-size:12px" title="독서목록으로 옮기기 (오늘부터 읽는 중)" onclick="wishToBook('+w.id+')">📚 독서목록으로</button>'
+      +'<div class="wish-act"><button type="button" class="btn ghost" style="padding:6px 10px;font-size:12px" title="독서목록으로 옮기기 (오늘부터 읽는 중)" onclick="wishToBook('+w.id+')">독서목록으로</button>'
       +'<span class="del" title="지우기" onclick="delWish('+w.id+')">×</span></div>'
       +'</div>';
   }).join('')+'</div>';
@@ -11088,17 +11119,21 @@ function renderReading(){
   readOpenId=null;detWrap.style.display='none';listWrap.style.display='block';
   renderRdPlan();renderWish();
   document.getElementById('readCnt').textContent=db.reading.length+'권';
+  const fb=document.getElementById('rdFiltBtns');if(fb)fb.innerHTML=rdListBtns();
   const tb=document.getElementById('bookBody');
   if(!db.reading.length){tb.innerHTML='<tr><td colspan="7" class="empty">등록된 책이 없습니다. 대시보드 「독서」에서 책을 추가하세요.</td></tr>';return;}
-  tb.innerHTML=db.reading.slice().reverse().map(b=>{
+  const shown=db.reading.slice().reverse().filter(b=>rdListFilter==='all'||bkStatus(b)===rdListFilter);
+  if(!shown.length){tb.innerHTML='<tr><td colspan="7" class="empty">'+(BK_ST_KO[rdListFilter]||'')+' 책이 없습니다.</td></tr>';return;}
+  tb.innerHTML=shown.map(b=>{
     let period;
-    if(b.end){
+    if(bkStatus(b)==='wait')period=`<span class="rd-wait-badge">대기</span>${b.start?` <span style="color:var(--muted)">${fmtK(b.start)}~</span>`:''}`;
+    else if(b.end){
       const days=(b.start&&b.end)?Math.round((new Date(b.end+'T00:00:00')-new Date(b.start+'T00:00:00'))/86400000)+1:0;
       period=`${fmtK(b.start)}~${fmtK(b.end)} <span class="rd-done-badge">완독</span>${days>0?`<span class="rd-days">${days}일</span>`:''}`;
     }else period=b.start?`${fmtK(b.start)}~ 읽는중`:'읽는중';
     return `<tr>
-      <td><div style="display:flex;align-items:center;gap:9px">${b.cover?`<img src="${escA(b.cover)}" title="표지 크게 보기" style="height:44px;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.18);cursor:zoom-in" onerror="this.style.display='none'" onclick="event.stopPropagation();openBookView(${b.id})">`:''}<div><b style="color:var(--green);cursor:pointer" onclick="openBook(${b.id})">${esc(b.title)}</b>
-        <div style="font-size:11px;color:var(--muted)">발췌 ${(b.excerpts||[]).length}개</div></div></div></td>
+      <td><div style="display:flex;align-items:center;gap:9px">${b.cover?`<img src="${escA(b.cover)}" title="표지 크게 보기" style="height:44px;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.18);cursor:zoom-in" onerror="this.style.display='none'" onclick="event.stopPropagation();openBookView(${b.id})">`:''}<div><b style="color:var(--green);cursor:pointer" title="누르면 서지정보 수정" onclick="bkEditOpen(${b.id})">${esc(b.title)}</b>
+        <div style="font-size:11px;color:var(--muted);cursor:pointer" title="발췌·기록 페이지" onclick="openBook(${b.id})">발췌 ${(b.excerpts||[]).length}개 ›</div></div></div></td>
       <td>${esc(b.author||'')}</td><td>${esc(b.publisher||'')}</td>
       <td class="amt">${b.totalPages||''}</td><td style="font-size:12px;white-space:nowrap">${period}</td>
       <td style="white-space:nowrap">${b.category?`<span class="cat-badge b-read">${esc(b.category)}</span>`:''}</td>
@@ -11171,7 +11206,10 @@ function renderBookDetail(b){
           <div class="field"><label>종료일 (읽는 중이면 비움)</label><input type="date" id="ebEnd" oninput="bkAutoSave(${b.id})" onchange="bkAutoSave(${b.id})" value="${b.end||''}"></div>
         </div>
         <div class="two">
+          <div class="field"><label>상태 <span class="lb-sub">· 읽는 중 / 대기 / 완독</span></label>${bkStatusSel(b.id,'ebStatus')}</div>
           <div class="field"><label>카테고리</label><input id="ebCat" oninput="bkAutoSave(${b.id})" value="${escA(b.category||'')}"></div>
+        </div>
+        <div class="two">
           <div class="field"><label>연결 (링크)</label><input id="ebLink" oninput="bkAutoSave(${b.id})" value="${escA(b.link||'')}"></div>
         </div>
         <div class="field"><label>목차 <span class="lb-sub">· 부 · 장 · 절을 골라 한 줄씩 넣습니다</span></label><div class="toc-box" id="tocBox_eb"></div></div>
