@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-14 · r154">
+<meta name="hmd-build" content="2026-09-14 · r155">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1148,7 +1148,7 @@
   /* 칸 이름은 흐름 밖(왼쪽 위 구석)에 두어 본문 줄과 줄선이 어긋나지 않게 */
   table.cornell td[data-l],table.cornell td.cn-cue{padding-top:1.7em}   /* 단서 칸도 노트 첫 줄과 높이를 맞춘다 */
   table.cornell td[data-l]::before{content:attr(data-l);position:absolute;left:10px;top:5px;font-size:10.5px;line-height:1;font-weight:800;color:#b3a57d;letter-spacing:.5px;user-select:none;pointer-events:none;font-family:'Gowun Dodum',sans-serif;white-space:normal}
-  table.cornell td.cn-cue{width:29%;border-right:2.5px solid #d9b95a}
+  table.cornell td.cn-cue{width:29%;border-right:2.5px solid #d9b95a;background:var(--green-soft);color:var(--green);font-weight:700}   /* 키워드 칸: 독서 카테고리 배지와 같은 음영 · 툴바 파스텔로 바꿀 수 있다 */
   /* 노트 칸: 줄 간격(1.7em)마다 연한 줄선 */
   table.cornell td.cn-note{height:240px;background-clip:content-box;background-origin:content-box;
     background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(1.7em - 1px),#d9d2be calc(1.7em - 1px),#d9d2be 1.7em)}
@@ -3606,7 +3606,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-14 · r154';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-14 · r155';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -11042,6 +11042,9 @@ function exRanges(e){
 }
 function exBodyHTML(e){
   var t=String(e.text||''),rs=exRanges(e);
+  if(fwLooksHtml(t)){                      /* 편집기로 쓴 서식 발췌(코넬 표 등)는 서식대로 · 메모 표시는 뒤에 붙인다 */
+    return t+rs.map(function(r,i){return '<sup class="stm" onclick="exEditNote(event,'+r.n.id+')">'+(i+1)+')</sup>';}).join('');
+  }
   if(!rs.length)return esc(t);
   var out='',pos=0;
   rs.forEach(function(r,i){
@@ -15438,7 +15441,7 @@ function fwToolbar(ed){
     +'<button type="button" class="fw-hl fw-hl-off" data-hl="transparent" title="음영 지우기">×</button>'
     +'<span class="fw-sep"></span>'
     +'<button type="button" class="fw-symbtn" title="특수기호 (낫표·화살괄호·수식 …)">※</button>'
-    +'<button type="button" class="fw-cornell" title="코넬 노트 틀 넣기 (단서 | 노트 · 요약)">코넬</button>'
+    +'<button type="button" class="fw-cornell" title="Cornell 노트 틀 넣기 (키워드 | 노트 · 요약) · 왼쪽 키워드 칸에 커서를 두고 음영 색을 누르면 칸 색이 바뀝니다">Cornell</button>'
     +'<span class="fw-now" title="지금 쓰는 글씨체·크기">고운돋움 · 11pt</span>';
   var now=bar.querySelector('.fw-now');
   var selFont=bar.querySelector('select[data-c="fontName"]'), selSize=bar.querySelector('select[data-c="fontSize"]');
@@ -15489,7 +15492,12 @@ function fwToolbar(ed){
     btn.addEventListener('click',function(){
       var col=btn.getAttribute('data-col'), hl=btn.getAttribute('data-hl');
       if(col)run('foreColor',col);
-      else if(hl){try{run('hiliteColor',hl);}catch(e){run('backColor',hl);}}
+      else if(hl){
+        var cue=fwCueCell(ed);                       /* Cornell 키워드 칸 안이면 글자가 아니라 칸 전체 음영 */
+        if(cue){ed.focus();if(hl==='transparent'){cue.style.background='';cue.style.color='';}else{cue.style.background=hl;cue.style.color='#12312b';}
+          try{ed.dispatchEvent(new Event('input',{bubbles:true}));}catch(e){}setTimeout(upd,0);}
+        else{try{run('hiliteColor',hl);}catch(e){run('backColor',hl);}}
+      }
       else run(btn.getAttribute('data-c'));
     });
   });
@@ -15530,6 +15538,14 @@ function fwCornell(ed){
   try{ed.dispatchEvent(new Event('input',{bubbles:true}));}catch(e){}
   if(tb&&tb.scrollIntoView)tb.scrollIntoView({block:'nearest'});
   return tb;
+}
+/* 커서가 Cornell 키워드 칸(왼쪽) 안에 있으면 그 td */
+function fwCueCell(ed){
+  var s;try{s=window.getSelection();}catch(e){return null;}
+  if(!s||!s.rangeCount)return null;
+  var n=s.getRangeAt(0).startContainer;if(n&&n.nodeType===3)n=n.parentNode;
+  if(!n||!n.closest||!ed.contains(n))return null;
+  return n.closest('table.cornell td.cn-cue');
 }
 /* 코넬 표 안에서 Tab = 다음 칸, Shift+Tab = 이전 칸 */
 function fwCornellKey(e){
