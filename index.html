@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-14 · r155">
+<meta name="hmd-build" content="2026-09-14 · r156">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1148,7 +1148,10 @@
   /* 칸 이름은 흐름 밖(왼쪽 위 구석)에 두어 본문 줄과 줄선이 어긋나지 않게 */
   table.cornell td[data-l],table.cornell td.cn-cue{padding-top:1.7em}   /* 단서 칸도 노트 첫 줄과 높이를 맞춘다 */
   table.cornell td[data-l]::before{content:attr(data-l);position:absolute;left:10px;top:5px;font-size:10.5px;line-height:1;font-weight:800;color:#b3a57d;letter-spacing:.5px;user-select:none;pointer-events:none;font-family:'Gowun Dodum',sans-serif;white-space:normal}
-  table.cornell td.cn-cue{width:29%;border-right:2.5px solid #d9b95a;background:var(--green-soft);color:var(--green);font-weight:700}   /* 키워드 칸: 독서 카테고리 배지와 같은 음영 · 툴바 파스텔로 바꿀 수 있다 */
+  table.cornell td.cn-cue{width:29%;border-right:2.5px solid #d9b95a;line-height:1.6}
+  /* 키워드 칸: 한 줄 = 태그 하나 (독서 카테고리 배지 모양) · 커서를 두고 툴바 파스텔을 누르면 그 태그 색이 바뀐다 */
+  table.cornell .cn-tag{display:block;width:fit-content;background:var(--green-soft);color:var(--green);font-weight:700;border-radius:999px;padding:2px 11px;margin:2px 0 4px;font-size:.92em;line-height:1.5;max-width:100%;overflow-wrap:anywhere;white-space:normal}
+  table.cornell .cn-tag.cn-empty{background:transparent!important;color:var(--muted);padding-left:2px;padding-right:2px;min-width:1.6em}
   /* 노트 칸: 줄 간격(1.7em)마다 연한 줄선 */
   table.cornell td.cn-note{height:240px;background-clip:content-box;background-origin:content-box;
     background-image:repeating-linear-gradient(to bottom,transparent 0,transparent calc(1.7em - 1px),#d9d2be calc(1.7em - 1px),#d9d2be 1.7em)}
@@ -3606,7 +3609,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-14 · r155';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-14 · r156';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -15441,7 +15444,7 @@ function fwToolbar(ed){
     +'<button type="button" class="fw-hl fw-hl-off" data-hl="transparent" title="음영 지우기">×</button>'
     +'<span class="fw-sep"></span>'
     +'<button type="button" class="fw-symbtn" title="특수기호 (낫표·화살괄호·수식 …)">※</button>'
-    +'<button type="button" class="fw-cornell" title="Cornell 노트 틀 넣기 (키워드 | 노트 · 요약) · 왼쪽 키워드 칸에 커서를 두고 음영 색을 누르면 칸 색이 바뀝니다">Cornell</button>'
+    +'<button type="button" class="fw-cornell" title="Cornell 노트 틀 넣기 (키워드 | 노트 · 요약) · 왼쪽 칸은 한 줄이 태그 하나 — 태그에 커서를 두고 음영 색을 누르면 태그 색이 바뀝니다">Cornell</button>'
     +'<span class="fw-now" title="지금 쓰는 글씨체·크기">고운돋움 · 11pt</span>';
   var now=bar.querySelector('.fw-now');
   var selFont=bar.querySelector('select[data-c="fontName"]'), selSize=bar.querySelector('select[data-c="fontSize"]');
@@ -15493,8 +15496,8 @@ function fwToolbar(ed){
       var col=btn.getAttribute('data-col'), hl=btn.getAttribute('data-hl');
       if(col)run('foreColor',col);
       else if(hl){
-        var cue=fwCueCell(ed);                       /* Cornell 키워드 칸 안이면 글자가 아니라 칸 전체 음영 */
-        if(cue){ed.focus();if(hl==='transparent'){cue.style.background='';cue.style.color='';}else{cue.style.background=hl;cue.style.color='#12312b';}
+        var tag=fwCueTag(ed);                        /* Cornell 키워드 태그 안이면 글자가 아니라 태그(배지) 색 */
+        if(tag){ed.focus();if(hl==='transparent'){tag.style.background='';tag.style.color='';}else{tag.style.background=hl;tag.style.color=FW_HL_INK[hl.toUpperCase()]||'#12312b';}
           try{ed.dispatchEvent(new Event('input',{bubbles:true}));}catch(e){}setTimeout(upd,0);}
         else{try{run('hiliteColor',hl);}catch(e){run('backColor',hl);}}
       }
@@ -15511,7 +15514,7 @@ function fwToolbar(ed){
 function fwCornellHTML(id){
   return '<table class="cornell" data-cn="'+id+'">'
     +'<colgroup><col style="width:29%"><col></colgroup>'
-    +'<tr class="cn-mid"><td class="cn-cue"><br></td><td class="cn-note" data-l="노트"><br></td></tr>'
+    +'<tr class="cn-mid"><td class="cn-cue"><div class="cn-tag cn-empty"><br></div></td><td class="cn-note" data-l="노트"><br></td></tr>'
     +'<tr class="cn-sum"><td colspan="2" data-l="요약"><br></td></tr>'
     +'</table><div><br></div>';
 }
@@ -15531,7 +15534,7 @@ function fwCornell(ed){
     while(box.firstChild)ed.appendChild(box.firstChild);
     tb=ed.querySelector('table.cornell[data-cn="'+id+'"]');
   }
-  if(!ed.__cnKey){ed.__cnKey=true;ed.addEventListener('keydown',fwCornellKey);}
+  fwCornellBind(ed);
   /* 커서를 「노트」 칸에 둔다 */
   var note=tb?tb.querySelector('td.cn-note'):null;
   if(note){try{var r=document.createRange();r.setStart(note,0);r.collapse(true);var sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);}catch(e){}}
@@ -15539,16 +15542,83 @@ function fwCornell(ed){
   if(tb&&tb.scrollIntoView)tb.scrollIntoView({block:'nearest'});
   return tb;
 }
-/* 커서가 Cornell 키워드 칸(왼쪽) 안에 있으면 그 td */
-function fwCueCell(ed){
+/* 파스텔 음영마다 어울리는 글자색 (태그 배지용) */
+var FW_HL_INK={'#FFF3B8':'#7a5c00','#FFE0E6':'#a3364a','#DDEBFF':'#2b5fd9','#DDF5E6':'#2f7d5e','#EDE4FF':'#6b46c1','#FFE8D1':'#a5521c'};
+/* 커서가 Cornell 키워드 태그 안에 있으면 그 태그 요소 */
+function fwCueTag(ed){
   var s;try{s=window.getSelection();}catch(e){return null;}
   if(!s||!s.rangeCount)return null;
   var n=s.getRangeAt(0).startContainer;if(n&&n.nodeType===3)n=n.parentNode;
   if(!n||!n.closest||!ed.contains(n))return null;
-  return n.closest('table.cornell td.cn-cue');
+  var cue=n.closest('table.cornell td.cn-cue');if(!cue)return null;
+  var tag=n.closest('.cn-tag');
+  if(!tag){fwCornellNorm(ed);tag=fwCueTag0();}
+  return tag;
+}
+function fwCueTag0(){try{var s=window.getSelection();var n=s.getRangeAt(0).startContainer;if(n.nodeType===3)n=n.parentNode;return n.closest?n.closest('.cn-tag'):null;}catch(e){return null;}}
+/* 키워드 칸 정리: 글 한 줄 = .cn-tag 하나 (예전 표·지워진 뒤 새로 친 글도 태그로) */
+function fwCornellNorm(ed){
+  if(!ed)return;
+  var sel=null,caretNode=null,caretOff=0;
+  try{sel=window.getSelection();if(sel&&sel.rangeCount){caretNode=sel.getRangeAt(0).startContainer;caretOff=sel.getRangeAt(0).startOffset;}}catch(e){}
+  ed.querySelectorAll('table.cornell td.cn-cue').forEach(function(td){
+    td.style.background='';td.style.color='';                      /* r155 방식(칸 전체 음영)은 되돌린다 */
+    var kids=Array.prototype.slice.call(td.childNodes),hasContent=false,restore=null;
+    kids.forEach(function(n){
+      if(n.nodeType===3){
+        if(!n.nodeValue.trim()){n.remove();return;}
+        var d=document.createElement('div');d.className='cn-tag';td.insertBefore(d,n);d.appendChild(n);hasContent=true;
+        if(n===caretNode)restore=[n,caretOff];
+      }else if(n.nodeType===1){
+        if(n.tagName==='BR'){n.remove();return;}
+        if(!n.classList.contains('cn-tag')){
+          if(n.tagName==='DIV'||n.tagName==='P'){n.classList.add('cn-tag');}
+          else{var d2=document.createElement('div');d2.className='cn-tag';td.insertBefore(d2,n);d2.appendChild(n);}
+        }
+        hasContent=true;
+      }
+    });
+    if(!hasContent)td.innerHTML='<div class="cn-tag cn-empty"><br></div>';
+    fwCornellEmptyCls(td);
+    if(restore){try{var r=document.createRange();r.setStart(restore[0],Math.min(restore[1],restore[0].length));r.collapse(true);sel.removeAllRanges();sel.addRange(r);}catch(e){}}
+  });
+}
+function fwCornellEmptyCls(root){
+  (root||document).querySelectorAll('.cn-tag').forEach(function(t){t.classList.toggle('cn-empty',!t.textContent.trim());});
+}
+function fwCornellBind(ed){
+  if(!ed||ed.__cnKey)return;ed.__cnKey=true;
+  ed.addEventListener('keydown',fwCornellKey);
+  ed.addEventListener('input',function(){
+    var s;try{s=window.getSelection();}catch(e){return;}
+    if(!s||!s.rangeCount)return;
+    var n=s.getRangeAt(0).startContainer;if(n&&n.nodeType===3)n=n.parentNode;
+    var cue=n&&n.closest?n.closest('table.cornell td.cn-cue'):null;
+    if(!cue)return;
+    if(!n.closest('.cn-tag'))fwCornellNorm(ed);else fwCornellEmptyCls(cue);
+  });
+}
+/* 키워드 칸에서 Enter = 새 태그 (브라우저가 줄바꿈 <br>를 넣지 않게 직접 나눈다) */
+function fwCornellEnter(e){
+  var s;try{s=window.getSelection();}catch(x){return false;}
+  if(!s||!s.rangeCount)return false;
+  var r=s.getRangeAt(0),n=r.startContainer;if(n&&n.nodeType===3)n=n.parentNode;
+  var cue=n&&n.closest?n.closest('table.cornell td.cn-cue'):null;if(!cue)return false;
+  var tag=n.closest('.cn-tag');
+  if(!tag){fwCornellNorm(n.closest('.fw-rich')||cue);tag=fwCueTag0();if(!tag)return false;r=s.getRangeAt(0);}
+  e.preventDefault();
+  var nt=document.createElement('div');nt.className='cn-tag';
+  try{var tail=document.createRange();tail.setStart(r.endContainer,r.endOffset);tail.setEndAfter(tag.lastChild||tag);
+    var frag=tail.extractContents();nt.appendChild(frag);}catch(x){}
+  if(!nt.textContent.trim()){nt.innerHTML='<br>';nt.classList.add('cn-empty');}
+  if(!tag.textContent.trim()){tag.innerHTML='<br>';tag.classList.add('cn-empty');}else tag.classList.remove('cn-empty');
+  tag.parentNode.insertBefore(nt,tag.nextSibling);
+  try{var r2=document.createRange();r2.setStart(nt,0);r2.collapse(true);s.removeAllRanges();s.addRange(r2);}catch(x){}
+  return true;
 }
 /* 코넬 표 안에서 Tab = 다음 칸, Shift+Tab = 이전 칸 */
 function fwCornellKey(e){
+  if(e.key==='Enter'&&!e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey){if(fwCornellEnter(e)){try{e.currentTarget.dispatchEvent(new Event('input',{bubbles:true}));}catch(x){}}return;}
   if(e.key!=='Tab'||e.ctrlKey||e.metaKey||e.altKey)return;
   var s;try{s=window.getSelection();}catch(x){return;}
   if(!s||!s.rangeCount)return;
@@ -15635,6 +15705,7 @@ function fwOpen(kind,title,ids,mains,saveFn){
       el=document.createElement('div');el.contentEditable='true';el.setAttribute('data-noenter','1');
       var v0=src.value||'';
       el.innerHTML=fwLooksHtml(v0)?v0:esc(v0).replace(/\n/g,'<br>');
+      if(el.querySelector('table.cornell')){fwCornellNorm(el);fwCornellBind(el);}
     }
     else if(main){el=document.createElement('textarea');el.value=src.value;el.style.minHeight=tall;}
     else{el=document.createElement('input');if(src.type)el.type=src.type;el.value=src.value;}
