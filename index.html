@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-17 · r159">
+<meta name="hmd-build" content="2026-09-17 · r160">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -443,11 +443,19 @@
   /* 책 표지 확대 보기 */
   .ex-clip{cursor:zoom-in;max-height:5.4em;overflow:hidden;position:relative}
   .ex-clip:hover{opacity:.82}
-  .exv-back{display:none;position:fixed;inset:0;z-index:119;background:rgba(18,49,43,.44);align-items:center;justify-content:center;padding:24px}
+  .exv-back{display:none;position:fixed;inset:0;z-index:121;background:rgba(18,49,43,.44);align-items:center;justify-content:center;padding:24px}
   .exv-back.on{display:flex}
   .exv{background:var(--card);border-radius:20px;box-shadow:0 26px 60px rgba(18,49,43,.26);width:min(720px,100%);max-height:86vh;display:flex;flex-direction:column;overflow:hidden;animation:fwIn .16s ease-out}
   .exv-head{display:flex;align-items:center;gap:9px;padding:18px 22px 10px;font-size:13px;font-weight:700;color:var(--muted)}
   .exv-head .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .exv-nav{display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .exv-nav button{border:1px solid var(--line);background:#fff;border-radius:999px;width:24px;height:24px;line-height:1;font-size:14px;cursor:pointer;color:var(--dark);padding:0;font-family:inherit}
+  .exv-nav button:hover{border-color:var(--yellow)}
+  .exv-nav button:disabled{opacity:.3;cursor:default}
+  .exv-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 22px 16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+  .exv-foot .btn{padding:7px 14px}
+  .exv-foot .btn:disabled{opacity:.35;cursor:default}
+  .exv-back.on .exv{z-index:1}
   .exv-body{padding:4px 26px 26px;overflow:auto;font-family:'Gowun Dodum',sans-serif;font-size:18px;line-height:1.95;color:var(--dark);white-space:pre-wrap;word-break:break-word}
   .ch-item{border-bottom:1px solid var(--line)}
   .ch-item:last-of-type{border-bottom:none}
@@ -3442,10 +3450,12 @@
     <div class="exv-head">
       <span class="dot" style="background:var(--green)"></span>
       <b id="exvMeta"></b>
+      <span class="exv-nav" id="exvNav" style="display:none"><button type="button" onclick="exvStep(-1)" title="이전 발췌 (←)">‹</button><span id="exvPos"></span><button type="button" onclick="exvStep(1)" title="다음 발췌 (→)">›</button></span>
       <span class="pen-ic" style="margin-left:auto;font-size:15px" title="수정" onclick="exvEdit()">✎</span>
       <span class="bkv-x" style="margin-left:0" onclick="closeExcerptView()">×</span>
     </div>
     <div class="exv-body" id="exvBody"></div>
+    <div class="exv-foot" id="exvFoot" style="display:none"><button type="button" class="btn ghost" onclick="exvStep(-1)">‹ 이전</button><span id="exvFootPos"></span><button type="button" class="btn y" onclick="exvStep(1)">다음 ›</button></div>
   </div>
   <select id="exEditChapter" style="display:none"></select>
   <input id="exEditPage" style="display:none" placeholder="페이지">
@@ -3616,7 +3626,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-17 · r159';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-17 · r160';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -10832,16 +10842,37 @@ function addChapterExcerpt(bookId){
 var exvBook=null, exvId=null;
 function excerptOf(bookId,exId){var b=bookById(bookId);if(!b)return null;
   return b.excerpts.find(function(e){return e.id===exId;})||null;}
-function openExcerptView(bookId,exId){
+/* list = 같은 화면의 발췌 id 목록 (있으면 ‹ › 로 앞뒤 발췌를 넘긴다) */
+var exvList=null;
+function openExcerptView(bookId,exId,list){
   var b=bookById(bookId), e=excerptOf(bookId,exId);if(!b||!e)return;
   exvBook=bookId;exvId=exId;
+  if(Array.isArray(list))exvList=list.slice();else if(!exvList||exvList.indexOf(exId)<0)exvList=null;
   document.getElementById('exvBody').classList.remove('dy');
   document.getElementById('exvMeta').textContent=
     (e.chapter||'')+(e.page?' · p.'+e.page:'')+(e.date?' · '+e.date:'');
   document.getElementById('exvBody').innerHTML=fwR(e.text);
+  var body=document.getElementById('exvBody');body.scrollTop=0;
+  var nav=document.getElementById('exvNav'),foot=document.getElementById('exvFoot');
+  var n=exvList?exvList.length:0,i=exvList?exvList.indexOf(exId):-1;
+  if(n>1&&i>=0){
+    nav.style.display='';foot.style.display='';
+    document.getElementById('exvPos').textContent=(i+1)+' / '+n;
+    document.getElementById('exvFootPos').textContent=(i+1)+' / '+n+' · ← → 로 넘기기';
+    nav.querySelector('button:first-child').disabled=(i===0);nav.querySelector('button:last-child').disabled=(i===n-1);
+    foot.querySelector('button:first-child').disabled=(i===0);foot.querySelector('button:last-child').disabled=(i===n-1);
+  }else{nav.style.display='none';foot.style.display='none';}
   document.getElementById('exvBack').classList.add('on');
 }
-function closeExcerptView(){var el=document.getElementById('exvBack');if(el)el.classList.remove('on');exvBook=null;exvId=null;dvId=null;}
+function exvStep(d){
+  if(exvId==null||!exvList)return;
+  var i=exvList.indexOf(exvId);if(i<0)return;
+  var j=i+d;if(j<0||j>=exvList.length)return;
+  openExcerptView(exvBook,exvList[j]);
+  /* 책들여다보기 안에서 넘길 땐 아래 문헌 메모도 그 발췌로 따라간다 */
+  if(typeof bkvId!=='undefined'&&bkvId!=null&&bkvId===exvBook){bkvExSel=exvList[j];bkvRenderExs();bkvRenderNote();}
+}
+function closeExcerptView(){var el=document.getElementById('exvBack');if(el)el.classList.remove('on');exvBook=null;exvId=null;dvId=null;exvList=null;}
 /* 큰화면의 수정 버튼 → 발췌 쓸 때와 같은 편집기 */
 function exvEdit(){
   if(exvId!=null){var bId=exvBook,eId=exvId;closeExcerptView();editExcerptFull(bId,eId);return;}
@@ -10871,7 +10902,13 @@ function saveExcerptFull(){
   save();renderReading();renderCal();
   if(typeof bkvId!=='undefined'&&bkvId!=null){bkvRenderChs();bkvRenderNote();}
 }
-document.addEventListener('keydown',function(e){if(e.key==='Escape'&&(exvId!=null||dvId!=null))closeExcerptView();});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'&&(exvId!=null||dvId!=null)){closeExcerptView();return;}
+  if(exvId!=null&&exvList&&(e.key==='ArrowLeft'||e.key==='ArrowRight')){
+    var t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.isContentEditable))return;
+    e.preventDefault();exvStep(e.key==='ArrowRight'?1:-1);
+  }
+});
 
 /* ---------- 책 표지 확대 보기 ---------- */
 var bkvId=null, bkvCh=null, bkvExSel=null;   /* bkvExSel = 지금 선택한 발췌 (문헌 메모가 따라온다) */
@@ -11022,8 +11059,12 @@ function bkvRenderExs(){
 function bkvExPick(ev,eid){
   var s=window.getSelection();if(s&&!s.isCollapsed)return;
   if(ev&&ev.target&&ev.target.closest&&ev.target.closest('.stn-row,.stm,.pen-ic,.del,.stn-btn'))return;
-  bkvExSel=(bkvExSel===eid?null:eid);
+  bkvExSel=eid;
   bkvRenderExs();bkvRenderNote();
+  /* 발췌문만 크게 팝업 · 이 목차의 발췌 순서대로 ‹ › 넘기기 */
+  var b=bkvBook();if(!b)return;
+  var ids=Array.prototype.slice.call(document.querySelectorAll('#bkvExs .bkv-ex[data-ex]')).map(function(el){return Number(el.getAttribute('data-ex'));});
+  openExcerptView(b.id,eid,ids);
 }
 /* 아래 칸: 발췌를 고르면 그 발췌의 문헌 메모 · 아니면 책 전체 메모 */
 function bkvRenderNote(){
