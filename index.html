@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-14 · r157">
+<meta name="hmd-build" content="2026-09-17 · r159">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3616,7 +3616,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-14 · r157';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-17 · r159';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -13019,7 +13019,7 @@ function cheonilDashHTML(solo){
 const ASSET_CATS={
   지출:['식비','술','모임1','모임2','세탁','문화생활','유류&교통','이발','기타','경조사','비상금'],
   투자:['현금','적금','주식','채권','코인','연금저축','행정공제'],
-  수입:['월급','명절수당','성과급','정근수당','연가보상비','여비','기타','비상금']
+  수입:['월급','시간외수당','명절수당','성과급','정근수당','연가보상비','여비','기타','비상금']
 };
 const PALETTE=['#e8615a','#f4b740','#2f6f5e','#e0a83a','#6a8fd8','#b56fb0','#4bb3a5','#d98555','#c98a3a','#8a9490','#9c6ade','#3aa0c9'];
 let dashAssetTab='지출', detailAssetTab='지출';
@@ -13167,6 +13167,18 @@ function assetLedger(type){
     window.__expTotal=rows.length;var per=10;var pages=Math.max(1,Math.ceil(rows.length/per));if(expPage>=pages)expPage=pages-1;if(expPage<0)expPage=0;rows=rows.slice(expPage*per,expPage*per+per);}
   if(!rows.length)return '<tr><td colspan="7" class="empty">'+((type==='지출'&&(expSearch||'').trim())?'검색 결과가 없습니다.':'내역이 없습니다. 위 입력창에서 추가하세요.')+'</td></tr>';
   return rows.map(function(a){return assetRowHTML(a,type==='지출'?a.type:type,false);}).join('');
+}
+/* 수입 내역: 달 단위로 본다 (위 ‹ › 로 달 이동 · 기본은 이번 달) */
+var incMonKey=null;
+function incMon(){return incMonKey||thisMonth();}
+function incMonShift(d){incMonKey=(expMonAdd(incMon(),d)===thisMonth())?null:expMonAdd(incMon(),d);renderAssets();}
+function incMonToday(){incMonKey=null;renderAssets();}
+function incLedgerHTML(){
+  var mk=incMon();
+  var rows=(db.assets||[]).filter(function(a){return a.type==='수입'&&monthOf(a.date)===mk;})
+    .sort(function(a,b){return String(b.date).localeCompare(String(a.date))||b.id-a.id;});
+  if(!rows.length)return '<tr><td colspan="5" class="empty">'+(+mk.slice(5,7))+'월 수입 내역이 없습니다.</td></tr>';
+  return rows.map(function(a){return assetRowHTML(a,'수입',true);}).join('');
 }
 function assetLedgerSlim(type,limit){
   let rows=db.assets.filter(a=>a.type===type).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
@@ -13555,9 +13567,10 @@ function paneExpense(){
   </div>
   ${expCmpView==='bars'?expCmpSVG():expTrendCard()}
   <div class="g2">
-    <div class="card"><h3><span class="dot" style="background:var(--green)"></span> 수입 내역 <span class="more">이번달 ${won(incSum)} · 총 ${won(incTotal)}</span></h3>
+    <div class="card"><h3><span class="dot" style="background:var(--green)"></span> <span style="white-space:nowrap">수입 내역</span> <span class="more" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${incMon()===thisMonth()?'이번달':(+incMon().slice(5,7))+'월'} ${won(sumAssets(a=>a.type==='수입'&&monthOf(a.date)===incMon()))} · 총 ${won(incTotal)}</span>
+      <span class="tl-datenav"><button type="button" onclick="incMonShift(-1)" title="지난달">‹</button><span class="more" style="margin-left:0">${incMon().replace('-','.')}</span><button type="button" onclick="incMonShift(1)" title="다음달">›</button>${incMon()===thisMonth()?'':'<span class="tl-today-btn" onclick="incMonToday()" title="이번 달로">이번달</span>'}</span></h3>
       <div class="tblx"><table class="ledger led-fix"><thead><tr><th>날짜</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th></th></tr></thead>
-      <tbody>${assetLedgerSlim('수입',12)}</tbody></table></div></div>
+      <tbody>${incLedgerHTML()}</tbody></table></div></div>
     <div class="card"><h3><span class="dot" style="background:var(--green)"></span> 월별 수입 추이 <span class="more">최근 6개월</span></h3>${incomeTrendSVG()}</div>
   </div>
   <div class="g2">
