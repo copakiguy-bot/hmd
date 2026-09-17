@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-17 · r160">
+<meta name="hmd-build" content="2026-09-17 · r161">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1243,6 +1243,26 @@
   .rv-rep-dn{font-size:10.5px;color:#2f7d5e;font-weight:800;border:1px solid #2f7d5e;border-radius:8px;padding:0 6px}
   .rv-rep-it.done .rv-rep-t b{text-decoration:line-through;color:#888}
   .rv-rep-b{margin-top:4px;font-size:12.5px;line-height:1.75;white-space:pre-wrap;word-break:break-word}
+  /* ===== 영어회화 100 ===== */
+  .ec100-paste{margin:2px 0 10px;font-size:12px;color:var(--muted)}
+  .ec100-paste summary{cursor:pointer}
+  .ec100-list{display:flex;flex-direction:column;gap:6px}
+  .ec100-row{display:flex;align-items:center;gap:12px;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer}
+  .ec100-row:hover{border-color:var(--yellow)}
+  .ec100-day{flex:none;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--dark);color:#fff;font-family:'Nunito','Pretendard',sans-serif;font-size:8px;letter-spacing:1px;line-height:1}
+  .ec100-day b{font-size:14px;margin-top:2px;letter-spacing:0}
+  .ec100-b{flex:1;min-width:0}
+  .ec100-t{font-weight:800;color:var(--dark);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ec100-k{font-size:12px;color:#2b5a7e;font-weight:700;margin-top:1px}
+  .ec100-d{font-size:11px;color:var(--muted);flex:none}
+  .ec100-ov{display:none;position:fixed;inset:0;z-index:125;background:rgba(18,49,43,.5);align-items:center;justify-content:center;padding:18px}
+  .ec100-ov.on{display:flex}
+  .ec100-box{background:#f1efe8;border-radius:18px;width:min(860px,100%);height:min(92vh,1100px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 26px 60px rgba(18,49,43,.3);animation:fwIn .13s ease-out}
+  .ec100-top{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fff;border-bottom:1px solid var(--line)}
+  .ec100-top .ec100-day{width:36px;height:36px}.ec100-top .ec100-day b{font-size:12px}
+  .ec100-tt{color:var(--dark);font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .ec100-fr{flex:1;width:100%;border:none;background:#f1efe8}
+  @media (max-width:640px){.ec100-ov{padding:0}.ec100-box{border-radius:0;height:100vh}}
   .rd-wait-badge{display:inline-block;font-size:10px;font-weight:800;color:#7a6a2a;background:#f6ecc2;border-radius:10px;padding:2px 8px;vertical-align:middle}
   .rd-filt{margin-left:10px;display:inline-flex;gap:4px;vertical-align:middle}
   @media (max-width:640px){.wish-row{flex-wrap:wrap}.wish-act{width:100%;justify-content:flex-end}}
@@ -3626,7 +3646,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-17 · r160';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-17 · r161';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -3642,7 +3662,7 @@ function ensureFields(){
   if(!db||typeof db!=='object')db=seed();
   /* 어떤 경로로 들어온 데이터든 기본 뼈대는 반드시 갖춰 둔다 (동기화·백업 복원 대비) */
   ['work','study','reading','assets','inbox','diary','sessions','schedules',
-   'tlRoutines','tlProjects','routines','fixed','workCats','zk','chrono','chronoLinks','wishBooks'].forEach(function(k){
+   'tlRoutines','tlProjects','routines','fixed','workCats','zk','chrono','chronoLinks','wishBooks','ec100'].forEach(function(k){
     if(!Array.isArray(db[k]))db[k]=[];});
   /* null·문자열 같은 깨진 항목이 섞여 있으면 부팅이 그 자리에서 죽는다 — 목록에서 걸러낸다 */
   ['work','study','reading','assets','inbox','diary','sessions','schedules',
@@ -12909,9 +12929,84 @@ function renderLanguagePane(pane){
     <div style="margin-top:10px"><button class="btn y" onclick="saveCheonil('ld')">저장</button></div>`
     :`<div class="empty">등록된 CHAPTER가 없습니다. 아래 「목차 관리」에서 CHAPTER·UNIT을 먼저 추가하세요.</div>`}
   </div>
-  ${cheonilmunPaneHTML()}`;
+  ${cheonilmunPaneHTML()}
+  ${ec100CardHTML()}`;
   if(has)fillCheonilSelectors('ld');
 }
+/* ===================== 영어회화 100 — 하루 한 장 HTML 등록 ===================== */
+function ec100Arr(){if(!Array.isArray(db.ec100))db.ec100=[];return db.ec100;}
+function ec100ById(id){return ec100Arr().find(function(x){return String(x.id)===String(id);});}
+/* HTML에서 Day 번호·제목·우리말 제목을 읽어낸다 (<title>, h1, .ko) */
+function ec100Parse(html){
+  var out={day:'',title:'',ko:''};
+  try{
+    var doc=new DOMParser().parseFromString(String(html||''),'text/html');
+    var t=(doc.querySelector('title')||{}).textContent||'';
+    var h1=doc.querySelector('h1');if(h1)out.title=h1.textContent.trim();
+    var ko=doc.querySelector('.ko');if(ko)out.ko=ko.textContent.trim();
+    var m=/day\s*0*(\d{1,3})/i.exec(t)||/day\s*0*(\d{1,3})/i.exec(doc.body?doc.body.textContent:'');
+    if(m)out.day=String(+m[1]).padStart(3,'0');
+    if(!out.title){var tt=t.split(/[·|:]/);out.title=(tt[1]||tt[0]||'').trim();}
+  }catch(e){}
+  return out;
+}
+function ec100Add(html){
+  html=String(html||'').trim();
+  if(!/<html|<body|<div|<section/i.test(html)){alert('HTML 파일 내용이 아닙니다.');return;}
+  var p=ec100Parse(html);
+  var day=p.day||prompt('Day 번호 (예: 027)','')||'';day=day?String(+day).padStart(3,'0'):'';
+  var dup=ec100Arr().find(function(x){return day&&x.day===day;});
+  if(dup){if(!confirm('Day '+day+' 이(가) 이미 있습니다. 새 파일로 바꿀까요?'))return;dup.html=html;dup.title=p.title||dup.title;dup.ko=p.ko||dup.ko;dup.date=today();}
+  else ec100Arr().push({id:uid(),day:day,title:p.title||'(제목 없음)',ko:p.ko||'',html:html,date:today()});
+  save();renderStudy();
+}
+function ec100Pick(input){
+  var f=input.files&&input.files[0];if(!f)return;
+  var r=new FileReader();r.onload=function(){ec100Add(r.result);};r.readAsText(f,'utf-8');
+  input.value='';
+}
+function ec100Paste(){
+  var ta=document.getElementById('ec100Txt');if(!ta||!ta.value.trim())return;
+  ec100Add(ta.value);ta.value='';
+}
+function ec100Del(id){var x=ec100ById(id);if(!x)return;if(!confirm('Day '+x.day+' 「'+x.title+'」을(를) 지울까요?'))return;
+  db.ec100=ec100Arr().filter(function(v){return String(v.id)!==String(id);});save();renderStudy();}
+function ec100Sorted(){return ec100Arr().slice().sort(function(a,b){return (b.day||'').localeCompare(a.day||'')||b.id-a.id;});}
+function ec100CardHTML(){
+  var list=ec100Sorted();
+  return '<div class="card" id="ec100Card"><h3><span class="dot" style="background:#2b5a7e"></span> 영어회화 100 <span class="more">'+list.length+'일 · 하루 한 장 HTML</span>'
+    +'<label class="btn ghost" style="margin-left:auto;padding:7px 12px;cursor:pointer">＋ HTML 파일 등록<input type="file" accept=".html,.htm,text/html" style="display:none" onchange="ec100Pick(this)"></label></h3>'
+    +'<details class="ec100-paste"><summary>파일 대신 HTML 내용 붙여넣기</summary><textarea id="ec100Txt" class="in" style="width:100%;min-height:90px;margin-top:6px;font-family:ui-monospace,monospace;font-size:11.5px" placeholder="&lt;!DOCTYPE html&gt; … 전체를 붙여 넣으세요"></textarea><div style="margin-top:6px"><button class="btn y" onclick="ec100Paste()">등록</button></div></details>'
+    +(list.length?'<div class="ec100-list">'+list.map(function(x){
+      return '<div class="ec100-row" onclick="ec100Open('+x.id+')" title="누르면 크게 보기">'
+        +'<span class="ec100-day">DAY<b>'+esc(x.day||'—')+'</b></span>'
+        +'<div class="ec100-b"><div class="ec100-t">'+esc(x.title||'')+'</div>'+(x.ko?'<div class="ec100-k">'+esc(x.ko)+'</div>':'')+'</div>'
+        +'<span class="ec100-d">'+esc(fmtK(x.date))+'</span>'
+        +'<span class="del" title="지우기" onclick="event.stopPropagation();ec100Del('+x.id+')">×</span></div>';
+    }).join('')+'</div>':'<div class="empty">아직 등록한 날이 없습니다. PDF를 HTML로 바꾼 파일을 «HTML 파일 등록»으로 올리세요.</div>')
+    +'</div>';
+}
+/* 보기: 등록한 HTML을 그대로 (iframe) · ‹ › 로 앞뒤 Day */
+function ec100Open(id){
+  var x=ec100ById(id);if(!x)return;
+  var list=ec100Sorted().slice().reverse(),i=list.findIndex(function(v){return String(v.id)===String(id);});
+  var ov=document.getElementById('ec100Ov');
+  if(!ov){ov=document.createElement('div');ov.id='ec100Ov';ov.className='ec100-ov';ov.addEventListener('click',function(e){if(e.target===ov)ec100Close();});document.body.appendChild(ov);}
+  ov.innerHTML='<div class="ec100-box"><div class="ec100-top"><span class="ec100-day">DAY<b>'+esc(x.day||'—')+'</b></span><b class="ec100-tt">'+esc(x.title)+'</b>'
+    +'<span class="exv-nav" style="margin-left:8px"><button type="button" onclick="ec100Step(-1)" title="이전 Day (←)"'+(i<=0?' disabled':'')+'>‹</button><span>'+(i+1)+' / '+list.length+'</span><button type="button" onclick="ec100Step(1)" title="다음 Day (→)"'+(i>=list.length-1?' disabled':'')+'>›</button></span>'
+    +'<span class="bkv-x" style="margin-left:auto" onclick="ec100Close()">×</span></div>'
+    +'<iframe class="ec100-fr" sandbox="allow-same-origin" referrerpolicy="no-referrer"></iframe></div>';
+  ov.querySelector('iframe').srcdoc=x.html;
+  ov.__id=x.id;ov.classList.add('on');
+  document.addEventListener('keydown',ec100Key);
+}
+function ec100Step(d){
+  var ov=document.getElementById('ec100Ov');if(!ov||!ov.__id)return;
+  var list=ec100Sorted().slice().reverse(),i=list.findIndex(function(v){return String(v.id)===String(ov.__id);});
+  var j=i+d;if(j<0||j>=list.length)return;ec100Open(list[j].id);
+}
+function ec100Close(){var ov=document.getElementById('ec100Ov');if(ov){ov.classList.remove('on');ov.innerHTML='';ov.__id=null;}document.removeEventListener('keydown',ec100Key);}
+function ec100Key(e){if(e.key==='Escape'){e.stopPropagation();ec100Close();}else if(e.key==='ArrowLeft')ec100Step(-1);else if(e.key==='ArrowRight')ec100Step(1);}
 
 /* 빠른 입력(챕터·유닛 선택 후 설명·영문장 저장) — p='cd'(대시보드) | 'ld'(언어 상세) */
 function fillCheonilDashSelectors(){return fillCheonilSelectors('cd');}
