@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-21 · r162">
+<meta name="hmd-build" content="2026-09-22 · r164">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1983,6 +1983,23 @@
   #chGraphCard.ch-full>p{margin-bottom:0}
   #chGraphCard.ch-full #chNoDates{max-height:80px;overflow:auto}
   body.ch-fullbody{overflow:hidden}
+  /* 타임라인 «연대기» 모드: 시간 그래프 카드를 타임라인 카드 안에 그대로 넣는다 */
+  #tlChronoHost{display:none}
+  #tlChronoHost.on{display:block}
+  #tlChronoHost #chGraphCard{margin:0;padding:0;box-shadow:none;border:none;background:transparent}
+  #tlChronoHost #chGraphCard>h3{display:none}
+  #tlChronoHost #chWrap{height:520px}
+  #tlChronoHost #chNoDates{max-height:86px;overflow:auto}
+  #tlChronoHost #chFullBtn{display:none}
+  .chp-ov.over-win{z-index:174}
+  /* 사건 기록 팝업 */
+  .chf-ov{display:none;position:fixed;inset:0;z-index:170;background:rgba(18,49,43,.34);padding:18px;align-items:center;justify-content:center}
+  .chf-ov.on{display:flex}
+  .chf{position:relative;width:min(640px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:16px;box-shadow:0 26px 60px rgba(18,49,43,.32);animation:fwIn .16s ease-out}
+  .chf #chFormCard{margin:0;box-shadow:none;border:none}
+  .chf #chCount{margin-right:26px}   /* 닫기 × 와 겹치지 않게 */
+  .chf-x{position:absolute;top:13px;right:17px;cursor:pointer;color:var(--muted);font-size:21px;line-height:1;z-index:2}
+  .chf-x:hover{color:var(--dark)}
   #chWrap.drag{cursor:grabbing}
   #chWrap.dotdrag{cursor:ew-resize}
   #chWrap circle[data-id]{cursor:grab}
@@ -3131,7 +3148,7 @@
       <div id="chNoDates"></div>
       <p style="font-size:12px;color:var(--muted);margin-top:8px">끌어서 이동 · 휠로 확대/축소 · 점 한 번 = 날짜 · 두 번 = 세부 내용 · 제목 한 번 = 수정 · 두 번 = 마인드맵</p>
     </div>
-      <div class="card">
+      <div class="card" id="chFormCard">
       <h3><span class="dot" style="background:var(--yellow)"></span> 사건 기록 <span class="more" id="chCount"></span></h3>
       <div class="inrow" style="flex-wrap:wrap">
         <input id="chY" class="in" type="text" inputmode="text" style="flex:none;width:132px" placeholder="년 · -384 / 4만2000년 전" oninput="chYHint()" title="-42000 = 기원전 42000년 (약 4만4천년 전) · 42000년 전 = 오늘 기준 4만2천년 전 · 만·억 표기(-46억) 됩니다">
@@ -3155,7 +3172,7 @@
       <div class="ch-cats" id="chCatPick" style="margin-top:8px"></div>
       <div class="inrow" style="margin-top:8px">
         <span style="font-size:12px;color:var(--muted)" id="chEditHint"></span>
-        <button class="btn ghost" id="chCancel" style="flex:none;margin-left:auto;display:none" onclick="chCancelEdit()">취소</button>
+        <button class="btn ghost" id="chCancel" style="flex:none;margin-left:auto;display:none" onclick="chFormCancel()">취소</button>
         <button class="btn y" id="chAddBtn" style="flex:none;margin-left:auto" onclick="chAdd()">추가</button>
       </div>
     </div>
@@ -3351,11 +3368,13 @@
           <button id="tlModeDaily" class="lunar-toggle on" onclick="tlDailyClick()">Daily</button>
           <button id="tlModeCn" class="lunar-toggle" onclick="tlCnClick()">의회일정</button>
           <button id="tlModeImp" class="lunar-toggle imp on" onclick="tlImpClick()" title="주요일정(빨간 점) 표시 · 항상 켜져 있음 — 누르면 의회일정 날짜축으로"><i></i>주요일정</button>
+          <button id="tlModeChrono" class="lunar-toggle ch" onclick="tlSetMode('chrono')" title="연대기 — 시간 그래프를 여기에 펼칩니다 · 빈 곳을 두 번 누르면 사건 기록 칸이 뜹니다">연대기</button>
           <button id="tlModeProject" class="lunar-toggle" onclick="tlSetMode('project')">Project</button>
           <button id="tlModeReview" class="lunar-toggle rv" onclick="tlSetMode('review')" title="복습 — 1·4·7·14·30일 전에 적은 학습·발췌·제텔카스텐·기사를 다시 본다">복습</button>
         </span>
         <span class="tl-datenav"><button type="button" onclick="tlDayShift(-1)" title="전날">‹</button><span class="more" id="tlLabel" style="margin-left:0"></span><button type="button" onclick="tlDayShift(1)" title="다음날">›</button></span></h3>
       <div class="tl-wrap"><div class="tl-inner" id="tlInner"></div></div>
+      <div id="tlChronoHost"></div>
       <div id="tlpForm" style="display:none">
         <div class="inrow" style="margin-top:12px">
           <input id="tlpiTitle" class="in" style="flex:1" placeholder="일정 입력">
@@ -3563,6 +3582,11 @@
   </div>
 </div>
 
+<!-- ===== 사건 기록 팝업 ===== -->
+<div class="chf-ov" id="chFormOv" onclick="if(event.target===this)chFormClose()">
+  <div class="chf" id="chFormBox"><span class="chf-x" onclick="chFormClose()" title="닫기">×</span></div>
+</div>
+
 <!-- ===== 연대기 사건 팝업 ===== -->
 <div class="chp-ov" id="chpOv" onclick="chPopClose()">
   <div class="chp" onclick="event.stopPropagation()">
@@ -3646,7 +3670,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-21 · r162';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-22 · r164';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4166,6 +4190,7 @@ function tlModeBtns(){
   var bi=document.getElementById('tlModeImp');if(bi)bi.classList.toggle('on',tlMode==='daily');
   if(bp)bp.classList.toggle('on',tlMode==='project');
   var br=document.getElementById('tlModeReview');if(br)br.classList.toggle('on',tlMode==='review');
+  var bh=document.getElementById('tlModeChrono');if(bh)bh.classList.toggle('on',tlMode==='chrono');
 }
 /* ===== 의회 타임라인 머리띠: 일단위·주단위 + 기관 고르기 (트랙 바로 위, 가로 스크롤에 틀고정) ===== */
 var tlCnOrgSel=[];   /* 비어 있으면 전체 · 여러 기관을 함께 고를 수 있다 */
@@ -4217,6 +4242,11 @@ function renderTimeline(){
   var inner=document.getElementById('tlInner'),card=document.getElementById('timelineCard');
   if(!inner||!card||card.style.display==='none')return;
   var form=document.getElementById('tlpForm'),stEl=null;
+  var wrap=document.querySelector('#timelineCard .tl-wrap');
+  if(tlMode==='chrono'){if(form)form.style.display='none';if(wrap)wrap.style.display='none';
+    var lb0=document.getElementById('tlLabel');if(lb0)lb0.textContent='연대기';
+    chDashShow();return;}
+  if(wrap)wrap.style.display='';chDashHide();
   if(tlMode==='review'){if(form)form.style.display='none';renderTlReview(inner);return;}
   if(tlMode==='project'){
     if(form){form.style.display='';
@@ -6086,6 +6116,7 @@ function shiftDayStr(k,n){var t=new Date(k+'T00:00:00');t.setDate(t.getDate()+n)
   return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');}
 function tlDayShift(n){
   if(tlMode==='review'){rvBase=shiftDayStr(rvBaseDate(),n);if(rvBase===today())rvBase=null;renderTimeline();return;}
+  if(tlMode==='chrono'){if(chState.ppy)chState.c+=n*chSpanNow()/4;chTipHide();renderChrono();return;}   /* 연대기: 화면 폭의 1/4씩 */
   if(tlMode==='daily'&&tlCn&&tlCnScale!=='day'){          /* 날짜축(Day): 한 달씩 */
     var from=tlCnStart();
     if(tlCnScale==='month'){var t=new Date(from+'T00:00:00');t.setDate(1);t.setMonth(t.getMonth()+n);
@@ -7627,7 +7658,7 @@ function chAdd(){
     db.chrono.push(nx);
   }
   save();
-  chCancelEdit();
+  chCancelEdit();chFormClose();
   var hb=document.getElementById('chYHintBox');if(hb)hb.innerHTML='';
   chState.c=chTof({y:y,m:m,d:d});   /* 방금 넣은 사건이 화면에 보이게 이동 */
   renderChrono();
@@ -7655,6 +7686,7 @@ function chEdit(id){
   document.getElementById('chCancel').style.display='';
   document.getElementById('chEditHint').textContent='「'+x.title+'」 수정 중';
   chCatPickRender();
+  if(chWinOn){chFormOpen();return;}                  /* 창에서는 팝업으로 수정 */
   var c=document.getElementById('chCount');if(c)c.scrollIntoView({behavior:'smooth',block:'center'});
 }
 function chBarRender(){
@@ -7698,7 +7730,48 @@ function chFullTgl(){
   chState.ppy=null;   /* 폭이 바뀌었으니 배율을 다시 잡는다 */
   chTipHide();setTimeout(renderChrono,30);
 }
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){var c=document.getElementById('chGraphCard');if(c&&c.classList.contains('ch-full'))chFullTgl();}});
+/* ---- 타임라인 «연대기» 모드 · 사건 기록 팝업 ----
+   시간 그래프 카드를 타임라인 카드 안으로 옮겼다가 다른 모드로 가면 제자리로 돌려놓는다 (입력칸·이벤트가 그대로 살아 있게) */
+var chWinOn=false,chWinSlot=null,chFormOn=false,chFormSlot=null;
+function chMoveInto(card,box,slot){if(!card||!box)return null;var s=slot||document.createComment('hmd-slot');
+  if(!s.parentNode)card.parentNode.insertBefore(s,card);box.appendChild(card);return s;}
+function chMoveBack(card,slot){if(!card||!slot||!slot.parentNode)return;slot.parentNode.insertBefore(card,slot);slot.parentNode.removeChild(slot);}
+function chDashShow(){                       /* 그래프 카드를 타임라인 안에 펼친다 */
+  var card=document.getElementById('chGraphCard'),host=document.getElementById('tlChronoHost');
+  if(!card||!host)return;
+  if(card.classList.contains('ch-full'))chFullTgl();
+  if(!chWinOn){chWinSlot=chMoveInto(card,host,null);chWinOn=true;chState.ppy=null;}
+  host.classList.add('on');chTipHide();
+  setTimeout(renderChrono,30);
+}
+function chDashHide(){                       /* 다른 모드로: 제자리로 */
+  var host=document.getElementById('tlChronoHost');if(host)host.classList.remove('on');
+  if(!chWinOn)return;
+  chFormClose();if(typeof chMindClose==='function')chMindClose();
+  chMoveBack(document.getElementById('chGraphCard'),chWinSlot);
+  chWinOn=false;chWinSlot=null;chState.ppy=null;chTipHide();
+}
+function chWinOpen(){tlSetMode('chrono');}   /* (예전 이름) */
+function chWinClose(){if(tlMode==='chrono')tlDailyClick();}
+function chFormOpen(){
+  if(chFormOn)return;
+  var card=document.getElementById('chFormCard'),ov=document.getElementById('chFormOv'),box=document.getElementById('chFormBox');
+  if(!card||!ov||!box)return;
+  chFormSlot=chMoveInto(card,box,null);
+  ov.classList.add('on');chFormOn=true;
+  var t=document.getElementById('chTitle');if(t)setTimeout(function(){t.focus();},30);
+}
+function chFormClose(){
+  if(!chFormOn)return;
+  chMoveBack(document.getElementById('chFormCard'),chFormSlot);
+  document.getElementById('chFormOv').classList.remove('on');
+  chFormOn=false;chFormSlot=null;
+}
+function chFormCancel(){chCancelEdit();chFormClose();}
+document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;
+  if(chFormOn){chFormClose();return;}
+  var c=document.getElementById('chGraphCard');if(c&&c.classList.contains('ch-full'))chFullTgl();});
+window.addEventListener('resize',function(){if(chWinOn){chState.ppy=null;renderChrono();}});
 window.addEventListener('resize',function(){var c=document.getElementById('chGraphCard');if(c&&c.classList.contains('ch-full')){chState.ppy=null;renderChrono();}});
 /* 제목 글자 폭 어림 (10.5px 굵은 글씨) */
 function chLabelW(t){var w=0,i;for(i=0;i<t.length;i++)w+=(t.charCodeAt(i)>255?10.5:6.3);return w+14;}
@@ -7707,7 +7780,9 @@ function renderChrono(){
   chFormInit();
   var cnt=document.getElementById('chCount');if(cnt)cnt.textContent=((db.chrono||[]).length)+'건';
   var vw=document.getElementById('view-chrono');
-  if(!vw||!vw.classList.contains('on'))return;      /* 화면에 없으면 그리지 않는다 */
+  if(chWinOn&&vw&&vw.classList.contains('on')){tlMode='daily';tlDailyOn=true;tlCn=false;tlModeBtns();chDashHide();   /* 연대기 화면으로 오면 카드를 제자리로 */
+    var tw=document.querySelector('#timelineCard .tl-wrap');if(tw)tw.style.display='';}
+  if(!chWinOn&&(!vw||!vw.classList.contains('on')))return;      /* 연대기 화면에도 타임라인에도 없으면 그리지 않는다 */
   chCatPickRender();chBarRender();
   var wrap=document.getElementById('chWrap'),svg=document.getElementById('chSvg');
   if(!wrap||!svg)return;
@@ -7968,6 +8043,7 @@ function chQuickAt(t,cat){
   if(fine){var mEl=document.getElementById('chM'),dEl=document.getElementById('chD');if(mEl)mEl.value=q.m;if(dEl)dEl.value=q.d;}
   chSelCats=cat?[cat]:[];chCatPickRender();
   var hint=document.getElementById('chEditHint');if(hint)hint.textContent=chDateStr(q.y,q.m,q.d)+(cat?' · '+cat:'')+' 자리에 새 사건';
+  if(chWinOn){chFormOpen();return;}                  /* 창에서는 사건 기록 칸이 팝업으로 */
   var tEl=document.getElementById('chTitle');if(tEl){tEl.focus();tEl.scrollIntoView({behavior:'smooth',block:'center'});}
 }
 function chPopOpen(id){
@@ -7994,7 +8070,7 @@ function chPopOpen(id){
         +'<span class="del" onclick="chUnlink('+L.id+')">×</span></div>';
     }).join('')):'';
   }
-  document.getElementById('chpOv').classList.add('on');
+  var pov=document.getElementById('chpOv');pov.classList.add('on');pov.classList.toggle('over-win',!!chWinOn);
   document.addEventListener('keydown',chPopEsc);
 }
 function chPopEsc(e){if(e.key==='Escape')chPopClose();}
