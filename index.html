@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-22 · r164">
+<meta name="hmd-build" content="2026-09-23 · r165">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1395,6 +1395,26 @@
   .zkc-ref{font-size:10.5px;color:#8a9490;flex:none;max-width:200px;overflow:hidden;
     text-overflow:ellipsis;white-space:nowrap}
   @media(max-width:700px){.zkc{aspect-ratio:auto;height:88vh}}
+  /* 대시보드 제텔카스텐 두 칸 (A6 색인카드를 그대로 펼쳐 놓은 모양) */
+  #homeZkCard{margin-bottom:20px}
+  .hmzk-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:800px){.hmzk-grid{grid-template-columns:1fr}}
+  .hmzk{background:#FDFBF2;border-radius:6px;position:relative;padding:12px 16px 12px 20px;display:flex;flex-direction:column;min-height:320px;
+    box-shadow:0 1px 0 rgba(0,0,0,.04),0 8px 22px rgba(18,49,43,.09)}
+  .hmzk::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#e8a4a0;border-radius:6px 0 0 6px}
+  .hmzk .zkc-title{font-size:16px;padding:3px 2px 7px}
+  .hmzk .zkc-body{flex:1;min-height:190px;font-size:15px}
+  .hmzk .zkc-head{gap:8px}
+  .hmzk-nav{display:inline-flex;gap:0;margin-left:2px}
+  .hmzk-nav span{cursor:pointer;padding:0 6px;font-size:17px;font-weight:800;color:#b0a889;user-select:none;line-height:1}
+  .hmzk-nav span:hover{color:var(--dark)}
+  .hmzk-nav span.dim{opacity:.28;pointer-events:none}
+  .hmzk-new{cursor:pointer;color:#b0a889;font-size:15px;font-weight:800;line-height:1;padding:0 4px}
+  .hmzk-new:hover{color:var(--dark)}
+  .hmzk-st{font-size:10.5px;color:#8a9490;flex:none;margin-left:auto}
+  .hmzk-st.dirty{color:#c98a3a}
+  .hmzk-del{font-size:11px;color:#b0a889;cursor:pointer;flex:none}
+  .hmzk-del:hover{color:var(--red)}
   /* ===== 글쓰기 편집기: 모드(일반/개발자) ===== */
   .fw-modes{display:inline-flex;gap:3px;margin-right:4px}
   .fw-modes button{border:1px solid var(--line);background:#fff;border-radius:7px;font-size:10.5px;
@@ -2799,6 +2819,11 @@
   <section class="view on" id="view-dashboard">
     <div class="page-head"><h1 class="go-sched" title="누르면 스케줄로 이동" onclick="goTop('cal')">Hello, My Day!</h1></div>
     <div id="homeTlSlot"></div>
+    <div class="card" id="homeZkCard" style="display:none">
+      <h3><span class="dot" style="background:#e8a4a0"></span> 제텔카스텐 <span class="more">한 장에 한 생각 · 팝업 없이 이 자리에서 쓰고 고친다</span>
+        <button type="button" class="lunar-toggle" style="margin-left:auto" onclick="go('zettel')">전체 보기</button></h3>
+      <div class="hmzk-grid"><div id="hmZkSlot0"></div><div id="hmZkSlot1"></div></div>
+    </div>
     <div id="homeGrid" style="display:none">
       <div class="hm-grid">
         <div class="card hm-card" id="hmSched"></div>
@@ -3367,7 +3392,6 @@
         <span style="margin-left:8px;display:inline-flex;gap:5px;vertical-align:middle">
           <button id="tlModeDaily" class="lunar-toggle on" onclick="tlDailyClick()">Daily</button>
           <button id="tlModeCn" class="lunar-toggle" onclick="tlCnClick()">의회일정</button>
-          <button id="tlModeImp" class="lunar-toggle imp on" onclick="tlImpClick()" title="주요일정(빨간 점) 표시 · 항상 켜져 있음 — 누르면 의회일정 날짜축으로"><i></i>주요일정</button>
           <button id="tlModeChrono" class="lunar-toggle ch" onclick="tlSetMode('chrono')" title="연대기 — 시간 그래프를 여기에 펼칩니다 · 빈 곳을 두 번 누르면 사건 기록 칸이 뜹니다">연대기</button>
           <button id="tlModeProject" class="lunar-toggle" onclick="tlSetMode('project')">Project</button>
           <button id="tlModeReview" class="lunar-toggle rv" onclick="tlSetMode('review')" title="복습 — 1·4·7·14·30일 전에 적은 학습·발췌·제텔카스텐·기사를 다시 본다">복습</button>
@@ -3670,7 +3694,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-22 · r164';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-23 · r165';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4187,7 +4211,6 @@ function tlModeBtns(){
   var bd=document.getElementById('tlModeDaily'),bc=document.getElementById('tlModeCn'),bp=document.getElementById('tlModeProject');
   if(bd)bd.classList.toggle('on',tlMode==='daily'&&tlDailyOn);
   if(bc)bc.classList.toggle('on',tlMode==='daily'&&tlCn);
-  var bi=document.getElementById('tlModeImp');if(bi)bi.classList.toggle('on',tlMode==='daily');
   if(bp)bp.classList.toggle('on',tlMode==='project');
   var br=document.getElementById('tlModeReview');if(br)br.classList.toggle('on',tlMode==='review');
   var bh=document.getElementById('tlModeChrono');if(bh)bh.classList.toggle('on',tlMode==='chrono');
@@ -5043,9 +5066,10 @@ function renderTlProject(inner){
       var dur=Math.max(1,e.it.dur||1);
       var left=idx*DW,w=Math.min(dur,total-idx)*DW-4;
       var tw=Math.ceil(tlTextW(e.it.title));
-      var out=(w<tw+16);
+      var out=false;
+      if(w<tw+16)w=tw+16;                       /* 일정명은 항상 음영 안에 — 짧은 기간이면 음영을 글자만큼 늘린다 */
       var li=0;while(li<lanes.length&&lanes[li]>left-4)li++;
-      lanes[li]=left+Math.max(w+(out?tw+12:0),40)+8;
+      lanes[li]=left+Math.max(w,40)+8;
       var range=fmtMD(dAt(idx))+'~'+fmtMD(dAt(idx+dur-1));
       bars+='<div class="tl-ev pj'+(out?' out':'')+'" data-pid="'+p.id+'" data-iid="'+e.it.id+'" ondblclick="event.stopPropagation();tlDelProjItem('+p.id+','+e.it.id+')" style="left:'+left+'px;top:'+(topAcc+6+li*26)+'px;width:'+w+'px" title="'+escA(p.name+' · '+e.it.title+' ('+range+' · '+dur+'일) — 드래그 이동 · 더블클릭 삭제')+'">'
         +'<b>'+esc(e.it.title)+'</b></div>';
@@ -5507,6 +5531,7 @@ function applyTopState(){
     else if(tlc.parentNode===slot){dock.appendChild(tlc);tlc.style.marginTop='';tlc.style.marginBottom='';}
   }
   if(isHome&&typeof renderHome==='function')renderHome();
+  var zc=document.getElementById('homeZkCard');if(zc){zc.style.display=isHome?'':'none';if(isHome&&typeof renderHomeZk==='function')renderHomeZk();}
   var c=document.getElementById('calCard');
   if(c){c.style.display=isCal?'':'none';
     var tbl=c.querySelector('.cal'),nav=c.querySelector('.cal-nav');
@@ -9231,6 +9256,84 @@ function zkPromote(key){
   renderZettel();
   var f=document.getElementById('zkTitle');
   if(f){f.focus();f.scrollIntoView({behavior:'smooth',block:'center'});}
+}
+/* ===== 대시보드 제텔카스텐: 타임라인 아래 두 칸, 팝업 없이 그 자리에서 쓰고 고친다 =====
+   각 칸은 «새 메모» 또는 기존 메모 하나를 보여준다 · ‹ › 로 기존 메모를 넘겨 보고, 넘기다 맨 앞을 지나면 새 메모 */
+var hmZk=[{id:null},{id:null}],hmZkTm=[null,null];
+function hmZkList(){return (db.zk||[]).slice().sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))||(b.id>a.id?1:b.id<a.id?-1:0);});}
+function hmZkIdx(i){var id=hmZk[i].id;if(id==null)return -1;var L=hmZkList();for(var k=0;k<L.length;k++)if(L[k].id===id)return k;return -1;}
+function hmZkStep(i,d){                      /* d=+1 오래된 쪽 · d=-1 새 쪽 (맨 앞을 지나면 새 메모) */
+  var L=hmZkList(),k=hmZkIdx(i),n=k+d;
+  if(n<-1||n>=L.length)return;
+  if(hmZkTm[i]){clearTimeout(hmZkTm[i]);hmZkTm[i]=null;hmZkSave(i,true);}   /* 넘기기 전에 고치던 건 저장 */
+  hmZk[i].id=(n<0)?null:L[n].id;hmZkPaint(i);
+}
+function hmZkNew(i){if(hmZkTm[i]){clearTimeout(hmZkTm[i]);hmZkTm[i]=null;hmZkSave(i,true);}hmZk[i].id=null;hmZkPaint(i);var t=document.getElementById('hmzkTitle'+i);if(t)t.focus();}
+function hmZkSlotHTML(i){
+  var L=hmZkList(),k=hmZkIdx(i),x=k>=0?L[k]:null;
+  var date=(x?String(x.date||''):today()).replace(/-/g,'.');
+  return '<div class="hmzk" data-slot="'+i+'">'
+    +'<div class="zkc-head"><span class="zkc-date">'+esc(date)+'</span>'
+    +'<span class="zkc-hint">'+(x?('기존 메모 '+(k+1)+'/'+L.length):'새 메모'+(L.length?' · 기존 '+L.length+'장':''))+'</span>'
+    +'<span class="hmzk-st" id="hmzkSt'+i+'"></span>'
+    +'<span class="zkc-cnt" id="hmzkCnt'+i+'" style="margin-left:0"></span>'
+    +'<span class="hmzk-nav"><span class="'+(k+1>=L.length?'dim':'')+'" onclick="hmZkStep('+i+',1)" title="더 오래된 메모">‹</span>'
+    +'<span class="'+(k<0?'dim':'')+'" onclick="hmZkStep('+i+',-1)" title="더 새 메모 · 맨 앞을 지나면 새 메모">›</span></span>'
+    +'<span class="hmzk-new" onclick="hmZkNew('+i+')" title="새 메모">＋</span></div>'
+    +'<input id="hmzkTitle'+i+'" class="zkc-title" maxlength="80" placeholder="주장 한 문장" value="'+escA(x?x.title:'')+'" oninput="hmZkDirty('+i+')">'
+    +'<textarea id="hmzkBody'+i+'" class="zkc-body" spellcheck="false" placeholder="내 문장으로, 혼자 읽어도 이해되게.&#10;[[다른 영구 메모 제목]] 을 쓰면 연결됩니다." oninput="hmZkDirty('+i+')">'+esc(x?x.body:'')+'</textarea>'
+    +'<div class="zkc-foot"><input id="hmzkTags'+i+'" class="zkc-tags" placeholder="태그 (쉼표로 구분)" value="'+escA(x?(x.tags||''):'')+'" oninput="hmZkDirty('+i+')">'
+    +(x&&x.ref?'<span class="zkc-ref">'+esc('출처: '+(x.ref.book||'')+(x.ref.page?' p.'+x.ref.page:''))+'</span>':'')
+    +(x?'<span class="hmzk-del" onclick="hmZkDel('+i+')" title="이 메모 삭제">삭제</span>':'')
+    +'<button type="button" class="btn y" style="flex:none;padding:6px 14px" onclick="hmZkSave('+i+')">'+(x?'저장':'추가')+'</button></div></div>';
+}
+function hmZkPaint(i){var box=document.getElementById('hmZkSlot'+i);if(!box)return;box.innerHTML=hmZkSlotHTML(i);box.dataset.painted='1';hmZkCount(i);}
+function renderHomeZk(){                     /* 이미 그려진 칸은 건드리지 않는다 (쓰던 글이 날아가지 않게) · 보던 메모가 사라졌으면 새 메모로 */
+  for(var i=0;i<2;i++){var box=document.getElementById('hmZkSlot'+i);if(!box)continue;
+    if(hmZk[i].id!=null&&hmZkIdx(i)<0)hmZk[i].id=null;
+    if(!box.dataset.painted||(hmZk[i].id==null&&!box.querySelector('.hmzk')))hmZkPaint(i);
+    else if(hmZk[i].id!=null&&!hmZkTm[i]&&!box.contains(document.activeElement))hmZkPaint(i);}   /* 다른 화면에서 고친 기존 메모를 다시 읽는다 */
+}
+function hmZkCount(i){var b=document.getElementById('hmzkBody'+i),c=document.getElementById('hmzkCnt'+i);if(!b||!c)return;
+  if(b.value.length>ZKC_MAX)b.value=b.value.slice(0,ZKC_MAX);
+  c.textContent=b.value.length+'/'+ZKC_MAX;c.classList.toggle('full',b.value.length>=ZKC_MAX);}
+function hmZkDirty(i){
+  hmZkCount(i);
+  var st=document.getElementById('hmzkSt'+i);
+  if(hmZk[i].id==null){if(st){st.textContent='아직 저장 안 됨';st.classList.add('dirty');}return;}   /* 새 메모는 «추가»로 */
+  if(st){st.textContent='고치는 중…';st.classList.add('dirty');}
+  clearTimeout(hmZkTm[i]);hmZkTm[i]=setTimeout(function(){hmZkTm[i]=null;hmZkSave(i,true);},700);   /* 기존 메모는 그 자리에서 자동 저장 */
+}
+function hmZkSave(i,quiet){
+  var tt=document.getElementById('hmzkTitle'+i),bd=document.getElementById('hmzkBody'+i),tg=document.getElementById('hmzkTags'+i),st=document.getElementById('hmzkSt'+i);
+  if(!tt||!bd)return false;
+  var title=tt.value.trim(),body=bd.value,tags=(tg?tg.value:'').trim();
+  if(body.length>ZKC_MAX)body=body.slice(0,ZKC_MAX);
+  var x=(hmZk[i].id!=null)?(db.zk||[]).find(function(z){return z.id===hmZk[i].id;}):null;
+  if(!title||!body.trim()){if(!quiet)alert(!title?'제목(주장 한 문장)을 입력하세요.':'본문을 입력하세요. 내 문장으로, 혼자 읽어도 이해되게.');
+    else if(st){st.textContent='제목·본문이 비어 저장 안 됨';st.classList.add('dirty');}return false;}
+  var dup=(db.zk||[]).find(function(z){return (!x||z.id!==x.id)&&String(z.title).trim().toLowerCase()===title.toLowerCase();});
+  if(dup){if(!quiet)alert('같은 제목의 영구 메모가 이미 있습니다.\n한 장에 한 생각 — 제목을 다르게 하거나 기존 메모를 수정하세요.');
+    else if(st){st.textContent='같은 제목이 있어 저장 안 됨';st.classList.add('dirty');}return false;}
+  if(!db.zk)db.zk=[];
+  var isNew=!x;
+  if(x){x.title=title;x.body=body;x.tags=tags;}
+  else{x={id:uid(),date:today(),title:title,body:body,tags:tags,ref:null};db.zk.push(x);hmZk[i].id=x.id;}
+  save();if(typeof renderZettel==='function')renderZettel();
+  if(isNew){hmZkPaint(i);st=document.getElementById('hmzkSt'+i);}
+  if(st){st.textContent='저장됨 '+new Date().toTimeString().slice(0,5);st.classList.remove('dirty');}
+  var o=1-i;if(hmZk[o].id!=null&&hmZk[o].id===x.id&&!hmZkTm[o])hmZkPaint(o);   /* 다른 칸이 같은 메모를 보고 있으면 맞춘다 */
+  return true;
+}
+function hmZkDel(i){
+  var x=(db.zk||[]).find(function(z){return z.id===hmZk[i].id;});if(!x)return;
+  var bl=zkBacklinks(x);
+  if(!confirm('이 영구 메모를 삭제할까요?\n\n· '+x.title+(bl.length?'\n· 이 메모를 가리키는 메모 '+bl.length+'개의 연결이 끊어집니다.':'')+'\n\n되돌릴 수 없습니다.'))return;
+  db.zk=(db.zk||[]).filter(function(z){return z.id!==x.id;});
+  if(zkEditId===x.id)zkEditId=null;
+  save();if(typeof renderZettel==='function')renderZettel();
+  hmZk[i].id=null;hmZkPaint(i);
+  var o=1-i;if(hmZk[o].id===x.id){hmZk[o].id=null;hmZkPaint(o);}
 }
 function zkRefHTML(ref){
   if(!ref)return '';
@@ -13916,7 +14019,7 @@ function hmProjHTML(){
 /* 4. 독서: 최근 수정 책 표지 + ‹› 넘기기 */
 var hmReadIdx=0;
 function hmReadBooks(){
-  return (db.reading||[]).slice().sort(function(a,b){
+  return (db.reading||[]).filter(function(b){return bkStatus(b)!=='done';}).sort(function(a,b){   /* 완독한 책은 대시보드에서 뺀다 */
     var r=function(x){
       var m=String(x.start||'')+String(x.end||'');
       (x.excerpts||[]).forEach(function(e){if(e.date>m)m=e.date;});
