@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-23 · r165">
+<meta name="hmd-build" content="2026-09-26 · r166">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2281,6 +2281,24 @@
   .tabs.vtabs .tab.active.inv{background:#e0a83a;border-color:#e0a83a;color:#fff}
   .tabs.vtabs .tab.active.inc{background:var(--green);border-color:var(--green);color:#fff}
   .tabs.vtabs .tab.inv.has .n{background:#fbe6b8;color:#8a6100}
+  .tabs.vtabs .tab.active.nw{background:#3f6f8f;border-color:#3f6f8f;color:#fff}
+  .tabs.vtabs .tab.nw.has .n{background:#dbe8f0;color:#2f5670}
+  /* 순자산 */
+  .nw-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:4px}
+  .nw-tile{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}
+  .nw-tile span{display:block;font-size:11.5px;color:var(--muted);font-weight:700}
+  .nw-tile b{display:block;font-size:20px;letter-spacing:-.4px;color:var(--dark);margin-top:3px;font-variant-numeric:tabular-nums}
+  .nw-tile.n b{color:#3f6f8f}.nw-tile.d b{color:var(--red)}
+  .nw-tile em{font-style:normal;font-size:11.5px;color:var(--muted);display:block;margin-top:2px}
+  .nw-tile em.up{color:var(--green)}.nw-tile em.dn{color:var(--red)}
+  .nw-carry{color:#b0a889;font-size:10.5px;margin-left:4px}
+  .nw-kind{display:inline-block;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:800}
+  .nw-kind.a{background:#dbe8f0;color:#2f5670}.nw-kind.d{background:#fde3e3;color:#b23b3b}
+  .nw-table td:first-child{white-space:nowrap;min-width:120px}
+  .nw-table .rowsel{width:auto;min-width:96px}
+  .nw-table td.amt[contenteditable]{cursor:text;background:#fbfbf8;border-radius:6px;min-width:110px}
+  .nw-table td.amt[contenteditable]:empty::before{content:'적기';color:#c6bfa4;font-weight:400}
+  @media(max-width:900px){.nw-tiles{grid-template-columns:1fr 1fr}}
   .tabs.vtabs .tab.inc.has .n{background:var(--green-soft);color:var(--green)}
   @media(max-width:900px){
     .as-grid{grid-template-columns:1fr;gap:12px}
@@ -3056,6 +3074,7 @@
       <div class="tabs vtabs as-tabs" id="assetTabs">
         <button class="tab exp" data-t="지출" onclick="setDetailAssetTab('지출')">가계부<span class="n">0</span></button>
         <button class="tab inv" data-t="투자" onclick="setDetailAssetTab('투자')">투자<span class="n">0</span></button>
+        <button class="tab nw" data-t="순자산" onclick="setDetailAssetTab('순자산')" title="자산·부채 항목의 월말 잔액을 적으면 순자산과 추이가 나옵니다">순자산<span class="n">0</span></button>
       </div>
       <div class="as-pane"><div id="assetPane"></div></div>
     </div>
@@ -3694,7 +3713,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-23 · r165';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-26 · r166';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -3722,6 +3741,7 @@ function ensureFields(){
   if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.articles)db.articles=[];if(!db.rdLog)db.rdLog=[];if(!db.council)db.council={sessions:[],active:null};if(!Array.isArray(db.hanja))db.hanja=[];
   if(!db.__bg2608){if(!db.budget)db.budget={};db.budget['술']=30000;db.budget['식비']=50000;db.__bg2608=1;}
   if(!Array.isArray(db.spots))db.spots=[];if(!Array.isArray(db.spotCats))db.spotCats=[];
+  if(!db.nw||typeof db.nw!=='object'||Array.isArray(db.nw))db.nw={items:[],snaps:{}};if(!Array.isArray(db.nw.items))db.nw.items=[];if(!db.nw.snaps||typeof db.nw.snaps!=='object')db.nw.snaps={};
   if(!db.cnOrgs||typeof db.cnOrgs!=='object')db.cnOrgs={};
   if(!Array.isArray(db.cnOrgs['비서실']))db.cnOrgs['비서실']=['의장실','부의장실'];
   if(!Array.isArray(db.cnOrgs['상임위']))db.cnOrgs['상임위']=['운영위','기경위','행문위','복환위','농수위','건소위','교육위'];
@@ -13918,17 +13938,128 @@ function paneInvest(){
     <div class="card"><h3><span class="dot" style="background:#e0a83a"></span> 주식별 투자 현황</h3>${donutFromMap(stock,240,true)}</div>
   </div>`;
 }
+/* ================= 순자산: 항목별 월말 잔액 스냅샷 → 총자산 · 총부채 · 순자산 · 추이 =================
+   db.nw = {items:[{id,name,kind:'자산'|'부채',cat}], snaps:{'2026-09':{itemId:잔액}}}
+   그 달에 안 적은 항목은 마지막으로 적은 달의 잔액을 이월해서 센다 (표에는 «이월»로 표시) */
+var NW_CATS={자산:['현금·예금','적금','주식','채권','코인','연금저축','행정공제','부동산','기타'],부채:['대출','카드','기타']};
+var nwMonKey=null;
+function nwMon(){return nwMonKey||thisMonth();}
+function nwMonShift(d){var m=expMonAdd(nwMon(),d);nwMonKey=(m===thisMonth())?null:m;renderAssets();}
+function nwMonToday(){nwMonKey=null;renderAssets();}
+function nwDb(){if(!db.nw||typeof db.nw!=='object'||Array.isArray(db.nw))db.nw={items:[],snaps:{}};if(!Array.isArray(db.nw.items))db.nw.items=[];if(!db.nw.snaps||typeof db.nw.snaps!=='object')db.nw.snaps={};return db.nw;}
+function nwVal(it,m){                       /* 그 달 잔액 · 없으면 그 전 마지막 기록을 이월 */
+  var S=nwDb().snaps;
+  if(S[m]&&S[m][it.id]!=null)return {v:Number(S[m][it.id])||0,from:m};
+  var best=null;Object.keys(S).forEach(function(k){if(k<m&&S[k]&&S[k][it.id]!=null&&(!best||k>best))best=k;});
+  return best?{v:Number(S[best][it.id])||0,from:best}:{v:0,from:null};
+}
+function nwTotals(m){var A=0,D=0;nwDb().items.forEach(function(it){var v=nwVal(it,m).v;if(it.kind==='부채')D+=v;else A+=v;});return {a:A,d:D,n:A-D};}
+function nwFirstMonth(){var ks=Object.keys(nwDb().snaps).filter(function(k){return Object.keys(nwDb().snaps[k]||{}).length;}).sort();return ks[0]||null;}
+function nwAdd(){
+  var nm=document.getElementById('nwName'),kd=document.getElementById('nwKind'),ct=document.getElementById('nwCat'),am=document.getElementById('nwAmt');
+  var name=(nm&&nm.value||'').trim();if(!name){alert('항목 이름을 넣으세요. (예: 농협 예금, 연금저축, 주택대출)');return;}
+  var kind=(kd&&kd.value==='부채')?'부채':'자산',cat=(ct&&ct.value)||NW_CATS[kind][0];
+  var it={id:uid(),name:name,kind:kind,cat:cat};nwDb().items.push(it);
+  var v=parseInt(String(am&&am.value||'').replace(/[^\d]/g,''),10);
+  if(!isNaN(v)){var S=nwDb().snaps,m=nwMon();if(!S[m])S[m]={};S[m][it.id]=v;}
+  save();renderAssets();
+  setTimeout(function(){var e=document.getElementById('nwName');if(e)e.focus();},30);
+}
+function nwEdit(id,k,txt){var it=nwDb().items.find(function(x){return x.id===id;});if(!it)return;var v=String(txt||'').trim();if(k==='name'&&!v){renderAssets();return;}it[k]=v;save();renderAssets();}
+function nwKindSet(id,kind){var it=nwDb().items.find(function(x){return x.id===id;});if(!it)return;it.kind=kind==='부채'?'부채':'자산';if(NW_CATS[it.kind].indexOf(it.cat)<0)it.cat=NW_CATS[it.kind][0];save();renderAssets();}
+function nwDel(id){var it=nwDb().items.find(function(x){return x.id===id;});if(!it)return;
+  if(!confirm('「'+it.name+'」 항목과 그동안 적은 잔액 기록을 모두 지울까요?'))return;
+  nwDb().items=nwDb().items.filter(function(x){return x.id!==id;});
+  var S=nwDb().snaps;Object.keys(S).forEach(function(m){if(S[m])delete S[m][id];});
+  save();renderAssets();}
+function nwSet(id,m,txt){
+  var v=parseInt(String(txt||'').replace(/[^\d-]/g,''),10),S=nwDb().snaps;
+  if(!S[m])S[m]={};
+  if(isNaN(v))delete S[m][id];else S[m][id]=Math.abs(v);
+  save();renderAssets();
+}
+function nwCarry(){                          /* 이번 달 안 적은 항목에 지난 기록을 그대로 복사 */
+  var m=nwMon(),S=nwDb().snaps,n=0;if(!S[m])S[m]={};
+  nwDb().items.forEach(function(it){if(S[m][it.id]==null){var q=nwVal(it,m);if(q.from){S[m][it.id]=q.v;n++;}}});
+  save();renderAssets();hkChip(n?n+'개 항목의 잔액을 이월했습니다':'이월할 항목이 없습니다');setTimeout(function(){hkChip('');},1500);
+}
+function nwMonths(n,end){var out=[],i;for(i=n-1;i>=0;i--)out.push(expMonAdd(end,-i));return out;}
+function nwTrendSVG(){
+  var end=nwMon(),months=nwMonths(12,end),first=nwFirstMonth();
+  var rows=months.map(function(m){return {m:m,t:nwTotals(m),has:!!first&&m>=first};});
+  var vals=rows.map(function(r){return r.has?r.t.n:null;});
+  var maxA=Math.max.apply(null,rows.map(function(r){return r.has?Math.max(r.t.a,r.t.n,0):0}).concat([1]));
+  var minN=Math.min.apply(null,vals.filter(function(v){return v!=null;}).concat([0]));
+  var W=720,H=300,L=16,R=16,T=34,B=40,n=months.length,cw=(W-L-R)/n;
+  var span=maxA-minN||1;
+  var y=function(v){return T+(H-T-B)*(1-(v-minN)/span);},cx=function(i){return L+cw*i+cw/2;};
+  var bars='',labels='',pts=[],dots='';
+  rows.forEach(function(r,i){
+    if(r.has){
+      var bh=(H-T-B)*(r.t.a-minN)/span-((H-T-B)*(0-minN)/span);
+      bars+='<rect x="'+(L+cw*i+cw*0.24).toFixed(1)+'" y="'+y(r.t.a).toFixed(1)+'" width="'+(cw*0.52).toFixed(1)+'" height="'+Math.max(0,y(0)-y(r.t.a)).toFixed(1)+'" rx="5" fill="#dbe8f0"/>';
+      if(r.t.d)bars+='<rect x="'+(L+cw*i+cw*0.24).toFixed(1)+'" y="'+y(r.t.d).toFixed(1)+'" width="'+(cw*0.52).toFixed(1)+'" height="'+Math.max(0,y(0)-y(r.t.d)).toFixed(1)+'" rx="5" fill="#f3c4c4" opacity=".75"/>';   /* 부채는 자산 막대 위에 겹쳐 붉게 */
+      pts.push(cx(i).toFixed(1)+','+y(r.t.n).toFixed(1));
+      dots+='<circle cx="'+cx(i).toFixed(1)+'" cy="'+y(r.t.n).toFixed(1)+'" r="4.5" fill="#3f6f8f"'+(r.m===end?' stroke="#12312b" stroke-width="2"':'')+'/>';
+      if(r.m===end||i%3===0)labels+='<text x="'+cx(i).toFixed(1)+'" y="'+(y(r.t.n)-10).toFixed(1)+'" text-anchor="middle" font-size="14" font-weight="700" fill="#3f6f8f">'+shortWon(r.t.n)+'</text>';
+    }
+    labels+='<text x="'+cx(i).toFixed(1)+'" y="'+(H-B+22)+'" text-anchor="middle" font-size="13.5" fill="#8a9490">'+(r.m.slice(5,7)==='01'||i===0?r.m.slice(2,4)+'.':'')+(+r.m.slice(5,7))+'월</text>';
+  });
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block">'
+    +'<line x1="'+L+'" y1="'+y(0).toFixed(1)+'" x2="'+(W-R)+'" y2="'+y(0).toFixed(1)+'" stroke="var(--line)"/>'
+    +bars+(pts.length>1?'<polyline fill="none" stroke="#3f6f8f" stroke-width="3" points="'+pts.join(' ')+'"/>':'')+dots+labels+'</svg>'
+    +'<div style="font-size:11.5px;color:var(--muted);margin-top:4px"><span class="sw" style="background:#dbe8f0;display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px"></span> 총자산 &nbsp; <span class="sw" style="background:#f3c4c4;display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px"></span> 총부채 &nbsp; <span style="display:inline-block;width:14px;height:3px;background:#3f6f8f;vertical-align:3px;border-radius:2px"></span> 순자산(자산 − 부채)</div>';
+}
+function paneNetWorth(){
+  var m=nwMon(),pm=expMonAdd(m,-1),T=nwTotals(m),P=nwTotals(pm),items=nwDb().items,first=nwFirstMonth();
+  var diff=T.n-P.n,hasP=!!first&&pm>=first;
+  var tiles='<div class="nw-tiles">'
+    +'<div class="nw-tile n"><span>순자산</span><b>'+won(T.n)+'</b><em class="'+(hasP?(diff>0?'up':diff<0?'dn':''):'')+'">'+(hasP?('지난달 대비 '+(diff>=0?'+':'−')+won(Math.abs(diff)).slice(1)):'첫 기록')+'</em></div>'
+    +'<div class="nw-tile"><span>총자산</span><b>'+won(T.a)+'</b><em>'+items.filter(function(i){return i.kind!=='부채';}).length+'개 항목</em></div>'
+    +'<div class="nw-tile d"><span>총부채</span><b>'+won(T.d)+'</b><em>'+items.filter(function(i){return i.kind==='부채';}).length+'개 항목</em></div>'
+    +'<div class="nw-tile"><span>부채 비율</span><b>'+(T.a?Math.round(T.d/T.a*100):0)+'%</b><em>부채 ÷ 자산</em></div></div>';
+  var rows='';
+  items.slice().sort(function(a,b){return (a.kind==='부채')-(b.kind==='부채')||NW_CATS[a.kind].indexOf(a.cat)-NW_CATS[b.kind].indexOf(b.cat);}).forEach(function(it){
+    var q=nwVal(it,m),p=nwVal(it,pm),d=q.v-p.v,S=nwDb().snaps,own=!!(S[m]&&S[m][it.id]!=null);
+    rows+='<tr><td contenteditable onblur="nwEdit('+it.id+',\'name\',this.innerText)">'+esc(it.name)+'</td>'
+      +'<td><span class="nw-kind '+(it.kind==='부채'?'d':'a')+'" onclick="nwKindSet('+it.id+',\''+(it.kind==='부채'?'자산':'부채')+'\')" title="누르면 자산↔부채 바꾸기" style="cursor:pointer">'+it.kind+'</span></td>'
+      +'<td><select class="rowsel" onchange="nwEdit('+it.id+',\'cat\',this.value)">'+NW_CATS[it.kind].map(function(c){return '<option'+(c===it.cat?' selected':'')+'>'+c+'</option>';}).join('')+'</select></td>'
+      +'<td class="amt" contenteditable onblur="nwSet('+it.id+',\''+m+'\',this.innerText)" title="'+m.replace('-','.')+' 말 잔액">'+(own?q.v.toLocaleString():'')+'</td>'
+      +'<td class="amt" style="color:var(--muted)">'+(q.from&&!own?'<span title="'+q.from.replace('-','.')+' 기록을 이월">'+q.v.toLocaleString()+'<span class="nw-carry">이월</span></span>':'')+'</td>'
+      +'<td class="amt" style="color:var(--muted)">'+(p.from?p.v.toLocaleString():'')+'</td>'
+      +'<td class="amt" style="color:'+(d>0?'var(--green)':d<0?'var(--red)':'var(--muted)')+'">'+(p.from&&q.from?((d>0?'+':d<0?'−':'')+Math.abs(d).toLocaleString()):'')+'</td>'
+      +'<td><span class="del" onclick="nwDel('+it.id+')">×</span></td></tr>';
+  });
+  var comp={};items.forEach(function(it){if(it.kind==='부채')return;var v=nwVal(it,m).v;if(v)comp[it.cat]=(comp[it.cat]||0)+v;});
+  var missing=items.filter(function(it){var S=nwDb().snaps;return !(S[m]&&S[m][it.id]!=null);}).length;
+  return '<div class="card"><h3><span class="dot" style="background:#3f6f8f"></span> 순자산 <span class="more">'+m.replace('-','.')+' 말 기준'+(first?' · 기록 시작 '+first.replace('-','.'):'')+'</span>'
+    +'<span class="tl-datenav" style="margin-left:auto"><button type="button" onclick="nwMonShift(-1)" title="지난달">‹</button><span class="more" style="margin-left:0">'+m.replace('-','.')+'</span><button type="button" onclick="nwMonShift(1)" title="다음달">›</button>'+(nwMonKey?'<button type="button" onclick="nwMonToday()" title="이번 달로" style="margin-left:4px">오늘</button>':'')+'</span></h3>'
+    +tiles+'</div>'
+    +'<div class="card" style="margin-top:20px"><h3><span class="dot" style="background:#3f6f8f"></span> 잔액 기록 <span class="more">항목마다 그 달 말 잔액 · 안 적으면 이월</span>'
+    +(missing&&items.length?'<button class="btn ghost" style="margin-left:auto;padding:5px 11px;font-size:11.5px" onclick="nwCarry()" title="이번 달에 안 적은 항목에 마지막 잔액을 그대로 복사">지난 잔액 그대로 ('+missing+')</button>':'')+'</h3>'
+    +'<div class="tblx"><table class="ledger nw-table"><thead><tr><th>항목</th><th>구분</th><th>종류</th><th class="amt">'+(+m.slice(5,7))+'월 말 잔액</th><th class="amt">이월</th><th class="amt">지난달</th><th class="amt">변화</th><th></th></tr></thead>'
+    +'<tbody>'+(rows||'<tr><td colspan="8" class="empty">아래에 예금·적금·연금·대출 같은 항목을 넣고, 매달 말 잔액을 한 번씩 적어 주세요.</td></tr>')+'</tbody></table></div>'
+    +'<div class="inrow" style="margin-top:10px;flex-wrap:wrap"><input id="nwName" class="in" style="flex:2;min-width:140px" placeholder="항목 (예: 농협 예금 · 연금저축 · 주택대출)" onkeydown="if(event.key===\'Enter\')nwAdd()">'
+    +'<select id="nwKind" class="in" style="flex:none;width:86px" onchange="var c=document.getElementById(\'nwCat\');c.innerHTML=NW_CATS[this.value].map(function(x){return \'<option>\'+x+\'</option\'+\'>\';}).join(\'\')"><option>자산</option><option>부채</option></select>'
+    +'<select id="nwCat" class="in" style="flex:none;width:120px">'+NW_CATS.자산.map(function(c){return '<option>'+c+'</option>';}).join('')+'</select>'
+    +'<input id="nwAmt" class="in" inputmode="numeric" style="flex:1;min-width:110px;text-align:right" placeholder="이달 말 잔액 (선택)" onkeydown="if(event.key===\'Enter\')nwAdd()">'
+    +'<button class="btn y" style="flex:none" onclick="nwAdd()">추가</button></div></div>'
+    +'<div class="g2">'
+    +'<div class="card"><h3><span class="dot" style="background:#3f6f8f"></span> 순자산 추이 <span class="more">최근 12개월</span></h3>'+(first?nwTrendSVG():'<div class="empty">잔액을 적기 시작하면 달마다 점이 찍힙니다.</div>')+'</div>'
+    +'<div class="card"><h3><span class="dot" style="background:#3f6f8f"></span> 자산 구성 <span class="more">종류별 · '+m.replace('-','.')+'</span></h3>'+(Object.keys(comp).length?donutFromMap(comp,200,false):'<div class="empty">자산 항목이 없습니다.</div>')+'</div>'
+    +'</div>';
+}
 function renderAssets(){
   const mo=thisMonth();
   if(detailAssetTab==='수입')detailAssetTab='지출';           /* 수입은 가계부에 합쳐졌다 */
   document.querySelectorAll('#assetTabs .tab').forEach(function(b){
     b.classList.toggle('active',b.dataset.t===detailAssetTab);
-    const c=db.assets.filter(a=>(b.dataset.t==='지출'?(a.type==='지출'||a.type==='수입'):a.type===b.dataset.t)&&monthOf(a.date)===mo).length;
+    const c=b.dataset.t==='순자산'?nwDb().items.length:db.assets.filter(a=>(b.dataset.t==='지출'?(a.type==='지출'||a.type==='수입'):a.type===b.dataset.t)&&monthOf(a.date)===mo).length;
     const n=b.querySelector('.n');if(n)n.textContent=c;
     b.classList.toggle('has',c>0);
   });
   const pane=document.getElementById('assetPane');if(!pane)return;
-  pane.innerHTML=detailAssetTab==='투자'?paneInvest():paneExpense();
+  pane.innerHTML=detailAssetTab==='투자'?paneInvest():detailAssetTab==='순자산'?paneNetWorth():paneExpense();
 }
 
 
