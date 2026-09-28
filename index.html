@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-28 · r173">
+<meta name="hmd-build" content="2026-09-29 · r174">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3776,7 +3776,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-28 · r173';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-29 · r174';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -3804,6 +3804,7 @@ function ensureFields(){
   if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.articles)db.articles=[];if(!db.rdLog)db.rdLog=[];if(!db.council)db.council={sessions:[],active:null};if(!Array.isArray(db.hanja))db.hanja=[];
   if(!db.__bg2608){if(!db.budget)db.budget={};db.budget['술']=30000;db.budget['식비']=50000;db.__bg2608=1;}
   if(!Array.isArray(db.spots))db.spots=[];if(!Array.isArray(db.spotCats))db.spotCats=[];
+  if(db.__del&&(typeof db.__del!=='object'||Array.isArray(db.__del)))db.__del={};if(db.__rev&&(typeof db.__rev!=='object'||Array.isArray(db.__rev)))db.__rev={};
   Object.keys(db.rdGoal||{}).forEach(function(k){var g=db.rdGoal[k];if(g&&g.page!=null&&g.n==null)delete db.rdGoal[k];});   /* 예전 «쪽까지» 목표는 버린다 */
   if(!db.nw||typeof db.nw!=='object'||Array.isArray(db.nw))db.nw={items:[],snaps:{}};if(!Array.isArray(db.nw.items))db.nw.items=[];if(!db.nw.snaps||typeof db.nw.snaps!=='object')db.nw.snaps={};
   if(!db.cnOrgs||typeof db.cnOrgs!=='object')db.cnOrgs={};
@@ -3941,6 +3942,7 @@ function save(){
   /* 첫 로드의 «자동 정리(마이그레이션)»나 첫 클라우드 확인 전의 저장이 최신 시각을 찍어
      오래된 기기가 클라우드를 덮어쓰는 사고를 막는다 (동기화 코드가 없으면 __syncReady 는 곧바로 true) */
   if(!__boot&&(typeof __syncReady==='undefined'||__syncReady||!syncCode()))db.__updated=Date.now();
+  try{delTrack();}catch(e){}
   localStorage.setItem(KEY,JSON.stringify(db));backupTick();cloudPushDebounced();}
 /* 하루 한 번, 그리고 덮어쓰기 직전에 로컬 스냅샷을 남긴다 (최대 8개) */
 /* 데이터가 얼마나 들어있는지 (동기화 사고 방지용) */
@@ -4035,7 +4037,57 @@ function smMergeVal(l,r,b,lNewer){
 }
 function syncMerge(local,remote,base,lNewer){
   var m=smMergeVal(local,remote,base||undefined,lNewer)||{};
+  m.__del=delUnion(local&&local.__del,remote&&remote.__del);   /* 지움 표시는 양쪽을 다 합친다 */
+  m.__rev=delUnion(local&&local.__rev,remote&&remote.__rev);
+  delApply(m);
   return m;
+}
+/* ===== 지움 표시(tombstone) =====
+   합치기(3-way)는 «기준본»이 없거나 어긋나면 지운 항목을 «상대가 새로 넣은 것»으로 오해해 되살린다
+   (새 기기 첫 연결 · 다른 탭(포스트잇)의 옛 사본 · 다른 기기가 항목 모양만 손본 경우).
+   그래서 목록(최상위 id 배열)에서 사라진 id 를 db.__del[목록][id]=시각 으로 남기고,
+   합칠 때 그 id 는 어느 쪽에 있든 지운다. 백업 복구로 되살린 id 는 db.__rev 로 표시해 이긴다. 180일 지나면 잊는다. */
+var DEL_KEEP_MS=180*86400000, __idSnap=null, __idSnapFor=null;
+function delKeys(d){return Object.keys(d||{}).filter(function(k){return k.charAt(0)!=='_'&&Array.isArray(d[k])&&d[k].length&&smIdArr(d[k]);});}
+function idSnapTake(){
+  var s={};
+  Object.keys(db||{}).forEach(function(k){if(k.charAt(0)==='_'||!Array.isArray(db[k]))return;
+    var o={},okArr=true;db[k].forEach(function(x){if(x&&typeof x==='object'&&x.id!=null)o[String(x.id)]=1;else okArr=false;});
+    if(okArr)s[k]=o;});
+  __idSnap=s;__idSnapFor=db;
+}
+function delTrack(){                          /* save() 때마다: 지난번에 있던 id 중 없어진 것 = 이 기기에서 지운 것 */
+  if(!__idSnap||__idSnapFor!==db){idSnapTake();return;}
+  var now=Date.now(),D=null;
+  Object.keys(__idSnap).forEach(function(k){
+    var cur={};if(Array.isArray(db[k]))db[k].forEach(function(x){if(x&&x.id!=null)cur[String(x.id)]=1;});
+    Object.keys(__idSnap[k]).forEach(function(id){if(!cur[id]){D=D||db.__del||(db.__del={});(D[k]||(D[k]={}))[id]=now;}});
+  });
+  idSnapTake();
+}
+function delUnion(a,b){
+  var o={},cut=Date.now()-DEL_KEEP_MS;
+  [a,b].forEach(function(src){if(!src||typeof src!=='object')return;
+    Object.keys(src).forEach(function(k){var m=src[k];if(!m||typeof m!=='object')return;
+      Object.keys(m).forEach(function(id){var t=Number(m[id])||0;if(t<cut)return;
+        if(!o[k])o[k]={};if(!(o[k][id]>=t))o[k][id]=t;});});});
+  return o;
+}
+function delApply(d){                          /* 지움 표시가 되살림 표시보다 늦은 id 는 목록에서 뺀다 */
+  if(!d||!d.__del)return 0;var n=0,R=d.__rev||{};
+  Object.keys(d.__del).forEach(function(k){
+    if(!Array.isArray(d[k]))return;var dk=d.__del[k],rk=R[k]||{};
+    var before=d[k].length;
+    d[k]=d[k].filter(function(x){if(!x||x.id==null)return true;var id=String(x.id);return !(dk[id]&&dk[id]>(Number(rk[id])||0));});
+    n+=before-d[k].length;
+  });
+  return n;
+}
+function delRevive(){                          /* 백업에서 되살린 항목: 지움 표시를 걷고 되살림 표시 */
+  if(!db.__del)return;var now=Date.now();
+  Object.keys(db.__del).forEach(function(k){if(!Array.isArray(db[k]))return;
+    db[k].forEach(function(x){if(!x||x.id==null)return;var id=String(x.id);
+      if(db.__del[k][id]){delete db.__del[k][id];db.__rev=db.__rev||{};(db.__rev[k]||(db.__rev[k]={}))[id]=now;}});});
 }
 function smStrip(d){var o={};Object.keys(d||{}).forEach(function(k){if(k!=='__updated'&&k!=='__ver')o[k]=d[k];});return o;}
 /* 백업에서 «빠진 항목만» 찾아 넣기 (id 가 있는 목록만 · 지금 내용은 건드리지 않음) */
@@ -4056,7 +4108,7 @@ function backupMerge(i){
   if(!n){alert('이 백업에는 지금 없는 항목이 없습니다.');return;}
   if(!confirm(new Date(b.t).toLocaleString('ko-KR')+' 백업에만 있는 항목 '+n+'건을 지금 내용에 더할까요?\n\n지금 있는 내용은 그대로 두고, 빠진 것만 채웁니다.\n(일부러 지운 항목이 다시 살아날 수 있습니다)'))return;
   backupSave('합치기 직전');
-  smAddMissing(db,src);ensureFields();db.__updated=Date.now();
+  smAddMissing(db,src);delRevive();ensureFields();idSnapTake();db.__updated=Date.now();
   localStorage.setItem(KEY,JSON.stringify(db));renderAll();renderBackupUI();
   if(syncCode())cloudPush();
   alert(n+'건을 채웠습니다.'+(syncCode()?'\n클라우드에도 올렸습니다.':''));
@@ -4065,7 +4117,9 @@ function backupRestore(i){
   var list=backupList(), b=list[i];if(!b)return;
   if(!confirm(new Date(b.t).toLocaleString('ko-KR')+' 시점으로 되돌릴까요?\n지금 내용은 «복구 직전»으로 따로 백업해 둡니다.'))return;
   backupSave('복구 직전');
+  var __keepDel=db.__del,__keepRev=db.__rev;
   try{db=JSON.parse(b.data);}catch(e){alert('백업을 읽지 못했습니다.');return;}
+  db.__del=delUnion(__keepDel,db.__del);db.__rev=delUnion(__keepRev,db.__rev);delRevive();idSnapTake();   /* 되돌린 시점의 항목은 되살림으로 표시 */
   ensureFields();db.__updated=Date.now();
   localStorage.setItem(KEY,JSON.stringify(db));
   renderAll();renderBackupUI();
@@ -5853,7 +5907,7 @@ function cloudPull(ask,cb,quiet){var c=syncCode();if(!c){if(cb)cb(false);return;
       __cloudExists=true;__cloudVer=(rd.__ver==null)?null:Number(rd.__ver);
       var rn=dbSize(rd), ln=dbSize(db);
       if(__seeded){                          /* 이 기기엔 저장된 게 없었다 → 클라우드 것이 정답 */
-        db=rd;ensureFields();__seeded=false;localStorage.setItem(KEY,JSON.stringify(db));
+        db=rd;ensureFields();delApply(db);idSnapTake();__seeded=false;localStorage.setItem(KEY,JSON.stringify(db));
         renderAll();renderBackupUI();setSyncStatus('불러옴 · 연결됨: '+c);if(cb)cb(true);return;}
       if(!ask){                              /* 자동 동기화: 통째로 바꾸지 않고 항목 단위로 합친다 */
         if(smSame(smStrip(rd),smStrip(db))){syncBaseSet(db);setSyncStatus('연결됨: '+c);if(cb)cb(true);return;}
@@ -5866,7 +5920,7 @@ function cloudPull(ask,cb,quiet){var c=syncCode();if(!c){if(cb)cb(false);return;
         var got=chL?Math.max(0,dbSize(merged)-ln):0, sent=chR?Math.max(0,dbSize(merged)-rn):0;
         if(chL){
           if(liveBusy()){__livePending=true;if(cb)cb(true);return;}   /* 쓰는 중이면 잠시 뒤에 */
-          db=merged;ensureFields();localStorage.setItem(KEY,JSON.stringify(db));
+          db=merged;ensureFields();idSnapTake();localStorage.setItem(KEY,JSON.stringify(db));
           liveKeepInputs(function(){renderAll();renderBackupUI();});
           if(quiet)liveFlash('다른 기기의 변경 내용을 합쳤습니다'+(got?' · +'+got+'건':''));
         }
@@ -5897,7 +5951,7 @@ function cloudPull(ask,cb,quiet){var c=syncCode();if(!c){if(cb)cb(false);return;
         if(cb)cb(true);return;
       }
       backupSave('클라우드 불러오기 직전');
-      db=rd;ensureFields();localStorage.setItem(KEY,JSON.stringify(db));renderAll();renderBackupUI();
+      db=rd;ensureFields();delApply(db);idSnapTake();localStorage.setItem(KEY,JSON.stringify(db));renderAll();renderBackupUI();
       setSyncStatus('불러옴 · 연결됨: '+c);
       if(quiet)liveFlash('다른 기기의 변경 내용을 반영했습니다');
       if(cb)cb(true);}else{__cloudExists=false;__cloudVer=null;setSyncStatus('연결됨: '+c);if(cb)cb(false);}}).catch(function(){setSyncStatus('오프라인');if(cb)cb(false);});}
@@ -14483,7 +14537,7 @@ setInterval(function(){if(topActive==='home'&&curView()==='dashboard'){var e=doc
 function clearToday(){if(!confirm('오늘의 할 일을 비울까요? (누적 기록은 유지됩니다)'))return;
   delete db.todos[today()];save();renderAll();}
 function resetAll(){if(!confirm('모든 데이터를 삭제하고 초기 예시 상태로 되돌립니다. 계속할까요?'))return;
-  db=seed();save();renderAll();}
+  db=seed();idSnapTake();save();renderAll();}
 
 /* ---------- 독서 발췌 랜덤 + 5분 타이머 ---------- */
 var exTimer=null, daisyPick=null, daisyPanelOn=false;   /* daisyPick = {bid,eid} 지금 떠 있는 발췌 */
@@ -15904,6 +15958,7 @@ function renderAll(){
   try{f();}catch(e){try{console.error('boot · '+(f.name||'?')+':',e);}catch(_){}}
 });
 __boot=false;                                  /* 마이그레이션 구간 끝 */
+try{delApply(db);idSnapTake();}catch(e){}       /* 지움 표시 기준점 */
 if(syncCode()){
   setTimeout(syncReady,8000);                  /* 응답이 없어도 8초 뒤엔 정상 동작 */
   cloudPull(false,syncReady);
@@ -16535,7 +16590,7 @@ function liveApplyLocal(){
   if(!fresh||!fresh.work)return;
   if(Number(fresh.__updated||0)<=Number(db&&db.__updated||0))return;
   if(smSame(smStrip(fresh),smStrip(db))){db.__updated=fresh.__updated;return;}
-  db=syncMerge(db,fresh,null,false);db.__updated=fresh.__updated;ensureFields();
+  db=syncMerge(db,fresh,null,false);db.__updated=fresh.__updated;ensureFields();idSnapTake();
   liveKeepInputs(function(){renderAll();renderBackupUI();});
   liveFlash('다른 창의 변경 내용을 반영했습니다');
 }
