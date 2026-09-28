@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-26 · r166">
+<meta name="hmd-build" content="2026-09-28 · r171">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1397,7 +1397,34 @@
   @media(max-width:700px){.zkc{aspect-ratio:auto;height:88vh}}
   /* 대시보드 제텔카스텐 두 칸 (A6 색인카드를 그대로 펼쳐 놓은 모양) */
   #homeZkCard{margin-bottom:20px}
-  .hmzk-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .hmzk-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch}
+  /* 대시보드 독서 칸: 읽는 중인 책 · 표지 · 진행률 · 오늘 목표 */
+  .hmrd-list{display:flex;flex-direction:column;gap:5px;max-height:338px;overflow:auto;padding-right:2px}
+  .hmrd{display:flex;gap:9px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:5px 9px 5px 6px;background:#fff}
+  .hmrd-cv{flex:none;width:36px;height:50px;border-radius:4px;overflow:hidden;background:var(--dark);box-shadow:0 2px 6px rgba(18,49,43,.18)}
+  .hmrd-cv img{width:100%;height:100%;object-fit:cover;display:block}
+  .hmrd-cv .noimg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:8px;font-weight:700;text-align:center;padding:2px;line-height:1.25;word-break:keep-all;overflow:hidden}
+  .hmrd-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+  .hmrd-l1{display:flex;align-items:baseline;gap:8px;min-width:0}
+  .hmrd-t{flex:1;min-width:0;font-weight:800;font-size:12.5px;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+  .hmrd-t:hover{text-decoration:underline}
+  .hmrd-m{flex:none;font-size:11px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .hmrd-m b{color:var(--dark)}
+  .hmrd-m .pct{font-weight:800;color:#3f5f9c;margin-left:4px}
+  .hmrd-m .lnk{cursor:pointer;text-decoration:underline}
+  .hmrd-bar{position:relative;height:6px;border-radius:999px;background:#eef1ef}
+  .hmrd-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:#6a8fd8;min-width:2px}
+  .hmrd-bar i.done{background:var(--green)}
+  .hmrd-bar s{position:absolute;top:-3px;width:2px;height:12px;background:#e34948;border-radius:2px;text-decoration:none}
+  .hmrd-goal{display:flex;gap:5px;align-items:center;font-size:11px;color:var(--muted);white-space:nowrap;min-width:0;overflow:hidden}
+  .hmrd-goal .in{width:64px;padding:1px 6px;font-size:11px;text-align:right;height:20px}
+  .hmrd-goal .btn{padding:1px 8px;font-size:10.5px;height:20px;line-height:1}
+  .hmrd-goal .fixed{display:inline-flex;gap:5px;align-items:center;background:var(--cream);border-radius:6px;padding:1px 7px;font-weight:700;color:var(--dark)}
+  .hmrd-goal .fixed.ok{background:var(--green-soft);color:var(--green)}
+  .hmrd-goal .fixed .ed{cursor:pointer;color:var(--muted);font-weight:400}
+  .hmrd-goal .fixed .ed:hover{color:var(--dark)}
+  .hmrd-goal .left{color:var(--muted)}
+  .hmrd-goal .tdy{margin-left:auto;color:var(--muted)}
   @media(max-width:800px){.hmzk-grid{grid-template-columns:1fr}}
   .hmzk{background:#FDFBF2;border-radius:6px;position:relative;padding:12px 16px 12px 20px;display:flex;flex-direction:column;min-height:320px;
     box-shadow:0 1px 0 rgba(0,0,0,.04),0 8px 22px rgba(18,49,43,.09)}
@@ -2486,6 +2513,17 @@
   .hm-grid>.card{margin:0}
   .hm-grid .card+.card{margin-top:0}
   .hm-card{display:flex;flex-direction:column;min-height:190px;padding:16px;position:relative}
+  /* 대시보드 업무 편집창: 업무 노트의 WORD 편집창을 그대로, 세로는 절반 */
+  .hm-wk{grid-column:1/-1;display:flex;flex-direction:column;gap:8px;padding:16px}
+  .hm-wk>h3{margin-bottom:0}
+  .hmwk-title{font-weight:700}
+  .hmwk-box .fw-rich{min-height:190px;max-height:230px;background:#fff;border:1px solid #efede8}
+  .hmwk-mind{min-height:200px;max-height:260px;flex:none}
+  .hmwk-mapwrap .wv-maptools{margin-bottom:6px}
+  .hmwk-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .hmwk-st{font-size:11.5px;color:var(--muted);margin-right:auto}
+  .hmwk-save{padding:7px 16px;font-weight:800;border-color:var(--yellow);color:var(--dark)}
+  .hmwk-save:hover{background:var(--yellow)}
   .hm-half{grid-column:span 2;padding:16px}
   @media(max-width:1000px){.hm-grid{grid-template-columns:1fr 1fr}.hm-half{grid-column:1/-1}}
   @media(max-width:640px){.hm-grid{grid-template-columns:1fr}}
@@ -2837,17 +2875,33 @@
   <section class="view on" id="view-dashboard">
     <div class="page-head"><h1 class="go-sched" title="누르면 스케줄로 이동" onclick="goTop('cal')">Hello, My Day!</h1></div>
     <div id="homeTlSlot"></div>
-    <div class="card" id="homeZkCard" style="display:none">
-      <h3><span class="dot" style="background:#e8a4a0"></span> 제텔카스텐 <span class="more">한 장에 한 생각 · 팝업 없이 이 자리에서 쓰고 고친다</span>
-        <button type="button" class="lunar-toggle" style="margin-left:auto" onclick="go('zettel')">전체 보기</button></h3>
-      <div class="hmzk-grid"><div id="hmZkSlot0"></div><div id="hmZkSlot1"></div></div>
+    <div class="hmzk-grid" id="homeZkCard" style="display:none">
+      <div class="card" style="margin:0">
+        <h3><span class="dot" style="background:#e8a4a0"></span> 제텔카스텐 <span class="more">한 장에 한 생각 · 이 자리에서 쓰고 고친다</span>
+          <button type="button" class="lunar-toggle" style="margin-left:auto" onclick="go('zettel')">전체 보기</button></h3>
+        <div id="hmZkSlot0"></div>
+      </div>
+      <div class="card" style="margin:0">
+        <h3><span class="dot" style="background:#6a8fd8"></span> 독서 <span class="more" id="hmRdSub">읽는 중인 책 · 진행률과 오늘 목표</span>
+          <button type="button" class="lunar-toggle" style="margin-left:auto" onclick="goRead()">독서 →</button></h3>
+        <div id="hmRdSlot"></div>
+      </div>
     </div>
     <div id="homeGrid" style="display:none">
       <div class="hm-grid">
-        <div class="card hm-card" id="hmSched"></div>
-        <div class="card hm-card" id="hmWork"></div>
-        <div class="card hm-card" id="hmProj"></div>
-        <div class="card hm-card" id="hmRead"></div>
+        <div class="card hm-wk" id="hmWorkEd">
+          <h3><span class="dot" style="background:var(--yellow)"></span> 업무
+            <button type="button" class="lunar-toggle" style="margin-left:auto" onclick="go('work')">업무 →</button></h3>
+          <input id="hmwkTitle" class="in hmwk-title" placeholder="제목">
+          <div id="hmwkBox" class="hmwk-box"><div class="fw-rich" id="hmwkEd" contenteditable="true" data-noenter="1"></div></div>
+          <div id="hmwkMapWrap" class="hmwk-mapwrap" style="display:none"><div class="wv-maptools"><button type="button" class="btn y" style="padding:5px 12px;font-size:12px" onclick="mindAddFocus(mindRoot())">＋ 생각 추가</button><span class="wv-xlhint"><b>Tab</b>=하위 · <b>Enter</b>=대등 · 칸을 끌어 이동</span></div><div id="hmwkMind" class="wv-mindcv hmwk-mind"></div></div>
+          <div class="hmwk-foot">
+            <button type="button" class="lunar-toggle" id="hmwkMapBtn" onclick="hmWkMapTgl()" title="줄 글 ↔ 마인드맵">마인드맵</button>
+            <span class="hmwk-st" id="hmwkSt"></span>
+            <button type="button" class="btn ghost hmwk-save" onclick="hmWkSave('의회운영')" title="«의회운영» 폴더에 노트로 저장">의회운영</button>
+            <button type="button" class="btn ghost hmwk-save" onclick="hmWkSave('매뉴얼')" title="«매뉴얼» 폴더에 노트로 저장">매뉴얼</button>
+          </div>
+        </div>
         <div class="card hm-card" id="hmWords"></div>
         <div class="card hm-card" id="hmEng"></div>
         <div class="card hm-card" id="hmKnow"></div>
@@ -3713,7 +3767,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-26 · r166';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-28 · r171';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -3736,11 +3790,12 @@ function ensureFields(){
    'tlRoutines','tlProjects','routines','fixed','zk','chrono','chronoLinks','articles','rdLog','hanja','spots'].forEach(function(k){
     if(Array.isArray(db[k]))db[k]=db[k].filter(function(x){return x&&typeof x==='object';});
   });
-  ['todos','budget','overtime','tlrLog','workVault','rtCheck','rvDone'].forEach(function(k){
+  ['todos','budget','overtime','tlrLog','workVault','rtCheck','rvDone','rdGoal'].forEach(function(k){
     if(!db[k]||typeof db[k]!=='object'||Array.isArray(db[k]))db[k]={};});
   if(!db.budget)db.budget={};if(!db.fixed)db.fixed=[];if(!db.workCats)db.workCats=[];if(!db.studyCats)db.studyCats={지식:[],문화:[]};if(!db.schedules)db.schedules=[];if(!db.sessions)db.sessions=[];if(!db.inbox)db.inbox=[];if(!db.diary)db.diary=[];if(!db.articles)db.articles=[];if(!db.rdLog)db.rdLog=[];if(!db.council)db.council={sessions:[],active:null};if(!Array.isArray(db.hanja))db.hanja=[];
   if(!db.__bg2608){if(!db.budget)db.budget={};db.budget['술']=30000;db.budget['식비']=50000;db.__bg2608=1;}
   if(!Array.isArray(db.spots))db.spots=[];if(!Array.isArray(db.spotCats))db.spotCats=[];
+  Object.keys(db.rdGoal||{}).forEach(function(k){var g=db.rdGoal[k];if(g&&g.page!=null&&g.n==null)delete db.rdGoal[k];});   /* 예전 «쪽까지» 목표는 버린다 */
   if(!db.nw||typeof db.nw!=='object'||Array.isArray(db.nw))db.nw={items:[],snaps:{}};if(!Array.isArray(db.nw.items))db.nw.items=[];if(!db.nw.snaps||typeof db.nw.snaps!=='object')db.nw.snaps={};
   if(!db.cnOrgs||typeof db.cnOrgs!=='object')db.cnOrgs={};
   if(!Array.isArray(db.cnOrgs['비서실']))db.cnOrgs['비서실']=['의장실','부의장실'];
@@ -9313,6 +9368,54 @@ function renderHomeZk(){                     /* 이미 그려진 칸은 건드�
     if(hmZk[i].id!=null&&hmZkIdx(i)<0)hmZk[i].id=null;
     if(!box.dataset.painted||(hmZk[i].id==null&&!box.querySelector('.hmzk')))hmZkPaint(i);
     else if(hmZk[i].id!=null&&!hmZkTm[i]&&!box.contains(document.activeElement))hmZkPaint(i);}   /* 다른 화면에서 고친 기존 메모를 다시 읽는다 */
+  hmRdPaint();
+}
+/* ===== 대시보드 독서 칸: 읽는 중인 책 · 표지 · 진행률(마지막 기록 쪽 ÷ 총페이지) · 오늘 목표(직접 입력 · 저장하면 고정) ===== */
+var hmRdEditing={};
+function rdCurPage(bid){                   /* 기록넣기에서 가장 마지막에 넣은 쪽 (끝 쪽 · 없으면 시작 쪽) */
+  var rs=(db.rdLog||[]).filter(function(r){return r.book===bid&&(Number(r.p2)||Number(r.p1));});
+  if(!rs.length)return {page:0,date:''};
+  rs.sort(function(a,b){return String(a.date).localeCompare(String(b.date))||a.id-b.id;});
+  var r=rs[rs.length-1];return {page:Number(r.p2)||Number(r.p1)||0,date:r.date};
+}
+function rdTodayPages(bid){var n=0;(db.rdLog||[]).forEach(function(r){if(r.book===bid&&r.date===today())n+=rdgCalc(r).pages;});return n;}
+function rdGoalGet(bid){var g=(db.rdGoal||{})[bid];return (g&&g.date===today()&&Number(g.n))?g:null;}   /* {date, n:오늘 읽을 쪽수} */
+function rdGoalLast(bid){var g=(db.rdGoal||{})[bid];return (g&&Number(g.n))?g:null;}
+function rdGoalSave(bid){
+  var el=document.getElementById('hmrdG'+bid);if(!el)return;
+  var v=parseInt(String(el.value).replace(/[^0-9]/g,''),10);
+  if(!v){hkChip('오늘 목표 쪽수를 넣어주세요');setTimeout(function(){hkChip('');},1400);el.focus();return;}
+  if(!db.rdGoal||typeof db.rdGoal!=='object')db.rdGoal={};
+  db.rdGoal[bid]={date:today(),n:v};delete hmRdEditing[bid];
+  save();hmRdPaint();
+}
+function rdGoalEdit(bid){hmRdEditing[bid]=true;hmRdPaint();var el=document.getElementById('hmrdG'+bid);if(el){el.focus();el.select();}}
+function hmRdBooks(){return (db.reading||[]).filter(function(b){return bkStatus(b)==='reading';}).sort(function(a,b){   /* 최근에 기록한 책 먼저 · 기록 없는 책은 뒤에 */
+  var la=rdCurPage(a.id).date,lb=rdCurPage(b.id).date;if(!!la!==!!lb)return la?-1:1;
+  var ra=la||String(a.start||''),rb=lb||String(b.start||'');return rb.localeCompare(ra)||b.id-a.id;});}
+function hmRdRowHTML(b){
+  var cur=rdCurPage(b.id),tot=Number(b.totalPages)||0,pct=tot?Math.min(100,Math.round(cur.page/tot*100)):0,g=rdGoalGet(b.id),last=rdGoalLast(b.id),td=rdTodayPages(b.id);
+  var open='go(\'reading\');setTimeout(function(){openBookView('+b.id+');},120)';
+  var cover=b.cover?'<img src="'+escA(b.cover)+'" alt="" onerror="this.outerHTML=\'<div class=noimg>'+escA(b.title)+'</div>\'">':'<div class="noimg">'+esc(b.title)+'</div>';
+  var target=g?(cur.page-td+g.n):0;                 /* 오늘 시작 쪽 + 목표 쪽수 = 도달할 쪽 */
+  var goalPct=(g&&tot)?Math.min(100,Math.round(target/tot*100)):null;
+  var meta='<span class="hmrd-m">'+(tot?'<b>'+cur.page+'</b>/'+tot+'쪽<span class="pct">'+pct+'%</span>':'<b>'+cur.page+'</b>쪽 · <span class="lnk" onclick="'+open+'">총페이지 입력</span>')+'</span>';
+  var bar='<div class="hmrd-bar" title="'+(tot?cur.page+' / '+tot+'쪽':'총페이지를 서지정보에 넣으면 진행률이 나옵니다')+(cur.date?' · 마지막 기록 '+cur.date:' · 아직 기록 없음')+'"><i class="'+(pct>=100?'done':'')+'" style="width:'+pct+'%"></i>'
+    +(goalPct!=null?'<s style="left:'+goalPct+'%" title="오늘 목표 '+g.n+'쪽 → '+target+'쪽까지"></s>':'')+'</div>';
+  var goal;
+  if(g&&!hmRdEditing[b.id]){
+    var left=g.n-td,ok=left<=0;
+    goal='<div class="hmrd-goal"><span class="fixed'+(ok?' ok':'')+'">오늘 '+g.n+'쪽'+(ok?' · 달성 ✓':'')+'<span class="ed" onclick="rdGoalEdit('+b.id+')" title="목표 고치기">✎</span></span>'+(ok?'':'<span class="left">'+left+'쪽 남음 · '+target+'쪽까지</span>')+'<span class="tdy">오늘 '+td+'p</span></div>';
+  }else{
+    goal='<div class="hmrd-goal"><span>오늘</span><input id="hmrdG'+b.id+'" class="in" inputmode="numeric" placeholder="'+(last?last.n:20)+'" value="'+(g?g.n:'')+'" onkeydown="if(event.key===\'Enter\')rdGoalSave('+b.id+')"><span>쪽 읽기</span><button type="button" class="btn y" onclick="rdGoalSave('+b.id+')">저장</button>'+(g?'<button type="button" class="btn ghost" onclick="delete hmRdEditing['+b.id+'];hmRdPaint()">취소</button>':'')+(td?'<span class="tdy">오늘 '+td+'p</span>':'')+'</div>';
+  }
+  return '<div class="hmrd" data-bid="'+b.id+'"><div class="hmrd-cv">'+cover+'</div><div class="hmrd-b"><div class="hmrd-l1"><div class="hmrd-t" onclick="'+open+'" title="'+escA(b.title)+(cur.date?' · 마지막 기록 '+cur.date:'')+'">'+esc(b.title)+'</div>'+meta+'</div>'+bar+goal+'</div></div>';
+}
+function hmRdPaint(){
+  var box=document.getElementById('hmRdSlot');if(!box)return;
+  var bs=hmRdBooks();
+  var sub=document.getElementById('hmRdSub');if(sub)sub.textContent=bs.length?('읽는 중 '+bs.length+'권 · 진행률 = 마지막 기록 쪽 ÷ 총페이지'):'읽는 중인 책이 없습니다';
+  box.innerHTML=bs.length?'<div class="hmrd-list">'+bs.map(hmRdRowHTML).join('')+'</div>':'<div class="hm-empty">독서목록에서 «읽는 중»인 책이 여기에 나옵니다.</div>';
 }
 function hmZkCount(i){var b=document.getElementById('hmzkBody'+i),c=document.getElementById('hmzkCnt'+i);if(!b||!c)return;
   if(b.value.length>ZKC_MAX)b.value=b.value.slice(0,ZKC_MAX);
@@ -12039,7 +12142,7 @@ function rdgAdd(){
     var el=document.getElementById(i);if(el)el.value='';
     if(window.__rdgKeep)delete window.__rdgKeep[i];
   });
-  save();rdgRender();
+  save();rdgRender();if(typeof hmRdPaint==='function')hmRdPaint();
   var c=rdgCalc(db.rdLog[db.rdLog.length-1]),parts=[];
   if(c.pages)parts.push(c.pages+'p');
   if(c.mins)parts.push(rdgFmtM(c.mins));
@@ -12047,7 +12150,7 @@ function rdgAdd(){
 }
 function rdgDel(id){
   db.rdLog=(db.rdLog||[]).filter(function(r){return r.id!==id;});
-  save();rdgRender();
+  save();rdgRender();if(typeof hmRdPaint==='function')hmRdPaint();
 }
 function rdgRecs(){
   var rs=(db.rdLog||[]).slice();
@@ -14299,17 +14402,61 @@ function renderHome(){
   var g=document.getElementById('homeGrid');
   if(!g||g.style.display==='none'&&topActive!=='home')return;
   var set=function(id,html){var e=document.getElementById(id);if(e)e.innerHTML=html;};
-  set('hmSched',hmSchedHTML());
-  set('hmWork',hmWorkHTML());
-  set('hmProj',hmProjHTML());
-  set('hmRead',hmReadHTML());
+  hmWkMount();
   set('hmWords',hmWordsHTML());
   set('hmEng',hmEngHTML());
   set('hmKnow',hmListCard('지식','지식','var(--red)'));
   set('hmCult',hmListCard('문화','문화','#8b5cd6'));
   set('hmExpIn',hmExpInHTML());
   set('hmExpChart',hmExpChartHTML());
-  var rd=document.getElementById('hmRead');if(rd)rd.style.position='relative';
+}
+/* ===== 대시보드 업무 편집창: 업무 노트의 WORD 편집창(fw-rich + 서식 도구) · 의회운영/매뉴얼 단추로 그 폴더에 저장 ===== */
+var hmwkMode='text',hmwkMap={mind:[{id:1,t:'주제',x:30,y:30,p:0}]};
+function hmWkMount(){
+  var ed=document.getElementById('hmwkEd'),box=document.getElementById('hmwkBox');if(!ed||!box)return;
+  if(!box.dataset.tb){box.dataset.tb='1';ed.addEventListener('input',function(){var st=document.getElementById('hmwkSt');if(st)st.textContent='';});}
+  hmWkModePaint();
+}
+function hmWkModePaint(){
+  var map=hmwkMode==='map';
+  var box=document.getElementById('hmwkBox'),mw=document.getElementById('hmwkMapWrap'),btn=document.getElementById('hmwkMapBtn');
+  if(box)box.style.display=map?'none':'';if(mw)mw.style.display=map?'':'none';if(btn)btn.classList.toggle('on',map);
+  if(map){
+    var t=(document.getElementById('hmwkTitle')||{}).value;if(t&&t.trim()&&hmwkMap.mind.length===1&&hmwkMap.mind[0].t==='주제')hmwkMap.mind[0].t=t.trim();
+    window.__mindCtx={obj:hmwkMap,canvas:'hmwkMind'};
+    renderMind();
+  }else if(window.__mindCtx&&window.__mindCtx.canvas==='hmwkMind')window.__mindCtx=null;
+}
+function hmWkMapTgl(){hmwkMode=(hmwkMode==='map')?'text':'map';hmWkModePaint();
+  if(hmwkMode==='map')setTimeout(function(){var el=mindQ('.mnode .mtext');if(el)el.focus();},30);}
+function hmWkMapReset(){hmwkMap={mind:[{id:1,t:'주제',x:30,y:30,p:0}]};}
+function hmWkSave(folder){
+  var ed=document.getElementById('hmwkEd'),tt=document.getElementById('hmwkTitle'),st=document.getElementById('hmwkSt');if(!ed)return;
+  var isMap=(hmwkMode==='map');
+  var content=(!isMap&&ed.textContent.trim())?ed.innerHTML:'';
+  var title=(tt&&tt.value||'').trim();
+  if(isMap){var root=hmwkMap.mind[0];var hasMap=hmwkMap.mind.length>1||(root&&root.t&&root.t!=='주제');
+    if(!hasMap){hkChip('마인드맵에 생각을 넣고 저장하세요');setTimeout(function(){hkChip('');},1400);return;}
+    if(!title&&root&&root.t&&root.t!=='주제')title=root.t;}
+  else if(!title&&!content){hkChip('내용을 쓰고 저장하세요');setTimeout(function(){hkChip('');},1400);ed.focus();return;}
+  if(!title)title=today();                      /* 제목이 없으면 오늘 날짜로 */
+  ensureWorkVault();
+  var V=db.workVault[WV_MAIN],list=V.nodes;
+  var f=(V.nodes||[]).find(function(nd){return nd.type==='folder'&&nd.name===folder;});
+  if(!f){f={id:wvUid(),type:'folder',name:folder,children:[]};V.nodes.push(f);}
+  f.children=f.children||[];list=f.children;
+  var note={id:wvUid(),type:'file',name:wvUniqueName(list,title),content:content,fmt:isMap?'map':'word',updated:today()};
+  if(isMap){note.mind=hmwkMap.mind.map(function(n){return Object.assign({},n);});if(hmwkMap.mindShape)note.mindShape=hmwkMap.mindShape;if(hmwkMap.mindMode)note.mindMode=hmwkMap.mindMode;}
+  list.push(note);
+  V.open=V.open||{};V.open[f.id]=true;V.active=note.id;db.workSec=folder;   /* 업무 화면으로 가면 그 노트가 바로 열린다 */
+  db.work.push({id:uid(),date:today(),cat:WV_MAIN,category:folder,title:title,content:content,noteId:note.id});
+  save();
+  ed.innerHTML='';if(tt)tt.value='';
+  if(isMap){hmWkMapReset();window.__mindCtx={obj:hmwkMap,canvas:'hmwkMind'};renderMind();}
+  if(st)st.textContent='«'+folder+' / '+note.name+'» 저장됨 '+new Date().toTimeString().slice(0,5);
+  if(typeof renderWorkAll==='function')renderWorkAll();
+  if(typeof renderCal==='function')renderCal();
+  hkChip(folder+' 노트로 저장했습니다');setTimeout(function(){hkChip('');},1500);
 }
 /* 주요일정 현재시각 갱신 */
 setInterval(function(){if(topActive==='home'&&curView()==='dashboard'){var e=document.getElementById('hmSched');if(e)e.innerHTML=hmSchedHTML();}},60000);
