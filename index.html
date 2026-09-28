@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-28 · r171">
+<meta name="hmd-build" content="2026-09-28 · r173">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -258,6 +258,7 @@
   .b-study{background:var(--red-soft);color:#b23c37}
   .b-지출{background:var(--red-soft);color:#b23c37}
   .b-수입{background:var(--green-soft);color:var(--green)}
+  .b-비상금{background:#e9e4f7;color:#5b4bbf}
   .b-투자{background:var(--yellow-soft);color:#a9721a}
   .entry .day{font-size:12px;color:var(--muted)}
   .entry .body{font-size:14px;line-height:1.6;white-space:pre-wrap}
@@ -307,7 +308,14 @@
   .ledger.led-fix .rowdate{font-size:11px;padding:4px 2px;width:100%;max-width:112px}
   .ledger.led-fix th:nth-child(1){width:58px}
   .ledger.led-fix th:nth-child(2){width:86px}
-  .ledger.led-fix.led-both th:nth-child(2){width:50px}.ledger.led-fix.led-both th:nth-child(3){width:76px}.ledger.led-fix.led-both th.amt{width:92px}
+  .ledger.led-fix.led-both th:nth-child(2){width:46px}.ledger.led-fix.led-both th:nth-child(3){width:70px}.ledger.led-fix.led-both th.amt{width:86px}
+  /* 내역이 다섯 글자 이상 보이게: 비고를 좁게 고정하고 나머지를 내역에, 표는 최소 470px (좁으면 가로 스크롤) */
+  .ledger.led-fix.led-both{min-width:470px}
+  .ledger.led-fix.led-both th:nth-child(1){width:52px}.ledger.led-fix.led-both th:nth-child(2){width:58px}.ledger.led-fix.led-both th:nth-child(6){width:60px}.ledger.led-fix.led-both th:last-child{width:42px}
+  .ledger.led-fix.led-both .cat-badge.b-비상금{padding:1px 5px;font-size:10px;letter-spacing:-.3px}
+  .ledger.led-fix.led-both td{padding:7px 4px}.ledger.led-fix.led-both th{padding:6px 4px}
+  .as-pane .g2-led{grid-template-columns:1.18fr 1fr}
+  @media(max-width:1000px){.as-pane .g2-led{grid-template-columns:1fr}}
   .ledger.led-fix.led-both .cat-badge{padding:1px 7px;font-size:10.5px}
   .ledger.led-fix th.amt{width:74px}
   .ledger.led-fix th:last-child{width:48px}
@@ -340,6 +348,7 @@
   .led-kind{display:inline-flex;gap:4px;flex:none}
   .led-inrow.inc .led-type{border-color:var(--green);color:var(--green);font-weight:700}
   .led-inrow .led-type{font-weight:700;color:#b23c37;border-color:#e6b5b1}
+  .led-inrow.emg .led-type{border-color:#7a6bd1;color:#5b4bbf;font-weight:700}
   .ledger td.amt.inc{color:var(--green);font-weight:700}
   .ledger tr.led-inc td{background:rgba(47,111,94,.05)}
   .emg-btns{margin-left:auto;display:inline-flex;gap:4px;flex:none}.emg-btns .btn{padding:4px 8px;font-size:11.5px;white-space:nowrap}
@@ -3767,7 +3776,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-28 · r171';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-28 · r173';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -13456,9 +13465,10 @@ function cheonilDashHTML(solo){
 
 /* ---------- assets (지출·투자·수입 탭) ---------- */
 const ASSET_CATS={
-  지출:['식비','술','모임1','모임2','세탁','문화생활','유류&교통','이발','기타','경조사','비상금'],
+  지출:['식비','술','모임1','모임2','세탁','문화생활','유류&교통','이발','기타','경조사'],
   투자:['현금','적금','주식','채권','코인','연금저축','행정공제'],
-  수입:['월급','시간외수당','명절수당','성과급','정근수당','연가보상비','여비','기타','비상금']
+  수입:['월급','시간외수당','명절수당','성과급','정근수당','연가보상비','여비','기타'],
+  비상금:['지출','수입']   /* 비상금 구분의 «카테고리» = 사용(지출) · 넣기(수입) — 저장은 type 지출/수입 + category '비상금' */
 };
 const PALETTE=['#e8615a','#f4b740','#2f6f5e','#e0a83a','#6a8fd8','#b56fb0','#4bb3a5','#d98555','#c98a3a','#8a9490','#9c6ade','#3aa0c9'];
 let dashAssetTab='지출', detailAssetTab='지출';
@@ -13502,9 +13512,9 @@ function renderDashAsset(){
   const sm=document.getElementById('dashAssetSum');
   if(sm){
     const mk=thisMonth();
-    const ex=sumAssets(a=>a.type==='지출'&&monthOf(a.date)===mk);
+    const ex=sumAssets(a=>a.type==='지출'&&!emgIs(a)&&monthOf(a.date)===mk);
     const iv=sumAssets(a=>a.type==='투자'&&monthOf(a.date)===mk);
-    const ic=sumAssets(a=>a.type==='수입'&&monthOf(a.date)===mk);
+    const ic=sumAssets(a=>a.type==='수입'&&!emgIs(a)&&monthOf(a.date)===mk);
     sm.innerHTML='<span class="lb">이번달 지출 <b>'+shortWon(ex)+'</b> · 투자 <b>'+shortWon(iv)
       +'</b> · 수입 <b>'+shortWon(ic)+'</b></span>';
   }
@@ -13527,6 +13537,10 @@ function editAsset(id,field,val){const a=db.assets.find(x=>x.id===id);if(!a)retu
   if(field==='amount')a.amount=Number(String(val).replace(/[^0-9]/g,''))||0;else a[field]=String(val).trim();
   if(field==='type'&&ASSET_CATS[a.type]&&ASSET_CATS[a.type].indexOf(a.category)<0)a.category=ASSET_CATS[a.type][0];
   save();renderAssetsAll();renderCal();}
+function editAssetKind(id,k){var a=(db.assets||[]).find(function(x){return x.id===id;});if(!a)return;   /* 수정 줄의 구분: 지출 · 수입 · 비상금 */
+  if(k==='비상금'){if(!emgIs(a))a.category='비상금';}
+  else{a.type=(k==='수입')?'수입':'지출';if(emgIs(a))a.category=ASSET_CATS[a.type][0];}
+  save();renderAssetsAll();}
 function catSelect(a,type){return `<select class="rowsel" onchange="editAsset(${a.id},'category',this.value)">${ASSET_CATS[type].map(c=>`<option${c===a.category?' selected':''}>${esc(c)}</option>`).join('')}</select>`;}
 var expPage=0,expSearch='',expCat='',expSort='new',expMonKey=null;
 function expMon(){return expMonKey||thisMonth();}
@@ -13576,8 +13590,8 @@ function assetRowHTML(a,type,slim){
     var ledE=(!slim&&(type==='지출'||type==='수입'));
     return '<tr class="editing"><td colspan="'+(slim?5:7)+'"><div class="led-edit">'
       +'<input type="date" class="rowdate" value="'+a.date+'" onchange="editAsset('+a.id+',\'date\',this.value)">'
-      +(ledE?'<select class="rowsel" onchange="editAsset('+a.id+',\'type\',this.value)"><option'+(a.type==='지출'?' selected':'')+'>지출</option><option'+(a.type==='수입'?' selected':'')+'>수입</option></select>':'')
-      +catSelect(a,type)
+      +(ledE?'<select class="rowsel" onchange="editAssetKind('+a.id+',this.value)"><option'+(a.type==='지출'&&!emgIs(a)?' selected':'')+'>지출</option><option'+(a.type==='수입'&&!emgIs(a)?' selected':'')+'>수입</option><option'+(emgIs(a)?' selected':'')+'>비상금</option></select>':'')
+      +(emgIs(a)?'<select class="rowsel" onchange="editAsset('+a.id+',\'type\',this.value)"><option'+(a.type==='지출'?' selected':'')+'>지출</option><option'+(a.type==='수입'?' selected':'')+'>수입</option></select>':catSelect(a,type))
       +'<input class="led-in" value="'+escA(a.item||'')+'" placeholder="내역" onblur="editAsset('+a.id+',\'item\',this.value)">'
       +'<input class="led-in led-amt" inputmode="numeric" value="'+Number(a.amount||0).toLocaleString()+'" placeholder="금액" oninput="fmtNum(this)" onblur="editAsset('+a.id+',\'amount\',this.value)">'
       +(slim?'':'<input class="led-in" value="'+escA(a.note||'')+'" placeholder="비고" onblur="editAsset('+a.id+',\'note\',this.value)">')
@@ -13585,11 +13599,11 @@ function assetRowHTML(a,type,slim){
       +'<span class="del" onclick="delEntry(\'assets\','+a.id+',renderAssetsAll)">×</span>'
       +'</div></td></tr>';
   }
-  var inc=(a.type==='수입'),led=(!slim&&(type==='지출'||type==='수입'));
-  return '<tr'+(inc&&led?' class="led-inc"':'')+'>'
+  var inc=(a.type==='수입'),led=(!slim&&(type==='지출'||type==='수입')),emg=emgIs(a);
+  return '<tr'+(inc&&led?' class="led-inc"':'')+(emg?' data-emg="1"':'')+'>'
     +'<td class="ro dt" title="'+escA(a.date||'')+'">'+esc(String(a.date||'').slice(5))+'</td>'
-    +(led?'<td class="ro"><span class="cat-badge b-'+(inc?'수입':'지출')+'">'+(inc?'수입':'지출')+'</span></td>':'')
-    +'<td class="ro">'+esc(a.category||'')+'</td>'
+    +(led?'<td class="ro"><span class="cat-badge b-'+(emg?'비상금':inc?'수입':'지출')+'">'+(emg?'비상금':inc?'수입':'지출')+'</span></td>':'')
+    +'<td class="ro">'+esc(emg?(inc?'수입':'지출'):(a.category||''))+'</td>'
     +'<td class="ro">'+esc(a.item||'')+'</td>'
     +'<td class="ro amt'+(inc&&led?' inc':'')+'">'+(inc&&led?'+':'')+Number(a.amount||0).toLocaleString()+'</td>'
     +(slim?'':'<td class="ro note">'+esc(a.note||'')+'</td>')
@@ -13598,7 +13612,7 @@ function assetRowHTML(a,type,slim){
 var expKind='';                                       /* 가계부 구분 필터: '' 전체 · 지출 · 수입 */
 function expKindSet(k){expKind=k;expPage=0;renderAssets();}
 function assetLedger(type){
-  let rows=db.assets.filter(a=>type==='지출'?((a.type==='지출'||a.type==='수입')&&(!expKind||a.type===expKind)):a.type===type).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+  let rows=db.assets.filter(a=>type==='지출'?((a.type==='지출'||a.type==='수입')&&(!expKind||(expKind==='비상금'?emgIs(a):(a.type===expKind&&!emgIs(a))))):a.type===type).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
   if(type==='지출'){var q=(expSearch||'').trim().toLowerCase();if(q){rows=rows.filter(function(a){return (String(a.item||'')+' '+String(a.note||'')+' '+String(a.category||'')+' '+String(a.date||'')+' '+String(a.amount||'')).toLowerCase().indexOf(q)>=0;});}
     if(expCat)rows=rows.filter(function(a){return a.category===expCat;});
     if(expSort==='old')rows=rows.slice().reverse();
@@ -13614,7 +13628,7 @@ function incMonShift(d){incMonKey=(expMonAdd(incMon(),d)===thisMonth())?null:exp
 function incMonToday(){incMonKey=null;renderAssets();}
 function incLedgerHTML(){
   var mk=incMon();
-  var rows=(db.assets||[]).filter(function(a){return a.type==='수입'&&monthOf(a.date)===mk;})
+  var rows=(db.assets||[]).filter(function(a){return a.type==='수입'&&!emgIs(a)&&monthOf(a.date)===mk;})
     .sort(function(a,b){return String(b.date).localeCompare(String(a.date))||b.id-a.id;});
   if(!rows.length)return '<tr><td colspan="5" class="empty">'+(+mk.slice(5,7))+'월 수입 내역이 없습니다.</td></tr>';
   return rows.map(function(a){return assetRowHTML(a,'수입',true);}).join('');
@@ -13628,8 +13642,8 @@ function assetLedgerSlim(type,limit){
 /* ---- 비상금 관리: 가계부의 «비상금» 항목(수입 = 넣음, 지출 = 씀)을 누계로 ---- */
 function emgRows(){return (db.assets||[]).filter(function(a){return (a.type==='수입'||a.type==='지출')&&a.category==='비상금';}).sort(function(a,b){return String(a.date).localeCompare(String(b.date))||a.id-b.id;});}
 function emgQuick(type){
-  ledTypeSet(type);
-  var c=document.getElementById('eCat');if(c)c.value='비상금';
+  ledTypeSet('비상금');
+  var c=document.getElementById('eCat');if(c)c.value=type;
   var i=document.getElementById('eItem');if(i&&!i.value)i.value=type==='수입'?'비상금 넣기':'비상금 사용';
   var card=document.querySelector('#assetPane .card');if(card)card.scrollIntoView({behavior:'smooth',block:'start'});
   setTimeout(function(){var a=document.getElementById('eAmt');if(a)a.focus();},250);
@@ -13654,14 +13668,15 @@ function emgCardHTML(){
   return h+'</div>';
 }
 var ledType='지출';                                  /* 가계부 입력줄의 구분 (지출/수입) */
-function ledTypeSet(t){ledType=(t==='수입')?'수입':'지출';fillAssetCat('eCat',ledType);
+function ledTypeSet(t){ledType=(t==='수입')?'수입':(t==='비상금')?'비상금':'지출';fillAssetCat('eCat',ledType);
   var s=document.getElementById('eType');if(s)s.value=ledType;
-  var r=document.querySelector('#assetPane .led-inrow');if(r)r.classList.toggle('inc',ledType==='수입');}
+  var r=document.querySelector('#assetPane .led-inrow');if(r){r.classList.toggle('inc',ledType==='수입');r.classList.toggle('emg',ledType==='비상금');}}
+function emgIs(a){return !!a&&a.category==='비상금';}   /* 비상금 줄인가 */
 function assetInputRow(type){
   var led=(type==='지출');if(led)type=ledType;
-  return `<div class="inrow${led?' led-inrow'+(ledType==='수입'?' inc':''):''}">
+  return `<div class="inrow${led?' led-inrow'+(ledType==='수입'?' inc':ledType==='비상금'?' emg':''):''}">
     <input type="date" id="eDate" class="in" style="flex:none;width:148px" value="${today()}">
-    ${led?`<select id="eType" class="in led-type" style="flex:none;width:86px" onchange="ledTypeSet(this.value)"><option${ledType==='지출'?' selected':''}>지출</option><option${ledType==='수입'?' selected':''}>수입</option></select>`:''}
+    ${led?`<select id="eType" class="in led-type" style="flex:none;width:92px" onchange="ledTypeSet(this.value)"><option${ledType==='지출'?' selected':''}>지출</option><option${ledType==='수입'?' selected':''}>수입</option><option${ledType==='비상금'?' selected':''}>비상금</option></select>`:''}
     <select id="eCat" class="in" style="flex:1">${ASSET_CATS[type].map(c=>`<option>${esc(c)}</option>`).join('')}</select>
     <input id="eAmt" class="in" inputmode="numeric" style="flex:1" placeholder="금액" oninput="fmtNum(this)">
     <input id="eItem" class="in" style="flex:1.6" placeholder="내역">
@@ -13672,16 +13687,19 @@ function assetInputRow(type){
 function addAssetDetail(type){
   const amt=parseNum(document.getElementById('eAmt').value);
   if(!amt){alert('금액을 입력하세요.');return;}
-  if(type==='led'||type==='지출'){var ts=document.getElementById('eType');type=(ts&&ts.value==='수입')?'수입':'지출';}
+  var category=document.getElementById('eCat').value;
+  if(type==='led'||type==='지출'){var ts=document.getElementById('eType');var tv=ts?ts.value:'지출';
+    if(tv==='비상금'){type=(category==='수입')?'수입':'지출';category='비상금';}     /* 비상금: 카테고리(지출/수입)가 방향, 카테고리는 '비상금' */
+    else type=(tv==='수입')?'수입':'지출';}
   db.assets.push({id:uid(),date:document.getElementById('eDate').value||today(),type,
-    category:document.getElementById('eCat').value,item:document.getElementById('eItem').value.trim(),
+    category:category,item:document.getElementById('eItem').value.trim(),
     amount:amt,note:document.getElementById('eNote').value.trim()});
   save();renderAssetsAll();renderCal();
 }
 function incomeTrendSVG(){
   const now=new Date();now.setDate(1);const months=[];
   for(let i=5;i>=0;i--){const d=new Date(now);d.setMonth(d.getMonth()-i);months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}
-  const vals=months.map(m=>sumAssets(a=>a.type==='수입'&&monthOf(a.date)===m));
+  const vals=months.map(m=>sumAssets(a=>a.type==='수입'&&!emgIs(a)&&monthOf(a.date)===m));
   const max=Math.max(...vals,1);
   const W=600,H=400,padL=22,padR=22,padT=44,padB=46,n=months.length,cw=(W-padL-padR)/n;
   const y=v=>padT+(H-padT-padB)*(1-v/max),cx=i=>padL+cw*i+cw/2;
@@ -13715,7 +13733,7 @@ function expViewBtns(){
     +'<select class="rowsel" title="카테고리별로 보기" onchange="expTrCatSet(this.value)"><option value="">카테고리 전체</option>'
     +ASSET_CATS[expTrKind].map(function(c){return '<option'+(expTrCat===c?' selected':'')+'>'+esc(c)+'</option>';}).join('')+'</select><span class="sep"></span>';
 }
-function expTrCatOk(a){return !expTrCat||(a.category||'기타')===expTrCat;}
+function expTrCatOk(a){if(emgIs(a))return false;return !expTrCat||(a.category||'기타')===expTrCat;}   /* 비상금 줄은 지출·수입 추이에서 뺀다 */
 /* ---- 일자별 누적 지출 추이: 이번달 · 전달 · 평균 (지난 N달의 같은 날짜 누적 평균) ---- */
 function expDim(m){var y=+m.slice(0,4),mo=+m.slice(5,7);return new Date(y,mo,0).getDate();}
 function expMonAdd(m,k){var y=+m.slice(0,4),mo=+m.slice(5,7)-1+k;var d=new Date(y,mo,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
@@ -13964,7 +13982,7 @@ function editFixed(id,field,val){const f=db.fixed.find(x=>x.id===id);if(!f)retur
 
 function paneExpense(){
   const mk=thisMonth(),lmk=lastMonth();
-  const incSum=sumAssets(a=>a.type==='수입'&&monthOf(a.date)===mk),incTotal=sumAssets(a=>a.type==='수입');
+  const incSum=sumAssets(a=>a.type==='수입'&&!emgIs(a)&&monthOf(a.date)===mk),incTotal=sumAssets(a=>a.type==='수입'&&!emgIs(a));
   let setSum=0,spentSum=0,lastSum=0,brows='';
   ASSET_CATS.지출.forEach(cat=>{
     const set=db.budget[cat]||0;
@@ -13987,13 +14005,13 @@ function paneExpense(){
   ASSET_CATS[expPieKind].forEach(c=>{const v=sumAssets(a=>a.type===expPieKind&&a.category===c&&monthOf(a.date)===pmk);if(v){pieMon[c]=v;monSum+=v;}});
   return `
   <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 가계부 입력 <span class="more">지출·수입을 구분해서 넣습니다</span></h3>${assetInputRow('지출')}</div>
-  <div class="g2">
+  <div class="g2 g2-led">
     <div class="card"><h3><span class="dot" style="background:var(--red)"></span> <span style="white-space:nowrap">가계부</span>
-      <span class="led-kind">${[['','전체'],['지출','지출'],['수입','수입']].map(k=>`<button class="lunar-toggle${expKind===k[0]?' on':''}" onclick="expKindSet('${k[0]}')">${k[1]}</button>`).join('')}</span>
+      <span class="led-kind">${[['','전체'],['지출','지출'],['수입','수입'],['비상금','비상금']].map(k=>`<button class="lunar-toggle${expKind===k[0]?' on':''}" onclick="expKindSet('${k[0]}')">${k[1]}</button>`).join('')}</span>
       <button class="btn ghost" style="margin-left:auto;padding:5px 11px;font-size:11.5px" onclick="assetExportCSV()" title="지출·투자·수입·고정지출 전체를 엑셀용 파일로 저장">엑셀 내보내기</button></h3>
       <div class="inrow" style="margin-bottom:8px">
         <input id="expSearch" class="in" style="flex:1;min-width:120px" placeholder="내역·카테고리 검색" value="${escA(expSearch)}" oninput="expSearchInput(this.value)">
-        <select id="expCatSel" class="rowsel" title="카테고리별 보기" onchange="expCatInput(this.value)"><option value="">카테고리 전체</option><optgroup label="지출">${ASSET_CATS.지출.map(c=>`<option${expCat===c?' selected':''}>${esc(c)}</option>`).join('')}</optgroup><optgroup label="수입">${ASSET_CATS.수입.filter(c=>ASSET_CATS.지출.indexOf(c)<0).map(c=>`<option${expCat===c?' selected':''}>${esc(c)}</option>`).join('')}</optgroup></select>
+        <select id="expCatSel" class="rowsel" title="카테고리별 보기" onchange="expCatInput(this.value)"><option value="">카테고리 전체</option><optgroup label="지출">${ASSET_CATS.지출.map(c=>`<option${expCat===c?' selected':''}>${esc(c)}</option>`).join('')}</optgroup><optgroup label="수입">${ASSET_CATS.수입.filter(c=>ASSET_CATS.지출.indexOf(c)<0).map(c=>`<option${expCat===c?' selected':''}>${esc(c)}</option>`).join('')}</optgroup><option value="비상금"${expCat==='비상금'?' selected':''}>비상금</option></select>
         <select id="expSortSel" class="rowsel" title="정렬" onchange="expSortInput(this.value)"><option value="new"${expSort==='new'?' selected':''}>최신순</option><option value="old"${expSort==='old'?' selected':''}>날짜 오래된순</option><option value="cat"${expSort==='cat'?' selected':''}>카테고리순</option></select>
       </div>
       <div class="tblx"><table class="ledger led-fix led-both"><thead><tr><th>날짜</th><th>구분</th><th>카테고리</th><th>내역</th><th class="amt">금액</th><th>비고</th><th></th></tr></thead>
@@ -14345,7 +14363,7 @@ function addHomeExpense(){
   var f=document.getElementById('hmAmt');if(f)f.focus();
 }
 function hmExpInHTML(){
-  var rows=db.assets.filter(function(a){return a.type==='지출';})
+  var rows=db.assets.filter(function(a){return a.type==='지출'&&!emgIs(a);})
     .sort(function(a,b){return String(b.date).localeCompare(String(a.date))||b.id-a.id;}).slice(0,60);
   return hmT('지출입력','가계부 →',"go('assets')",'var(--red)')
     +'<div class="hm-exp-form hm-exp-grid">'
