@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-29 · r176">
+<meta name="hmd-build" content="2026-09-29 · r178">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -38,7 +38,12 @@
 
   /* Sidebar */
   .sidebar{width:230px;background:var(--dark);color:#dfe8e4;padding:26px 18px;
-    display:flex;flex-direction:column;gap:5px;flex-shrink:0;position:sticky;top:0;height:100vh}
+    display:flex;flex-direction:column;gap:5px;flex-shrink:0;position:sticky;top:0;height:100vh;
+    overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
+  .sidebar>*{flex-shrink:0}   /* 메뉴가 화면보다 길면 잘리지 않고 사이드바 안에서 스크롤 */
+  .sidebar::-webkit-scrollbar{width:6px}.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:3px}
+  @media (min-width:1001px) and (max-height:900px){.sidebar{padding-top:18px;padding-bottom:14px;gap:2px}.sidebar .logo{padding-bottom:12px}.sidebar .nav{padding-top:8px;padding-bottom:8px}.sidebar .navsep{margin:6px 2px 5px}}
+  @media (min-width:1001px) and (max-height:720px){.sidebar .nav{padding-top:6px;padding-bottom:6px;font-size:13px}}
   .logo{display:flex;align-items:center;font-size:21px;font-weight:800;color:#fff;padding:6px 4px 20px;cursor:pointer;user-select:none}
   .logo .mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--yellow),var(--red));
     display:flex;align-items:center;justify-content:center;font-size:18px}
@@ -668,6 +673,45 @@
   .pdf-add{display:flex;gap:6px;align-items:center;padding:10px 14px;border-top:1px solid var(--line);flex:none;flex-wrap:wrap}
   .pdf-add input{flex:1;min-width:180px}
   .pdf-add .btn{flex:none;padding:7px 12px;font-size:12px}
+  /* 파일 게시판 */
+  .fb-top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+  .fb-top .lbl{font-size:11.5px;font-weight:800;color:var(--muted);letter-spacing:1px}
+  .fb-auth{margin-left:auto;font-size:12px;color:var(--muted);display:inline-flex;gap:6px;align-items:center}
+  .fb-auth b{color:var(--green)}.fb-auth b.no{color:#b7791f}
+  .fb-auth button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 10px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit}
+  .fb-drop{border:2px dashed #cfd6d2;border-radius:14px;padding:16px;text-align:center;color:var(--muted);font-size:13px;background:#fbfbf8;transition:all .12s;margin-bottom:12px}
+  .fb-drop.over{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+  .fb-drop.off{opacity:.55}
+  .fb-drop .row{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .fb-drop .row .in{max-width:340px;flex:1;min-width:180px}
+  .fb-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+  .fb-crumb{font-size:13px;font-weight:700;color:var(--dark);display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+  .fb-crumb span{cursor:pointer;color:var(--green)}.fb-crumb span:hover{text-decoration:underline}
+  .fb-crumb i{font-style:normal;color:#b3bcb7}
+  .fb-bar .grow{flex:1}
+  .fb-bar .in{width:200px;padding:6px 10px;font-size:12.5px}
+  .fb-tbl{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+  .fb-tbl th{font-size:11px;color:var(--muted);font-weight:800;text-align:left;padding:7px 8px;border-bottom:1.5px solid var(--line)}
+  .fb-tbl td{padding:9px 8px;border-bottom:1px solid #f0eee8;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fb-tbl tr:hover td{background:#fbfbf8}
+  .fb-tbl .no{width:48px;color:#a9b1ad;font-size:11.5px;text-align:center}
+  .fb-tbl .sz{width:78px;text-align:right;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+  .fb-tbl .dt{width:132px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+  .fb-tbl .act{width:176px;text-align:right}
+  .fb-tbl td.nm{font-weight:700;color:var(--dark)}
+  .fb-tbl td.nm .ic{margin-right:6px}
+  .fb-tbl td.nm .memo{display:block;font-weight:400;font-size:11.5px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis}
+  .fb-tbl tr.dir td.nm{cursor:pointer;color:#2b5a9e}
+  .fb-tbl .act a,.fb-tbl .act span{display:inline-block;font-size:11.5px;font-weight:700;color:var(--muted);cursor:pointer;padding:2px 6px;border-radius:6px;text-decoration:none}
+  .fb-tbl .act a:hover,.fb-tbl .act span:hover{background:var(--cream);color:var(--dark)}
+  .fb-tbl .act .x:hover{color:var(--red)}
+  .fb-tbl tr.up td{color:var(--green)}
+  .fb-msg{padding:22px 10px;text-align:center;color:var(--muted);font-size:13px;line-height:1.7}
+  .fb-pager{display:flex;justify-content:center;gap:8px;align-items:center;margin-top:10px;font-size:12px;color:var(--muted)}
+  .fb-tok{font-size:12.5px;color:var(--text);line-height:1.8}
+  .fb-tok ol{margin:6px 0 10px 18px;padding:0}
+  .fb-tok code{background:var(--cream);border-radius:5px;padding:0 5px;font-size:12px}
+  @media(max-width:760px){.fb-tbl .dt,.fb-tbl .no{display:none}.fb-tbl .act{width:120px}.fb-bar .in{width:100%}}
   .ghp-ov{position:fixed;inset:0;z-index:160;background:rgba(18,49,43,.45);display:flex;align-items:center;justify-content:center;padding:20px}
   .ghp-box{background:var(--card);border-radius:16px;width:min(560px,94vw);max-height:min(620px,88vh);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 18px 44px rgba(18,49,43,.28)}
   .ghp-top{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);flex:none}
@@ -2898,6 +2942,7 @@
   <div class="nav xtra" data-v="routines">Routines</div>
   <div class="nav xtra" data-v="routiner">Checklist</div>
   <div class="nav xtra" data-v="etc">Etc</div>
+  <div class="nav xtra" data-v="files">Files</div>
 </aside>
 
 <main class="main">
@@ -2963,6 +3008,11 @@
   </section>
 
   <!-- ===== 의회 일정 흐름표 ===== -->
+  <!-- ===== 파일 게시판 (깃허브 저장소) ===== -->
+  <section class="view" id="view-files">
+    <div class="page-head"><h1>파일 게시판</h1><p>깃허브 저장소를 게시판처럼 — 여기서 올리고, 내려받고, 지웁니다.</p></div>
+    <div id="fbRoot"></div>
+  </section>
   <section class="view" id="view-etc">
     <div class="page-head"><h1>Etc</h1>
       <p><span id="bxSecBtns" style="display:inline-flex;gap:5px;vertical-align:middle"></span>
@@ -3810,7 +3860,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-29 · r176';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-29 · r178';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -7455,6 +7505,224 @@ function pdfAddUrl(){
   el.value='';pdfIdx=Math.max(0,schFiles(fhById(pdfSch)).length-1);
   if(schFiles(fhById(pdfSch)).length===before)hkChip('이미 붙어 있는 문서입니다');
   pdfPaint();
+}
+/* ================= 파일 게시판: 깃허브 저장소를 HMD 안에서 게시판처럼 =================
+   목록·폴더·검색은 공개 저장소면 토큰 없이도 되고, 올리기·지우기에는 «업로드 권한»(깃허브 토큰)이 필요하다.
+   토큰은 이 기기(localStorage)에만 두고 클라우드 동기화에는 싣지 않는다. */
+var FB_TOK_KEY='hmd_ghTok',FB_META_KEY='hmd_fbMeta',FB_PER=15;
+var fbPath=null,fbQ='',fbPage=0,fbSort='new',fbCache={},fbBusy=null,fbTreeCache={},fbMetaQ=false,fbShowTok=false;
+function fbTok(){try{return localStorage.getItem(FB_TOK_KEY)||'';}catch(e){return '';}}
+function fbHdr(extra){var h={'Accept':'application/vnd.github+json'},t=fbTok();if(t)h.Authorization='Bearer '+t;return Object.assign(h,extra||{});}
+function fbMetaAll(){try{return JSON.parse(localStorage.getItem(FB_META_KEY)||'{}')||{};}catch(e){return {};}}
+function fbMetaSet(k,v){var m=fbMetaAll();m[k]=v;var ks=Object.keys(m);if(ks.length>1500)ks.slice(0,ks.length-1500).forEach(function(x){delete m[x];});try{localStorage.setItem(FB_META_KEY,JSON.stringify(m));}catch(e){}}
+function fbBoard(){
+  var L=ghBoards();
+  if(!db.__fbSeeded){if(!L.some(function(b){return b.repo==='files';}))L.push({id:uid(),name:'파일 게시판',owner:'copakiguy-bot',repo:'files',branch:'main',folder:''});db.__fbSeeded=1;save();}
+  var b=L.find(function(x){return x.id===db.fbActive;})||L.find(function(x){return x.repo==='files';})||L[0];
+  if(db.fbActive!==b.id)db.fbActive=b.id;
+  return b;
+}
+function fbKey(b,path){return b.owner+'/'+b.repo+'@'+b.branch+':'+(path||'');}
+function fbApi(b,rest){return 'https://api.github.com/repos/'+encodeURIComponent(b.owner)+'/'+encodeURIComponent(b.repo)+(rest||'');}
+function fbEnc(path){return String(path||'').split('/').filter(Boolean).map(encodeURIComponent).join('/');}
+function fbPg(b,path){return 'https://'+b.owner+'.github.io/'+b.repo+'/'+fbEnc(path);}
+function fbFmtSize(n){n=Number(n)||0;return n>=1048576?(n/1048576).toFixed(n>=10485760?0:1)+' MB':n>=1024?Math.round(n/1024)+' KB':n+' B';}
+function fbFmtDate(iso){if(!iso)return '';var d=new Date(iso);if(isNaN(d))return '';return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+function fbErrText(st){return st===401?'토큰이 맞지 않습니다 (401) — 업로드 권한을 다시 넣어 주세요':st===403?'권한이 없거나 잠시 요청이 너무 많았습니다 (403)':st===404?'저장소나 폴더를 찾지 못했습니다 (404) — 비공개 저장소면 업로드 권한(토큰)이 있어야 보입니다':st===409||st===422?'그 사이 저장소가 바뀌었습니다 ('+st+') — 새로고침 후 다시 해 주세요':('깃허브 오류 '+st);}
+function fbIcon(n,dir){if(dir)return '📁';return /\.pdf$/i.test(n)?'📕':/\.(png|jpe?g|gif|webp|svg|bmp|heic)$/i.test(n)?'🖼':/\.(hwp|hwpx|docx?|txt|md)$/i.test(n)?'📝':/\.(xlsx?|csv)$/i.test(n)?'📊':/\.(pptx?)$/i.test(n)?'📽':/\.(zip|7z|rar)$/i.test(n)?'🗜':'📄';}
+function fbHidden(n){return /^\.(gitkeep|nojekyll|gitignore|gitattributes)$/i.test(n);}
+function fbGo(path){fbPath=path||'';fbPage=0;fbQ='';renderFiles();}
+function fbBoardUse(id){db.fbActive=id;fbPath=null;fbPage=0;fbQ='';save();renderFiles();}
+function fbRefresh(){var b=fbBoard();delete fbCache[fbKey(b,fbPath)];delete fbTreeCache[fbKey(b,'')];renderFiles();}
+function fbLoad(b,path,cb){
+  var k=fbKey(b,path),c=fbCache[k];
+  if(c&&(c.items||c.err))return cb(c);
+  if(c&&c.loading)return;
+  fbCache[k]={loading:true};
+  fetch(fbApi(b,'/contents/'+fbEnc(path)+'?ref='+encodeURIComponent(b.branch)),{headers:fbHdr()})
+    .then(function(r){if(!r.ok)throw {st:r.status};return r.json();})
+    .then(function(j){fbCache[k]={items:Array.isArray(j)?j:[],at:Date.now()};cb(fbCache[k]);})
+    .catch(function(e){fbCache[k]={err:(e&&e.st)?fbErrText(e.st):'깃허브에 닿지 못했습니다 (인터넷 연결 확인)',st:e&&e.st};cb(fbCache[k]);});
+}
+function fbTree(b,cb){
+  var k=fbKey(b,''),c=fbTreeCache[k];if(c&&c.items)return cb(c);if(c&&c.loading)return;
+  fbTreeCache[k]={loading:true};
+  fetch(fbApi(b,'/git/trees/'+encodeURIComponent(b.branch)+'?recursive=1'),{headers:fbHdr()})
+    .then(function(r){if(!r.ok)throw {st:r.status};return r.json();})
+    .then(function(j){fbTreeCache[k]={items:(j.tree||[]).filter(function(x){return x.type==='blob';}).map(function(x){var nm=x.path.split('/').pop();return {type:'file',name:nm,path:x.path,size:x.size,sha:x.sha};})};cb(fbTreeCache[k]);})
+    .catch(function(e){fbTreeCache[k]={err:(e&&e.st)?fbErrText(e.st):'검색 목록을 받지 못했습니다'};cb(fbTreeCache[k]);});
+}
+/* 올린 날짜·설명: 그 파일의 마지막 커밋 (한 번 받으면 이 기기에 기억) */
+function fbMetaFetch(b,files){
+  if(fbMetaQ)return;var M=fbMetaAll();
+  var need=files.filter(function(f){var m=M[fbKey(b,f.path)];return !m||m.sha!==f.sha;}).slice(0,fbTok()?40:12);
+  if(!need.length)return;
+  fbMetaQ=true;var i=0;
+  (function next(){
+    if(i>=need.length){fbMetaQ=false;if(curView()==='files')fbPaintList();return;}
+    var f=need[i++];
+    fetch(fbApi(b,'/commits?path='+encodeURIComponent(f.path)+'&sha='+encodeURIComponent(b.branch)+'&per_page=1'),{headers:fbHdr()})
+      .then(function(r){if(!r.ok)throw {st:r.status};return r.json();})
+      .then(function(j){var c=j&&j[0]&&j[0].commit;if(c)fbMetaSet(fbKey(b,f.path),{sha:f.sha,d:(c.committer&&c.committer.date)||(c.author&&c.author.date)||'',m:String(c.message||'').split('\n')[0]});next();})
+      .catch(function(e){fbMetaQ=false;if(curView()==='files')fbPaintList();});
+  })();
+}
+function fbMemoOf(msg){msg=String(msg||'');var m=msg.match(/—\s*(.+)$/);if(/^HMD 업로드/.test(msg))return m?m[1]:'';if(/^(Add|Create|Upload) files? via upload/i.test(msg))return '';return msg;}
+function renderFiles(){
+  var root=document.getElementById('fbRoot');if(!root)return;
+  var vw=document.getElementById('view-files');if(!vw||!vw.classList.contains('on'))return;
+  var b=fbBoard();if(fbPath==null)fbPath=b.folder||'';
+  var tok=!!fbTok(),L=ghBoards();
+  var top='<div class="fb-top"><span class="lbl">게시판</span>'
+    +L.map(function(x){return '<button type="button" class="lunar-toggle'+(x.id===b.id?' on':'')+'" onclick="fbBoardUse('+x.id+')" title="'+escA(x.owner+'/'+x.repo)+'">'+esc(x.name)+'</button>';}).join('')
+    +'<span class="fb-auth">'+(tok?'<b>● 업로드 권한 연결됨</b><button type="button" onclick="fbTokToggle()">관리</button>':'<b class="no">● 읽기 전용</b><button type="button" onclick="fbTokToggle()">업로드 권한 연결</button>')+'</span></div>';
+  var drop='<div class="fb-drop'+(tok?'':' off')+'" id="fbDrop">'
+    +(tok?'여기로 파일을 끌어다 놓거나 <b>파일 고르기</b> — 지금 폴더(<b>'+esc(fbPath||'맨 위')+'</b>)에 올라갑니다':'파일을 올리려면 먼저 오른쪽 위 <b>업로드 권한 연결</b>을 해 주세요')
+    +'<div class="row"><input id="fbMemo" class="in" placeholder="설명 (선택) — 함께 남깁니다"'+(tok?'':' disabled')+'>'
+    +'<label class="btn y" style="flex:none;cursor:'+(tok?'pointer':'not-allowed')+';padding:7px 16px">파일 고르기<input type="file" id="fbFile" multiple style="display:none"'+(tok?'':' disabled')+' onchange="fbPick(this)"></label>'
+    +'<button type="button" class="btn ghost" style="flex:none" onclick="fbNewFolder()">새 폴더</button></div>'
+    +(fbBusy?'<div style="margin-top:8px;color:var(--green);font-weight:700">'+esc(fbBusy)+'</div>':'')+'</div>';
+  var segs=(fbPath||'').split('/').filter(Boolean),crumb='<span onclick="fbGo(\'\')">'+esc(b.repo)+'</span>';
+  segs.forEach(function(sg,i){crumb+='<i>/</i><span onclick="fbGo(\''+escA(segs.slice(0,i+1).join('/'))+'\')">'+esc(sg)+'</span>';});
+  var bar='<div class="fb-bar"><div class="fb-crumb">📂 '+crumb+'</div><div class="grow"></div>'
+    +'<input id="fbSearch" class="in" placeholder="파일 이름 찾기 (저장소 전체)" value="'+escA(fbQ)+'" oninput="fbSearchIn(this.value)">'
+    +'<select class="rowsel" onchange="fbSort=this.value;fbPage=0;fbPaintList()"><option value="new"'+(fbSort==='new'?' selected':'')+'>최신순</option><option value="name"'+(fbSort==='name'?' selected':'')+'>이름순</option><option value="size"'+(fbSort==='size'?' selected':'')+'>크기순</option></select>'
+    +'<button type="button" class="btn ghost" style="flex:none;padding:6px 11px;font-size:12px" onclick="fbRefresh()" title="깃허브에서 다시 읽기">새로고침</button></div>';
+  var tokCard=fbShowTok?fbTokCardHTML():'';
+  root.innerHTML='<div class="card">'+top+tokCard+drop+bar+'<div id="fbList"><div class="fb-msg">불러오는 중…</div></div><div class="fb-pager" id="fbPager"></div></div>';
+  fbBindDrop();
+  fbPaintList();
+}
+function fbSearchIn(v){fbQ=v;fbPage=0;clearTimeout(window.__fbQT);window.__fbQT=setTimeout(fbPaintList,160);}
+function fbPaintList(){
+  var box=document.getElementById('fbList');if(!box)return;
+  var b=fbBoard(),q=(fbQ||'').trim().toLowerCase();
+  var done=function(c){
+    if(!document.getElementById('fbList'))return;
+    if(c.err){box.innerHTML='<div class="fb-msg">'+esc(c.err)+'<br><span style="font-size:12px">저장소 '+esc(b.owner+'/'+b.repo)+' · 브랜치 '+esc(b.branch)+' — 설정 → 문서 게시판에서 확인할 수 있습니다.</span></div>';document.getElementById('fbPager').innerHTML='';return;}
+    var items=c.items.filter(function(x){return !fbHidden(x.name);});
+    if(q)items=items.filter(function(x){return String(x.path||x.name).toLowerCase().indexOf(q)>=0;});
+    var M=fbMetaAll();
+    var dirs=q?[]:items.filter(function(x){return x.type==='dir';}).sort(function(a,z){return a.name.localeCompare(z.name,'ko');});
+    var files=items.filter(function(x){return x.type==='file';});
+    files.forEach(function(f){var m=M[fbKey(b,f.path)];f.__d=(m&&m.sha===f.sha)?m.d:'';f.__m=(m&&m.sha===f.sha)?fbMemoOf(m.m):'';});
+    files.sort(function(a,z){if(fbSort==='name')return a.name.localeCompare(z.name,'ko');if(fbSort==='size')return (z.size||0)-(a.size||0);
+      return String(z.__d||'').localeCompare(String(a.__d||''))||a.name.localeCompare(z.name,'ko');});
+    var total=files.length,pages=Math.max(1,Math.ceil(total/FB_PER));if(fbPage>=pages)fbPage=pages-1;
+    var shown=files.slice(fbPage*FB_PER,fbPage*FB_PER+FB_PER);
+    fbMetaFetch(b,shown.concat(fbSort==='new'?files.slice(0,60):[]));
+    var tok=!!fbTok(),rows='';
+    if(!q&&fbPath)rows+='<tr class="dir up"><td class="no"></td><td class="nm" onclick="fbGo(\''+escA(fbPath.split('/').slice(0,-1).join('/'))+'\')">↑ 상위 폴더</td><td class="sz"></td><td class="dt"></td><td class="act"></td></tr>';
+    if(fbPage===0)dirs.forEach(function(d){rows+='<tr class="dir"><td class="no"></td><td class="nm" onclick="fbGo(\''+escA(d.path)+'\')"><span class="ic">📁</span>'+esc(d.name)+'</td><td class="sz"></td><td class="dt"></td><td class="act"></td></tr>';});
+    shown.forEach(function(f,i){
+      var no=total-(fbPage*FB_PER+i);
+      rows+='<tr><td class="no">'+no+'</td><td class="nm" title="'+escA(f.path)+'"><span class="ic">'+fbIcon(f.name)+'</span>'+esc(f.name)
+        +(q&&f.path.indexOf('/')>=0?'<span class="memo">📂 '+esc(f.path.split('/').slice(0,-1).join('/'))+'</span>':(f.__m?'<span class="memo">'+esc(f.__m)+'</span>':''))+'</td>'
+        +'<td class="sz">'+fbFmtSize(f.size)+'</td><td class="dt">'+esc(fbFmtDate(f.__d))+'</td>'
+        +'<td class="act"><a href="https://github.com/'+encodeURIComponent(b.owner)+'/'+encodeURIComponent(b.repo)+'/blob/'+encodeURIComponent(b.branch)+'/'+fbEnc(f.path)+'" target="_blank" rel="noopener" title="깃허브에서 열기">열기</a>'
+        +'<span onclick="fbDown(\''+escA(f.path)+'\',\''+escA(f.name)+'\')" title="내려받기">받기</span>'
+        +'<span onclick="fbCopy(\''+escA(f.path)+'\')" title="주소 복사 (GitHub Pages)">주소</span>'
+        +(tok?'<span class="x" onclick="fbDel(\''+escA(f.path)+'\',\''+escA(f.sha)+'\',\''+escA(f.name)+'\')" title="지우기">삭제</span>':'')+'</td></tr>';
+    });
+    box.innerHTML=(rows?'<table class="fb-tbl"><thead><tr><th class="no">번호</th><th>파일</th><th class="sz">크기</th><th class="dt">올린 날</th><th class="act"></th></tr></thead><tbody>'+rows+'</tbody></table>':'')
+      +(!total&&!dirs.length?'<div class="fb-msg">'+(q?'«'+esc(fbQ)+'» 이름의 파일이 없습니다.':'이 폴더에 파일이 없습니다.')+'</div>':'');
+    var pg=document.getElementById('fbPager');
+    if(pg)pg.innerHTML=pages>1?('<button type="button" class="btn ghost" style="padding:4px 11px" '+(fbPage<=0?'disabled':'')+' onclick="fbPage--;fbPaintList()">‹ 이전</button><span>'+(fbPage+1)+' / '+pages+' · 파일 '+total+'개</span><button type="button" class="btn ghost" style="padding:4px 11px" '+(fbPage>=pages-1?'disabled':'')+' onclick="fbPage++;fbPaintList()">다음 ›</button>'):(total?'<span>파일 '+total+'개</span>':'');
+  };
+  if(q)fbTree(b,done);else fbLoad(b,fbPath,done);
+}
+/* ---- 업로드 권한 (깃허브 토큰) ---- */
+function fbTokToggle(){fbShowTok=!fbShowTok;renderFiles();if(fbShowTok)setTimeout(function(){var e=document.getElementById('fbTokIn');if(e)e.focus();},30);}
+function fbTokCardHTML(){
+  var b=fbBoard(),tok=fbTok();
+  return '<div class="gh-add" style="margin-bottom:12px"><div class="gh-add-h">업로드 권한 <span>이 기기에만 저장 · 클라우드 동기화에 실리지 않습니다 (기기마다 한 번씩)</span></div>'
+    +'<div class="fb-tok"><ol><li>깃허브 → 오른쪽 위 사진 → <b>Settings</b> → 맨 아래 <b>Developer settings</b> → <b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b></li>'
+    +'<li>이름 아무거나 · Expiration 원하는 기간 · <b>Repository access</b> → <b>Only select repositories</b> → <code>'+esc(b.repo)+'</code> 선택</li>'
+    +'<li><b>Permissions</b> → Repository permissions → <b>Contents</b> → <b>Read and write</b> → 맨 아래 <b>Generate token</b></li>'
+    +'<li>나온 <code>github_pat_…</code> 를 복사해 아래에 붙여 넣고 «연결»</li></ol>'
+    +'<div class="inrow"><input id="fbTokIn" class="in" type="password" autocomplete="off" style="flex:1" placeholder="'+(tok?'연결됨 · 바꾸려면 새 토큰 붙여 넣기':'github_pat_…')+'" onkeydown="if(event.key===\'Enter\')fbTokSave()">'
+    +'<button type="button" class="btn y" style="flex:none" onclick="fbTokSave()">연결</button>'
+    +(tok?'<button type="button" class="btn ghost" style="flex:none" onclick="fbTokClear()">끊기</button>':'')+'</div>'
+    +'<div id="fbTokMsg" style="margin-top:6px;font-size:12px;color:var(--muted)"></div></div></div>';
+}
+function fbTokSave(){
+  var el=document.getElementById('fbTokIn'),v=(el&&el.value||'').trim(),msg=document.getElementById('fbTokMsg');
+  if(!v){if(msg)msg.textContent='토큰을 붙여 넣어 주세요';return;}
+  var b=fbBoard();if(msg)msg.textContent='확인하는 중…';
+  fetch(fbApi(b,''),{headers:{'Accept':'application/vnd.github+json','Authorization':'Bearer '+v}})
+    .then(function(r){if(!r.ok)throw {st:r.status};return r.json();})
+    .then(function(j){
+      var can=j&&j.permissions&&(j.permissions.push||j.permissions.admin||j.permissions.maintain);
+      if(!can){if(msg)msg.innerHTML='<span style="color:var(--red)">이 토큰으로는 «'+esc(b.repo)+'»에 쓸 수 없습니다 — Contents 권한을 Read and write 로 주세요</span>';return;}
+      try{localStorage.setItem(FB_TOK_KEY,v);}catch(e){}
+      fbShowTok=false;fbCache={};fbTreeCache={};renderFiles();
+      hkChip('업로드 권한을 연결했습니다');setTimeout(function(){hkChip('');},1600);
+    })
+    .catch(function(e){if(msg)msg.innerHTML='<span style="color:var(--red)">'+esc(e&&e.st?fbErrText(e.st):'깃허브에 닿지 못했습니다')+'</span>';});
+}
+function fbTokClear(){if(!confirm('이 기기에서 업로드 권한(토큰)을 지울까요?\n깃허브의 토큰 자체는 그대로 남으니, 더 안 쓸 거면 깃허브에서도 지워 주세요.'))return;try{localStorage.removeItem(FB_TOK_KEY);}catch(e){}fbShowTok=false;renderFiles();}
+/* ---- 올리기 ---- */
+function fbBindDrop(){
+  var d=document.getElementById('fbDrop');if(!d||d.__b)return;d.__b=1;
+  ['dragenter','dragover'].forEach(function(ev){d.addEventListener(ev,function(e){e.preventDefault();if(fbTok())d.classList.add('over');});});
+  ['dragleave','drop'].forEach(function(ev){d.addEventListener(ev,function(e){e.preventDefault();d.classList.remove('over');});});
+  d.addEventListener('drop',function(e){if(!fbTok()){fbTokToggle();return;}var fs=e.dataTransfer&&e.dataTransfer.files;if(fs&&fs.length)fbUpload(Array.prototype.slice.call(fs));});
+}
+function fbPick(inp){var fs=Array.prototype.slice.call(inp.files||[]);inp.value='';if(fs.length)fbUpload(fs);}
+function fbNewFolder(){var n=prompt('새 폴더 이름 (지금 폴더 안에 만듭니다)\n빈 폴더는 깃허브에 남지 않으니, 들어가서 파일을 올려 주세요.');if(n==null)return;n=n.trim().replace(/[\\/:*?"<>|]+/g,'-');if(!n)return;fbGo((fbPath?fbPath+'/':'')+n);}
+function fbB64(file){return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){var s=String(r.result||'');res(s.slice(s.indexOf(',')+1));};r.onerror=function(){rej(r.error);};r.readAsDataURL(file);});}
+function fbUpload(files){
+  if(!fbTok()){fbTokToggle();return;}
+  if(fbBusy){hkChip('올리는 중입니다 — 끝나면 다시');setTimeout(function(){hkChip('');},1400);return;}
+  var b=fbBoard(),folder=fbPath||'',memo=((document.getElementById('fbMemo')||{}).value||'').trim();
+  var c=fbCache[fbKey(b,folder)],have={};((c&&c.items)||[]).forEach(function(x){have[x.name]=x;});
+  var big=files.filter(function(f){return f.size>95*1048576;});
+  if(big.length){alert('깃허브는 한 파일 100MB 까지만 받습니다.\n빼고 올릴 파일: '+big.map(function(f){return f.name;}).join(', '));files=files.filter(function(f){return f.size<=95*1048576;});if(!files.length)return;}
+  var i=0,ok=0,fails=[];
+  (function next(){
+    if(i>=files.length){
+      fbBusy=null;delete fbCache[fbKey(b,folder)];delete fbTreeCache[fbKey(b,'')];
+      var mi=document.getElementById('fbMemo');if(mi)mi.value='';
+      renderFiles();
+      hkChip(ok+'개 올렸습니다'+(fails.length?' · 실패 '+fails.length+'개':''));setTimeout(function(){hkChip('');},2200);
+      if(fails.length)alert('올리지 못한 파일\n\n'+fails.join('\n'));
+      return;}
+    var f=files[i++],name=String(f.name||'file').replace(/[\\/]+/g,'-'),ex=have[name],sha=null;
+    if(ex&&ex.type==='file'){
+      if(confirm('«'+name+'»이(가) 이미 있습니다.\n\n확인 = 새 파일로 덮어쓰기\n취소 = 이름 뒤에 번호를 붙여 따로 올리기'))sha=ex.sha;
+      else{var dot=name.lastIndexOf('.'),base=dot>0?name.slice(0,dot):name,ext=dot>0?name.slice(dot):'',k=2;while(have[base+' ('+k+')'+ext])k++;name=base+' ('+k+')'+ext;}
+    }
+    var path=(folder?folder+'/':'')+name;
+    fbBusy='올리는 중 '+i+' / '+files.length+' · '+name;var bz=document.querySelector('#fbDrop');if(bz)renderFiles();
+    fbB64(f).then(function(b64){
+      var body={message:'HMD 업로드: '+name+(memo?' — '+memo:''),content:b64,branch:b.branch};if(sha)body.sha=sha;
+      return fetch(fbApi(b,'/contents/'+fbEnc(path)),{method:'PUT',headers:fbHdr({'Content-Type':'application/json'}),body:JSON.stringify(body)});
+    }).then(function(r){return r.json().catch(function(){return {};}).then(function(j){if(!r.ok)throw {st:r.status,msg:j&&j.message};return j;});})
+      .then(function(j){ok++;have[name]={name:name,type:'file',sha:j.content&&j.content.sha};
+        var cm=j.commit||{};if(j.content)fbMetaSet(fbKey(b,path),{sha:j.content.sha,d:(cm.committer&&cm.committer.date)||new Date().toISOString(),m:cm.message||('HMD 업로드: '+name+(memo?' — '+memo:''))});
+        next();})
+      .catch(function(e){fails.push(name+' — '+(e&&e.st?fbErrText(e.st):(e&&e.message)||'오류'));next();});
+  })();
+}
+/* ---- 받기 · 주소 · 지우기 ---- */
+function fbDown(path,name){
+  var b=fbBoard();hkChip('내려받는 중…');
+  fetch(fbApi(b,'/contents/'+fbEnc(path)+'?ref='+encodeURIComponent(b.branch)),{headers:fbHdr({'Accept':'application/vnd.github.raw'})})
+    .then(function(r){if(!r.ok)throw {st:r.status};return r.blob();})
+    .then(function(bl){var u=URL.createObjectURL(bl),a=document.createElement('a');a.href=u;a.download=name;a.style.display='none';document.body.appendChild(a);a.click();setTimeout(function(){a.remove();URL.revokeObjectURL(u);},4000);hkChip('');})
+    .catch(function(e){hkChip('');alert('내려받지 못했습니다\n'+(e&&e.st?fbErrText(e.st):'연결 오류'));});
+}
+function fbCopy(path){var u=fbPg(fbBoard(),path);
+  var done=function(){hkChip('주소를 복사했습니다');setTimeout(function(){hkChip('');},1400);};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(u).then(done,function(){prompt('주소',u);});else prompt('주소',u);}
+function fbDel(path,sha,name){
+  if(!fbTok()){fbTokToggle();return;}
+  if(!confirm('«'+name+'»을(를) 게시판에서 지울까요?\n\n깃허브 기록(커밋 이력)에는 남아 되살릴 수는 있습니다.'))return;
+  var b=fbBoard();
+  fetch(fbApi(b,'/contents/'+fbEnc(path)),{method:'DELETE',headers:fbHdr({'Content-Type':'application/json'}),body:JSON.stringify({message:'HMD 삭제: '+name,sha:sha,branch:b.branch})})
+    .then(function(r){if(!r.ok)throw {st:r.status};
+      delete fbCache[fbKey(b,fbPath)];delete fbTreeCache[fbKey(b,'')];renderFiles();hkChip('지웠습니다');setTimeout(function(){hkChip('');},1400);})
+    .catch(function(e){alert('지우지 못했습니다\n'+(e&&e.st?fbErrText(e.st):'연결 오류'));});
 }
 /* ---- 게시판에서 고르기 (공개 저장소 목록 읽기) ---- */
 function ghApi(path){var g=ghCfg();
@@ -16222,7 +16490,7 @@ function renderAll(){
    renderTop,renderCal,renderSchedule,renderTodos,renderInbox,renderInboxPage,renderSessions,
    renderWork,renderDashWork,renderReading,renderRdLog,renderStudy,renderDashStudy,
    renderAssets,renderDashAsset,renderDiary,renderDiaryPage,renderRoutiner,renderZettel,renderDash,
-   renderMemoUrl,renderChrono,renderArticle,renderCouncil,renderSpots,renderEtc].forEach(function(f){
+   renderMemoUrl,renderChrono,renderArticle,renderCouncil,renderSpots,renderEtc,renderFiles].forEach(function(f){
     try{f();}catch(e){try{console.error('renderAll · '+(f.name||'?')+':',e);}catch(_){}}
   });
 }
