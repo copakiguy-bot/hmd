@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-29 · r175">
+<meta name="hmd-build" content="2026-09-29 · r176">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2562,6 +2562,8 @@
   .hmwk-st{font-size:11.5px;color:var(--muted);margin-right:auto}
   .hmwk-save{padding:7px 16px;font-weight:800;border-color:var(--yellow);color:var(--dark)}
   .hmwk-save:hover{background:var(--yellow)}
+  .hmwk-dy{border-color:#b9a7e6}
+  .hmwk-dy:hover{background:#e9e4f7}
   .hm-half{grid-column:span 2;padding:16px}
   @media(max-width:1000px){.hm-grid{grid-template-columns:1fr 1fr}.hm-half{grid-column:1/-1}}
   @media(max-width:640px){.hm-grid{grid-template-columns:1fr}}
@@ -2928,7 +2930,7 @@
     <div id="homeGrid" style="display:none">
       <div class="hm-grid">
         <div class="card hm-wk" id="hmWorkEd">
-          <h3><span class="dot" style="background:var(--yellow)"></span> 업무
+          <h3><span class="dot" style="background:var(--yellow)"></span> 메모
             <button type="button" class="lunar-toggle" style="margin-left:auto" onclick="go('work')">업무 →</button></h3>
           <input id="hmwkTitle" class="in hmwk-title" placeholder="제목">
           <div id="hmwkBox" class="hmwk-box"><div class="fw-rich" id="hmwkEd" contenteditable="true" data-noenter="1"></div></div>
@@ -2938,6 +2940,7 @@
             <span class="hmwk-st" id="hmwkSt"></span>
             <button type="button" class="btn ghost hmwk-save" onclick="hmWkSave('의회운영')" title="«의회운영» 폴더에 노트로 저장">의회운영</button>
             <button type="button" class="btn ghost hmwk-save" onclick="hmWkSave('매뉴얼')" title="«매뉴얼» 폴더에 노트로 저장">매뉴얼</button>
+            <button type="button" class="btn ghost hmwk-save hmwk-dy" onclick="hmWkDiary()" title="오늘 일기로 보내기">일기</button>
           </div>
         </div>
         <div class="card hm-card" id="hmWords"></div>
@@ -3807,7 +3810,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-29 · r175';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-29 · r176';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -14752,6 +14755,29 @@ function hmWkModePaint(){
 function hmWkMapTgl(){hmwkMode=(hmwkMode==='map')?'text':'map';hmWkModePaint();
   if(hmwkMode==='map')setTimeout(function(){var el=mindQ('.mnode .mtext');if(el)el.focus();},30);}
 function hmWkMapReset(){hmwkMap={mind:[{id:1,t:'주제',x:30,y:30,p:0}]};}
+/* 메모 → 일기: 오늘 날짜·지금 시각의 «기록»으로 넘긴다 (제목이 있으면 첫 줄 굵게 · 마인드맵은 들여쓴 목록으로) */
+function hmWkMindText(){
+  var M=hmwkMap.mind||[],kids={},out=[];
+  M.forEach(function(n){var p=n.p||0;(kids[p]||(kids[p]=[])).push(n);});
+  (function walk(p,d){(kids[p]||[]).forEach(function(n){out.push(new Array(d+1).join('&nbsp;&nbsp;&nbsp;&nbsp;')+(d?'– ':'')+esc(n.t||''));walk(n.id,d+1);});})(0,0);
+  return out.join('<br>');
+}
+function hmWkDiary(){
+  var ed=document.getElementById('hmwkEd'),tt=document.getElementById('hmwkTitle'),st=document.getElementById('hmwkSt');if(!ed)return;
+  var isMap=(hmwkMode==='map'),title=(tt&&tt.value||'').trim(),body='';
+  if(isMap){var root=hmwkMap.mind[0];if(hmwkMap.mind.length>1||(root&&root.t&&root.t!=='주제'))body=hmWkMindText();}
+  else if(ed.textContent.trim())body=ed.innerHTML;
+  if(!title&&!body){hkChip(isMap?'마인드맵에 생각을 넣고 보내세요':'내용을 쓰고 일기로 보내세요');setTimeout(function(){hkChip('');},1400);if(!isMap)ed.focus();return;}
+  var text=(title?'<b>'+esc(title)+'</b>'+(body?'<br>':''):'')+body;
+  if(!Array.isArray(db.diary))db.diary=[];
+  db.diary.push({id:uid(),date:today(),time:dyNowTime(),text:text,kind:'기록'});
+  save();
+  ed.innerHTML='';if(tt)tt.value='';
+  if(isMap){hmWkMapReset();window.__mindCtx={obj:hmwkMap,canvas:'hmwkMind'};renderMind();}
+  if(st)st.textContent='일기로 보냈습니다 '+new Date().toTimeString().slice(0,5);
+  try{renderDiary();renderDiaryPage();renderCal();}catch(e){}
+  hkChip('오늘 일기에 넣었습니다');setTimeout(function(){hkChip('');},1500);
+}
 function hmWkSave(folder){
   var ed=document.getElementById('hmwkEd'),tt=document.getElementById('hmwkTitle'),st=document.getElementById('hmwkSt');if(!ed)return;
   var isMap=(hmwkMode==='map');
