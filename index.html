@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-29 · r174">
+<meta name="hmd-build" content="2026-09-29 · r175">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2028,6 +2028,35 @@
   .ch-units button{border:none;background:transparent;padding:5px 11px;border-radius:8px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer}
   .ch-units button.on{background:var(--dark);color:#fff}
   .ch-filter{display:flex;gap:5px;flex-wrap:wrap;margin-left:auto}
+  /* 연대기 흐름 */
+  .ch-threads{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:-2px 0 10px}
+  .ch-threads:empty{display:none}
+  .ch-th-lb{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:1px;margin-right:2px}
+  .ch-th-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px 4px 9px;border-radius:999px;border:1.5px solid var(--thc);color:var(--thc);background:#fff;font-size:12px;font-weight:800;cursor:pointer;user-select:none}
+  .ch-th-chip b{font-size:9.5px}
+  .ch-th-chip .n{font-style:normal;font-weight:700;font-size:10.5px;opacity:.7}
+  .ch-th-chip em{font-style:normal;font-weight:400;color:#a9b1ad;font-size:11px;padding:0 1px;display:none}
+  .ch-th-chip:hover em{display:inline}
+  .ch-th-chip em:hover{color:var(--dark)}
+  .ch-th-chip.on,.ch-th-chip:hover{background:var(--thc);color:#fff}
+  .ch-th-chip.on em,.ch-th-chip:hover em{color:rgba(255,255,255,.75)}
+  .ch-th-add{border:1.5px dashed #c9cfcb;background:#fff;border-radius:999px;padding:4px 11px;font-size:11.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
+  .ch-th-add:hover{border-color:var(--dark);color:var(--dark)}
+  .ch-th-speed{display:inline-flex;gap:2px;background:#f2f4f2;border-radius:9px;padding:2px;margin-left:auto}
+  .ch-th-speed button{border:none;background:transparent;border-radius:7px;padding:3px 9px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit}
+  .ch-th-speed button.on{background:var(--dark);color:#fff}
+  .ch-th-mk{font-size:12px;color:var(--dark);background:#fff6dc;border:1px solid #f0d58a;border-radius:9px;padding:4px 10px}
+  .ch-th-mk b{color:#b7791f}
+  .ch-th-btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 11px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit}
+  .ch-th-btn.y{background:var(--yellow);border-color:var(--yellow)}
+  #chWrap.ch-making{cursor:crosshair}
+  .chp-th{margin-top:8px}
+  .chp-th-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+  .chp-th-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;border:1.5px solid #dfe3e0;font-size:11.5px;font-weight:700;color:var(--muted);cursor:pointer;user-select:none;background:#fff}
+  .chp-th-chip i{width:8px;height:8px;border-radius:50%;background:var(--thc);opacity:.35}
+  .chp-th-chip.on{border-color:var(--thc);color:var(--thc)}
+  .chp-th-chip.on i{opacity:1}
+  .chp-th-chip.add{border-style:dashed}
   .ch-units .ch-usep{width:1px;align-self:stretch;margin:3px 4px;background:#d6dbd7}
   .ch-jump{display:flex;gap:4px;align-items:center}
   .ch-jump .in{width:200px;padding:5px 10px;font-size:12px}
@@ -3251,9 +3280,10 @@
         <div class="ch-jump"><input id="chJumpIn" class="in" type="text" placeholder="연도로 이동 (예: -384, 46억년 전)" title="Enter 로 이동 · 숫자 그대로, 만·억 표기, 기원전(-), «N년 전» 모두 됩니다" onkeydown="if(event.key==='Enter'){chJump();}"><button class="btn ghost" type="button" onclick="chJump()">이동</button></div>
         <div class="ch-filter" id="chFilter"></div>
       </div>
+      <div class="ch-threads" id="chThreads"></div>
       <div id="chWrap"><svg id="chSvg"></svg><div class="ch-tip" id="chTip"></div></div>
       <div id="chNoDates"></div>
-      <p style="font-size:12px;color:var(--muted);margin-top:8px">끌어서 이동 · 휠로 확대/축소 · 점 한 번 = 날짜 · 두 번 = 세부 내용 · 제목 한 번 = 수정 · 두 번 = 마인드맵</p>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px">끌어서 이동 · 휠로 확대/축소 · 점 한 번 = 날짜 · 두 번 = 세부 내용 · 제목 한 번 = 수정 · 두 번 = 마인드맵 · 흐름 선이나 ▶ 칩 = 흐름 재생</p>
     </div>
       <div class="card" id="chFormCard">
       <h3><span class="dot" style="background:var(--yellow)"></span> 사건 기록 <span class="more" id="chCount"></span></h3>
@@ -3702,6 +3732,7 @@
     <div class="chp-img" id="chpImg" style="display:none"></div>
     <div class="chp-body" id="chpBody"></div>
     <div class="chp-links" id="chpLinks"></div>
+    <div class="chp-th" id="chpThreads"></div>
     <div class="chp-foot">
       <button class="btn ghost" id="chpMapBtn" onclick="chPopMap()">🗺 지도보기</button>
       <button class="btn ghost" id="chpImgBtn" onclick="chPopImg()">🖼 이미지 등록</button>
@@ -3776,7 +3807,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-29 · r174';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-29 · r175';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -3792,11 +3823,11 @@ function ensureFields(){
   if(!db||typeof db!=='object')db=seed();
   /* 어떤 경로로 들어온 데이터든 기본 뼈대는 반드시 갖춰 둔다 (동기화·백업 복원 대비) */
   ['work','study','reading','assets','inbox','diary','sessions','schedules',
-   'tlRoutines','tlProjects','routines','fixed','workCats','zk','chrono','chronoLinks','wishBooks','ec100'].forEach(function(k){
+   'tlRoutines','tlProjects','routines','fixed','workCats','zk','chrono','chronoLinks','chronoThreads','wishBooks','ec100'].forEach(function(k){
     if(!Array.isArray(db[k]))db[k]=[];});
   /* null·문자열 같은 깨진 항목이 섞여 있으면 부팅이 그 자리에서 죽는다 — 목록에서 걸러낸다 */
   ['work','study','reading','assets','inbox','diary','sessions','schedules',
-   'tlRoutines','tlProjects','routines','fixed','zk','chrono','chronoLinks','articles','rdLog','hanja','spots'].forEach(function(k){
+   'tlRoutines','tlProjects','routines','fixed','zk','chrono','chronoLinks','chronoThreads','articles','rdLog','hanja','spots'].forEach(function(k){
     if(Array.isArray(db[k]))db[k]=db[k].filter(function(x){return x&&typeof x==='object';});
   });
   ['todos','budget','overtime','tlrLog','workVault','rtCheck','rvDone','rdGoal'].forEach(function(k){
@@ -7853,6 +7884,7 @@ function chEdit(id){
   var c=document.getElementById('chCount');if(c)c.scrollIntoView({behavior:'smooth',block:'center'});
 }
 function chBarRender(){
+  try{chThBarRender();}catch(e){}
   var u=document.getElementById('chUnits');
   if(u)u.innerHTML=CH_UNITS.map(function(k,i){return (i===CH_UNIT_SEP?'<span class="ch-usep"></span>':'')+'<button class="'+(chState.unit===k?'on':'')+'" onclick="chSetUnit(\''+k+'\')">'+k+'</button>';}).join('');
   var f=document.getElementById('chFilter');
@@ -8062,6 +8094,8 @@ function renderChrono(){
   /* 사건끼리 이은 선 (팝업의 «선 잇기») */
   var anchor={};
   groups.forEach(function(g){anchor[g.e.id]={x:g.x,y:g.ys[0]};});
+  chLastGeo={GL:GL,GT:GT,W:W,H:H,innerH:innerH,innerW:innerW,t0:t0,ppy:ppy,rows:rows,rowH:rowH,anchor:anchor};
+  s+=chThStaticSVG();
   (db.chronoLinks||[]).forEach(function(L){
     var A=anchor[L.a],B=anchor[L.b];if(!A||!B)return;
     var mx=(A.x+B.x)/2, my=Math.min(A.y,B.y)-Math.min(46,Math.abs(A.x-B.x)*.18+14);
@@ -8085,8 +8119,13 @@ function renderChrono(){
   });
   if(!(db.chrono||[]).length)
     s+='<text x="'+(GL+innerW/2)+'" y="'+(GT+innerH/2)+'" text-anchor="middle" font-size="13" fill="#b3bcb7">아직 기록된 사건이 없습니다. 위에서 첫 사건을 추가해 보세요.</text>';
+  s+=chThMakeSVG();
+  s+='<g id="chPlayG" style="pointer-events:none"></g>';
   svg.setAttribute('viewBox','0 0 '+W+' '+H);
   svg.innerHTML=s;
+  wrap.classList.toggle('ch-making',!!chThMake);
+  if(chPlay){chPlay.evs.forEach(function(e){svg.querySelectorAll('text.ch-lbl[data-id="'+e.id+'"]').forEach(function(t){t.style.opacity='.15';});});   /* 재생 중엔 원래 제목을 흐리게 */
+    chPlayDraw(performance.now());}
 }
 /* 날짜 없는 사건: 그래프 아래에 칩으로 모아 둔다 */
 function chRenderNoDates(list){
@@ -8134,6 +8173,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&chLinkFrom!
       var ev=(db.chrono||[]).find(function(v){return String(v.id)===c.getAttribute('data-id');});
       if(ev){down={x:e.clientX,dot:ev,t0:chTof(ev)};moved=false;e.preventDefault();return;}
     }
+    if(chPlay){chPlayStop();chPlaySwallow=true;}                   /* 재생 중 누르면 멈춘다 */
     down={x:e.clientX,c:chState.c};moved=false;wrap.classList.add('drag');});
   window.addEventListener('mousemove',function(e){
     if(!down)return;
@@ -8155,6 +8195,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&chLinkFrom!
   wrap.addEventListener('wheel',function(e){
     if(e.target.closest&&e.target.closest('#chMind'))return;              /* 창 안에서는 창이 스크롤 */
     e.preventDefault();
+    if(chPlay)chPlayStop();
     if(chState.ppy==null)return;
     var GL=118,innerW=(wrap.clientWidth||1000)-GL-8;
     var mx=e.clientX-wrap.getBoundingClientRect().left-GL;
@@ -8167,6 +8208,10 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&chLinkFrom!
   wrap.addEventListener('click',function(e){
     if(moved)return;
     if(e.target.closest&&e.target.closest('#chMind'))return;          /* 마인드맵 창 안 */
+    if(chPlaySwallow){chPlaySwallow=false;return;}                     /* 재생을 멈춘 그 클릭은 흘려보낸다 */
+    if(chThMake){var mk=e.target.closest?e.target.closest('[data-id]'):null;if(mk)chThMakePick(mk.getAttribute('data-id'));return;}   /* 흐름 만들기: 점·제목을 눌러 담는다 */
+    var thp=e.target.closest?e.target.closest('[data-th]'):null;
+    if(thp&&chLinkFrom==null){chTipHide();chPlayStart(thp.getAttribute('data-th'));return;}   /* 흐름 선 = 재생 */
     var lb=e.target.closest?e.target.closest('text.ch-lbl'):null;
     if(lb){chTipHide();var lid=lb.getAttribute('data-id');clearTimeout(window.__chLblT);
       window.__chLblT=setTimeout(function(){chEdit(lid);},260);return;}   /* 한 번 = 아래 수정 칸 · 두 번 = 마인드맵 */
@@ -8184,6 +8229,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&chLinkFrom!
   wrap.addEventListener('mouseleave',function(){chImgPrev(null);});
   wrap.addEventListener('dblclick',function(e){
     if(e.target.closest&&e.target.closest('#chMind'))return;
+    if(chThMake||chPlay||(e.target.closest&&e.target.closest('[data-th]')))return;
     var lb2=e.target.closest?e.target.closest('text.ch-lbl'):null;
     if(lb2){clearTimeout(window.__chLblT);chTipHide();chMindOpen(lb2.getAttribute('data-id'));return;}
     var c=e.target.closest?e.target.closest('circle[data-id]'):null;
@@ -8233,6 +8279,7 @@ function chPopOpen(id){
         +'<span class="del" onclick="chUnlink('+L.id+')">×</span></div>';
     }).join('')):'';
   }
+  chPopThPaint(x.id);
   var pov=document.getElementById('chpOv');pov.classList.add('on');pov.classList.toggle('over-win',!!chWinOn);
   document.addEventListener('keydown',chPopEsc);
 }
@@ -8246,8 +8293,211 @@ function chPopDel(){
   if(!confirm('이 사건을 삭제할까요?'))return;
   db.chrono=(db.chrono||[]).filter(function(v){return v.id!==chPopId;});
   db.chronoLinks=(db.chronoLinks||[]).filter(function(L){return String(L.a)!==String(chPopId)&&String(L.b)!==String(chPopId);});
+  chThreads().forEach(function(t){t.ids=(t.ids||[]).filter(function(i){return String(i)!==String(chPopId);});});
   save();chPopClose();renderChrono();
 }
+/* ================= 연대기 흐름: 사건 묶음을 선으로 잇고 ▶ 재생 =================
+   db.chronoThreads=[{id,name,col,ids:[사건 id…]}] · 순서는 늘 연도순.
+   재생: 화면을 흐름 전체에 맞춘 뒤, 머리점이 첫 사건부터 선을 그으며 지나가고
+   사건에 닿을 때마다 점이 튀고 «연도 · 사건명» 꼬리표가 남는다. 끝에 기간 요약. */
+var CH_TH_COLS=['#c0392b','#2b6cb0','#b7791f','#6b46c1','#2f855a','#c05621','#0f766e'];
+var chThMake=null,chPlay=null,chPlaySwallow=false,chLastGeo=null,chPlaySpeed='even';
+try{if(localStorage.getItem('hmd_chPlaySpeed')==='real')chPlaySpeed='real';}catch(e){}
+function chThreads(){if(!Array.isArray(db.chronoThreads))db.chronoThreads=[];return db.chronoThreads;}
+function chThById(id){return chThreads().find(function(t){return String(t.id)===String(id);});}
+function chEvById(id){return (db.chrono||[]).find(function(v){return String(v.id)===String(id);});}
+function chThEvents(th){
+  var out=[],seen={};(th.ids||[]).forEach(function(id){if(seen[id])return;seen[id]=1;var e=chEvById(id);if(e&&e.y!=null)out.push(e);});
+  return out.sort(function(a,b){return chTof(a)-chTof(b);});
+}
+function chYearStr(y){return chDeep(y)?('약 '+chAgoStr(y)):(y<0?('기원전 '+chBigNum(-y)+'년'):(chBigNum(y)+'년'));}
+function chThDateLb(e){return (e.m&&!chDeep(e.y))?chDateStr(e.y,e.m,e.d):chYearStr(e.y);}
+function chThSpanStr(a,b){var d=Math.abs(b-a);
+  if(d>=1e4)return chBigNum(Math.round(d))+'년';if(d>=1)return Math.round(d)+'년';var m=Math.round(d*12);return m>=1?m+'개월':Math.max(1,Math.round(d*365))+'일';}
+/* 화면 좌표: 그려진 점이 있으면 그 자리, 없으면(화면 밖) 첫 레인 가운데 */
+function chThPos(e){
+  var G=chLastGeo;if(!G)return null;
+  var a=G.anchor[e.id];if(a)return {x:a.x,y:a.y};
+  var cs=(e.cats&&e.cats.length)?e.cats:['나'],li=-1;
+  for(var i=0;i<cs.length;i++){var k=G.rows.indexOf(cs[i]);if(k>=0&&(li<0||k<li))li=k;}
+  if(li<0)return null;
+  return {x:G.GL+(chTof(e)-G.t0)*G.ppy,y:G.GT+li*G.rowH+G.rowH/2};
+}
+function chThPts(th){var out=[];chThEvents(th).forEach(function(e){var p=chThPos(e);if(p)out.push({x:p.x,y:p.y,e:e,t:chTof(e)});});return out;}
+function chThD(pts){return 'M'+pts.map(function(p){return p.x.toFixed(1)+' '+p.y.toFixed(1);}).join(' L');}
+function chThStaticSVG(){
+  var s='';
+  chThreads().forEach(function(th){
+    var pts=chThPts(th);if(pts.length<2)return;
+    var d=chThD(pts),pl=!!(chPlay&&chPlay.th===th);
+    s+='<path d="'+d+'" fill="none" stroke="'+th.col+'" stroke-width="'+(pl?1.3:2)+'" stroke-linejoin="round" stroke-linecap="round" opacity="'+(pl?.22:.5)+'" style="pointer-events:none"/>';
+    s+='<path class="ch-th-hit" data-th="'+th.id+'" d="'+d+'" fill="none" stroke="rgba(0,0,0,0)" stroke-width="12" stroke-linejoin="round" style="cursor:pointer;pointer-events:stroke"><title>'+esc(th.name)+' · 눌러서 재생</title></path>';
+  });
+  return s;
+}
+/* ---- 흐름 막대 (필터 아래) ---- */
+function chThBarRender(){
+  var el=document.getElementById('chThreads');if(!el)return;
+  if(chThMake){
+    el.innerHTML='<span class="ch-th-mk">흐름 만들기 · 점을 차례로 누르세요 (다시 누르면 빠짐) · <b>'+chThMake.ids.length+'</b>개</span>'
+      +'<button type="button" class="ch-th-btn y" onclick="chThMakeDone()">완료</button><button type="button" class="ch-th-btn" onclick="chThMakeCancel()">취소</button>';
+    return;
+  }
+  var ths=chThreads();
+  el.innerHTML='<span class="ch-th-lb">흐름</span>'
+    +ths.map(function(t){var n=chThEvents(t).length,on=!!(chPlay&&chPlay.th===t);
+      return '<span class="ch-th-chip'+(on?' on':'')+'" style="--thc:'+t.col+'" onclick="chPlayStart(\''+t.id+'\')" title="'+escA(t.name)+' · 눌러서 재생 (사건 '+n+'개)"><b>▶</b>'+esc(t.name)+'<i class="n">'+n+'</i>'
+        +'<em onclick="event.stopPropagation();chThRename(\''+t.id+'\')" title="이름 바꾸기">✎</em><em onclick="event.stopPropagation();chThDel(\''+t.id+'\')" title="흐름 지우기">×</em></span>';}).join('')
+    +'<button type="button" class="ch-th-add" onclick="chThMakeStart()" title="점을 차례로 눌러 사건들을 한 흐름으로 묶습니다">＋ 흐름 만들기</button>'
+    +(ths.length?'<span class="ch-th-speed" title="재생 속도"><button type="button" class="'+(chPlaySpeed==='even'?'on':'')+'" onclick="chPlaySpeedSet(\'even\')" title="사건 사이를 늘 같은 시간에 지난다">구간 같게</button><button type="button" class="'+(chPlaySpeed==='real'?'on':'')+'" onclick="chPlaySpeedSet(\'real\')" title="실제 햇수에 비례해 지난다">실제 시간</button></span>':'');
+}
+function chPlaySpeedSet(v){chPlaySpeed=(v==='real')?'real':'even';try{localStorage.setItem('hmd_chPlaySpeed',chPlaySpeed);}catch(e){}chThBarRender();}
+/* ---- 흐름 만들기 모드 ---- */
+function chThMakeStart(){chPlayStop();chLinkFrom=null;chThMake={ids:[]};chTipHide();renderChrono();}
+function chThMakeCancel(){chThMake=null;renderChrono();}
+function chThMakePick(id){if(!chThMake)return;var k=String(id),i=chThMake.ids.indexOf(k);if(i>=0)chThMake.ids.splice(i,1);else chThMake.ids.push(k);renderChrono();}
+function chThMakeDone(){
+  if(!chThMake)return;
+  if(chThMake.ids.length<2){hkChip('사건을 두 개 이상 골라 주세요');setTimeout(function(){hkChip('');},1500);return;}
+  var n=prompt('흐름 이름 (예: 그리스–페르시아 전쟁)');if(n==null)return;n=n.trim();if(!n){hkChip('이름을 넣어 주세요');setTimeout(function(){hkChip('');},1200);return;}
+  var th=chThNew(n,chThMake.ids);chThMake=null;renderChrono();
+  hkChip('흐름 「'+th.name+'」 — 선이나 ▶ 칩을 누르면 재생');setTimeout(function(){hkChip('');},2200);
+}
+function chThMakeSVG(){
+  if(!chThMake||!chLastGeo)return '';
+  var s='',sel=chThMake.ids.map(chEvById).filter(function(e){return e&&e.y!=null;}).sort(function(a,b){return chTof(a)-chTof(b);});
+  var pts=sel.map(function(e){var p=chThPos(e);return p?{x:p.x,y:p.y}:null;}).filter(Boolean);
+  if(pts.length>1)s+='<path d="'+chThD(pts)+'" fill="none" stroke="#b7791f" stroke-width="2" stroke-dasharray="6 4" style="pointer-events:none"/>';
+  pts.forEach(function(p,i){s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="9.5" fill="none" stroke="#b7791f" stroke-width="2.2" style="pointer-events:none"/>'
+    +'<text x="'+p.x.toFixed(1)+'" y="'+(p.y-13).toFixed(1)+'" text-anchor="middle" font-size="10" font-weight="800" fill="#b7791f" paint-order="stroke" stroke="#fff" stroke-width="3" style="pointer-events:none">'+(i+1)+'</text>';});
+  return s;
+}
+function chThNew(name,ids){var th={id:uid(),name:name,col:CH_TH_COLS[chThreads().length%CH_TH_COLS.length],ids:(ids||[]).map(String)};chThreads().push(th);save();return th;}
+function chThRename(id){var th=chThById(id);if(!th)return;var n=prompt('흐름 이름',th.name);if(n==null)return;n=n.trim();if(!n)return;th.name=n;save();renderChrono();}
+function chThDel(id){var th=chThById(id);if(!th)return;
+  if(!confirm('흐름 「'+th.name+'」을 지울까요?\n(묶여 있던 사건들은 그대로 남습니다)'))return;
+  if(chPlay&&chPlay.th===th)chPlayStop();
+  db.chronoThreads=chThreads().filter(function(t){return t!==th;});save();renderChrono();}
+/* ---- 사건 팝업: 이 사건이 들어 있는 흐름 켜고 끄기 ---- */
+function chPopThPaint(id){
+  var el=document.getElementById('chpThreads');if(!el)return;var k=String(id);
+  el.innerHTML='<div class="chp-lk-h">흐름</div><div class="chp-th-list">'
+    +chThreads().map(function(t){var on=(t.ids||[]).map(String).indexOf(k)>=0;
+      return '<span class="chp-th-chip'+(on?' on':'')+'" style="--thc:'+t.col+'" onclick="chThToggle(\''+t.id+'\',\''+k+'\')" title="'+(on?'이 흐름에서 빼기':'이 흐름에 넣기')+'"><i></i>'+esc(t.name)+'</span>';}).join('')
+    +'<span class="chp-th-chip add" onclick="chThNewFromPop()" title="이 사건으로 새 흐름을 시작">＋ 새 흐름</span></div>';
+}
+function chThToggle(thId,evId){var th=chThById(thId);if(!th)return;th.ids=(th.ids||[]).map(String);var k=String(evId),i=th.ids.indexOf(k);
+  if(i>=0)th.ids.splice(i,1);else th.ids.push(k);save();renderChrono();chPopThPaint(evId);}
+function chThNewFromPop(){var id=chPopId;if(id==null)return;var n=prompt('새 흐름 이름 (예: 그리스–페르시아 전쟁)');if(n==null)return;n=n.trim();if(!n)return;
+  chThNew(n,[id]);renderChrono();chPopThPaint(id);}
+/* ---- 재생 ---- */
+function chPlayStart(id){
+  var th=chThById(id);if(!th)return;
+  var evs=chThEvents(th);
+  if(evs.length<2){hkChip('흐름에 날짜가 있는 사건이 두 개 이상 있어야 재생됩니다');setTimeout(function(){hkChip('');},1800);return;}
+  if(chPlay)chPlayStop(true);
+  chThMake=null;chLinkFrom=null;chTipHide();if(typeof chMindClose==='function')try{chMindClose();}catch(e){}
+  var wrap=document.getElementById('chWrap');var innerW=((wrap&&wrap.clientWidth)||1000)-126;
+  var ta=chTof(evs[0]),tb=chTof(evs[evs.length-1]),span=Math.max(tb-ta,2/365);
+  var np=Math.max(innerW/CH_MAX_SPAN,Math.min(innerW/(2/365),innerW/(span*1.3)));
+  var n=evs.length,durs=[],i;
+  if(chPlaySpeed==='real'){var total=Math.max(2600,Math.min(11000,(n-1)*950));
+    for(i=1;i<n;i++)durs.push(Math.max(140,total*(chTof(evs[i])-chTof(evs[i-1]))/span));}
+  else for(i=1;i<n;i++)durs.push(820);
+  chPlay={th:th,evs:evs,durs:durs,dwell:chPlaySpeed==='real'?140:300,phase:'cam',t:performance.now(),
+    c0:chState.c==null?chNowT():chState.c,p0:chState.ppy||np,c1:(ta+tb)/2,p1:np,flash:{},seg:0,f:0,done:false,doneAt:0};
+  requestAnimationFrame(chPlayTick);
+}
+function chPlayStop(silent){
+  if(!chPlay)return;chPlay=null;
+  var g=document.getElementById('chPlayG');if(g)g.innerHTML='';
+  if(!silent)renderChrono();
+}
+function chPlayTick(now){
+  var P=chPlay;if(!P)return;
+  var wrap=document.getElementById('chWrap');
+  if(!wrap||!wrap.offsetParent){chPlayStop(true);return;}          /* 화면에서 사라지면 멈춘다 */
+  if(P.phase==='cam'){
+    var k=Math.min(1,(now-P.t)/650),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    chState.c=P.c0+(P.c1-P.c0)*e;
+    chState.ppy=Math.exp(Math.log(P.p0)+(Math.log(P.p1)-Math.log(P.p0))*e);
+    renderChrono();
+    if(k>=1){P.phase='run';P.t=now;P.flash[0]=now;}
+    requestAnimationFrame(chPlayTick);return;
+  }
+  if(P.phase==='run'){
+    var el=now-P.t,acc=P.dwell,i,n=P.evs.length;             /* 첫 사건에서 잠깐 멈췄다 출발 */
+    P.seg=0;P.f=0;
+    if(el<acc){P.seg=0;P.f=0;}
+    else{
+      for(i=0;i<n-1;i++){
+        var d=P.durs[i];
+        if(el<acc+d){P.seg=i;P.f=(el-acc)/d;break;}
+        acc+=d;if(P.flash[i+1]==null)P.flash[i+1]=P.t+acc;
+        if(el<acc+P.dwell){P.seg=i;P.f=1;break;}
+        acc+=P.dwell;P.seg=i;P.f=1;
+      }
+      if(i>=n-1){P.seg=n-2;P.f=1;if(!P.done){P.done=true;P.doneAt=now;}}
+    }
+    chPlayDraw(now);
+    if(!P.done||now-P.doneAt<900)requestAnimationFrame(chPlayTick);
+    else chThBarRender();
+    return;
+  }
+}
+function chPlayDraw(now){
+  var P=chPlay,g=document.getElementById('chPlayG'),G=chLastGeo;if(!P||!g||!G)return;
+  var th=P.th,col=th.col,pts=P.evs.map(function(e){var p=chThPos(e);return p?{x:p.x,y:p.y,e:e,t:chTof(e)}:null;});
+  if(pts.some(function(p){return !p;})){g.innerHTML='';return;}
+  var s='',i;
+  if(P.phase==='cam'){g.innerHTML='';return;}
+  /* 지나온 선 + 머리점 */
+  var A=pts[P.seg],B=pts[Math.min(P.seg+1,pts.length-1)],f=Math.max(0,Math.min(1,P.f));
+  var hx=A.x+(B.x-A.x)*f,hy=A.y+(B.y-A.y)*f,ht=A.t+(B.t-A.t)*f;
+  var trail=pts.slice(0,P.seg+1).map(function(p){return p.x.toFixed(1)+' '+p.y.toFixed(1);});trail.push(hx.toFixed(1)+' '+hy.toFixed(1));
+  s+='<path d="M'+trail.join(' L')+'" fill="none" stroke="'+col+'" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>';
+  /* 닿은 사건: 튀는 고리 + 꼬리표 — 꼬리표는 서로 겹치지 않는 자리(위·아래로 한 칸씩)를 찾아 앉힌다 */
+  var tags='',boxes=[],top=G.GT+2,bot=G.GT+G.innerH-18;
+  function hitBox(bx){for(var q=0;q<boxes.length;q++){var o=boxes[q];if(bx.x0<o.x1+4&&bx.x1>o.x0-4&&bx.y0<o.y1+2&&bx.y1>o.y0-2)return true;}return false;}
+  pts.forEach(function(p,j){
+    var ft=P.flash[j];if(ft==null)return;
+    var k=Math.min(1,(now-ft)/700);
+    if(k<1)s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(6+16*k).toFixed(1)+'" fill="none" stroke="'+col+'" stroke-width="'+(3*(1-k)+.5).toFixed(2)+'" opacity="'+(1-k).toFixed(2)+'"/>';
+    s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(k<1?6.5+2.5*Math.sin(k*Math.PI):6.5).toFixed(1)+'" fill="'+col+'" stroke="#fff" stroke-width="2"/>';
+    var lb=chThDateLb(p.e),tt=p.e.title;tt=tt.length>18?tt.slice(0,17)+'…':tt;
+    var w=Math.max(chLabelW(lb),chLabelW(tt))*.92,h=27;
+    var x0=Math.max(G.GL+2,Math.min(G.W-w-2,p.x-w/2));
+    var cands=(j%2===0)?[-36,12,-64,40,-92,68,-120,96]:[12,-36,40,-64,68,-92,96,-120],pick=null,ci;
+    for(ci=0;ci<cands.length;ci++){var y0=Math.max(top,Math.min(bot-h,p.y+cands[ci]));var bx={x0:x0,x1:x0+w,y0:y0,y1:y0+h};
+      if(!hitBox(bx)&&!(bx.y0<p.y+7&&bx.y1>p.y-7&&bx.x0<p.x+7&&bx.x1>p.x-7)){pick=bx;break;}}
+    if(!pick){var yl0=Math.max(top,Math.min(bot-h,p.y+cands[0]));pick={x0:x0,x1:x0+w,y0:yl0,y1:yl0+h};}
+    boxes.push(pick);
+    var op=Math.min(1,(now-ft)/220),cx=(pick.x0+pick.x1)/2,far=Math.abs((pick.y0+pick.y1)/2-p.y)>30;
+    tags+='<g opacity="'+op.toFixed(2)+'">'
+      +(far?'<line x1="'+p.x.toFixed(1)+'" y1="'+p.y.toFixed(1)+'" x2="'+cx.toFixed(1)+'" y2="'+(pick.y0<p.y?pick.y1:pick.y0).toFixed(1)+'" stroke="'+col+'" stroke-width=".9" opacity=".55"/>':'')
+      +'<text x="'+cx.toFixed(1)+'" y="'+(pick.y0+11).toFixed(1)+'" text-anchor="middle" font-size="11" font-weight="800" fill="'+col+'" paint-order="stroke" stroke="#fff" stroke-width="4" stroke-linejoin="round">'+esc(lb)+'</text>'
+      +'<text x="'+cx.toFixed(1)+'" y="'+(pick.y0+24).toFixed(1)+'" text-anchor="middle" font-size="10.5" font-weight="700" fill="#2b3a36" paint-order="stroke" stroke="#fff" stroke-width="4" stroke-linejoin="round">'+esc(tt)+'</text></g>';
+  });
+  if(!P.done){
+    s+='<circle cx="'+hx.toFixed(1)+'" cy="'+hy.toFixed(1)+'" r="11" fill="'+col+'" opacity=".18"/>'
+      +'<circle cx="'+hx.toFixed(1)+'" cy="'+hy.toFixed(1)+'" r="5" fill="'+col+'" stroke="#fff" stroke-width="2"/>';
+    /* 시간축 위 흘러가는 연도 */
+    var yb=G.GT+G.innerH-6,yl=chYearStr(Math.floor(ht+1e-9));
+    s+='<line x1="'+hx.toFixed(1)+'" y1="'+(hy+8).toFixed(1)+'" x2="'+hx.toFixed(1)+'" y2="'+(yb-12).toFixed(1)+'" stroke="'+col+'" stroke-width="1" stroke-dasharray="2 3" opacity=".6"/>'
+      +'<text x="'+hx.toFixed(1)+'" y="'+yb.toFixed(1)+'" text-anchor="middle" font-size="11.5" font-weight="800" fill="'+col+'" paint-order="stroke" stroke="#fbfbf8" stroke-width="5" stroke-linejoin="round">'+esc(yl)+'</text>';
+  }
+  s+=tags;
+  /* 끝: 요약 */
+  if(P.done){
+    var e0=P.evs[0],e1=P.evs[P.evs.length-1],op2=Math.min(1,(now-P.doneAt)/400);
+    var sum=th.name+' · '+chYearStr(e0.y)+' – '+chYearStr(e1.y)+' · '+chThSpanStr(chTof(e0),chTof(e1))+' · 사건 '+P.evs.length+'개';
+    var w=Math.min(G.W-G.GL-20,chLabelW(sum)*1.08+26),cx=G.GL+(G.W-G.GL)/2;
+    s+='<g opacity="'+op2.toFixed(2)+'"><rect x="'+(cx-w/2).toFixed(1)+'" y="'+(G.GT+8)+'" width="'+w.toFixed(1)+'" height="28" rx="14" fill="#fff" stroke="'+col+'" stroke-width="1.5"/>'
+      +'<text x="'+cx.toFixed(1)+'" y="'+(G.GT+26.5)+'" text-anchor="middle" font-size="12" font-weight="800" fill="'+col+'">'+esc(sum)+'</text></g>';
+  }
+  g.innerHTML=s;
+}
+document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(chPlay)chPlayStop();if(chThMake)chThMakeCancel();});
 /* ================= 연대기 장소 (지명 + 좌표) ================= */
 var chPlaceLL=null;
 function chHasLL(x){return !!(x&&typeof x.lat==='number'&&typeof x.lng==='number'&&!isNaN(x.lat)&&!isNaN(x.lng));}
