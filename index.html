@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-29 · r178">
+<meta name="hmd-build" content="2026-09-30 · r179">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -697,7 +697,27 @@
   .fb-tbl .no{width:48px;color:#a9b1ad;font-size:11.5px;text-align:center}
   .fb-tbl .sz{width:78px;text-align:right;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
   .fb-tbl .dt{width:132px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
-  .fb-tbl .act{width:176px;text-align:right}
+  .fb-tbl .act{width:96px;text-align:right}
+  .fb-tbl td.nm.pv{cursor:zoom-in}
+  .fb-tbl td.nm.pv:hover{color:#2b5a9e;text-decoration:underline;text-underline-offset:3px}
+  /* 파일 미리보기 */
+  .fbv-ov{position:fixed;inset:0;box-sizing:border-box;z-index:175;background:rgba(10,20,17,.93);display:flex;flex-direction:column;padding:14px 18px 18px}
+  .fbv-top{display:flex;align-items:center;gap:10px;color:#fff;margin-bottom:10px;flex:none}
+  .fbv-top b{font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .fbv-top .cnt{font-size:12px;opacity:.6;flex:none}
+  .fbv-top .sp{flex:1}
+  .fbv-top button{border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.08);color:#fff;border-radius:9px;padding:6px 13px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;flex:none}
+  .fbv-top button:hover{background:rgba(255,255,255,.2)}
+  .fbv-top button:disabled{opacity:.3;cursor:default}
+  .fbv-body{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}
+  .fbv-body img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.4);background:#fff}
+  .fbv-body iframe{width:min(1100px,100%);height:100%;border:none;border-radius:8px;background:#fff}
+  .fbv-body video{max-width:100%;max-height:100%;border-radius:8px;background:#000}
+  .fbv-body pre{width:min(960px,100%);height:100%;overflow:auto;margin:0;background:#fff;border-radius:8px;padding:18px 22px;font-size:13px;line-height:1.7;white-space:pre-wrap;word-break:break-word;color:#2b3a36}
+  .fbv-msg{color:#fff;opacity:.8;font-size:14px;text-align:center;line-height:1.8}
+  .fbv-nav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:64px;border:none;border-radius:12px;background:rgba(255,255,255,.12);color:#fff;font-size:26px;cursor:pointer}
+  .fbv-nav:hover{background:rgba(255,255,255,.26)}
+  .fbv-nav.l{left:0}.fbv-nav.r{right:0}
   .fb-tbl td.nm{font-weight:700;color:var(--dark)}
   .fb-tbl td.nm .ic{margin-right:6px}
   .fb-tbl td.nm .memo{display:block;font-weight:400;font-size:11.5px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis}
@@ -3860,7 +3880,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-29 · r178';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-09-30 · r179';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -7610,18 +7630,18 @@ function fbPaintList(){
       return String(z.__d||'').localeCompare(String(a.__d||''))||a.name.localeCompare(z.name,'ko');});
     var total=files.length,pages=Math.max(1,Math.ceil(total/FB_PER));if(fbPage>=pages)fbPage=pages-1;
     var shown=files.slice(fbPage*FB_PER,fbPage*FB_PER+FB_PER);
+    window.__fbList=files;   /* 미리보기에서 ‹ › 로 넘길 순서 */
     fbMetaFetch(b,shown.concat(fbSort==='new'?files.slice(0,60):[]));
     var tok=!!fbTok(),rows='';
     if(!q&&fbPath)rows+='<tr class="dir up"><td class="no"></td><td class="nm" onclick="fbGo(\''+escA(fbPath.split('/').slice(0,-1).join('/'))+'\')">↑ 상위 폴더</td><td class="sz"></td><td class="dt"></td><td class="act"></td></tr>';
     if(fbPage===0)dirs.forEach(function(d){rows+='<tr class="dir"><td class="no"></td><td class="nm" onclick="fbGo(\''+escA(d.path)+'\')"><span class="ic">📁</span>'+esc(d.name)+'</td><td class="sz"></td><td class="dt"></td><td class="act"></td></tr>';});
     shown.forEach(function(f,i){
       var no=total-(fbPage*FB_PER+i);
-      rows+='<tr><td class="no">'+no+'</td><td class="nm" title="'+escA(f.path)+'"><span class="ic">'+fbIcon(f.name)+'</span>'+esc(f.name)
+      var pv=fbPvKind(f.name);
+      rows+='<tr><td class="no">'+no+'</td><td class="nm'+(pv?' pv':'')+'" title="'+escA(pv?'눌러서 미리보기 · '+f.path:f.path+' · 미리보기가 없는 형식 — «저장»으로 받아 여세요')+'"'+(pv?' onclick="fbPreview(\''+escA(f.path)+'\')"':'')+'><span class="ic">'+fbIcon(f.name)+'</span>'+esc(f.name)
         +(q&&f.path.indexOf('/')>=0?'<span class="memo">📂 '+esc(f.path.split('/').slice(0,-1).join('/'))+'</span>':(f.__m?'<span class="memo">'+esc(f.__m)+'</span>':''))+'</td>'
         +'<td class="sz">'+fbFmtSize(f.size)+'</td><td class="dt">'+esc(fbFmtDate(f.__d))+'</td>'
-        +'<td class="act"><a href="https://github.com/'+encodeURIComponent(b.owner)+'/'+encodeURIComponent(b.repo)+'/blob/'+encodeURIComponent(b.branch)+'/'+fbEnc(f.path)+'" target="_blank" rel="noopener" title="깃허브에서 열기">열기</a>'
-        +'<span onclick="fbDown(\''+escA(f.path)+'\',\''+escA(f.name)+'\')" title="내려받기">받기</span>'
-        +'<span onclick="fbCopy(\''+escA(f.path)+'\')" title="주소 복사 (GitHub Pages)">주소</span>'
+        +'<td class="act"><span onclick="fbDown(\''+escA(f.path)+'\',\''+escA(f.name)+'\')" title="이 기기에 저장">저장</span>'
         +(tok?'<span class="x" onclick="fbDel(\''+escA(f.path)+'\',\''+escA(f.sha)+'\',\''+escA(f.name)+'\')" title="지우기">삭제</span>':'')+'</td></tr>';
     });
     box.innerHTML=(rows?'<table class="fb-tbl"><thead><tr><th class="no">번호</th><th>파일</th><th class="sz">크기</th><th class="dt">올린 날</th><th class="act"></th></tr></thead><tbody>'+rows+'</tbody></table>':'')
@@ -7703,6 +7723,62 @@ function fbUpload(files){
         next();})
       .catch(function(e){fails.push(name+' — '+(e&&e.st?fbErrText(e.st):(e&&e.message)||'오류'));next();});
   })();
+}
+/* ---- 미리보기: 파일 이름을 누르면 (이미지 · PDF · 글 · 영상 · 소리) ---- */
+var FB_MIME={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',webp:'image/webp',svg:'image/svg+xml',bmp:'image/bmp',
+  pdf:'application/pdf',txt:'text/plain',md:'text/plain',csv:'text/plain',json:'text/plain',log:'text/plain',
+  mp4:'video/mp4',webm:'video/webm',mov:'video/quicktime',m4v:'video/mp4',mp3:'audio/mpeg',m4a:'audio/mp4',wav:'audio/wav',ogg:'audio/ogg'};
+function fbExt(n){var m=String(n||'').toLowerCase().match(/\.([a-z0-9]+)$/);return m?m[1]:'';}
+function fbPvKind(n){var e=fbExt(n),t=FB_MIME[e];if(!t)return '';return t.indexOf('image/')===0?'img':t==='application/pdf'?'pdf':t.indexOf('text/')===0?'text':t.indexOf('video/')===0?'video':'audio';}
+var fbPv=null;
+function fbPreview(path){
+  var L=(window.__fbList||[]).filter(function(f){return fbPvKind(f.name);});
+  var i=L.findIndex(function(f){return f.path===path;});
+  if(i<0){var nm=String(path).split('/').pop();L=[{path:path,name:nm}];i=0;}
+  fbPvClose(true);
+  fbPv={list:L,i:i,url:null,req:0};
+  var ov=document.createElement('div');ov.className='fbv-ov';ov.id='fbvOv';
+  ov.addEventListener('click',function(e){if(e.target===ov||e.target.classList.contains('fbv-body'))fbPvClose();});
+  document.body.appendChild(ov);document.addEventListener('keydown',fbPvKey);
+  fbPvShow();
+}
+function fbPvKey(e){if(!fbPv)return;if(e.key==='Escape'){e.stopPropagation();fbPvClose();}else if(e.key==='ArrowLeft')fbPvStep(-1);else if(e.key==='ArrowRight')fbPvStep(1);}
+function fbPvStep(d){if(!fbPv)return;var n=fbPv.i+d;if(n<0||n>=fbPv.list.length)return;fbPv.i=n;fbPvShow();}
+function fbPvClose(quiet){
+  if(fbPv&&fbPv.url)try{URL.revokeObjectURL(fbPv.url);}catch(e){}
+  fbPv=null;var o=document.getElementById('fbvOv');if(o)o.remove();document.removeEventListener('keydown',fbPvKey);
+}
+function fbPvShow(){
+  var P=fbPv,ov=document.getElementById('fbvOv');if(!P||!ov)return;
+  var f=P.list[P.i],kind=fbPvKind(f.name),b=fbBoard(),rq=++P.req;
+  if(P.url){try{URL.revokeObjectURL(P.url);}catch(e){}P.url=null;}
+  var many=P.list.length>1;
+  ov.innerHTML='<div class="fbv-top"><b>'+fbIcon(f.name)+' '+esc(f.name)+'</b>'+(many?'<span class="cnt">'+(P.i+1)+' / '+P.list.length+'</span>':'')+'<span class="sp"></span>'
+    +'<button type="button" onclick="fbDown(\''+escA(f.path)+'\',\''+escA(f.name)+'\')">저장</button>'
+    +'<button type="button" onclick="fbPvClose()" title="닫기 (Esc)">✕ 닫기</button></div>'
+    +'<div class="fbv-body" id="fbvBody"><div class="fbv-msg">불러오는 중…</div>'
+    +(many?'<button type="button" class="fbv-nav l" onclick="fbPvStep(-1)"'+(P.i<=0?' disabled style="opacity:.25"':'')+' title="이전 (←)">‹</button><button type="button" class="fbv-nav r" onclick="fbPvStep(1)"'+(P.i>=P.list.length-1?' disabled style="opacity:.25"':'')+' title="다음 (→)">›</button>':'')+'</div>';
+  fetch(fbApi(b,'/contents/'+fbEnc(f.path)+'?ref='+encodeURIComponent(b.branch)),{headers:fbHdr({'Accept':'application/vnd.github.raw'})})
+    .then(function(r){if(!r.ok)throw {st:r.status};return r.blob();})
+    .then(function(bl){
+      if(!fbPv||fbPv.req!==rq)return;
+      var body=document.getElementById('fbvBody');if(!body)return;
+      var msg=body.querySelector('.fbv-msg');
+      if(kind==='text'){
+        return bl.slice(0,2*1048576).text().then(function(t){if(!fbPv||fbPv.req!==rq)return;var pre=document.createElement('pre');pre.textContent=t+(bl.size>2*1048576?'\n\n… (앞 2MB만 보여 줍니다 · 전체는 «저장»)':'');if(msg)msg.replaceWith(pre);});
+      }
+      var typed=new Blob([bl],{type:FB_MIME[fbExt(f.name)]}),u=URL.createObjectURL(typed);fbPv.url=u;
+      var el;
+      if(kind==='img'){el=document.createElement('img');el.alt=f.name;el.src=u;}
+      else if(kind==='pdf'){el=document.createElement('iframe');el.title=f.name;el.src=u+'#view=FitH';}
+      else{el=document.createElement(kind==='video'?'video':'audio');el.controls=true;el.src=u;if(kind==='audio')el.style.width='min(560px,90%)';}
+      if(msg)msg.replaceWith(el);
+    })
+    .catch(function(e){
+      if(!fbPv||fbPv.req!==rq)return;
+      var body=document.getElementById('fbvBody');if(!body)return;var msg=body.querySelector('.fbv-msg');
+      if(msg)msg.innerHTML='미리보기를 불러오지 못했습니다<br><span style="font-size:12.5px">'+esc(e&&e.st?fbErrText(e.st):'연결 오류')+'</span>';
+    });
 }
 /* ---- 받기 · 주소 · 지우기 ---- */
 function fbDown(path,name){
