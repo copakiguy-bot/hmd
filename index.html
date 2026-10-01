@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-01 · r182">
+<meta name="hmd-build" content="2026-10-01 · r183">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2148,8 +2148,8 @@
   #hmChronoHost #chNoDates{max-height:86px;overflow:auto}
   #tlSchedHost{display:none;margin-top:4px}
   #tlSchedHost.on{display:block}
-  #tlSchedHost #schedCard{margin:0;padding:0;box-shadow:none;border:none;background:transparent}
-  #tlSchedHost #schedCard>h3{display:none}
+  #tlSchedHost #calCard{margin:0;padding:0;box-shadow:none;border:none;background:transparent}
+  #tlSchedHost #calCard>h3,#tlSchedHost #calCard .cal-head{display:none}   /* 달 이동은 타임라인 머리의 ‹ › 로 */
   .chp-ov.over-win{z-index:174}
   /* 사건 기록 팝업 */
   .chf-ov{display:none;position:fixed;inset:0;z-index:170;background:rgba(18,49,43,.34);padding:18px;align-items:center;justify-content:center}
@@ -3910,7 +3910,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-01 · r182';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-01 · r183';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4541,8 +4541,7 @@ function renderTimeline(){
   if(tlMode==='chrono')tlMode='daily';                     /* 연대기는 대시보드 아래 칸으로 옮겼다 */
   if(tlMode==='sched'){if(form)form.style.display='none';if(wrap)wrap.style.display='none';
     var lb0=document.getElementById('tlLabel');
-    if(lb0){var q0=selDate.split('-');var dw0=['일','월','화','수','목','금','토'][new Date(+q0[0],+q0[1]-1,+q0[2]).getDay()];
-      lb0.textContent=(+q0[1])+'월 '+(+q0[2])+'일 ('+dw0+')'+(selDate===today()?' · 오늘':'');}
+    if(lb0)lb0.textContent=viewY+'년 '+(viewM+1)+'월';
     tlSchedShow();return;}
   if(wrap)wrap.style.display='';tlSchedHide();
   if(tlMode==='review'){if(form)form.style.display='none';renderTlReview(inner);return;}
@@ -6408,13 +6407,15 @@ function renderCal(){
   if(otf)otf.style.display=showOvertime?'':'none';
   calOtRecalc();
 }
-function shiftMonth(d){viewM+=d;if(viewM<0){viewM=11;viewY--}if(viewM>11){viewM=0;viewY++}renderCal();}
+function shiftMonth(d){viewM+=d;if(viewM<0){viewM=11;viewY--}if(viewM>11){viewM=0;viewY++}renderCal();
+  if(typeof tlMode!=='undefined'&&tlMode==='sched'){var lb=document.getElementById('tlLabel');if(lb)lb.textContent=viewY+'년 '+(viewM+1)+'월';}}
 function goToday(){const t=new Date();viewY=t.getFullYear();viewM=t.getMonth();selDate=today();renderCal();renderSchedule();}
 function selectDate(k){selDate=k;renderCal();renderSchedule();}
 /* 타임라인 머리글 ‹ › : 하루씩 이동 */
 function shiftDayStr(k,n){var t=new Date(k+'T00:00:00');t.setDate(t.getDate()+n);
   return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');}
 function tlDayShift(n){
+  if(tlMode==='sched'){shiftMonth(n);var lb=document.getElementById('tlLabel');if(lb)lb.textContent=viewY+'년 '+(viewM+1)+'월';return;}   /* 달력: 한 달씩 */
   if(tlMode==='review'){rvBase=shiftDayStr(rvBaseDate(),n);if(rvBase===today())rvBase=null;renderTimeline();return;}
   if(tlMode==='daily'&&tlCn&&tlCnScale!=='day'){          /* 날짜축(Day): 한 달씩 */
     var from=tlCnStart();
@@ -6425,7 +6426,7 @@ function tlDayShift(n){
   }
   selDate=shiftDayStr(selDate,n);
   var q=selDate.split('-');viewY=+q[0];viewM=+q[1]-1;   /* 달이 넘어가면 달력도 따라간다 */
-  renderCal();renderSchedule();if(tlMode==='sched')renderTimeline();
+  renderCal();renderSchedule();
 }
 
 /* ---------- schedules ---------- */
@@ -8327,19 +8328,21 @@ function chDashHide(){                       /* 연대기 화면으로: 제자�
 }
 function chWinOpen(){goTop('home');setTimeout(function(){var h=document.getElementById('hmChronoHost');if(h&&h.scrollIntoView)h.scrollIntoView({behavior:'smooth',block:'start'});},80);}   /* (예전 이름) */
 function chWinClose(){}
-/* 타임라인 «스케쥴»: 그날 일정 카드(schedCard)를 타임라인 안으로 옮겨 펼친다 */
+/* 타임라인 «스케쥴»: 달력 카드(calCard)를 타임라인 안으로 옮겨 펼친다.
+   (예전엔 일정 목록을 옮기며 renderSchedule→renderTimeline→다시 renderSchedule… 로 천 번 넘게 맴돌아 눌렀을 때 멈칫했다 — 여기서는 달력만 다시 그린다) */
 var tlSchedSlot=null;
 function tlSchedShow(){
-  var card=document.getElementById('schedCard'),host=document.getElementById('tlSchedHost');if(!card||!host)return;
-  if(!tlSchedSlot)tlSchedSlot=chMoveInto(card,host,null);
+  var card=document.getElementById('calCard'),host=document.getElementById('tlSchedHost');if(!card||!host)return;
+  var first=!tlSchedSlot;
+  if(first)tlSchedSlot=chMoveInto(card,host,null);
   card.style.display='';host.classList.add('on');
-  try{renderSchedule();}catch(e){}
+  if(first)try{renderCal();}catch(e){}
 }
 function tlSchedHide(){
   var host=document.getElementById('tlSchedHost');if(host)host.classList.remove('on');
   if(!tlSchedSlot)return;
-  var card=document.getElementById('schedCard');chMoveBack(card,tlSchedSlot);tlSchedSlot=null;
-  if(card&&typeof topActive!=='undefined')card.style.display=(topActive==='cal'&&calSub&&calSub.sched)?'':'none';
+  var card=document.getElementById('calCard');chMoveBack(card,tlSchedSlot);tlSchedSlot=null;
+  if(card&&typeof topActive!=='undefined')card.style.display=(topActive==='cal')?'':'none';
 }
 function chFormOpen(){
   if(chFormOn)return;
