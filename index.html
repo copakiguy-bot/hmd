@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-01 · r184">
+<meta name="hmd-build" content="2026-10-01 · r185">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3085,7 +3085,8 @@
       <h3><span class="dot" style="background:#eb6834"></span> 집행 내역 <span class="more" id="bxCnt"></span>
         <span id="bxWhoBtns" style="margin-left:12px;display:inline-flex;gap:5px;vertical-align:middle"></span>
         <input id="bxQ" class="in" style="margin-left:auto;max-width:220px;padding:6px 10px;font-size:12.5px" placeholder="내용·장소·비고 검색" oninput="bxRenderTable()">
-        <button type="button" class="btn ghost" style="padding:5px 10px;font-size:12px" onclick="bxPasteTgl()">엑셀 붙여넣기</button></h3>
+        <button type="button" class="btn ghost" style="padding:5px 10px;font-size:12px" onclick="bxPasteTgl()">엑셀 붙여넣기</button>
+        <button type="button" class="btn ghost" style="padding:5px 10px;font-size:12px" onclick="bxExportXlsx()" title="지금 보는 연도·기간·사용자·검색 그대로 엑셀(.xlsx) 파일로">엑셀 내려받기</button></h3>
       <div id="bxPaste" style="display:none"></div>
       <div id="bxForm"></div>
       <div id="bxTable" class="rdl-wrap"></div>
@@ -3912,7 +3913,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-01 · r184';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-01 · r185';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -9726,6 +9727,120 @@ function bxReportPaint(){
     +'</div>'
     +'<div class="bx-rep-body" id="bxRepBody">'+whos.map(function(w){return bxReportHTML(w,p);}).join('<div class="bx-rep-break"></div>')+'</div>'
   +'</div>';
+}
+/* ===== 엑셀(.xlsx) 내려받기: 라이브러리 없이 직접 만든다 (압축 없는 zip + SpreadsheetML) =====
+   지금 표에 보이는 것 그대로(연도 · 기간 · 사용자 · 검색) — 시트1 «집행내역»(날짜순, 날짜·금액은 진짜 숫자) · 시트2 «월별 요약»(SUM 수식) */
+var XL_CRC=null;
+function xlCrc(u8){if(!XL_CRC){XL_CRC=new Uint32Array(256);for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;XL_CRC[n]=c>>>0;}}
+  var c=0xFFFFFFFF;for(var i=0;i<u8.length;i++)c=XL_CRC[(c^u8[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function xlZip(files){                       /* files: [{name, data(string)}] → Blob (stored) */
+  var enc=new TextEncoder(),parts=[],cen=[],off=0;
+  function u16(v){return [v&255,(v>>>8)&255];}function u32(v){return [v&255,(v>>>8)&255,(v>>>16)&255,(v>>>24)&255];}
+  files.forEach(function(f){
+    var nm=enc.encode(f.name),dt=enc.encode(f.data),crc=xlCrc(dt);
+    var lh=[].concat(u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(0),u16(0),u32(crc),u32(dt.length),u32(dt.length),u16(nm.length),u16(0));
+    parts.push(new Uint8Array(lh),nm,dt);
+    cen.push({nm:nm,crc:crc,len:dt.length,off:off});
+    off+=lh.length+nm.length+dt.length;
+  });
+  var cdSize=0,cdParts=[];
+  cen.forEach(function(c){var h=[].concat(u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(0),u16(0),u32(c.crc),u32(c.len),u32(c.len),u16(c.nm.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(c.off));
+    cdParts.push(new Uint8Array(h),c.nm);cdSize+=h.length+c.nm.length;});
+  var end=new Uint8Array([].concat(u32(0x06054b50),u16(0),u16(0),u16(cen.length),u16(cen.length),u32(cdSize),u32(off),u16(0)));
+  return new Blob(parts.concat(cdParts,[end]),{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+function xlEsc(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'');}
+function xlCol(i){var s='';i++;while(i>0){var m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26);}return s;}
+function xlDateSerial(ds){var m=String(ds||'').match(/^(\d{4})-(\d{2})-(\d{2})/);if(!m)return null;return Math.round((Date.UTC(+m[1],+m[2]-1,+m[3])-Date.UTC(1899,11,30))/86400000);}
+/* 셀: {v, t:'s'|'n'|'d'|'f', s:스타일번호} */
+function xlSheet(rows,widths,opt){
+  opt=opt||{};
+  var x='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">';
+  x+='<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>';   /* 인쇄하면 가로 한 장 폭에 맞춘다 */
+  x+='<sheetViews><sheetView workbookViewId="0">'+(opt.freeze?'<pane ySplit="'+opt.freeze+'" topLeftCell="A'+(opt.freeze+1)+'" activePane="bottomLeft" state="frozen"/>':'')+'</sheetView></sheetViews>';
+  x+='<cols>'+widths.map(function(w,i){return '<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>';}).join('')+'</cols><sheetData>';
+  rows.forEach(function(r,ri){
+    x+='<row r="'+(ri+1)+'"'+(r.ht?' ht="'+r.ht+'" customHeight="1"':'')+'>';
+    (r.c||r).forEach(function(c,ci){if(c==null)return;var ref=xlCol(ci)+(ri+1),st=c.s?' s="'+c.s+'"':'';
+      if(c.t==='f')x+='<c r="'+ref+'"'+st+'><f>'+xlEsc(c.v)+'</f></c>';
+      else if(c.t==='n'||c.t==='d'){if(c.v===''||c.v==null||isNaN(c.v))x+='<c r="'+ref+'"'+st+'/>';else x+='<c r="'+ref+'"'+st+'><v>'+Number(c.v)+'</v></c>';}
+      else x+='<c r="'+ref+'"'+st+' t="inlineStr"><is><t xml:space="preserve">'+xlEsc(c.v)+'</t></is></c>';});
+    x+='</row>';
+  });
+  x+='</sheetData>'+(opt.filter?'<autoFilter ref="'+opt.filter+'"/>':'')+'<pageSetup orientation="landscape" paperSize="9" fitToWidth="1" fitToHeight="0"/></worksheet>';
+  return x;
+}
+function xlBook(sheets){                     /* sheets: [{name, xml}] */
+  var ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+    +sheets.map(function(s,i){return '<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';}).join('')+'</Types>';
+  var rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  var wb='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'
+    +sheets.map(function(s,i){return '<sheet name="'+xlEsc(s.name)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>';}).join('')+'</sheets>'
+    +'<definedNames>'+sheets.map(function(s,i){return s.filterRef?'<definedName name="_xlnm._FilterDatabase" localSheetId="'+i+'" hidden="1">\''+xlEsc(s.name)+'\'!'+s.filterRef.replace(/([A-Z]+)(\d+)/g,'$$$1$$$2')+'</definedName>':'';}).join('')+'</definedNames></workbook>';
+  var wbr='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +sheets.map(function(s,i){return '<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>';}).join('')
+    +'<Relationship Id="rId'+(sheets.length+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+  /* 스타일: 0 기본 · 1 머리글 · 2 날짜 · 3 금액 · 4 합계 금액(굵게) · 5 굵은 글자 · 6 가운데 · 7 제목 */
+  var st='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+    +'<numFmts count="1"><numFmt numFmtId="164" formatCode="yyyy-mm-dd"/></numFmts>'
+    +'<fonts count="3"><font><sz val="10"/><name val="맑은 고딕"/><family val="2"/></font><font><b/><sz val="10"/><name val="맑은 고딕"/><family val="2"/></font><font><b/><sz val="13"/><name val="맑은 고딕"/><family val="2"/></font></fonts>'
+    +'<fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE8F0EC"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF6DC"/><bgColor indexed="64"/></patternFill></fill></fills>'
+    +'<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFD9DED9"/></left><right style="thin"><color rgb="FFD9DED9"/></right><top style="thin"><color rgb="FFD9DED9"/></top><bottom style="thin"><color rgb="FFD9DED9"/></bottom><diagonal/></border></borders>'
+    +'<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+    +'<cellXfs count="8"><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/>'
+    +'<xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>'
+    +'<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>'
+    +'<xf numFmtId="3" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>'
+    +'<xf numFmtId="3" fontId="1" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>'
+    +'<xf numFmtId="0" fontId="1" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/>'
+    +'<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>'
+    +'<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>'
+    +'<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+  var files=[{name:'[Content_Types].xml',data:ct},{name:'_rels/.rels',data:rels},{name:'xl/workbook.xml',data:wb},{name:'xl/_rels/workbook.xml.rels',data:wbr},{name:'xl/styles.xml',data:st}];
+  sheets.forEach(function(s,i){files.push({name:'xl/worksheets/sheet'+(i+1)+'.xml',data:s.xml});});
+  return xlZip(files);
+}
+function bxExportRows(){                      /* 표와 같은 걸러내기, 날짜 오름차순 */
+  var q=(document.getElementById('bxQ')||{value:''}).value.trim().toLowerCase();
+  return bxRows().filter(function(r){return (!bxWho||r.who===bxWho)&&(!q||[r.what,r.place,r.area,r.note,r.how].join(' ').toLowerCase().indexOf(q)>=0);})
+    .sort(function(a,b){return String(a.date).localeCompare(String(b.date))||String(a.time||'').localeCompare(String(b.time||''))||a.id-b.id;});
+}
+function bxExportXlsx(){
+  var rows=bxExportRows();
+  if(!rows.length){hkChip('내려받을 내역이 없습니다');setTimeout(function(){hkChip('');},1500);return;}
+  var y=bxYearNow(),pl=bxPeriod==='h1'?'상반기':bxPeriod==='h2'?'하반기':'연간',wl=bxWho?bxHon(bxWho):'전체';
+  var q=(document.getElementById('bxQ')||{value:''}).value.trim();
+  var title=y+'년 '+pl+' 부의장님 업무추진비 집행내역 · '+wl+(q?' · 검색 «'+q+'»':'');
+  var H=['날짜','요일','시각','집행 내용','금액','장소','지역','인원','결재','집행방법','사용자','비고'];
+  var out=[{c:[{v:title,s:7}],ht:22},{c:[{v:'출력 '+today()+' · HMD',s:0}]},H.map(function(h){return {v:h,s:1};})];
+  rows.forEach(function(r){
+    var d=new Date(r.date+'T00:00:00'),dow=isNaN(d)?'':['일','월','화','수','목','금','토'][d.getDay()];
+    var ser=xlDateSerial(r.date);
+    out.push([ser!=null?{v:ser,t:'d',s:2}:{v:r.date||'',s:6},{v:dow,s:6},{v:r.time||'',s:6},{v:r.what||''},{v:Number(r.amt)||0,t:'n',s:3},{v:r.place||''},{v:r.area||'',s:6},
+      {v:(r.n!==''&&r.n!=null)?Number(r.n):'',t:'n',s:6},{v:r.pay||'',s:6},{v:r.how||''},{v:bxHon(r.who||''),s:6},{v:r.note||''}]);
+  });
+  var first=4,last=out.length;
+  out.push([{v:'합계',s:5},{v:'',s:5},{v:'',s:5},{v:rows.length+'건',s:5},{v:'SUM(E'+first+':E'+last+')',t:'f',s:4},{v:'',s:5},{v:'',s:5},{v:'',s:5},{v:'',s:5},{v:'',s:5},{v:'',s:5},{v:'',s:5}]);
+  var sh1=xlSheet(out,[12,6,7,40,13,24,10,6,8,12,11,24],{freeze:3,filter:'A3:L'+last});
+  /* 월별 요약 */
+  var months={},who=bxWho?[bxWho]:BX_WHO;
+  rows.forEach(function(r){var m=String(r.date).slice(0,7);months[m]=months[m]||{};months[m][r.who]=(months[m][r.who]||0)+(Number(r.amt)||0);months[m].__n=(months[m].__n||0)+1;});
+  var ms=Object.keys(months).sort();
+  var o2=[{c:[{v:y+'년 '+pl+' 월별 집행 요약 · '+wl,s:7}],ht:22},[],[{v:'월',s:1},{v:'건수',s:1}].concat(who.map(function(w){return {v:bxHon(w),s:1};})).concat(who.length>1?[{v:'합계',s:1}]:[])];
+  ms.forEach(function(m,i){var rn=4+i;
+    var row=[{v:(+m.slice(5,7))+'월',s:6},{v:months[m].__n,t:'n',s:6}].concat(who.map(function(w){return {v:months[m][w]||0,t:'n',s:3};}));
+    if(who.length>1)row.push({v:'SUM(C'+rn+':'+xlCol(1+who.length)+rn+')',t:'f',s:3});
+    o2.push(row);});
+  var e2=3+ms.length;
+  var tot=[{v:'합계',s:5},{v:'SUM(B4:B'+e2+')',t:'f',s:4}].concat(who.map(function(w,i){var c=xlCol(2+i);return {v:'SUM('+c+'4:'+c+e2+')',t:'f',s:4};}));
+  if(who.length>1)tot.push({v:'SUM('+xlCol(2+who.length)+'4:'+xlCol(2+who.length)+e2+')',t:'f',s:4});
+  o2.push(tot);
+  var sh2=xlSheet(o2,[8,8].concat(who.map(function(){return 15;})).concat(who.length>1?[15]:[]),{freeze:3});
+  var blob=xlBook([{name:'집행내역',xml:sh1,filterRef:'A3:L'+last},{name:'월별 요약',xml:sh2}]);
+  var fn='업무추진비_'+y+'_'+pl+'_'+wl.replace(/\s/g,'')+'.xlsx';
+  var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=fn;a.style.display='none';document.body.appendChild(a);a.click();
+  setTimeout(function(){a.remove();URL.revokeObjectURL(u);},4000);
+  hkChip('엑셀로 내려받았습니다 · '+rows.length+'건');setTimeout(function(){hkChip('');},1800);
 }
 /* ---- 내역 표 (최근 것부터 · 달마다 소계) ---- */
 function bxRenderTable(){
