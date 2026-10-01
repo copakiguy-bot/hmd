@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-01 · r186">
+<meta name="hmd-build" content="2026-10-01 · r187">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3929,7 +3929,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-01 · r186';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-01 · r187';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -10241,6 +10241,16 @@ function rdCurPage(bid){                   /* 기록넣기에서 가장 마지�
   rs.sort(function(a,b){return String(a.date).localeCompare(String(b.date))||a.id-b.id;});
   var r=rs[rs.length-1];return {page:Number(r.p2)||Number(r.p1)||0,date:r.date};
 }
+/* 다음 독서기록의 시작 쪽 = 그 책의 마지막 기록 끝 쪽 (자동으로 채운 값은 기억해 두어, 책을 바꾸면 따라 바뀌고 직접 고친 값은 건드리지 않는다) */
+function rdNextStart(bid){var c=rdCurPage(Number(bid));return c.page?String(c.page):'';}
+function rdAutoFill(inpId,bid,key,force){
+  var el=document.getElementById(inpId);if(!el)return;
+  var prevAuto=window[key]||'',cur=el.value;
+  if(force||!cur||cur===prevAuto){var v=bid?rdNextStart(bid):'';el.value=v;window[key]=v;
+    if(inpId==='rdgP1'&&window.__rdgKeep)delete window.__rdgKeep.rdgP1;}
+}
+function rdgAutoStart(force){var bid=rdgBook!=null?rdgBook:Number((document.getElementById('rdgAddBook')||{}).value||0);rdAutoFill('rdgP1',bid,'__rdgAutoP1',force);}
+function hmqAutoStart(force){rdAutoFill('hmqP1',Number((document.getElementById('hmqBook')||{}).value||0),'__hmqAutoP1',force);}
 function rdTodayPages(bid){var n=0;(db.rdLog||[]).forEach(function(r){if(r.book===bid&&r.date===today())n+=rdgCalc(r).pages;});return n;}
 function rdGoalGet(bid){var g=(db.rdGoal||{})[bid];return (g&&g.date===today()&&Number(g.n))?g:null;}   /* {date, n:오늘 읽을 쪽수} */
 function rdGoalLast(bid){var g=(db.rdGoal||{})[bid];return (g&&Number(g.n))?g:null;}
@@ -12925,6 +12935,7 @@ function renderRdPlan(){
     rdgRender();
     Object.keys(keep).forEach(function(i){
       var el=document.getElementById(i);if(el&&keep[i])el.value=keep[i];});
+    rdgAutoStart(false);
   }
 }
 /* 독서그래프 칸 (독서계획과 같은 자리) */
@@ -13005,7 +13016,7 @@ function rdgAdd(){
     var el=document.getElementById(i);if(el)el.value='';
     if(window.__rdgKeep)delete window.__rdgKeep[i];
   });
-  save();rdgRender();if(typeof hmRdPaint==='function')hmRdPaint();
+  save();rdgRender();rdgAutoStart(true);if(typeof hmRdPaint==='function')hmRdPaint();
   var c=rdgCalc(db.rdLog[db.rdLog.length-1]),parts=[];
   if(c.pages)parts.push(c.pages+'p');
   if(c.mins)parts.push(rdgFmtM(c.mins));
@@ -13051,12 +13062,13 @@ function rdgRender(){
       aw.style.display='';
       /* 기록을 붙일 책: 완독한 책은 목록에서 뺀다 */
       var pool=(db.reading||[]).filter(function(bk){return !bk.end;});
-      aw.innerHTML='<select id="rdgAddBook" class="rowsel" style="max-width:160px" title="기록을 붙일 책 (완독한 책은 빠집니다)">'
+      aw.innerHTML='<select id="rdgAddBook" class="rowsel" style="max-width:160px" title="기록을 붙일 책 (완독한 책은 빠집니다)" onchange="rdgKeep(this);rdgAutoStart()">'
         +(pool.length?pool.map(function(bk){return '<option value="'+bk.id+'"'+(String(bk.id)===prev?' selected':'')+'>'+esc(bk.title)+'</option>';}).join('')
           :'<option value="">읽는 중인 책 없음</option>')+'</select>';
     }else{aw.style.display='none';aw.innerHTML='';}
   }
   var d0=document.getElementById('rdgDate');if(d0&&!d0.value)d0.value=today();
+  rdgAutoStart(false);
   var b=bookById(rdgBook);
   /* 달 표시 · 이번달 버튼 */
   var ml=document.getElementById('rdgMonLbl');if(ml)ml.textContent=rdgMon().replace('-','.');
@@ -15434,7 +15446,7 @@ function hmRdQuickHTML(){
   var bs=hmRdBooks(),prev=(document.getElementById('hmqBook')||{}).value||'';
   if(!bs.length)return '<h3><span class="dot" style="background:#6a8fd8"></span> 독서기록</h3><div class="hm-empty" style="padding:6px 0">읽는 중인 책이 없습니다.</div>';
   return '<h3><span class="dot" style="background:#6a8fd8"></span> 독서기록'
-    +'<select id="hmqBook" class="rowsel hmq-book" title="기록할 책">'+bs.map(function(b){return '<option value="'+b.id+'"'+(String(b.id)===prev?' selected':'')+'>'+esc(b.title)+'</option>';}).join('')+'</select></h3>'
+    +'<select id="hmqBook" class="rowsel hmq-book" title="기록할 책" onchange="hmqAutoStart()">'+bs.map(function(b){return '<option value="'+b.id+'"'+(String(b.id)===prev?' selected':'')+'>'+esc(b.title)+'</option>';}).join('')+'</select></h3>'
     +'<div class="hmq-row">'
     +'<span class="fl">시각</span><input id="hmqS" class="in" inputmode="numeric" placeholder="시작" style="flex:1;min-width:58px;max-width:90px" onblur="this.value=normTime(this.value)">'
     +'<span class="sep">~</span><input id="hmqE" class="in" inputmode="numeric" placeholder="끝" style="flex:1;min-width:58px;max-width:90px" onblur="this.value=normTime(this.value)" onkeydown="if(event.key===\'Enter\')hmRdgAdd()">'
@@ -15446,10 +15458,11 @@ function hmQuickPaint(){
   [['hmExpQuick',hmExpQuickHTML],['hmRdQuick',hmRdQuickHTML]].forEach(function(p){
     var el=document.getElementById(p[0]);if(!el)return;
     if(el.contains(document.activeElement))return;                 /* 쓰는 중이면 건드리지 않는다 */
-    var keep={};el.querySelectorAll('input:not([type=date]),select').forEach(function(i){if(i.id&&i.value)keep[i.id]=i.value;});
+    var keep={};el.querySelectorAll('input:not([type=date]),select').forEach(function(i){if(i.id&&i.value&&!(i.id==='hmqP1'&&i.value===window.__hmqAutoP1))keep[i.id]=i.value;});
     el.innerHTML=p[1]();
     Object.keys(keep).forEach(function(id){var i=document.getElementById(id);if(i&&i.tagName!=='SELECT')i.value=keep[id];});
   });
+  hmqAutoStart(false);
 }
 function hmRdgAdd(){
   var g=function(i){var el=document.getElementById(i);return el?String(el.value||'').trim():'';};
@@ -15466,7 +15479,7 @@ function hmRdgAdd(){
   db.rdLog.push(rec);save();
   ['hmqS','hmqE','hmqP1','hmqP2'].forEach(function(i){var el=document.getElementById(i);if(el)el.value='';});
   try{rdgRender();}catch(_){}
-  hmRdPaint();
+  hmRdPaint();hmqAutoStart(true);
   var c=rdgCalc(rec),parts=[];if(c.pages)parts.push(c.pages+'p');if(c.mins)parts.push(rdgFmtM(c.mins));
   say('「'+(bookById(bid)||{}).title+'」 기록했습니다'+(parts.length?' · '+parts.join(' · '):''));
 }
