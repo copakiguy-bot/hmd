@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-09-30 · r179">
+<meta name="hmd-build" content="2026-10-01 · r182">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1471,6 +1471,15 @@
   /* 대시보드 제텔카스텐 두 칸 (A6 색인카드를 그대로 펼쳐 놓은 모양) */
   #homeZkCard{margin-bottom:20px}
   .hmzk-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch}
+  .hmzk-col{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .hmzk-col>.card:last-child{flex:1}
+  .hmq{margin:0;padding:14px 16px}
+  .hmq h3{margin-bottom:10px}
+  .hmq-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .hmq-row .in{padding:7px 9px;font-size:13px;min-width:0}
+  .hmq-row .sep{color:var(--muted);font-size:12px}
+  .hmq h3 .hmq-book{margin-left:10px;max-width:230px;font-size:12.5px;font-weight:700}
+  .hmq-row .fl{font-size:11.5px;color:var(--muted);font-weight:700;margin-left:2px}
   /* 대시보드 독서 칸: 읽는 중인 책 · 표지 · 진행률 · 오늘 목표 */
   .hmrd-list{display:flex;flex-direction:column;gap:5px;max-height:338px;overflow:auto;padding-right:2px}
   .hmrd{display:flex;gap:9px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:5px 9px 5px 6px;background:#fff}
@@ -2133,13 +2142,14 @@
   #chGraphCard.ch-full #chNoDates{max-height:80px;overflow:auto}
   body.ch-fullbody{overflow:hidden}
   /* 타임라인 «연대기» 모드: 시간 그래프 카드를 타임라인 카드 안에 그대로 넣는다 */
-  #tlChronoHost{display:none}
-  #tlChronoHost.on{display:block}
-  #tlChronoHost #chGraphCard{margin:0;padding:0;box-shadow:none;border:none;background:transparent}
-  #tlChronoHost #chGraphCard>h3{display:none}
-  #tlChronoHost #chWrap{height:520px}
-  #tlChronoHost #chNoDates{max-height:86px;overflow:auto}
-  #tlChronoHost #chFullBtn{display:none}
+  #hmChronoHost{grid-column:1/-1}
+  #hmChronoHost #chGraphCard{margin:0}
+  #hmChronoHost #chWrap{height:500px}
+  #hmChronoHost #chNoDates{max-height:86px;overflow:auto}
+  #tlSchedHost{display:none;margin-top:4px}
+  #tlSchedHost.on{display:block}
+  #tlSchedHost #schedCard{margin:0;padding:0;box-shadow:none;border:none;background:transparent}
+  #tlSchedHost #schedCard>h3{display:none}
   .chp-ov.over-win{z-index:174}
   /* 사건 기록 팝업 */
   .chf-ov{display:none;position:fixed;inset:0;z-index:170;background:rgba(18,49,43,.34);padding:18px;align-items:center;justify-content:center}
@@ -2616,7 +2626,7 @@
   .hm-grid .card+.card{margin-top:0}
   .hm-card{display:flex;flex-direction:column;min-height:190px;padding:16px;position:relative}
   /* 대시보드 업무 편집창: 업무 노트의 WORD 편집창을 그대로, 세로는 절반 */
-  .hm-wk{grid-column:1/-1;display:flex;flex-direction:column;gap:8px;padding:16px}
+  .hm-wk{grid-column:1/-1;display:flex;flex-direction:column;gap:8px;padding:16px;margin:0}
   .hm-wk>h3{margin-bottom:0}
   .hmwk-title{font-weight:700}
   .hmwk-box .fw-rich{min-height:190px;max-height:230px;background:#fff;border:1px solid #efede8}
@@ -2644,6 +2654,21 @@
   .hm-row b{font-weight:700;color:var(--dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
   .hm-row .sub{font-size:11px;color:var(--muted);flex:none}
   .hm-empty{color:var(--muted);font-size:12px;text-align:center;padding:22px 0}
+  /* 대시보드 학습 카드 아래 ＋ (팝업으로 추가) */
+  .hm-add{align-self:center;margin-top:8px;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--muted);font-size:18px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none;transition:all .12s}
+  .hm-add:hover{border-color:var(--dark);background:var(--dark);color:#fff}
+  .hma-ov{position:fixed;inset:0;z-index:150;background:rgba(18,49,43,.34);display:flex;align-items:center;justify-content:center;padding:18px}
+  .hma{width:min(560px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:16px;box-shadow:0 26px 60px rgba(18,49,43,.32);padding:18px 20px;animation:fwIn .16s ease-out}
+  .hma-h{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .hma-h b{font-size:16px;color:var(--dark)}
+  .hma-h .dot{width:9px;height:9px;border-radius:50%}
+  .hma-h .x{margin-left:auto;cursor:pointer;color:var(--muted);font-size:20px;line-height:1}
+  .hma-h .x:hover{color:var(--dark)}
+  .hma .in{width:100%;box-sizing:border-box}
+  .hma .fld{margin-bottom:8px}
+  .hma textarea.in{min-height:80px;resize:vertical}
+  .hma-foot{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .hma-foot .hint{font-size:11.5px;color:var(--muted);margin-right:auto}
   .hm-row .hm-star{width:12px;height:14px;font-size:12px;line-height:14px}
   /* 문화 카드 */
   .hm-cult{padding:7px 0;border-bottom:1px solid var(--line);cursor:pointer;
@@ -2981,19 +3006,6 @@
     <div class="page-head"><h1 class="go-sched" title="누르면 스케줄로 이동" onclick="goTop('cal')">Hello, My Day!</h1></div>
     <div id="homeTlSlot"></div>
     <div class="hmzk-grid" id="homeZkCard" style="display:none">
-      <div class="card" style="margin:0">
-        <h3><span class="dot" style="background:#e8a4a0"></span> 제텔카스텐 <span class="more">한 장에 한 생각 · 이 자리에서 쓰고 고친다</span>
-          <button type="button" class="lunar-toggle" style="margin-left:auto" onclick="go('zettel')">전체 보기</button></h3>
-        <div id="hmZkSlot0"></div>
-      </div>
-      <div class="card" style="margin:0">
-        <h3><span class="dot" style="background:#6a8fd8"></span> 독서 <span class="more" id="hmRdSub">읽는 중인 책 · 진행률과 오늘 목표</span>
-          <button type="button" class="lunar-toggle" style="margin-left:auto" onclick="goRead()">독서 →</button></h3>
-        <div id="hmRdSlot"></div>
-      </div>
-    </div>
-    <div id="homeGrid" style="display:none">
-      <div class="hm-grid">
         <div class="card hm-wk" id="hmWorkEd">
           <h3><span class="dot" style="background:var(--yellow)"></span> 메모
             <button type="button" class="lunar-toggle" style="margin-left:auto" onclick="go('work')">업무 →</button></h3>
@@ -3008,12 +3020,30 @@
             <button type="button" class="btn ghost hmwk-save hmwk-dy" onclick="hmWkDiary()" title="오늘 일기로 보내기">일기</button>
           </div>
         </div>
+      <div class="hmzk-col">
+      <div class="card hmq" id="hmExpQuick"></div>
+      <div class="card" style="margin:0">
+        <h3><span class="dot" style="background:#e8a4a0"></span> 제텔카스텐 <span class="more">한 장에 한 생각 · 이 자리에서 쓰고 고친다</span>
+          <button type="button" class="lunar-toggle" style="margin-left:auto" onclick="go('zettel')">전체 보기</button></h3>
+        <div id="hmZkSlot0"></div>
+      </div>
+      </div>
+      <div class="hmzk-col">
+      <div class="card hmq" id="hmRdQuick"></div>
+      <div class="card" style="margin:0">
+        <h3><span class="dot" style="background:#6a8fd8"></span> 독서 <span class="more" id="hmRdSub">읽는 중인 책 · 진행률과 오늘 목표</span>
+          <button type="button" class="lunar-toggle" style="margin-left:auto" onclick="goRead()">독서 →</button></h3>
+        <div id="hmRdSlot"></div>
+      </div>
+      </div>
+    </div>
+    <div id="homeGrid" style="display:none">
+      <div class="hm-grid">
         <div class="card hm-card" id="hmWords"></div>
         <div class="card hm-card" id="hmEng"></div>
         <div class="card hm-card" id="hmKnow"></div>
         <div class="card hm-card" id="hmCult"></div>
-        <div class="card hm-half" id="hmExpIn"></div>
-        <div class="card hm-half" id="hmExpChart"></div>
+        <div id="hmChronoHost"></div>
       </div>
     </div>
   </section>
@@ -3577,13 +3607,13 @@
         <span style="margin-left:8px;display:inline-flex;gap:5px;vertical-align:middle">
           <button id="tlModeDaily" class="lunar-toggle on" onclick="tlDailyClick()">Daily</button>
           <button id="tlModeCn" class="lunar-toggle" onclick="tlCnClick()">의회일정</button>
-          <button id="tlModeChrono" class="lunar-toggle ch" onclick="tlSetMode('chrono')" title="연대기 — 시간 그래프를 여기에 펼칩니다 · 빈 곳을 두 번 누르면 사건 기록 칸이 뜹니다">연대기</button>
+          <button id="tlModeSched" class="lunar-toggle" onclick="tlSetMode('sched')" title="스케쥴 — 그날 일정 목록을 여기에 펼칩니다 (‹ › 로 날짜 이동 · ＋ 일정 추가)">스케쥴</button>
           <button id="tlModeProject" class="lunar-toggle" onclick="tlSetMode('project')">Project</button>
           <button id="tlModeReview" class="lunar-toggle rv" onclick="tlSetMode('review')" title="복습 — 1·4·7·14·30일 전에 적은 학습·발췌·제텔카스텐·기사를 다시 본다">복습</button>
         </span>
         <span class="tl-datenav"><button type="button" onclick="tlDayShift(-1)" title="전날">‹</button><span class="more" id="tlLabel" style="margin-left:0"></span><button type="button" onclick="tlDayShift(1)" title="다음날">›</button></span></h3>
       <div class="tl-wrap"><div class="tl-inner" id="tlInner"></div></div>
-      <div id="tlChronoHost"></div>
+      <div id="tlSchedHost"></div>
       <div id="tlpForm" style="display:none">
         <div class="inrow" style="margin-top:12px">
           <input id="tlpiTitle" class="in" style="flex:1" placeholder="일정 입력">
@@ -3880,7 +3910,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-09-30 · r179';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-01 · r182';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4455,7 +4485,7 @@ function tlModeBtns(){
   if(bc)bc.classList.toggle('on',tlMode==='daily'&&tlCn);
   if(bp)bp.classList.toggle('on',tlMode==='project');
   var br=document.getElementById('tlModeReview');if(br)br.classList.toggle('on',tlMode==='review');
-  var bh=document.getElementById('tlModeChrono');if(bh)bh.classList.toggle('on',tlMode==='chrono');
+  var bs=document.getElementById('tlModeSched');if(bs)bs.classList.toggle('on',tlMode==='sched');
 }
 /* ===== 의회 타임라인 머리띠: 일단위·주단위 + 기관 고르기 (트랙 바로 위, 가로 스크롤에 틀고정) ===== */
 var tlCnOrgSel=[];   /* 비어 있으면 전체 · 여러 기관을 함께 고를 수 있다 */
@@ -4508,10 +4538,13 @@ function renderTimeline(){
   if(!inner||!card||card.style.display==='none')return;
   var form=document.getElementById('tlpForm'),stEl=null;
   var wrap=document.querySelector('#timelineCard .tl-wrap');
-  if(tlMode==='chrono'){if(form)form.style.display='none';if(wrap)wrap.style.display='none';
-    var lb0=document.getElementById('tlLabel');if(lb0)lb0.textContent='연대기';
-    chDashShow();return;}
-  if(wrap)wrap.style.display='';chDashHide();
+  if(tlMode==='chrono')tlMode='daily';                     /* 연대기는 대시보드 아래 칸으로 옮겼다 */
+  if(tlMode==='sched'){if(form)form.style.display='none';if(wrap)wrap.style.display='none';
+    var lb0=document.getElementById('tlLabel');
+    if(lb0){var q0=selDate.split('-');var dw0=['일','월','화','수','목','금','토'][new Date(+q0[0],+q0[1]-1,+q0[2]).getDay()];
+      lb0.textContent=(+q0[1])+'월 '+(+q0[2])+'일 ('+dw0+')'+(selDate===today()?' · 오늘':'');}
+    tlSchedShow();return;}
+  if(wrap)wrap.style.display='';tlSchedHide();
   if(tlMode==='review'){if(form)form.style.display='none';renderTlReview(inner);return;}
   if(tlMode==='project'){
     if(form){form.style.display='';
@@ -6383,7 +6416,6 @@ function shiftDayStr(k,n){var t=new Date(k+'T00:00:00');t.setDate(t.getDate()+n)
   return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');}
 function tlDayShift(n){
   if(tlMode==='review'){rvBase=shiftDayStr(rvBaseDate(),n);if(rvBase===today())rvBase=null;renderTimeline();return;}
-  if(tlMode==='chrono'){if(chState.ppy)chState.c+=n*chSpanNow()/4;chTipHide();renderChrono();return;}   /* 연대기: 화면 폭의 1/4씩 */
   if(tlMode==='daily'&&tlCn&&tlCnScale!=='day'){          /* 날짜축(Day): 한 달씩 */
     var from=tlCnStart();
     if(tlCnScale==='month'){var t=new Date(from+'T00:00:00');t.setDate(1);t.setMonth(t.getMonth()+n);
@@ -6393,7 +6425,7 @@ function tlDayShift(n){
   }
   selDate=shiftDayStr(selDate,n);
   var q=selDate.split('-');viewY=+q[0];viewM=+q[1]-1;   /* 달이 넘어가면 달력도 따라간다 */
-  renderCal();renderSchedule();
+  renderCal();renderSchedule();if(tlMode==='sched')renderTimeline();
 }
 
 /* ---------- schedules ---------- */
@@ -8278,23 +8310,37 @@ var chWinOn=false,chWinSlot=null,chFormOn=false,chFormSlot=null;
 function chMoveInto(card,box,slot){if(!card||!box)return null;var s=slot||document.createComment('hmd-slot');
   if(!s.parentNode)card.parentNode.insertBefore(s,card);box.appendChild(card);return s;}
 function chMoveBack(card,slot){if(!card||!slot||!slot.parentNode)return;slot.parentNode.insertBefore(card,slot);slot.parentNode.removeChild(slot);}
-function chDashShow(){                       /* 그래프 카드를 타임라인 안에 펼친다 */
-  var card=document.getElementById('chGraphCard'),host=document.getElementById('tlChronoHost');
+function chDashShow(){                       /* 그래프 카드를 대시보드 맨 아래 칸에 펼친다 */
+  var card=document.getElementById('chGraphCard'),host=document.getElementById('hmChronoHost');
   if(!card||!host)return;
   if(card.classList.contains('ch-full'))chFullTgl();
   if(!chWinOn){chWinSlot=chMoveInto(card,host,null);chWinOn=true;chState.ppy=null;}
   host.classList.add('on');chTipHide();
   setTimeout(renderChrono,30);
 }
-function chDashHide(){                       /* 다른 모드로: 제자리로 */
-  var host=document.getElementById('tlChronoHost');if(host)host.classList.remove('on');
+function chDashHide(){                       /* 연대기 화면으로: 제자리로 */
+  var host=document.getElementById('hmChronoHost');if(host)host.classList.remove('on');
   if(!chWinOn)return;
   chFormClose();if(typeof chMindClose==='function')chMindClose();
   chMoveBack(document.getElementById('chGraphCard'),chWinSlot);
   chWinOn=false;chWinSlot=null;chState.ppy=null;chTipHide();
 }
-function chWinOpen(){tlSetMode('chrono');}   /* (예전 이름) */
-function chWinClose(){if(tlMode==='chrono')tlDailyClick();}
+function chWinOpen(){goTop('home');setTimeout(function(){var h=document.getElementById('hmChronoHost');if(h&&h.scrollIntoView)h.scrollIntoView({behavior:'smooth',block:'start'});},80);}   /* (예전 이름) */
+function chWinClose(){}
+/* 타임라인 «스케쥴»: 그날 일정 카드(schedCard)를 타임라인 안으로 옮겨 펼친다 */
+var tlSchedSlot=null;
+function tlSchedShow(){
+  var card=document.getElementById('schedCard'),host=document.getElementById('tlSchedHost');if(!card||!host)return;
+  if(!tlSchedSlot)tlSchedSlot=chMoveInto(card,host,null);
+  card.style.display='';host.classList.add('on');
+  try{renderSchedule();}catch(e){}
+}
+function tlSchedHide(){
+  var host=document.getElementById('tlSchedHost');if(host)host.classList.remove('on');
+  if(!tlSchedSlot)return;
+  var card=document.getElementById('schedCard');chMoveBack(card,tlSchedSlot);tlSchedSlot=null;
+  if(card&&typeof topActive!=='undefined')card.style.display=(topActive==='cal'&&calSub&&calSub.sched)?'':'none';
+}
 function chFormOpen(){
   if(chFormOn)return;
   var card=document.getElementById('chFormCard'),ov=document.getElementById('chFormOv'),box=document.getElementById('chFormBox');
@@ -8322,9 +8368,9 @@ function renderChrono(){
   chFormInit();
   var cnt=document.getElementById('chCount');if(cnt)cnt.textContent=((db.chrono||[]).length)+'건';
   var vw=document.getElementById('view-chrono');
-  if(chWinOn&&vw&&vw.classList.contains('on')){tlMode='daily';tlDailyOn=true;tlCn=false;tlModeBtns();chDashHide();   /* 연대기 화면으로 오면 카드를 제자리로 */
-    var tw=document.querySelector('#timelineCard .tl-wrap');if(tw)tw.style.display='';}
-  if(!chWinOn&&(!vw||!vw.classList.contains('on')))return;      /* 연대기 화면에도 타임라인에도 없으면 그리지 않는다 */
+  if(chWinOn&&vw&&vw.classList.contains('on'))chDashHide();   /* 연대기 화면으로 오면 카드를 제자리로 */
+  if(!chWinOn&&(!vw||!vw.classList.contains('on')))return;      /* 연대기 화면에도 대시보드에도 없으면 그리지 않는다 */
+  if(chWinOn){var hh=document.getElementById('hmChronoHost');if(!hh||!hh.offsetParent)return;}   /* 대시보드가 가려져 있으면 그리지 않는다 */
   chCatPickRender();chBarRender();
   var wrap=document.getElementById('chWrap'),svg=document.getElementById('chSvg');
   if(!wrap||!svg)return;
@@ -10029,6 +10075,7 @@ function renderHomeZk(){                     /* 이미 그려진 칸은 건드�
     if(!box.dataset.painted||(hmZk[i].id==null&&!box.querySelector('.hmzk')))hmZkPaint(i);
     else if(hmZk[i].id!=null&&!hmZkTm[i]&&!box.contains(document.activeElement))hmZkPaint(i);}   /* 다른 화면에서 고친 기존 메모를 다시 읽는다 */
   hmRdPaint();
+  hmQuickPaint();
 }
 /* ===== 대시보드 독서 칸: 읽는 중인 책 · 표지 · 진행률(마지막 기록 쪽 ÷ 총페이지) · 오늘 목표(직접 입력 · 저장하면 고정) ===== */
 var hmRdEditing={};
@@ -13169,6 +13216,7 @@ function addCulture(pfx){
   save();cultRating[pfx]=0;
   ['Title','One','Review','Tags','Note','KindEtc','Genre','Artist','Link'].forEach(function(k){var e=document.getElementById(pfx+k);if(e)e.value='';});
   renderStudyAll();renderCal();
+  if(pfx==='hq')hmAddDone('문화');
 }
 function cultureRow(x){
   var tags=String(x.tags||'').split(',').map(function(t){return t.trim();}).filter(Boolean);
@@ -14983,6 +15031,58 @@ function hmListCard(title,tab,color){
         +'<span class="sub">'+esc(String(x.date).slice(5))+'</span></div>';
     }).join(''):'<div class="hm-empty">기록이 없습니다.</div>')+'</div>';
 }
+/* ===== 대시보드 ＋ : 단어 · 문장 · 지식 · 문화를 팝업으로 바로 추가 ===== */
+var HMA_INFO={'단어':['단어','#e0a83a'],'영어':['문장','#e0a83a'],'지식':['지식','var(--red)'],'문화':['문화','#8b5cd6']};
+function hmAddBtn(tab){return '<button type="button" class="hm-add" onclick="hmAddOpen(\''+tab+'\')" title="'+HMA_INFO[tab][0]+' 추가">＋</button>';}
+var hmaTab=null;
+function hmAddOpen(tab){
+  hmAddClose();hmaTab=tab;var info=HMA_INFO[tab];
+  var date='<input id="hqDate" type="date" class="in" style="width:150px" value="'+today()+'">';
+  var body;
+  if(tab==='단어')body='<div class="fld">'+date+'</div><div class="fld"><input id="hqTerm" class="in" placeholder="단어" onkeydown="hmAddKey(event)"></div><div class="fld"><input id="hqMean" class="in" placeholder="뜻" onkeydown="hmAddKey(event)"></div>';
+  else if(tab==='영어')body='<div class="fld">'+date+'</div><div class="fld"><textarea id="hqTerm" class="in" placeholder="문장" onkeydown="hmAddKey(event)"></textarea></div><div class="fld"><textarea id="hqMean" class="in" placeholder="해석" onkeydown="hmAddKey(event)"></textarea></div>';
+  else if(tab==='지식')body='<div class="fld" style="display:flex;gap:8px">'+date+'<input id="hqCat" class="in" list="hqCatList" placeholder="카테고리 (직접 입력하면 목록에 추가)"></div>'
+    +'<datalist id="hqCatList">'+studyCatList('지식').map(function(c){return '<option value="'+escA(c)+'">';}).join('')+'</datalist>'
+    +'<div class="fld"><input id="hqTitle" class="in" placeholder="제목" onkeydown="hmAddKey(event)"></div><div class="fld"><textarea id="hqContent" class="in" style="min-height:120px" placeholder="내용" onkeydown="hmAddKey(event)"></textarea></div>';
+  else body=cultGenreList()+cultureFormHTML('hq',true);
+  var ov=document.createElement('div');ov.className='hma-ov';ov.id='hmaOv';
+  ov.addEventListener('click',function(e){if(e.target===ov)hmAddClose();});
+  ov.innerHTML='<div class="hma"><div class="hma-h"><span class="dot" style="background:'+info[1]+'"></span><b>'+info[0]+' 추가</b><span class="x" onclick="hmAddClose()" title="닫기 (Esc)">×</span></div>'
+    +body+(tab==='문화'?'':'<div class="hma-foot"><span class="hint">'+(tab==='영어'||tab==='지식'?'Ctrl+Enter 저장':'Enter 저장')+' · Esc 닫기</span><button type="button" class="btn ghost" onclick="hmAddClose()">취소</button><button type="button" class="btn y" onclick="hmAddSave()">＋ 추가</button></div>')+'</div>';
+  document.body.appendChild(ov);
+  if(tab==='문화'){cultRating.hq=0;var b=ov.querySelector('button.btn.y');if(b)b.textContent='＋ 추가';}
+  document.addEventListener('keydown',hmAddEsc);
+  setTimeout(function(){var f=document.getElementById(tab==='지식'?'hqTitle':tab==='문화'?'hqTitle':'hqTerm');if(f)f.focus();},40);
+}
+function hmAddEsc(e){if(e.key==='Escape'&&document.getElementById('hmaOv')){e.stopPropagation();hmAddClose();}}
+function hmAddKey(e){
+  if(e.key!=='Enter'||e.isComposing)return;
+  var ta=e.target.tagName==='TEXTAREA';
+  if(ta&&!(e.ctrlKey||e.metaKey))return;           /* 긴 칸은 Ctrl+Enter 로 저장 */
+  e.preventDefault();hmAddSave();
+}
+function hmAddClose(){var o=document.getElementById('hmaOv');if(o)o.remove();hmaTab=null;document.removeEventListener('keydown',hmAddEsc);}
+function hmAddSave(){
+  var t=hmaTab;if(!t)return;
+  var v=function(id){var e=document.getElementById(id);return e?String(e.value||'').trim():'';};
+  var d=v('hqDate')||today();
+  if(t==='단어'||t==='영어'){
+    var term=v('hqTerm'),mean=v('hqMean');
+    if(!term){alert(t==='단어'?'단어를 입력하세요.':'문장을 입력하세요.');var f=document.getElementById('hqTerm');if(f)f.focus();return;}
+    db.study.push({id:uid(),date:d,tab:t,term:term,meaning:mean});
+  }else if(t==='지식'){
+    var title=v('hqTitle'),content=v('hqContent'),cat=v('hqCat');
+    if(!title&&!content){alert('제목 또는 내용을 입력하세요.');return;}
+    addStudyCat('지식',cat);
+    db.study.push({id:uid(),date:d,tab:'지식',category:cat,title:title,content:content});
+  }else return;
+  save();renderStudyAll();renderCal();hmAddDone(t);
+}
+function hmAddDone(t){
+  hmOff[t]=0;hmAddClose();
+  if(typeof renderHome==='function')renderHome();
+  hkChip((HMA_INFO[t]||[t])[0]+' 추가했습니다');setTimeout(function(){hkChip('');},1400);
+}
 /* 문화: 구분(영화·음반…) + 별점 + 한줄평 */
 function hmCultCard(title,color){
   var l=hmLatest('문화',4);
@@ -15009,9 +15109,11 @@ function addHomeExpense(){
   db.assets.push({id:uid(),date:document.getElementById('hmDate').value||today(),type:'지출',
     category:document.getElementById('hmCat').value,item:document.getElementById('hmItem').value.trim(),
     amount:amt,note:''});
-  save();renderAssetsAll();renderCal();renderHome();
+  var cat=document.getElementById('hmCat').value;
+  save();renderAssetsAll();renderCal();
   ['hmItem','hmAmt'].forEach(function(i){var e=document.getElementById(i);if(e)e.value='';});
   var f=document.getElementById('hmAmt');if(f)f.focus();
+  hkChip('지출 '+amt.toLocaleString()+'원 · '+cat+' 추가');setTimeout(function(){hkChip('');},1600);
 }
 function hmExpInHTML(){
   var rows=db.assets.filter(function(a){return a.type==='지출'&&!emgIs(a);})
@@ -15072,12 +15174,11 @@ function renderHome(){
   if(!g||g.style.display==='none'&&topActive!=='home')return;
   var set=function(id,html){var e=document.getElementById(id);if(e)e.innerHTML=html;};
   hmWkMount();
-  set('hmWords',hmWordsHTML());
-  set('hmEng',hmEngHTML());
-  set('hmKnow',hmListCard('지식','지식','var(--red)'));
-  set('hmCult',hmListCard('문화','문화','#8b5cd6'));
-  set('hmExpIn',hmExpInHTML());
-  set('hmExpChart',hmExpChartHTML());
+  set('hmWords',hmWordsHTML()+hmAddBtn('단어'));
+  set('hmEng',hmEngHTML()+hmAddBtn('영어'));
+  set('hmKnow',hmListCard('지식','지식','var(--red)')+hmAddBtn('지식'));
+  set('hmCult',hmListCard('문화','문화','#8b5cd6')+hmAddBtn('문화'));
+  try{chDashShow();}catch(e){}
 }
 /* ===== 대시보드 업무 편집창: 업무 노트의 WORD 편집창(fw-rich + 서식 도구) · 의회운영/매뉴얼 단추로 그 폴더에 저장 ===== */
 var hmwkMode='text',hmwkMap={mind:[{id:1,t:'주제',x:30,y:30,p:0}]};
@@ -15149,6 +15250,56 @@ function hmWkSave(folder){
   if(typeof renderWorkAll==='function')renderWorkAll();
   if(typeof renderCal==='function')renderCal();
   hkChip(folder+' 노트로 저장했습니다');setTimeout(function(){hkChip('');},1500);
+}
+/* ===== 대시보드 입력칸: 지출입력 (제텔카스텐 위) · 독서 기록넣기 (독서 위) — 내역 없이 입력만 ===== */
+function hmExpQuickHTML(){
+  return '<h3><span class="dot" style="background:var(--red)"></span> 지출입력<button type="button" class="lunar-toggle" style="margin-left:auto" onclick="go(\'assets\')">가계부 →</button></h3>'
+    +'<div class="hmq-row">'
+    +'<input id="hmDate" type="date" class="in" style="flex:none;width:136px" value="'+today()+'">'
+    +'<select id="hmCat" class="in" style="flex:none;width:104px">'+ASSET_CATS.지출.map(function(c){return '<option>'+esc(c)+'</option>';}).join('')+'</select>'
+    +'<input id="hmAmt" class="in" inputmode="numeric" style="flex:1;min-width:80px;text-align:right" placeholder="금액" oninput="fmtNum(this)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addHomeExpense();}">'
+    +'<input id="hmItem" class="in" style="flex:1.3;min-width:90px" placeholder="내역" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addHomeExpense();}">'
+    +'<button type="button" class="btn y" style="flex:none;padding:7px 14px" onclick="addHomeExpense()">추가</button></div>';
+}
+function hmRdQuickHTML(){
+  var bs=hmRdBooks(),prev=(document.getElementById('hmqBook')||{}).value||'';
+  if(!bs.length)return '<h3><span class="dot" style="background:#6a8fd8"></span> 독서기록</h3><div class="hm-empty" style="padding:6px 0">읽는 중인 책이 없습니다.</div>';
+  return '<h3><span class="dot" style="background:#6a8fd8"></span> 독서기록'
+    +'<select id="hmqBook" class="rowsel hmq-book" title="기록할 책">'+bs.map(function(b){return '<option value="'+b.id+'"'+(String(b.id)===prev?' selected':'')+'>'+esc(b.title)+'</option>';}).join('')+'</select></h3>'
+    +'<div class="hmq-row">'
+    +'<span class="fl">시각</span><input id="hmqS" class="in" inputmode="numeric" placeholder="시작" style="flex:1;min-width:58px;max-width:90px" onblur="this.value=normTime(this.value)">'
+    +'<span class="sep">~</span><input id="hmqE" class="in" inputmode="numeric" placeholder="끝" style="flex:1;min-width:58px;max-width:90px" onblur="this.value=normTime(this.value)" onkeydown="if(event.key===\'Enter\')hmRdgAdd()">'
+    +'<span class="fl">쪽</span><input id="hmqP1" class="in" inputmode="numeric" placeholder="시작" style="flex:1;min-width:52px;max-width:80px">'
+    +'<span class="sep">~</span><input id="hmqP2" class="in" inputmode="numeric" placeholder="끝" style="flex:1;min-width:52px;max-width:80px" onkeydown="if(event.key===\'Enter\')hmRdgAdd()">'
+    +'<button type="button" class="btn y" style="flex:none;padding:7px 14px;margin-left:auto" onclick="hmRdgAdd()">기록</button></div>';
+}
+function hmQuickPaint(){
+  [['hmExpQuick',hmExpQuickHTML],['hmRdQuick',hmRdQuickHTML]].forEach(function(p){
+    var el=document.getElementById(p[0]);if(!el)return;
+    if(el.contains(document.activeElement))return;                 /* 쓰는 중이면 건드리지 않는다 */
+    var keep={};el.querySelectorAll('input:not([type=date]),select').forEach(function(i){if(i.id&&i.value)keep[i.id]=i.value;});
+    el.innerHTML=p[1]();
+    Object.keys(keep).forEach(function(id){var i=document.getElementById(id);if(i&&i.tagName!=='SELECT')i.value=keep[id];});
+  });
+}
+function hmRdgAdd(){
+  var g=function(i){var el=document.getElementById(i);return el?String(el.value||'').trim():'';};
+  var bid=Number(g('hmqBook')),date=today();   /* 대시보드 독서기록은 늘 오늘 날짜 */
+  var s=normTime(g('hmqS')),e=normTime(g('hmqE')),p1=g('hmqP1').replace(/[^0-9]/g,''),p2=g('hmqP2').replace(/[^0-9]/g,'');
+  var say=function(t){hkChip(t);setTimeout(function(){hkChip('');},1800);};
+  if(!bid||!bookById(bid)){say('어느 책의 기록인지 골라주세요');return;}
+  if(!s&&!e&&!p1&&!p2){say('시각이나 쪽수를 넣어주세요');var f=document.getElementById('hmqS');if(f)f.focus();return;}
+  if((s&&rdgMin(s)==null)||(e&&rdgMin(e)==null)){say('시각은 2130 또는 21:30 처럼 넣어주세요');return;}
+  if((s&&!e)||(!s&&e)){say('시작·끝 시각을 둘 다 넣어주세요 (쪽수만 넣어도 됩니다)');return;}
+  if(p1&&p2&&Number(p2)<Number(p1)){say('끝 쪽이 시작 쪽보다 앞에 있어요');return;}
+  if(!Array.isArray(db.rdLog))db.rdLog=[];
+  var rec={id:uid(),book:bid,date:date,s:s||'',e:e||'',p1:p1?Number(p1):'',p2:p2?Number(p2):''};
+  db.rdLog.push(rec);save();
+  ['hmqS','hmqE','hmqP1','hmqP2'].forEach(function(i){var el=document.getElementById(i);if(el)el.value='';});
+  try{rdgRender();}catch(_){}
+  hmRdPaint();
+  var c=rdgCalc(rec),parts=[];if(c.pages)parts.push(c.pages+'p');if(c.mins)parts.push(rdgFmtM(c.mins));
+  say('「'+(bookById(bid)||{}).title+'」 기록했습니다'+(parts.length?' · '+parts.join(' · '):''));
 }
 /* 주요일정 현재시각 갱신 */
 setInterval(function(){if(topActive==='home'&&curView()==='dashboard'){var e=document.getElementById('hmSched');if(e)e.innerHTML=hmSchedHTML();}},60000);
