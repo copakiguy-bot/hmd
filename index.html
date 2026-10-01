@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-01 · r185">
+<meta name="hmd-build" content="2026-10-01 · r186">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -308,6 +308,22 @@
   .ledger td{padding:9px 8px;border-bottom:1px solid var(--line)}
   /* 가계부 전용: 고정 폭 + 작은 글씨 (led-fix 를 단 표에만) */
   .ledger.led-fix{table-layout:fixed;font-size:12px}
+  /* 고정지출: 출금 체크 · 출금일 */
+  .fx-tbl .fx-ck{width:40px;text-align:center}
+  .fx-tbl .fx-day{width:62px;white-space:nowrap}
+  .fx-box{display:inline-flex;width:20px;height:20px;border-radius:6px;border:1.6px solid #c9cfcb;align-items:center;justify-content:center;cursor:pointer;font-size:13px;font-weight:800;color:#fff;background:#fff;vertical-align:middle}
+  .fx-box:hover{border-color:var(--green)}
+  .fx-box.on{background:var(--green);border-color:var(--green)}
+  .fx-dayin{width:30px;border:1px solid transparent;border-radius:6px;background:transparent;text-align:right;font:inherit;padding:2px 3px}
+  .fx-dayin:hover,.fx-dayin:focus{border-color:var(--line);background:#fff;outline:none}
+  .fx-day span{color:var(--muted);font-size:11px;margin-left:1px}
+  .fx-r.paid td{color:var(--muted)}
+  .fx-r.paid .fx-nm{text-decoration:line-through;text-decoration-color:rgba(47,111,94,.5)}
+  .fx-r.late .fx-dayin{color:var(--red);font-weight:800}
+  .fx-tot td{font-weight:800;border-top:1.5px solid var(--line);background:var(--cream)}
+  .fx-tot td span{font-weight:600;color:var(--muted);font-size:11.5px}
+  .fx-cur{color:var(--green)!important;font-weight:800}
+  .fx-cur i{font-style:normal;font-weight:600;color:var(--muted)}
   .ledger.led-fix th{font-size:10.5px;padding:6px 6px}
   .ledger.led-fix td{padding:7px 6px}
   .ledger.led-fix .rowdate{font-size:11px;padding:4px 2px;width:100%;max-width:112px}
@@ -3913,7 +3929,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-01 · r185';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-01 · r186';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -6413,7 +6429,17 @@ function renderCal(){
 function shiftMonth(d){viewM+=d;if(viewM<0){viewM=11;viewY--}if(viewM>11){viewM=0;viewY++}renderCal();
   if(typeof tlMode!=='undefined'&&tlMode==='sched'){var lb=document.getElementById('tlLabel');if(lb)lb.textContent=viewY+'년 '+(viewM+1)+'월';}}
 function goToday(){const t=new Date();viewY=t.getFullYear();viewM=t.getMonth();selDate=today();renderCal();renderSchedule();}
-function selectDate(k){selDate=k;renderCal();renderSchedule();}
+var __calLast={k:null,t:0};
+function selectDate(k){
+  var now=Date.now(),dbl=(__calLast.k===k&&now-__calLast.t<420);   /* 같은 날을 빠르게 두 번 = 일정 넣기 (다시 그려도 끊기지 않게 직접 센다) */
+  __calLast={k:dbl?null:k,t:dbl?0:now};
+  selDate=k;renderCal();renderSchedule();
+  if(dbl)calQuickAdd(k);
+}
+function calQuickAdd(k){
+  if(typeof tlqOpen!=='function')return;
+  tlqOpen('',{date:k,head:'일정 추가',after:function(){try{renderCal();renderSchedule();}catch(e){}}});
+}
 /* 타임라인 머리글 ‹ › : 하루씩 이동 */
 function shiftDayStr(k,n){var t=new Date(k+'T00:00:00');t.setDate(t.getDate()+n);
   return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');}
@@ -14800,13 +14826,19 @@ function expCmpSVG(){
   return '<div class="card">'+head+body+'</div>';
 }
 function setBudget(cat,txt){db.budget[cat]=Number(String(txt).replace(/[^0-9]/g,''))||0;save();renderAssets();}
+/* 고정지출 출금 체크: 달마다 따로 (f.paid['2026-10']=1) — 다음 달이 되면 다시 빈 칸 */
+function fixedDay(v){var n=parseInt(String(v||'').replace(/[^0-9]/g,''),10);return (n>=1&&n<=31)?n:'';}
+function fixedPaidOn(f,m){return !!(f&&f.paid&&f.paid[m]);}
+function fixedPaidTgl(id){var f=db.fixed.find(function(x){return x.id===id;});if(!f)return;var m=thisMonth();
+  if(!f.paid||typeof f.paid!=='object')f.paid={};if(f.paid[m])delete f.paid[m];else f.paid[m]=today();save();renderAssets();}
 function addFixed(){const n=document.getElementById('fName').value.trim(),amt=parseNum(document.getElementById('fAmount').value);
   if(!n){alert('내용을 입력하세요.');return;}if(!amt){alert('금액을 입력하세요.');return;}
-  db.fixed.push({id:uid(),name:n,amount:amt,note:document.getElementById('fNote').value.trim()});save();
-  ['fName','fAmount','fNote'].forEach(i=>document.getElementById(i).value='');renderAssets();}
+  const dEl=document.getElementById('fDay');
+  db.fixed.push({id:uid(),name:n,amount:amt,note:document.getElementById('fNote').value.trim(),day:fixedDay(dEl&&dEl.value),paid:{}});save();
+  ['fDay','fName','fAmount','fNote'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});renderAssets();}
 function delFixed(id){db.fixed=db.fixed.filter(f=>f.id!==id);save();renderAssets();}
 function editFixed(id,field,val){const f=db.fixed.find(x=>x.id===id);if(!f)return;
-  if(field==='amount')f.amount=parseNum(val);else f[field]=String(val).trim();
+  if(field==='amount')f.amount=parseNum(val);else if(field==='day')f.day=fixedDay(val);else f[field]=String(val).trim();
   save();renderAssets();}
 
 function paneExpense(){
@@ -14822,10 +14854,16 @@ function paneExpense(){
       <td class="amt" style="color:${set-spent<0?'var(--red)':'inherit'}">${(set-spent).toLocaleString()}</td><td class="amt">${last.toLocaleString()}</td></tr>`;
   });
   brows+=`<tr style="font-weight:800"><td>합계</td><td class="amt">${setSum.toLocaleString()}</td><td class="amt">${(setSum-spentSum).toLocaleString()}</td><td class="amt">${lastSum.toLocaleString()}</td></tr>`;
-  let fixedSum=0,frows='';
-  db.fixed.forEach(f=>{fixedSum+=Number(f.amount)||0;
-    frows+=`<tr><td contenteditable onblur="editFixed(${f.id},'name',this.innerText)">${esc(f.name)}</td>
-      <td class="amt" contenteditable onblur="editFixed(${f.id},'amount',this.innerText)">${Number(f.amount||0).toLocaleString()}</td>
+  let fixedSum=0,fixedPaid=0,fixedPaidN=0,frows='';
+  const fxMon=thisMonth(),fxToday=+today().slice(8,10);
+  db.fixed.slice().sort((a,b)=>(Number(a.day)||99)-(Number(b.day)||99)||a.id-b.id).forEach(f=>{
+    const amt=Number(f.amount)||0,paid=fixedPaidOn(f,fxMon);fixedSum+=amt;if(paid){fixedPaid+=amt;fixedPaidN++;}
+    const late=!paid&&f.day&&Number(f.day)<fxToday;   /* 출금일이 지났는데 체크 안 됨 */
+    frows+=`<tr class="fx-r${paid?' paid':''}${late?' late':''}">
+      <td class="fx-ck"><span class="fx-box${paid?' on':''}" onclick="fixedPaidTgl(${f.id})" title="${paid?'이번 달 출금됨 — 누르면 취소':'누르면 이번 달 출금 완료로 표시'}">${paid?'✓':''}</span></td>
+      <td class="fx-day"><input class="fx-dayin" inputmode="numeric" maxlength="2" value="${f.day||''}" placeholder="—" title="매달 출금일 (1~31)" onchange="editFixed(${f.id},'day',this.value)"><span>일</span></td>
+      <td class="fx-nm" contenteditable onblur="editFixed(${f.id},'name',this.innerText)">${esc(f.name)}</td>
+      <td class="amt" contenteditable onblur="editFixed(${f.id},'amount',this.innerText)">${amt.toLocaleString()}</td>
       <td contenteditable onblur="editFixed(${f.id},'note',this.innerText)">${esc(f.note||'')}</td>
       <td><span class="del" onclick="delFixed(${f.id})">×</span></td></tr>`;});
   const pieMap={};ASSET_CATS.지출.forEach(c=>{const v=sumAssets(a=>a.type==='지출'&&a.category===c&&monthOf(a.date)===mk);if(v)pieMap[c]=v;});
@@ -14866,10 +14904,11 @@ function paneExpense(){
       <tbody>${brows}</tbody></table></div></div>
     ${emgCardHTML()}
     </div>
-    <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 고정지출 <span class="more">합계 ${won(fixedSum)}</span></h3>
-      <div class="tblx"><table class="ledger"><thead><tr><th>내용</th><th class="amt">금액</th><th>비고</th><th></th></tr></thead>
-      <tbody>${frows||'<tr><td colspan="4" class="empty">항목이 없습니다.</td></tr>'}</tbody></table></div>
-      <div class="inrow" style="margin-top:10px"><input id="fName" class="in" style="flex:2" placeholder="내용">
+    <div class="card"><h3><span class="dot" style="background:var(--red)"></span> 고정지출 <span class="more fx-cur" title="${(+fxMon.slice(5,7))}월에 출금 체크한 합계">${(+fxMon.slice(5,7))}월 출금 ${won(fixedPaid)} <i>(${fixedPaidN}/${db.fixed.length}건)</i></span></h3>
+      <div class="tblx"><table class="ledger fx-tbl"><thead><tr><th class="fx-ck" title="이번 달 출금">출금</th><th class="fx-day">출금일</th><th>내용</th><th class="amt">금액</th><th>비고</th><th></th></tr></thead>
+      <tbody>${frows||'<tr><td colspan="6" class="empty">항목이 없습니다.</td></tr>'}</tbody>
+      ${db.fixed.length?`<tfoot><tr class="fx-tot"><td colspan="3">합계 <span>· 남은 출금 ${won(fixedSum-fixedPaid)}</span></td><td class="amt">${fixedSum.toLocaleString()}</td><td colspan="2"></td></tr></tfoot>`:''}</table></div>
+      <div class="inrow" style="margin-top:10px"><input id="fDay" class="in" inputmode="numeric" maxlength="2" style="flex:none;width:72px" placeholder="출금일"><input id="fName" class="in" style="flex:2" placeholder="내용">
         <input id="fAmount" class="in" inputmode="numeric" style="flex:1" placeholder="금액" oninput="fmtNum(this)">
         <input id="fNote" class="in" style="flex:1" placeholder="비고"><button class="btn" style="flex:none" onclick="addFixed()">추가</button></div></div>
   </div>`;
@@ -17829,7 +17868,7 @@ esSet(['chExText','chExPage'],function(){if(readOpenId)addChapterExcerpt(readOpe
 esSet(['chapInput'],function(){if(readOpenId)addChapter(readOpenId);});
 esSet(['dCat','dItem','dAmount','dNote'],function(){addAssetDash();});
 esSet(['eDate','eCat','eItem','eAmt','eNote'],function(){addAssetDetail(detailAssetTab);});
-esSet(['fName','fAmount','fNote'],function(){addFixed();});
+esSet(['fDay','fName','fAmount','fNote'],function(){addFixed();});
 esSet(['rtName','rtMin'],function(){addRoutine();});
 esSet(['seName','seStart','seEnd','seAgenda','seNote'],function(){addSession();});
 esSet(['seeName','seeStart','seeEnd','seeAgenda','seeNote'],function(){saveSessionEdit();});
