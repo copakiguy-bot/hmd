@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-01 · r187">
+<meta name="hmd-build" content="2026-10-01 · r188">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2686,6 +2686,16 @@
   .hma .fld{margin-bottom:8px}
   .hma textarea.in{min-height:80px;resize:vertical}
   .hma-foot{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .hsv .hma-h b{font-size:17px;line-height:1.4}
+  .hsv-meta{font-size:12px;color:var(--muted);margin:-6px 0 12px}
+  .hsv-cat{display:inline-block;background:var(--cream);border-radius:6px;padding:1px 7px;color:var(--dark);font-weight:700}
+  .hsv-star{margin-bottom:8px;font-size:13px}
+  .hsv-one{font-size:14.5px;font-weight:700;color:var(--dark);margin-bottom:10px;line-height:1.6}
+  .hsv-body{font-size:14px;line-height:1.85;color:var(--text);background:var(--cream);border-radius:12px;padding:12px 15px;word-break:break-word;max-height:55vh;overflow:auto}
+  .hsv-notes{margin-top:10px;font-size:12.5px;color:var(--muted);line-height:1.7}
+  .hsv-link{margin-top:10px}.hsv-link a{font-size:13px;font-weight:700;color:#c0392b;text-decoration:none}
+  .hsv-tags{margin-top:10px;display:flex;gap:5px;flex-wrap:wrap}.hsv-tags span{font-size:11.5px;background:#f0edf9;color:#6b46c1;border-radius:999px;padding:2px 9px}
+  .hsv-note{margin-top:8px;font-size:12px;color:var(--muted)}
   .hma-foot .hint{font-size:11.5px;color:var(--muted);margin-right:auto}
   .hm-row .hm-star{width:12px;height:14px;font-size:12px;line-height:14px}
   /* 문화 카드 */
@@ -3929,7 +3939,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-01 · r187';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-01 · r188';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -15208,7 +15218,7 @@ function hmListCard(title,tab,color){
   if(tab==='문화')return hmCultCard(title,color);
   return hmTn(title,hmNav(tab,5,hmAll(tab).length),color)
     +'<div class="hm-body">'+(l.length?l.map(function(x){
-      return '<div class="hm-row" onclick="goStudy(\''+tab+'\')"><b>'+esc(x.title||x.term||'')+'</b>'
+      return '<div class="hm-row" onclick="hmStudyView('+x.id+')" title="눌러서 세부 내용"><b>'+esc(x.title||x.term||'')+'</b>'
         +'<span class="sub">'+esc(String(x.date).slice(5))+'</span></div>';
     }).join(''):'<div class="hm-empty">기록이 없습니다.</div>')+'</div>';
 }
@@ -15270,7 +15280,7 @@ function hmCultCard(title,color){
   return hmTn(title,hmNav('문화',4,hmAll('문화').length),color)
     +'<div class="hm-body">'+(l.length?l.map(function(x){
       var cat=String(x.category||'').trim();
-      return '<div class="hm-cult" onclick="goStudy(\'문화\')" title="'+escA((cat?'['+cat+'] ':'')+(x.title||'')+(x.oneline?' — '+x.oneline:''))+'">'
+      return '<div class="hm-cult" onclick="hmStudyView('+x.id+')" title="'+escA((cat?'['+cat+'] ':'')+(x.title||'')+(x.oneline?' — '+x.oneline:''))+'">'
         +(cat?'<span class="hm-cult-cat">'+esc(cat)+'</span>':'')
         +'<div class="hm-cult-main">'
         +'<div class="hm-cult-top">'
@@ -15282,6 +15292,35 @@ function hmCultCard(title,color){
         +(x.oneline?'<div class="hm-cult-one">'+esc(x.oneline)+'</div>':'')
         +'</div></div>';
     }).join(''):'<div class="hm-empty">기록이 없습니다.</div>')+'</div>';
+}
+/* 대시보드 지식·문화: 제목을 누르면 그 항목의 세부 내용만 팝업으로 (페이지로 넘어가지 않는다) */
+function hmStudyView(id){
+  var x=(db.study||[]).find(function(a){return a.id===id;});if(!x)return;
+  hmAddClose();
+  var isC=(x.tab==='문화'),cat=String(x.category||'').trim(),col=isC?'#8b5cd6':'var(--red)';
+  var meta=[esc(String(x.date||'').replace(/-/g,'.')),cat?'<span class="hsv-cat">'+esc(cat)+'</span>':'',
+    isC&&x.genre?esc(x.genre):'',isC&&x.artist?esc(x.artist):''].filter(Boolean).join(' · ');
+  var body='';
+  if(isC){
+    if(x.rating&&cat!=='음악')body+='<div class="hsv-star">'+hmStarsRO(x.rating)+' <b>'+starTxt(x.rating)+'</b></div>';
+    if(x.oneline)body+='<div class="hsv-one">'+esc(x.oneline)+'</div>';
+    if(x.content)body+='<div class="hsv-body">'+fwR(x.content).replace(/\n/g,'<br>')+'</div>';
+    if(x.link)body+='<div class="hsv-link"><a href="'+escA(x.link)+'" target="_blank" rel="noopener">▶ 링크 열기</a></div>';
+    if(x.tags)body+='<div class="hsv-tags">'+String(x.tags).split(/[,，]/).map(function(t){t=t.trim();return t?'<span>#'+esc(t)+'</span>':'';}).join('')+'</div>';
+    if(x.note)body+='<div class="hsv-note">비고 · '+esc(x.note)+'</div>';
+  }else{
+    var c=String(x.content||'');
+    body+=c?'<div class="hsv-body">'+(fwLooksHtml(c)?c:(typeof stBodyHTML==='function'?stBodyHTML(x):esc(c))).replace(/\n/g,'<br>')+'</div>':'';
+    if(Array.isArray(x.notes)&&x.notes.length)body+='<div class="hsv-notes">'+x.notes.map(function(n){return '<div>· '+esc(n.text||n.t||'')+'</div>';}).join('')+'</div>';
+  }
+  if(!body)body='<div class="hm-empty">세부 내용이 없습니다.</div>';
+  var ov=document.createElement('div');ov.className='hma-ov';ov.id='hmaOv';
+  ov.addEventListener('click',function(e){if(e.target===ov)hmAddClose();});
+  ov.innerHTML='<div class="hma hsv"><div class="hma-h"><span class="dot" style="background:'+col+'"></span><b>'+esc(x.title||x.term||'(제목 없음)')+'</b><span class="x" onclick="hmAddClose()" title="닫기 (Esc)">×</span></div>'
+    +'<div class="hsv-meta">'+meta+'</div>'+body
+    +'<div class="hma-foot"><span class="hint">Esc 닫기</span><button type="button" class="btn ghost" onclick="hmAddClose();goStudy(\''+x.tab+'\')">'+x.tab+' 페이지에서 보기</button></div></div>';
+  document.body.appendChild(ov);
+  document.addEventListener('keydown',hmAddEsc);
 }
 /* 9~11. 지출 */
 function addHomeExpense(){
