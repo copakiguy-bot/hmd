@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-01 · r183">
+<meta name="hmd-build" content="2026-10-01 · r184">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -925,6 +925,8 @@
   .rdl-tb tr.rdl-m td{background:var(--cream);font-weight:800;color:var(--dark);font-size:12px;padding:6px 8px}
   .rdl-wrap{overflow-x:auto}
   /* Etc · 업무추진비 */
+  @keyframes bxFlash{0%{background:#fff3b8}100%{background:transparent}}
+  .bx-tb tr.bx-flash td{animation:bxFlash 1.8s ease-out}
   .bx-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:6px}
   .bx-tile{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}
   .bx-th{display:flex;align-items:center;gap:6px;font-weight:800;color:var(--dark);font-size:13px;margin-bottom:6px}
@@ -3910,7 +3912,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-01 · r183';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-01 · r184';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -9556,9 +9558,19 @@ function bxSave(){
   renderEtc();
   hkChip(was?'수정했습니다':'추가했습니다 · '+bxWon(amt));setTimeout(function(){hkChip('');},1500);
   if(!was){var w=document.getElementById('bxWhat');if(w)w.focus();}
+  else bxGoRow(r.id);                                /* 고친 내역으로 돌아간다 */
+}
+/* 내역 표에서 그 줄로 스크롤 + 잠깐 빛나게 (기간 필터 밖이면 알려만 준다) */
+function bxGoRow(id){
+  setTimeout(function(){
+    var tr=document.querySelector('tr.bx-r[data-bx="'+id+'"]');
+    if(!tr){hkChip('수정했습니다 · 지금 보는 기간 밖의 날짜라 표에는 안 보입니다');setTimeout(function(){hkChip('');},2200);return;}
+    tr.scrollIntoView({behavior:'smooth',block:'center'});
+    tr.classList.remove('bx-flash');void tr.offsetWidth;tr.classList.add('bx-flash');
+  },60);
 }
 function bxEdit(id){bxEditId=id;bxRenderForm();var f=document.getElementById('bxForm');if(f)f.scrollIntoView({behavior:'smooth',block:'center'});}
-function bxEditCancel(){bxEditId=null;bxRenderForm();}
+function bxEditCancel(){var id=bxEditId;bxEditId=null;bxRenderForm();if(id!=null){renderEtc();bxGoRow(id);}}   /* 취소해도 보던 줄로 */
 function bxDel(id){
   var X=bxDb(),r=X.rows.find(function(x){return x.id===id;});if(!r)return;
   if(!confirm(r.date+' 「'+r.what+'」 '+bxWon(r.amt)+' 을 지울까요?'))return;
@@ -9733,7 +9745,7 @@ function bxRenderTable(){
     h+='<tr class="rdl-m"><td colspan="3">'+esc(m.replace('-','년 ')+'월')+' · '+byM[m].length+'건 <span class="bx-mper">'+BX_WHO.map(function(w){return per[w]?'<i style="color:'+BX_COL[w]+'">'+w+' '+bxWon(per[w])+'</i>':'';}).filter(Boolean).join(' · ')+'</span></td><td class="r">'+bxWon(mt)+'</td><td colspan="8"></td></tr>';
     byM[m].forEach(function(r){
       var d=new Date(r.date+'T00:00:00'),dow=isNaN(d)?'':['일','월','화','수','목','금','토'][d.getDay()];
-      h+='<tr class="bx-r'+(bxEditId===r.id?' on':'')+'" ondblclick="bxEdit('+r.id+')" title="두 번 누르면 수정">'
+      h+='<tr class="bx-r'+(bxEditId===r.id?' on':'')+'" data-bx="'+r.id+'" ondblclick="bxEdit('+r.id+')" title="두 번 누르면 수정">'
         +'<td class="d">'+esc(String(r.date).slice(5).replace('-','/'))+(dow?' <i>('+dow+')</i>':'')+'</td>'
         +'<td class="d">'+esc(r.time||'')+'</td>'
         +'<td class="w">'+esc(r.what||'')+'</td>'
