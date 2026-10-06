@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-06 · r189">
+<meta name="hmd-build" content="2026-10-06 · r190">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -459,7 +459,9 @@
   #ideaCard{min-height:200px}
   #mindCanvas{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fbfbf8;min-height:460px;margin-top:4px}
   .mind-expand-btn{cursor:pointer;flex-shrink:0;margin-left:8px;font-size:14px;line-height:1;padding:5px 9px}
-  .bk-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .st-bar{height:8px;border-radius:5px;background:var(--line);overflow:hidden;margin-bottom:6px}.st-bar i{display:block;height:100%;border-radius:5px}
+.st-txt{font-size:12px;color:var(--muted);line-height:1.6}
+.bk-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
   .bk-row:last-child{border-bottom:none}
   .bk-t{font-size:12.5px;font-weight:700;color:var(--dark)}
   .bk-tag{font-size:11px;font-weight:700;color:var(--muted);background:var(--cream);border-radius:20px;padding:2px 9px}
@@ -3473,12 +3475,16 @@
       <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
         <div style="font-size:13px;font-weight:800;color:var(--dark);margin-bottom:4px">되돌리기 (자동 백업)</div>
         <div style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:10px">
-          하루에 한 번, 그리고 클라우드에서 통째로 불러오기 직전에 이 기기에 사본을 남깁니다(최근 6개 + 날짜별 1개). 내용이 사라졌을 때
+          하루에 한 번, 그리고 클라우드에서 통째로 불러오기 직전에 이 기기의 보조 저장소에 사본을 남깁니다(최근 6개 + 날짜별 1개). 내용이 사라졌을 때
           «빠진 항목 합치기»를 누르면 그 백업에만 있는 항목을 지금 내용에 더하고, «되돌리기»는 그 시점으로 통째로 바꿉니다.</div>
         <div style="display:flex;gap:10px;margin-bottom:10px">
           <button class="btn ghost" onclick="backupSave('직접 저장');renderBackupUI();">지금 백업 만들기</button>
         </div>
         <div id="bkList"></div>
+      </div>
+      <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
+        <div style="font-size:13px;font-weight:800;color:var(--dark);margin-bottom:6px">저장공간</div>
+        <div id="storeUse"></div>
       </div>
     </div>
     <div class="card">
@@ -3951,7 +3957,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-06 · r189';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-06 · r190';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4118,7 +4124,75 @@ function save(){
      오래된 기기가 클라우드를 덮어쓰는 사고를 막는다 (동기화 코드가 없으면 __syncReady 는 곧바로 true) */
   if(!__boot&&(typeof __syncReady==='undefined'||__syncReady||!syncCode()))db.__updated=Date.now();
   try{delTrack();}catch(e){}
-  localStorage.setItem(KEY,JSON.stringify(db));backupTick();cloudPushDebounced();}
+  lsPutMain(JSON.stringify(db));backupTick();cloudPushDebounced();}
+/* ================= 저장공간 (localStorage 는 사이트당 약 5MB) =================
+   예전에는 본 데이터 + 동기화 기준본 + 백업 12개를 모두 localStorage 에 넣어, 데이터가 커지면
+   «QuotaExceededError»로 저장이 멈췄다. 이제 백업은 용량이 훨씬 큰 IndexedDB 로 옮기고,
+   본 데이터 저장이 막히면 덜 중요한 것부터 비운 뒤 다시 시도한다. 그래도 안 되면 IndexedDB 에 대신 저장한다. */
+var HMD_IDB=null,__idbQ=[];
+function idbOpen(cb){
+  if(HMD_IDB)return cb(HMD_IDB);
+  if(__idbFailed)return cb(null);
+  __idbQ.push(cb);if(__idbQ.length>1)return;
+  var done=function(d){HMD_IDB=d;if(!d)__idbFailed=true;var q=__idbQ;__idbQ=[];q.forEach(function(f){try{f(d);}catch(e){}});};
+  try{var r=indexedDB.open('hmd_store',1);
+    r.onupgradeneeded=function(){try{r.result.createObjectStore('kv');}catch(e){}};
+    r.onsuccess=function(){done(r.result);};r.onerror=function(){done(null);};r.onblocked=function(){done(null);};
+  }catch(e){done(null);}
+}
+var __idbFailed=false;
+function idbGet(k,cb){idbOpen(function(d){if(!d)return cb(undefined);
+  try{var q=d.transaction('kv','readonly').objectStore('kv').get(k);q.onsuccess=function(){cb(q.result);};q.onerror=function(){cb(undefined);};}catch(e){cb(undefined);}});}
+function idbPut(k,v,cb){idbOpen(function(d){if(!d){if(cb)cb(false);return;}
+  try{var t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k);
+    t.oncomplete=function(){if(cb)cb(true);};t.onerror=t.onabort=function(){if(cb)cb(false);};}catch(e){if(cb)cb(false);}});}
+function idbDel(k){idbOpen(function(d){if(!d)return;try{d.transaction('kv','readwrite').objectStore('kv').delete(k);}catch(e){}});}
+function isQuotaErr(e){return !!e&&(e.name==='QuotaExceededError'||e.name==='NS_ERROR_DOM_QUOTA_REACHED'||e.code===22||e.code===1014||/quota/i.test(String(e.message||e)));}
+/* 공간 비우기: 1단계 = 옛 백업을 localStorage 에서 빼서 IndexedDB 로, 2단계 = 동기화 기준본(다음 동기화 때 다시 만들어짐) */
+function storeFree(level){
+  try{
+    if(level>=1&&localStorage.getItem(BK_KEY)!==null){
+      if(__bkMem===null)__bkMem=bkLegacy();
+      localStorage.removeItem(BK_KEY);bkPersist();
+    }
+    if(level>=2)localStorage.removeItem(SYNC_BASE_KEY);
+  }catch(e){}
+}
+var __storeWarned=false,__mainInIdb=false;
+function lsPutMain(str){
+  for(var lv=0;lv<3;lv++){
+    try{localStorage.setItem(KEY,str);
+      if(__mainInIdb){__mainInIdb=false;try{localStorage.removeItem('hmd_mainIdb');}catch(e){}idbDel('main');}
+      return true;
+    }catch(e){if(!isQuotaErr(e))break;storeFree(lv+1);}
+  }
+  /* 그래도 자리가 없으면 IndexedDB 에 대신 넣고 표시만 남긴다 (다음에 열 때 그쪽이 더 최신이면 그걸 쓴다) */
+  __mainInIdb=true;idbPut('main',str);
+  try{localStorage.setItem('hmd_mainIdb','1');}catch(e){}
+  storeWarn();return false;
+}
+function storeWarn(){
+  if(__storeWarned)return;__storeWarned=true;
+  try{liveFlash('이 기기 저장공간이 가득 차 보조 저장소에 저장했습니다 · 설정 → 저장공간 확인');}catch(e){}
+}
+/* 쓰고 있는 용량 (localStorage 는 글자당 2바이트로 센다) */
+function storeUsage(){
+  var u={main:0,base:0,bk:0,other:0,total:0};
+  try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i),v=localStorage.getItem(k)||'',n=(k.length+v.length)*2;
+    if(k===KEY)u.main+=n;else if(k===SYNC_BASE_KEY)u.base+=n;else if(k===BK_KEY)u.bk+=n;else u.other+=n;u.total+=n;}}catch(e){}
+  return u;
+}
+function fmtKB(n){return n>=1048576?(n/1048576).toFixed(2)+'MB':Math.max(1,Math.round(n/1024))+'KB';}
+function renderStoreUI(){
+  var el=document.getElementById('storeUse');if(!el)return;
+  var u=storeUsage(),cap=5*1048576,pct=Math.min(100,Math.round(u.total/cap*100));
+  var bkN=(__bkMem||bkLegacy()).length,bkB=0;(__bkMem||[]).forEach(function(b){bkB+=(b.data||'').length*2;});
+  el.innerHTML='<div class="st-bar"><i style="width:'+pct+'%;background:'+(pct>85?'#c0503f':pct>65?'#d49a2a':'var(--accent,#4a7c59)')+'"></i></div>'
+    +'<div class="st-txt">기본 저장소 '+fmtKB(u.total)+' / 약 5MB ('+pct+'%) · 본 데이터 '+fmtKB(u.main)+' · 동기화 기준본 '+fmtKB(u.base)
+    +(u.bk?' · 옛 백업 '+fmtKB(u.bk):'')+' · 기타 '+fmtKB(u.other)+'</div>'
+    +'<div class="st-txt">백업 '+bkN+'개'+(bkB?' ('+fmtKB(bkB)+')':'')+' · '+(HMD_IDB?'보조 저장소(IndexedDB)에 보관':(__idbFailed?'⚠ 보조 저장소를 쓸 수 없어 기본 저장소에 보관':'보조 저장소 준비 중'))
+    +(__mainInIdb?'<br><b style="color:#c0503f">⚠ 기본 저장소가 가득 차 본 데이터를 보조 저장소에 저장 중입니다.</b>':'')+'</div>';
+}
 /* 하루 한 번, 그리고 덮어쓰기 직전에 로컬 스냅샷을 남긴다 (최대 8개) */
 /* 데이터가 얼마나 들어있는지 (동기화 사고 방지용) */
 function dbSize(d){
@@ -4137,19 +4211,54 @@ function dbBrief(d){
     +' · 독서 '+((d.reading||[]).length)+' · 가계부 '+((d.assets||[]).length)
     +' · 인박스 '+((d.inbox||[]).length)+' · 일기 '+((d.diary||[]).length);
 }
-function backupList(){try{return JSON.parse(localStorage.getItem(BK_KEY)||'[]');}catch(e){return [];}}
+/* 백업은 IndexedDB(보조 저장소)에 둔다 — 메모리 사본(__bkMem)을 기준으로 읽고, 바뀔 때마다 통째로 저장 */
+var __bkMem=null,__bkWait=[];
+function bkLegacy(){try{return JSON.parse(localStorage.getItem(BK_KEY)||'[]')||[];}catch(e){return [];}}
+function backupList(){return __bkMem!==null?__bkMem:bkLegacy();}
+function bkPrune(list){
+  /* 최근 6개는 모두, 그보다 오래된 것은 날짜마다 하나씩 (최대 12개) — 중요한 시점이 금방 밀려나지 않게 */
+  list.sort(function(a,b){return b.t-a.t;});
+  var keep=[],days={},seen={};
+  list.forEach(function(b,i){if(!b||seen[b.t])return;seen[b.t]=1;var d=new Date(b.t).toDateString();
+    if(keep.length<6){keep.push(b);days[d]=1;return;}
+    if(!days[d]&&keep.length<12){days[d]=1;keep.push(b);}});
+  return keep;
+}
+function bkPersist(){
+  if(__bkMem===null)return;
+  if(HMD_IDB||!__idbFailed){idbPut('backups',__bkMem,function(ok){if(ok){try{localStorage.removeItem(BK_KEY);}catch(e){}}else bkPersistLS();});return;}
+  bkPersistLS();
+}
+function bkPersistLS(){   /* 보조 저장소를 못 쓰는 브라우저: 기본 저장소에, 안 들어가면 개수를 줄여서 */
+  var l=__bkMem.slice();
+  while(l.length){try{localStorage.setItem(BK_KEY,JSON.stringify(l));return;}catch(e){if(!isQuotaErr(e))return;l=l.slice(0,l.length>3?3:l.length-1);}}
+  try{localStorage.removeItem(BK_KEY);}catch(e){}
+}
 function backupSave(tag){
   try{
-    var list=backupList();
-    list.unshift({t:Date.now(),tag:tag||'자동',data:JSON.stringify(db)});
-    /* 최근 6개는 모두, 그보다 오래된 것은 날짜마다 하나씩 (최대 12개) — 중요한 시점이 금방 밀려나지 않게 */
-    var keep=[],days={};
-    list.forEach(function(b,i){var d=new Date(b.t).toDateString();
-      if(i<6){keep.push(b);days[d]=1;return;}
-      if(!days[d]&&keep.length<12){days[d]=1;keep.push(b);}});
-    list=keep;
-    localStorage.setItem(BK_KEY,JSON.stringify(list));
+    var item={t:Date.now(),tag:tag||'자동',data:JSON.stringify(db)};
+    if(__bkMem===null&&!__idbFailed){__bkWait.push(item);return;}   /* 보조 저장소를 여는 중 → 열리면 넣는다 */
+    if(__bkMem===null)__bkMem=bkLegacy();
+    __bkMem.unshift(item);__bkMem=bkPrune(__bkMem);bkPersist();
   }catch(e){}
+}
+/* 처음 열 때: 보조 저장소의 백업 + 기본 저장소에 남은 옛 백업을 합쳐 옮긴다 */
+function bkInit(){
+  idbGet('backups',function(v){
+    var list=(Array.isArray(v)?v:[]).concat(bkLegacy()).concat(__bkMem||[]).concat(__bkWait);__bkWait=[];
+    __bkMem=bkPrune(list);bkPersist();
+    try{renderBackupUI();renderStoreUI();}catch(e){}
+  });
+  /* 본 데이터가 보조 저장소로 밀려나 있었으면, 그쪽이 더 최신일 때 가져온다 */
+  var flag=null;try{flag=localStorage.getItem('hmd_mainIdb');}catch(e){}
+  if(flag)idbGet('main',function(str){
+    if(!str){try{localStorage.removeItem('hmd_mainIdb');}catch(e){}return;}
+    var d=null;try{d=JSON.parse(str);}catch(e){}
+    __mainInIdb=true;
+    if(d&&d.work&&Number(d.__updated||0)>Number(db&&db.__updated||0)){db=d;ensureFields();try{idSnapTake();}catch(e){}try{renderAll();}catch(e){}}
+    lsPutMain(JSON.stringify(db));
+    try{renderStoreUI();}catch(e){}
+  });
 }
 var __bkDay=null;
 function backupTick(){
@@ -4284,7 +4393,7 @@ function backupMerge(i){
   if(!confirm(new Date(b.t).toLocaleString('ko-KR')+' 백업에만 있는 항목 '+n+'건을 지금 내용에 더할까요?\n\n지금 있는 내용은 그대로 두고, 빠진 것만 채웁니다.\n(일부러 지운 항목이 다시 살아날 수 있습니다)'))return;
   backupSave('합치기 직전');
   smAddMissing(db,src);delRevive();ensureFields();idSnapTake();db.__updated=Date.now();
-  localStorage.setItem(KEY,JSON.stringify(db));renderAll();renderBackupUI();
+  lsPutMain(JSON.stringify(db));renderAll();renderBackupUI();
   if(syncCode())cloudPush();
   alert(n+'건을 채웠습니다.'+(syncCode()?'\n클라우드에도 올렸습니다.':''));
 }
@@ -4296,7 +4405,7 @@ function backupRestore(i){
   try{db=JSON.parse(b.data);}catch(e){alert('백업을 읽지 못했습니다.');return;}
   db.__del=delUnion(__keepDel,db.__del);db.__rev=delUnion(__keepRev,db.__rev);delRevive();idSnapTake();   /* 되돌린 시점의 항목은 되살림으로 표시 */
   ensureFields();db.__updated=Date.now();
-  localStorage.setItem(KEY,JSON.stringify(db));
+  lsPutMain(JSON.stringify(db));
   renderAll();renderBackupUI();
   if(syncCode())cloudPush();          /* 복구본을 클라우드에도 즉시 올려 다른 기기가 되돌려놓지 않게 */
   alert('복구했습니다.'+(syncCode()?'\n클라우드에도 올렸습니다.':''));
@@ -4312,6 +4421,7 @@ function renderBackupUI(){
       '<button class="btn ghost" style="flex:none;padding:5px 11px;font-size:12px" onclick="backupMerge('+i+')" title="이 백업에만 있는 항목을 지금 내용에 더합니다 (지금 것은 그대로)">빠진 항목 합치기</button>'+
       '<button class="btn ghost" style="flex:none;padding:5px 11px;font-size:12px" onclick="backupRestore('+i+')">되돌리기</button></div>';
   }).join(''):'<div class="empty" style="padding:10px 0">아직 백업이 없습니다.</div>';
+  try{renderStoreUI();}catch(e){}
 }
 function uid(){return Date.now()+Math.floor(Math.random()*1000);}
 function seed(){
@@ -6064,7 +6174,7 @@ var __cloudVer=null,__cloudExists=null,__pushRetry=0;                /* 마지�
 function cloudPush(){var c=syncCode();if(!c)return;if(!db.__updated)db.__updated=Date.now();
   var cv=__cloudVer,nv=(Number(cv)||0)+1;db.__ver=nv;var snap=JSON.stringify(db);
   var body=JSON.stringify({key:c,data:JSON.parse(snap),updated_at:new Date().toISOString()});
-  var okDone=function(){__cloudVer=nv;__cloudExists=true;try{localStorage.setItem(KEY,snap);localStorage.setItem(SYNC_BASE_KEY,snap);}catch(e){}setSyncStatus('저장됨 · '+c);};
+  var okDone=function(){__cloudVer=nv;__cloudExists=true;lsPutMain(snap);try{localStorage.setItem(SYNC_BASE_KEY,snap);}catch(e){}setSyncStatus('저장됨 · '+c);};
   if(__cloudExists===false){                            /* 클라우드에 아직 없음 → 새로 만든다 */
     fetch(SUPA_URL+'/rest/v1/store?on_conflict=key',{method:'POST',headers:Object.assign({},cloudHeaders(),{Prefer:'resolution=merge-duplicates,return=minimal'}),body:body})
       .then(function(r){if(r.ok)okDone();else setSyncStatus('저장 오류 '+r.status);}).catch(function(){setSyncStatus('오프라인 (로컬만 저장)');});
@@ -6084,7 +6194,7 @@ function cloudPull(ask,cb,quiet){var c=syncCode();if(!c){if(cb)cb(false);return;
       __cloudExists=true;__cloudVer=(rd.__ver==null)?null:Number(rd.__ver);
       var rn=dbSize(rd), ln=dbSize(db);
       if(__seeded){                          /* 이 기기엔 저장된 게 없었다 → 클라우드 것이 정답 */
-        db=rd;ensureFields();delApply(db);idSnapTake();__seeded=false;localStorage.setItem(KEY,JSON.stringify(db));
+        db=rd;ensureFields();delApply(db);idSnapTake();__seeded=false;lsPutMain(JSON.stringify(db));
         renderAll();renderBackupUI();setSyncStatus('불러옴 · 연결됨: '+c);if(cb)cb(true);return;}
       if(!ask){                              /* 자동 동기화: 통째로 바꾸지 않고 항목 단위로 합친다 */
         if(smSame(smStrip(rd),smStrip(db))){syncBaseSet(db);setSyncStatus('연결됨: '+c);if(cb)cb(true);return;}
@@ -6097,11 +6207,11 @@ function cloudPull(ask,cb,quiet){var c=syncCode();if(!c){if(cb)cb(false);return;
         var got=chL?Math.max(0,dbSize(merged)-ln):0, sent=chR?Math.max(0,dbSize(merged)-rn):0;
         if(chL){
           if(liveBusy()){__livePending=true;if(cb)cb(true);return;}   /* 쓰는 중이면 잠시 뒤에 */
-          db=merged;ensureFields();idSnapTake();localStorage.setItem(KEY,JSON.stringify(db));
+          db=merged;ensureFields();idSnapTake();lsPutMain(JSON.stringify(db));
           liveKeepInputs(function(){renderAll();renderBackupUI();});
           if(quiet)liveFlash('다른 기기의 변경 내용을 합쳤습니다'+(got?' · +'+got+'건':''));
         }
-        if(chR){db.__updated=Date.now();localStorage.setItem(KEY,JSON.stringify(db));cloudPush();}
+        if(chR){db.__updated=Date.now();lsPutMain(JSON.stringify(db));cloudPush();}
         else syncBaseSet(db);
         setSyncStatus((chL||chR)?('합침 · 연결됨: '+c+(got?' · 받음 '+got+'건':'')+(sent?' · 올림 '+sent+'건':'')):('연결됨: '+c));
         if(cb)cb(true);return;}
@@ -6128,7 +6238,7 @@ function cloudPull(ask,cb,quiet){var c=syncCode();if(!c){if(cb)cb(false);return;
         if(cb)cb(true);return;
       }
       backupSave('클라우드 불러오기 직전');
-      db=rd;ensureFields();delApply(db);idSnapTake();localStorage.setItem(KEY,JSON.stringify(db));renderAll();renderBackupUI();
+      db=rd;ensureFields();delApply(db);idSnapTake();lsPutMain(JSON.stringify(db));renderAll();renderBackupUI();
       setSyncStatus('불러옴 · 연결됨: '+c);
       if(quiet)liveFlash('다른 기기의 변경 내용을 반영했습니다');
       if(cb)cb(true);}else{__cloudExists=false;__cloudVer=null;setSyncStatus('연결됨: '+c);if(cb)cb(false);}}).catch(function(){setSyncStatus('오프라인');if(cb)cb(false);});}
@@ -16988,7 +17098,8 @@ function renderAll(){
   if(e)e.textContent='버전 '+HMD_BUILD;
   try{naverKeyStatus();}catch(_){}
   try{ghCfgPaint();}catch(_){}})();
-[renderAll,applyTopState,renderSyncUI,renderBackupUI,backupTick].forEach(function(f){
+try{bkInit();}catch(e){}
+[renderAll,applyTopState,renderSyncUI,renderBackupUI,renderStoreUI,backupTick].forEach(function(f){
   try{f();}catch(e){try{console.error('boot · '+(f.name||'?')+':',e);}catch(_){}}
 });
 __boot=false;                                  /* 마이그레이션 구간 끝 */
