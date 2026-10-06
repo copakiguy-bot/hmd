@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-01 · r188">
+<meta name="hmd-build" content="2026-10-06 · r189">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2180,6 +2180,10 @@
   #chWrap.drag{cursor:grabbing}
   #chWrap.dotdrag{cursor:ew-resize}
   #chWrap circle[data-id]{cursor:grab}
+  .ch-endrow{align-items:center}
+  .ch-end-lb{font-size:12px;font-weight:800;color:var(--muted);width:30px;flex:none}
+  .ch-end-hint{font-size:11.5px;color:var(--muted)}
+  .ch-end-hint.ok{color:var(--green);font-weight:700}.ch-end-hint.bad{color:var(--red)}
   .ch-yhint{font-size:12px;color:var(--muted);margin-top:6px;min-height:0;line-height:1.6}
   .ch-yhint:empty{display:none}
   .ch-yhint b{color:var(--dark)}
@@ -3420,6 +3424,7 @@
       <div class="card" id="chFormCard">
       <h3><span class="dot" style="background:var(--yellow)"></span> 사건 기록 <span class="more" id="chCount"></span></h3>
       <div class="inrow" style="flex-wrap:wrap">
+        <span class="ch-end-lb">시작</span>
         <input id="chY" class="in" type="text" inputmode="text" style="flex:none;width:132px" placeholder="년 · -384 / 4만2000년 전" oninput="chYHint()" title="-42000 = 기원전 42000년 (약 4만4천년 전) · 42000년 전 = 오늘 기준 4만2천년 전 · 만·억 표기(-46억) 됩니다">
         <select id="chM" class="in" style="flex:none;width:76px"></select>
         <select id="chD" class="in" style="flex:none;width:76px"></select>
@@ -3427,6 +3432,13 @@
         <input id="chTitle" class="in" style="flex:1;min-width:200px" placeholder="사건명">
       </div>
       <div class="ch-yhint" id="chYHintBox"></div>
+      <div class="inrow ch-endrow" id="chEndRow" style="flex-wrap:wrap;margin-top:6px">
+        <span class="ch-end-lb">종료</span>
+        <input id="chY2" class="in" type="text" style="flex:none;width:132px" placeholder="년 (선택)" title="비워 두면 시작 점 하나만 · 넣으면 시작·종료 두 점이 흐름으로 이어집니다" oninput="chY2Hint()">
+        <select id="chM2" class="in" style="flex:none;width:76px"></select>
+        <select id="chD2" class="in" style="flex:none;width:76px"></select>
+        <span class="ch-end-hint" id="chEndHint">비우면 점 하나 · 넣으면 시작·종료 두 점이 자동 흐름으로</span>
+      </div>
       <textarea id="chDetail" class="in" style="width:100%;min-height:64px;margin-top:8px;resize:vertical" placeholder="세부 내용"></textarea>
       <div class="inrow ch-place" style="margin-top:8px;flex-wrap:wrap">
         <span class="ch-place-lb">📍 장소</span>
@@ -3939,7 +3951,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-01 · r188';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-06 · r189';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -8208,6 +8220,13 @@ function chYHint(){
 var chState={unit:'연',c:null,ppy:null}, chEditId=null, chSelCats=[], chFilter=[], chPopId=null;
 var chDragDot=null;   /* 점을 끌어 옮기는 중: {id, t} */
 var chNoDate=false, chLinkFrom=null;   /* chLinkFrom = 선 잇기 시작 사건 id */
+function chY2Hint(){
+  var el=document.getElementById('chEndHint'),v=(document.getElementById('chY2')||{value:''}).value.trim();if(!el)return;
+  if(!v){el.textContent='비우면 점 하나 · 넣으면 시작·종료 두 점이 자동 흐름으로';el.className='ch-end-hint';return;}
+  var y=chParseYear(v);
+  if(isNaN(y)){el.textContent='못 읽었습니다 · 예: 1999 · -479 · 4만년 전';el.className='ch-end-hint bad';return;}
+  el.textContent='→ '+chYearStr(y)+' 까지 · 저장하면 두 점 + 흐름';el.className='ch-end-hint ok';
+}
 function chNoDateTgl(){chNoDate=!chNoDate;chNoDatePaint();}
 function chNoDatePaint(){
   var b=document.getElementById('chNoDateBtn');
@@ -8243,6 +8262,9 @@ function chFormInit(){
   if(!M||M.options.length)return;
   var i,h='';for(i=1;i<=12;i++)h+='<option value="'+i+'">'+i+'월</option>';M.innerHTML=h;
   h='';for(i=1;i<=31;i++)h+='<option value="'+i+'">'+i+'일</option>';D.innerHTML=h;
+  var M2=document.getElementById('chM2'),D2=document.getElementById('chD2');      /* 종료: «—» = 월·일 모름 */
+  if(M2){h='<option value="">월 —</option>';for(i=1;i<=12;i++)h+='<option value="'+i+'">'+i+'월</option>';M2.innerHTML=h;}
+  if(D2){h='<option value="">일 —</option>';for(i=1;i<=31;i++)h+='<option value="'+i+'">'+i+'일</option>';D2.innerHTML=h;}
   var n=new Date();document.getElementById('chY').value=n.getFullYear();M.value=n.getMonth()+1;D.value=n.getDate();
 }
 function chCatPickRender(){
@@ -8267,8 +8289,25 @@ function chAdd(){
     var x=(db.chrono||[]).find(function(v){return v.id===chEditId;});
     if(x){x.y=y;x.m=m;x.d=d;x.title=title;x.detail=detail;x.cats=chSelCats.slice();chPlaceApply(x);if(x.mind&&x.mind[0])x.mind[0].t=title;}
   }else{
-    var nx={id:uid(),y:y,m:m,d:d,title:title,detail:detail,cats:chSelCats.slice()};chPlaceApply(nx);
+    /* 종료 연월일이 있으면: 시작·종료 두 점 + 둘을 잇는 흐름을 자동으로 만든다 */
+    var y2s=(document.getElementById('chY2')||{value:''}).value.trim(),end=null;
+    if(y2s){
+      var y2=chParseYear(y2s);
+      if(isNaN(y2)){alert('종료 연도를 못 읽었습니다. (예: 1999 · -479 · 4만년 전)\n종료가 없으면 칸을 비워 두세요.');return;}
+      var m2=parseInt((document.getElementById('chM2')||{}).value,10)||0,d2=m2?(parseInt((document.getElementById('chD2')||{}).value,10)||1):0;
+      if(m2&&d2>chDim(y2,m2))d2=chDim(y2,m2);
+      var t1=chTof({y:y,m:m,d:d}),t2=chTof({y:y2,m:m2,d:d2});
+      if(t2<t1){alert('종료가 시작보다 앞입니다. 날짜를 확인해 주세요.');return;}
+      end={y:y2,m:m2,d:d2};
+    }
+    var nx={id:uid(),y:y,m:m,d:d,title:end?title+' 시작':title,detail:detail,cats:chSelCats.slice()};chPlaceApply(nx);
     db.chrono.push(nx);
+    if(end){
+      var ex={id:uid(),y:end.y,m:end.m,d:end.d,title:title+' 종료',detail:'',cats:chSelCats.slice(),pair:nx.id};
+      nx.pair=ex.id;db.chrono.push(ex);
+      var th=chThNew(title,[nx.id,ex.id]);th.auto=1;
+      hkChip('「'+title+'」 시작·종료 두 점과 흐름을 만들었습니다 · '+chThSpanStr(t1,t2));setTimeout(function(){hkChip('');},2200);
+    }
   }
   save();
   chCancelEdit();chFormClose();
@@ -8278,6 +8317,8 @@ function chAdd(){
 }
 function chCancelEdit(){
   chEditId=null;chSelCats=[];chNoDate=false;chNoDatePaint();
+  var er=document.getElementById('chEndRow');if(er)er.style.display='';
+  ['chY2','chM2','chD2'].forEach(function(i){var e=document.getElementById(i);if(e)e.value='';});chY2Hint();
   document.getElementById('chTitle').value='';document.getElementById('chDetail').value='';
   chPlaceSet(null,'');
   document.getElementById('chAddBtn').textContent='추가';
@@ -8289,6 +8330,7 @@ function chCancelEdit(){
 function chEdit(id){
   var x=(db.chrono||[]).find(function(v){return String(v.id)===String(id);});if(!x)return;
   chEditId=x.id;chSelCats=(x.cats||[]).slice();
+  var er=document.getElementById('chEndRow');if(er)er.style.display='none';   /* 수정은 점 하나씩 */
   chNoDate=(x.y==null||!x.m);chNoDatePaint();
   document.getElementById('chY').value=(x.y==null?'':chBigNum(x.y));
   document.getElementById('chM').value=x.m||1;document.getElementById('chD').value=x.d||1;
