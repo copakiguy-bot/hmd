@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-07 · r191">
+<meta name="hmd-build" content="2026-10-07 · r192">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3962,7 +3962,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-07 · r191';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-07 · r192';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -6463,6 +6463,7 @@ function renderMind(){
     return '<div class="'+cls+'" data-id="'+n.id+'" data-root="'+p.rootId+'" draggable="false" onmousedown="mindDown(event,'+n.id+')" style="'+place+'top:'+(offY+p.y)+'px;transform:'+tf+';color:'+col+';--soft:'+(p.soft||'#eef2f0')+'"><span class="mtext" contenteditable onkeydown="mindKey(event,'+n.id+')" onblur="mindEdit('+n.id+',this.innerText)">'+esc(n.t)+'</span>'+tog+((root&&!multi)?'':'<span class="mdel" onclick="mindDel('+n.id+')" title="삭제">×</span>')+'</div>';
   }).join("");
   el.innerHTML='<div class="mind-canvas" style="width:'+W+'px;height:'+H+'px"><svg class="mind-svg" width="'+W+'" height="'+H+'">'+mindConnectors(x,pos,offX,offY)+'</svg>'+nodesHTML+'</div>';
+  if(window.__mindCtx&&window.__mindCtx.onRender){try{window.__mindCtx.onRender(x);}catch(e){}}
   var sel=document.getElementById('mindModeSel');if(sel)sel.value=mindMode(x);
   var shs=document.getElementById('mindShapeSel');if(shs)shs.value=shape;
   if(compact){
@@ -15575,10 +15576,63 @@ function renderHome(){
 }
 /* ===== 대시보드 업무 편집창: 업무 노트의 WORD 편집창(fw-rich + 서식 도구) · 의회운영/매뉴얼 단추로 그 폴더에 저장 ===== */
 var hmwkMode='text',hmwkMap={mind:[{id:1,t:'주제',x:30,y:30,p:0}]};
+function hmWkCtx(){return {obj:hmwkMap,canvas:'hmwkMind',onRender:function(){hmWkDraftSave();},onSync:function(){hmWkDraftSave();}};}
 function hmWkMount(){
-  var ed=document.getElementById('hmwkEd'),box=document.getElementById('hmwkBox');if(!ed||!box)return;
-  if(!box.dataset.tb){box.dataset.tb='1';ed.addEventListener('input',function(){var st=document.getElementById('hmwkSt');if(st)st.textContent='';});}
-  hmWkModePaint();
+  var ed=document.getElementById('hmwkEd'),box=document.getElementById('hmwkBox'),tt=document.getElementById('hmwkTitle');if(!ed||!box)return;
+  if(!box.dataset.tb){box.dataset.tb='1';
+    ed.addEventListener('input',function(){hmWkDraftSave();});
+    ed.addEventListener('blur',function(){hmWkDraftSave(true);});
+    if(tt){tt.addEventListener('input',function(){hmWkDraftSave();});tt.addEventListener('blur',function(){hmWkDraftSave(true);});}
+    hmWkDraftPaint(true);
+    return;}
+  hmWkDraftPaint(false);
+}
+/* 메모 임시 저장: 쓰는 내용(제목·글·마인드맵)을 db.hmMemo 에 바로바로 저장 — 다시 열어도 그대로,
+   다른 기기에도 동기화된다. 의회운영·매뉴얼·일기로 보냈을 때만 비운다. */
+var __hmwkT=null,__hmwkPainting=false;
+function hmWkMindEmpty(m){return !m||!m.length||(m.length===1&&(!m[0].t||m[0].t==='주제'));}
+function hmWkDraftSnap(){
+  var ed=document.getElementById('hmwkEd'),tt=document.getElementById('hmwkTitle');
+  var mind=(hmwkMap.mind||[]).map(function(n){return Object.assign({},n);});
+  var d={title:(tt&&tt.value)||'',html:(ed&&ed.textContent.trim())?ed.innerHTML:'',mode:hmwkMode};
+  if(!hmWkMindEmpty(mind)){d.mind=mind;if(hmwkMap.mindShape)d.mindShape=hmwkMap.mindShape;if(hmwkMap.mindMode)d.mindMode=hmwkMap.mindMode;}
+  return d;
+}
+function hmWkDraftSave(now){
+  if(__hmwkPainting)return;
+  clearTimeout(__hmwkT);__hmwkT=null;
+  var run=function(){__hmwkT=null;
+    var d=hmWkDraftSnap(),o=db.hmMemo||{};
+    var same=['title','html','mode','mindShape','mindMode'].every(function(k){return (o[k]||'')===(d[k]||'');})&&JSON.stringify(o.mind||null)===JSON.stringify(d.mind||null);
+    if(same)return;
+    d.at=Date.now();db.hmMemo=d;save();
+    var st=document.getElementById('hmwkSt');
+    if(st)st.textContent=(d.title||d.html||d.mind)?'자동 저장 '+new Date().toTimeString().slice(0,5):'';
+  };
+  if(now===true)run();else __hmwkT=setTimeout(run,600);
+}
+function hmWkDraftClear(){clearTimeout(__hmwkT);__hmwkT=null;db.hmMemo={mode:hmwkMode,at:Date.now()};}
+/* 저장된 메모를 화면에 — 쓰는 중(포커스·저장 대기)이면 건드리지 않는다 */
+function hmWkDraftPaint(force){
+  var ed=document.getElementById('hmwkEd'),tt=document.getElementById('hmwkTitle');if(!ed)return;
+  var d=db.hmMemo||{};
+  if(!force){
+    if(__hmwkT)return;
+    var a=document.activeElement,card=document.getElementById('hmWorkEd');
+    if(a&&card&&card.contains(a)&&a!==document.body){hmWkModePaint();return;}
+  }
+  __hmwkPainting=true;
+  try{
+    if(tt&&tt.value!==(d.title||''))tt.value=d.title||'';
+    if(ed.innerHTML!==(d.html||''))ed.innerHTML=d.html||'';
+    var mindNow=JSON.stringify(hmwkMap.mind||[]),mindNew=d.mind&&d.mind.length?JSON.stringify(d.mind):null;
+    if(mindNew&&mindNew!==mindNow){hmwkMap={mind:d.mind.map(function(n){return Object.assign({},n);})};if(d.mindShape)hmwkMap.mindShape=d.mindShape;if(d.mindMode)hmwkMap.mindMode=d.mindMode;}
+    else if(!mindNew&&!hmWkMindEmpty(hmwkMap.mind))hmWkMapReset();
+    if(d.mode==='map'||d.mode==='text')hmwkMode=d.mode;
+    hmWkModePaint();
+    var st=document.getElementById('hmwkSt');
+    if(st&&!st.textContent&&(d.title||d.html||d.mind)&&d.at)st.textContent='임시 저장본 '+new Date(d.at).toTimeString().slice(0,5);
+  }finally{__hmwkPainting=false;}
 }
 function hmWkModePaint(){
   var map=hmwkMode==='map';
@@ -15586,11 +15640,11 @@ function hmWkModePaint(){
   if(box)box.style.display=map?'none':'';if(mw)mw.style.display=map?'':'none';if(btn)btn.classList.toggle('on',map);
   if(map){
     var t=(document.getElementById('hmwkTitle')||{}).value;if(t&&t.trim()&&hmwkMap.mind.length===1&&hmwkMap.mind[0].t==='주제')hmwkMap.mind[0].t=t.trim();
-    window.__mindCtx={obj:hmwkMap,canvas:'hmwkMind'};
+    window.__mindCtx=hmWkCtx();
     renderMind();
   }else if(window.__mindCtx&&window.__mindCtx.canvas==='hmwkMind')window.__mindCtx=null;
 }
-function hmWkMapTgl(){hmwkMode=(hmwkMode==='map')?'text':'map';hmWkModePaint();
+function hmWkMapTgl(){hmwkMode=(hmwkMode==='map')?'text':'map';hmWkModePaint();hmWkDraftSave(true);
   if(hmwkMode==='map')setTimeout(function(){var el=mindQ('.mnode .mtext');if(el)el.focus();},30);}
 function hmWkMapReset(){hmwkMap={mind:[{id:1,t:'주제',x:30,y:30,p:0}]};}
 /* 메모 → 일기: 오늘 날짜·지금 시각의 «기록»으로 넘긴다 (제목이 있으면 첫 줄 굵게 · 마인드맵은 들여쓴 목록으로) */
@@ -15609,9 +15663,10 @@ function hmWkDiary(){
   var text=(title?'<b>'+esc(title)+'</b>'+(body?'<br>':''):'')+body;
   if(!Array.isArray(db.diary))db.diary=[];
   db.diary.push({id:uid(),date:today(),time:dyNowTime(),text:text,kind:'기록'});
+  hmWkDraftClear();
   save();
   ed.innerHTML='';if(tt)tt.value='';
-  if(isMap){hmWkMapReset();window.__mindCtx={obj:hmwkMap,canvas:'hmwkMind'};renderMind();}
+  if(isMap){hmWkMapReset();window.__mindCtx=hmWkCtx();renderMind();}
   if(st)st.textContent='일기로 보냈습니다 '+new Date().toTimeString().slice(0,5);
   try{renderDiary();renderDiaryPage();renderCal();}catch(e){}
   hkChip('오늘 일기에 넣었습니다');setTimeout(function(){hkChip('');},1500);
@@ -15636,9 +15691,10 @@ function hmWkSave(folder){
   list.push(note);
   V.open=V.open||{};V.open[f.id]=true;V.active=note.id;db.workSec=folder;   /* 업무 화면으로 가면 그 노트가 바로 열린다 */
   db.work.push({id:uid(),date:today(),cat:WV_MAIN,category:folder,title:title,content:content,noteId:note.id});
+  hmWkDraftClear();
   save();
   ed.innerHTML='';if(tt)tt.value='';
-  if(isMap){hmWkMapReset();window.__mindCtx={obj:hmwkMap,canvas:'hmwkMind'};renderMind();}
+  if(isMap){hmWkMapReset();window.__mindCtx=hmWkCtx();renderMind();}
   if(st)st.textContent='«'+folder+' / '+note.name+'» 저장됨 '+new Date().toTimeString().slice(0,5);
   if(typeof renderWorkAll==='function')renderWorkAll();
   if(typeof renderCal==='function')renderCal();
