@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-06 · r190">
+<meta name="hmd-build" content="2026-10-07 · r191">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2704,6 +2704,11 @@
   .hsv-note{margin-top:8px;font-size:12px;color:var(--muted)}
   .hma-foot .hint{font-size:11.5px;color:var(--muted);margin-right:auto}
   .hm-row .hm-star{width:12px;height:14px;font-size:12px;line-height:14px}
+  /* 지식 카드: 왼쪽 카테고리 */
+  .hm-cat{flex:none;font-size:10px;font-weight:800;border-radius:5px;padding:2px 6px;line-height:1.4;
+    max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;align-self:center}
+  .hm-krow{align-items:center}
+  .hm-krow b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   /* 문화 카드 */
   .hm-cult{padding:7px 0;border-bottom:1px solid var(--line);cursor:pointer;
     display:flex;align-items:flex-start;gap:6px}
@@ -3957,7 +3962,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-06 · r190';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-07 · r191';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -15365,12 +15370,28 @@ function hmStarsRO(v){
   }
   return '<span class="stars" style="flex:none">'+o+'</span>';
 }
+/* 대시보드 지식·문화: 카테고리마다 색 — 등록된 순서대로 팔레트를 돌려 써서 서로 겹치지 않게 */
+var HM_CAT_PAL=[['#e3f1ea','#2f6f5e'],['#EDE4FF','#5b3fa8'],['#fde8e4','#b8473b'],['#e5eefb','#3a64a8'],['#fdf1d9','#9a6b12'],
+  ['#dff3f5','#1f7480'],['#fbe6f1','#a63e78'],['#ecefdc','#5b6b22'],['#f3e9df','#7a5130'],['#e9e9f0','#4a4a63']];
+function hmCatOrder(tab){
+  var o=[],seen={};var add=function(c){c=String(c||'').trim();if(c&&!seen[c]){seen[c]=1;o.push(c);}};
+  if(tab==='문화')(typeof CULT_KINDS!=='undefined'?CULT_KINDS:[]).forEach(add);
+  ((db.studyCats&&db.studyCats[tab])||[]).forEach(add);
+  (db.study||[]).filter(function(x){return x.tab===tab&&x.category;}).map(function(x){return String(x.category).trim();}).sort().forEach(add);
+  return o;
+}
+function hmCatStyle(tab,cat){
+  var i=hmCatOrder(tab).indexOf(String(cat||'').trim());if(i<0)i=0;
+  var p=HM_CAT_PAL[i%HM_CAT_PAL.length];return 'background:'+p[0]+';color:'+p[1];
+}
+function hmCatTag(tab,cat){cat=String(cat||'').trim();if(!cat)return '';
+  return '<span class="hm-cat" style="'+hmCatStyle(tab,cat)+'" title="'+escA(cat)+'">'+esc(cat)+'</span>';}
 function hmListCard(title,tab,color){
   var l=hmLatest(tab,5);
   if(tab==='문화')return hmCultCard(title,color);
   return hmTn(title,hmNav(tab,5,hmAll(tab).length),color)
     +'<div class="hm-body">'+(l.length?l.map(function(x){
-      return '<div class="hm-row" onclick="hmStudyView('+x.id+')" title="눌러서 세부 내용"><b>'+esc(x.title||x.term||'')+'</b>'
+      return '<div class="hm-row'+(tab==='지식'?' hm-krow':'')+'" onclick="hmStudyView('+x.id+')" title="눌러서 세부 내용">'+(tab==='지식'?hmCatTag('지식',x.category):'')+'<b>'+esc(x.title||x.term||'')+'</b>'
         +'<span class="sub">'+esc(String(x.date).slice(5))+'</span></div>';
     }).join(''):'<div class="hm-empty">기록이 없습니다.</div>')+'</div>';
 }
@@ -15433,7 +15454,7 @@ function hmCultCard(title,color){
     +'<div class="hm-body">'+(l.length?l.map(function(x){
       var cat=String(x.category||'').trim();
       return '<div class="hm-cult" onclick="hmStudyView('+x.id+')" title="'+escA((cat?'['+cat+'] ':'')+(x.title||'')+(x.oneline?' — '+x.oneline:''))+'">'
-        +(cat?'<span class="hm-cult-cat">'+esc(cat)+'</span>':'')
+        +(cat?'<span class="hm-cult-cat" style="'+hmCatStyle('문화',cat)+'">'+esc(cat)+'</span>':'')
         +'<div class="hm-cult-main">'
         +'<div class="hm-cult-top">'
         +'<b>'+esc(x.title||'')+'</b>'
