@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-11 · r193">
+<meta name="hmd-build" content="2026-10-11 · r194">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1701,6 +1701,9 @@
   .tlr-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--green);cursor:pointer;flex:none}
   .tlr-item .tlr-time{font-size:11.5px;font-weight:700;color:var(--muted);flex:none}
   .tlr-item b{flex:1;font-size:13px;color:var(--dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tlr-item b.tlr-name{cursor:text;border-radius:5px;padding:1px 4px;margin-left:-4px;outline:none;min-width:40px}
+  .tlr-item b.tlr-name:hover{background:rgba(0,0,0,.04)}
+  .tlr-item b.tlr-name:focus{background:#fff;box-shadow:0 0 0 1.5px var(--yellow,#f4b740);text-overflow:clip}
   .tlr-item.off b,.tlr-item.off .tlr-time{opacity:.4;text-decoration:line-through}
   .tlr-ok{flex:none;font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;cursor:pointer;background:#fff}
   .tlr-ok.on{background:var(--green);border-color:var(--green);color:#fff}
@@ -3969,7 +3972,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-11 · r193';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-11 · r194';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -5651,6 +5654,19 @@ function tlrEditTime(id,val){
   r.time=(v==='-'||v==='')?'':normTime(v);
   save();renderTlRoutines();renderTimeline();
 }
+/* 루틴명 고치기: 줄에서 이름을 눌러 바로 고친다 (비우면 원래 이름으로) */
+function tlrTitleKey(e,el){
+  if(e.isComposing)return;
+  if(e.key==='Enter'){e.preventDefault();el.blur();}
+  else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();el.dataset.cancel='1';el.blur();}
+}
+function tlrEditTitle(id,el){
+  var r=db.tlRoutines.find(function(x){return x.id===id;});if(!r)return;
+  var v=String(el.innerText||'').replace(/\s+/g,' ').trim();
+  if(el.dataset.cancel||!v||v===r.title){delete el.dataset.cancel;el.textContent=r.title;return;}
+  r.title=v;save();renderTlRoutines();renderTimeline();
+  hkChip('루틴명을 바꿨습니다');setTimeout(function(){hkChip('');},1200);
+}
 function delTlRoutine(id){if(!confirm('이 루틴을 삭제할까요?'))return;db.tlRoutines=db.tlRoutines.filter(function(x){return x.id!==id;});save();renderTlRoutines();renderTimeline();}
 function tlrOk(id,date){return !!(db.tlrLog&&db.tlrLog[date]&&db.tlrLog[date][id]);}
 function tlrToggleOk(id){db.tlrLog[selDate]=db.tlrLog[selDate]||{};db.tlrLog[selDate][id]=!db.tlrLog[selDate][id];save();renderTlRoutines();renderTimeline();}
@@ -5667,7 +5683,7 @@ function tlrItemHTML(r,cls,badge){
   return '<div class="tlr-item'+(r.active===false?' off':'')+(cls||'')+'">'
     +'<input type="checkbox" '+(r.active!==false?'checked':'')+' onchange="tlrToggleActive('+r.id+')" title="타임라인 표시 여부">'
     +'<span class="tlr-time" contenteditable title="눌러서 시간 수정 (예: 0700)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}" onblur="tlrEditTime('+r.id+',this.innerText)">'+esc(r.time||'-')+'</span>'
-    +'<b>'+esc(r.title)+'</b>'
+    +'<b class="tlr-name" contenteditable spellcheck="false" title="눌러서 루틴명 수정 (Enter 저장 · Esc 취소)" onkeydown="tlrTitleKey(event,this)" onblur="tlrEditTitle('+r.id+',this)">'+esc(r.title)+'</b>'
     +(badge||'')
     +'<span class="tlr-kind'+(tlrKindOf(r)==='hd'?' hd':'')+'" onclick="tlrKindTgl('+r.id+')" title="눌러서 평일↔휴일 바꾸기">'+(tlrKindOf(r)==='hd'?'휴일':'평일')+'</span>'
     +'<span class="tlr-ok'+(ok?' on':'')+'" onclick="tlrToggleOk('+r.id+')" title="선택한 날짜의 성공 여부">성공</span>'
