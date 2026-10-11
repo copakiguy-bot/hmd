@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-07 · r192">
+<meta name="hmd-build" content="2026-10-11 · r193">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1356,6 +1356,13 @@
   .ec100-tt{color:var(--dark);font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
   .ec100-fr{flex:1;width:100%;border:none;background:#f1efe8}
   @media (max-width:640px){.ec100-ov{padding:0}.ec100-box{border-radius:0;height:100vh}}
+  .rd-stop-badge{display:inline-block;font-size:10px;font-weight:800;color:#fff;background:#9a8f86;border-radius:10px;padding:2px 8px;vertical-align:middle}
+  .rd-stop-why{font-size:11px;color:#8a7f76;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+  .rd-stop-info{display:flex;align-items:flex-start;gap:8px;margin-top:12px;padding:9px 12px;border-radius:10px;background:#f3f0ec;border:1px solid #e4ded6;font-size:12.5px;line-height:1.55;text-align:left}
+  .rd-stop-info .d{flex:none;color:#8a7f76;font-weight:700;padding-top:1px}
+  .rd-stop-info .r{flex:1;min-width:0;color:var(--dark);white-space:pre-wrap;word-break:break-word}
+  .rd-stop-ed{flex:none;border:none;background:none;color:#8a7f76;cursor:pointer;font-size:13px;padding:0 2px}
+  .rd-stop-ed:hover{color:var(--dark)}
   .rd-wait-badge{display:inline-block;font-size:10px;font-weight:800;color:#7a6a2a;background:#f6ecc2;border-radius:10px;padding:2px 8px;vertical-align:middle}
   .rd-filt{margin-left:10px;display:inline-flex;gap:4px;vertical-align:middle}
   @media (max-width:640px){.wish-row{flex-wrap:wrap}.wish-act{width:100%;justify-content:flex-end}}
@@ -3962,7 +3969,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-07 · r192';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-11 · r193';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -12049,7 +12056,7 @@ function addBook(){
 }
 /* ---------- 독서 책장: 읽는 중인 책을 표지로 골라 발췌 입력 ---------- */
 function shelfPool(){                       /* 대시보드 책장 = 읽는 중인 책만 (완독은 독서 목록에서) */
-  return (db.reading||[]).filter(function(b){return !b.end;});
+  return (db.reading||[]).filter(function(b){return bkActive(b);});
 }
 function shelfIndex(pool){
   var sel=document.getElementById('exBook'),cur=sel?String(sel.value||''):'';
@@ -12291,7 +12298,8 @@ function bkvRenderCover(){
     +(b.cover?'<img src="'+escA(b.cover)+'" onerror="this.style.display=\'none\'">':'<div class="bkv-noimg">표지 없음</div>')
     +'<span class="bkv-cvpen">✎ 서지정보</span></div>'
     +'<div class="bkv-t">'+esc(b.title||'')+'</div>'
-    +'<div class="bkv-a">'+esc(b.author||'')+(b.publisher?' · '+esc(b.publisher):'')+'</div>';
+    +'<div class="bkv-a">'+esc(b.author||'')+(b.publisher?' · '+esc(b.publisher):'')+'</div>'
+    +bkStopInfoHTML(b);
 }
 /* 들여다보기 안에서 바로 발췌 넣기 (고른 목차가 있으면 그 목차로) */
 function bkvRenderAdd(){
@@ -12330,7 +12338,7 @@ function bkEditOpen(id){
   var b=bookById(id);if(!b)return;
   bkEditClose();
   var F=function(k,label,type,ph){return '<div class="field"><label>'+label+'</label><input id="bke_'+k+'" type="'+(type||'text')+'" value="'+escA(b[k]==null?'':String(b[k]))+'" placeholder="'+escA(ph||'')+'" oninput="bkEditSet('+id+',\''+k+'\',this.value)"></div>';};
-  var ov=document.createElement('div');ov.className='bke-ov';ov.id='bkEditOv';
+  var ov=document.createElement('div');ov.className='bke-ov';ov.id='bkEditOv';ov.dataset.id=id;
   ov.addEventListener('click',function(e){if(e.target===ov)bkEditClose();});
   ov.innerHTML='<div class="bke-box">'
     +'<div class="bke-top"><b>✎ 서지정보</b><span class="bke-auto" id="bkeAuto">고치는 대로 저장됩니다</span><span class="bkv-x" onclick="bkEditClose()">×</span></div>'
@@ -12342,7 +12350,8 @@ function bkEditOpen(id){
     +'<div class="two">'+F('title','도서명')+F('author','저자 / 역자')+'</div>'
     +'<div class="two">'+F('publisher','출판사')+F('totalPages','총페이지','number')+'</div>'
     +'<div class="two">'+F('start','시작일','date')+F('end','종료일 (읽는 중이면 비움)','date')+'</div>'
-    +'<div class="two"><div class="field"><label>상태 <span class="lb-sub">· 읽는 중 / 대기 / 완독</span></label>'+bkStatusSel(id,'bke_status')+'</div>'+F('category','카테고리')+'</div>'
+    +'<div class="two"><div class="field"><label>상태 <span class="lb-sub">· 읽는 중 / 대기 / 완독 / 중단</span></label>'+bkStatusSel(id,'bke_status')+'</div>'+F('category','카테고리')+'</div>'
+    +'<div id="bkeStopInfo">'+bkStopInfoHTML(b)+'</div>'
     +'<div class="two">'+F('link','연결 (링크)')+'<div class="field"></div></div>'
     +'<div class="field"><label>표지 이미지 주소</label><div style="display:flex;gap:8px;align-items:center"><input id="bke_cover" value="'+escA(b.cover||'')+'" placeholder="https://…" oninput="bkEditSet('+id+',\'cover\',this.value)" style="flex:1"><img id="bkeCoverPrev" src="'+escA(String(b.cover||''))+'" style="'+(b.cover?'':'display:none;')+'height:52px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.15)" onerror="this.style.display=\'none\'" alt=""></div></div>'
     +'<div class="field"><label>목차 <span class="lb-sub">· 부 · 장 · 절 — 고치면 바로 저장</span></label><div class="toc-box" id="tocBox_bke"></div></div>'
@@ -12362,12 +12371,13 @@ function bkEditSet(id,k,v){
   var b=bookById(id);if(!b)return;
   if(k==='totalPages')b[k]=Number(v)||'';
   else b[k]=String(v).trim();
-  if(k==='end'){if(b.end)b.status='';var ss=document.getElementById('bke_status');if(ss)ss.value=bkStatus(b);}
+  if(k==='end'){if(b.end){b.status='';delete b.stopReason;delete b.stopDate;}var ss=document.getElementById('bke_status');if(ss)ss.value=bkStatus(b);}
   if(k==='cover'){var im=document.getElementById('bkeCoverPrev');if(im){im.src=b.cover;im.style.display=b.cover?'':'none';}}
   clearTimeout(window.__bkeT);window.__bkeT=setTimeout(function(){save();bkEditMark();bkEditAfter();},350);
 }
 function bkEditMark(){var m=document.getElementById('bkeAuto');if(!m)return;m.textContent='저장됨 ✓';m.classList.add('on');clearTimeout(window.__bkeMT);window.__bkeMT=setTimeout(function(){m.textContent='고치는 대로 저장됩니다';m.classList.remove('on');},1400);}
 function bkEditAfter(){
+  var si=document.getElementById('bkeStopInfo');if(si){var bk=bookById(Number((document.getElementById('bkEditOv')||{}).dataset&&document.getElementById('bkEditOv').dataset.id));if(bk)si.innerHTML=bkStopInfoHTML(bk);}
   if(bkvId!=null){bkvRenderCover();bkvRenderChs();bkvRenderNote();bkvRenderAdd();}
   renderReading();renderCal();
 }
@@ -12597,7 +12607,7 @@ function bkAutoSave(id){
     if(v('ebPub')!=null)b.publisher=v('ebPub').trim();
     if(v('ebPages')!=null)b.totalPages=Number(v('ebPages'))||'';
     if(v('ebStart')!=null)b.start=v('ebStart');
-    if(v('ebEnd')!=null){b.end=v('ebEnd');if(b.end)b.status='';}
+    if(v('ebEnd')!=null){b.end=v('ebEnd');if(b.end){b.status='';delete b.stopReason;delete b.stopDate;}}
     var ss=document.getElementById('ebStatus');if(ss)ss.value=bkStatus(b);
     if(v('ebCat')!=null)b.category=v('ebCat').trim();
     if(v('ebLink')!=null)b.link=v('ebLink').trim();
@@ -12651,7 +12661,7 @@ function renderReadingInputs(){
   const cats=[...new Set(db.reading.map(b=>b.category).filter(Boolean))];
   const cl=document.getElementById('catList');if(cl)cl.innerHTML=cats.map(c=>`<option value="${esc(c)}">`).join('');
   const bs=document.getElementById('exBook');if(!bs)return;
-  const pool=db.reading.filter(b=>!b.end);
+  const pool=db.reading.filter(b=>bkActive(b));
   const prev=bs.value;
   bs.innerHTML=pool.length?pool.map(b=>`<option value="${b.id}">${esc(b.title)}${b.end?' (완독)':''}</option>`).join('')
     :'<option value="">등록된 책이 없습니다</option>';
@@ -12667,19 +12677,75 @@ function renderReadingInputs(){
       <div class="body"><span contenteditable onblur="editExcerpt(${b.id},${e.id},'text',this.innerHTML)">${fwR(e.text)}</span></div></div>`).join(''))
     :'<div class="empty">오늘 추가한 발췌가 없습니다.</div>';
 }
-/* ---------- 책 상태: 읽는 중 · 대기 · 완독 ---------- */
-function bkStatus(b){if(!b)return 'reading';if(b.end)return 'done';if(b.status==='wait')return 'wait';return 'reading';}
-var BK_ST_KO={reading:'읽는 중',wait:'대기',done:'완독'};
+/* ---------- 책 상태: 읽는 중 · 대기 · 완독 · 중단 (중단은 사유·날짜를 함께 남긴다) ---------- */
+function bkStatus(b){if(!b)return 'reading';if(b.end)return 'done';if(b.status==='wait')return 'wait';if(b.status==='stop')return 'stop';return 'reading';}
+var BK_ST_KO={reading:'읽는 중',wait:'대기',done:'완독',stop:'중단'};
+function bkActive(b){var s=bkStatus(b);return s!=='done'&&s!=='stop';}   /* 책장·발췌 입력에 나오는 책 */
+/* 책 정보에 붙는 중단 안내 */
+function bkStopInfoHTML(b){
+  if(bkStatus(b)!=='stop')return '';
+  return '<div class="rd-stop-info"><span class="rd-stop-badge">중단</span>'
+    +(b.stopDate?'<span class="d">'+esc(fmtK(b.stopDate))+'</span>':'')
+    +'<span class="r">'+(b.stopReason?esc(b.stopReason):'<span style="opacity:.6">사유 없음</span>')+'</span>'
+    +'<button type="button" class="rd-stop-ed" onclick="event.stopPropagation();bkStopAsk('+b.id+',true)" title="중단 사유 고치기">✎</button></div>';
+}
+/* 중단으로 바꿀 때 사유를 묻는 작은 창 */
+function bkStopAsk(id,editOnly){
+  var b=bookById(id);if(!b)return;
+  bkStopClose();
+  var prev=bkStatus(b);
+  var ov=document.createElement('div');ov.className='hma-ov';ov.id='bkStopOv';ov.style.zIndex='10060';
+  ov.addEventListener('click',function(e){if(e.target===ov)bkStopCancel();});
+  ov.innerHTML='<div class="hma" style="max-width:420px"><div class="hma-h"><span class="dot" style="background:#9a8f86"></span><b>'+(editOnly?'중단 사유':'읽기 중단')+'</b>'
+    +'<span class="x" onclick="bkStopCancel()" title="닫기 (Esc)">×</span></div>'
+    +'<div style="font-size:12.5px;color:var(--muted);margin:-2px 0 8px">「'+esc(b.title||'')+'」</div>'
+    +'<div class="fld" style="display:flex;gap:8px;align-items:center"><span style="font-size:12px;color:var(--muted);flex:none">중단일</span><input id="bkStopDate" type="date" class="in" style="width:150px" value="'+escA(b.stopDate||today())+'"></div>'
+    +'<div class="fld"><textarea id="bkStopReason" class="in" style="min-height:90px" placeholder="중단 사유 (예: 지금은 흥미가 떨어짐, 다른 책 먼저 읽기로)">'+esc(b.stopReason||'')+'</textarea></div>'
+    +'<div class="hma-foot"><span class="hint">Ctrl+Enter 저장 · Esc 취소</span><button type="button" class="btn ghost" onclick="bkStopCancel()">취소</button><button type="button" class="btn y" onclick="bkStopSave()">'+(editOnly?'저장':'중단으로 바꾸기')+'</button></div></div>';
+  ov.dataset.id=id;ov.dataset.prev=prev;ov.dataset.edit=editOnly?'1':'';
+  document.body.appendChild(ov);
+  document.addEventListener('keydown',bkStopKey,true);
+  setTimeout(function(){var t=document.getElementById('bkStopReason');if(t){t.focus();t.selectionStart=t.value.length;}},40);
+}
+function bkStopKey(e){
+  if(!document.getElementById('bkStopOv'))return;
+  if(e.key==='Escape'){e.stopPropagation();e.preventDefault();bkStopCancel();}
+  else if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)&&!e.isComposing){e.preventDefault();bkStopSave();}
+}
+function bkStopClose(){var o=document.getElementById('bkStopOv');if(o)o.remove();document.removeEventListener('keydown',bkStopKey,true);}
+function bkStopCancel(){
+  var o=document.getElementById('bkStopOv');
+  if(o){var id=Number(o.dataset.id),b=bookById(id);
+    ['bke_status','ebStatus'].forEach(function(i){var e=document.getElementById(i);if(e&&b)e.value=bkStatus(b);});}  /* 고르던 상태를 되돌린다 */
+  bkStopClose();
+}
+function bkStopSave(){
+  var o=document.getElementById('bkStopOv');if(!o)return;
+  var b=bookById(Number(o.dataset.id));if(!b){bkStopClose();return;}
+  b.status='stop';b.end='';
+  b.stopReason=String((document.getElementById('bkStopReason')||{}).value||'').trim();
+  b.stopDate=(document.getElementById('bkStopDate')||{}).value||today();
+  bkStopClose();
+  save();
+  ['bke_end','ebEnd'].forEach(function(i){var e=document.getElementById(i);if(e)e.value='';});
+  ['bke_status','ebStatus'].forEach(function(i){var e=document.getElementById(i);if(e)e.value='stop';});
+  if(document.getElementById('bkEditOv'))bkEditMark();
+  var m=document.getElementById('ebAutoMsg');if(m)m.textContent='저장됨 ✓';
+  bkEditAfter();
+  hkChip('「'+(b.title||'')+'」 중단으로 바꿨습니다');setTimeout(function(){hkChip('');},1500);
+}
 function bkStatusSel(id,elId){
   var b=bookById(id),st=bkStatus(b);
-  return '<select id="'+elId+'" class="in" onchange="bkStatusSet('+id+',this.value)" title="대기 = 사놓고 아직 안 읽는 책 · 완독을 고르면 종료일이 오늘로">'
-    +['reading','wait','done'].map(function(k){return '<option value="'+k+'"'+(k===st?' selected':'')+'>'+BK_ST_KO[k]+'</option>';}).join('')+'</select>';
+  return '<select id="'+elId+'" class="in" onchange="bkStatusSet('+id+',this.value)" title="대기 = 사놓고 아직 안 읽는 책 · 완독을 고르면 종료일이 오늘로 · 중단은 사유를 적습니다">'
+    +['reading','wait','done','stop'].map(function(k){return '<option value="'+k+'"'+(k===st?' selected':'')+'>'+BK_ST_KO[k]+'</option>';}).join('')+'</select>';
 }
 function bkStatusSet(id,st){
   var b=bookById(id);if(!b)return;
+  if(st==='stop'){bkStopAsk(id,false);return;}          /* 중단은 사유를 받고 나서 바꾼다 */
   if(st==='done'){b.status='';if(!b.end)b.end=today();}
   else if(st==='wait'){b.status='wait';b.end='';}
   else{b.status='';b.end='';}
+  if(st!=='stop'){delete b.stopReason;delete b.stopDate;}
   save();
   ['bke_end','ebEnd'].forEach(function(i){var e=document.getElementById(i);if(e)e.value=b.end||'';});
   if(typeof bkEditMark==='function'&&document.getElementById('bkEditOv'))bkEditMark();
@@ -12690,7 +12756,7 @@ function bkStatusSet(id,st){
 var rdListFilter=(function(){try{return localStorage.getItem('hmd_rdListFilter')||'all';}catch(e){return 'all';}})();
 function rdListFilterSet(f){rdListFilter=f;try{localStorage.setItem('hmd_rdListFilter',f);}catch(e){}renderReading();}
 function rdListBtns(){
-  return '<span class="led-kind rd-filt">'+[['all','전체'],['reading','읽는 중'],['wait','대기'],['done','완독']].map(function(k){
+  return '<span class="led-kind rd-filt">'+[['all','전체'],['reading','읽는 중'],['wait','대기'],['done','완독'],['stop','중단']].map(function(k){
     return '<button type="button" class="lunar-toggle'+(rdListFilter===k[0]?' on':'')+'" onclick="rdListFilterSet(\''+k[0]+'\')">'+k[1]+'</button>';}).join('')+'</span>';
 }
 /* ---------- 관심도서: 읽고 싶은 책을 제목(+ISBN)만으로 적어 둔다 ---------- */
@@ -12780,6 +12846,7 @@ function renderReading(){
   tb.innerHTML=shown.map(b=>{
     let period;
     if(bkStatus(b)==='wait')period=`<span class="rd-wait-badge">대기</span>${b.start?` <span style="color:var(--muted)">${fmtK(b.start)}~</span>`:''}`;
+    else if(bkStatus(b)==='stop')period=`${b.start?fmtK(b.start):'?'}~${b.stopDate?fmtK(b.stopDate):''} <span class="rd-stop-badge" title="${escA(b.stopReason||'사유 없음')}">중단</span>${b.stopReason?`<div class="rd-stop-why" title="${escA(b.stopReason)}">${esc(b.stopReason)}</div>`:''}`;
     else if(b.end){
       const days=(b.start&&b.end)?Math.round((new Date(b.end+'T00:00:00')-new Date(b.start+'T00:00:00'))/86400000)+1:0;
       period=`${fmtK(b.start)}~${fmtK(b.end)} <span class="rd-done-badge">완독</span>${days>0?`<span class="rd-days">${days}일</span>`:''}`;
@@ -12793,7 +12860,7 @@ function renderReading(){
       <td><span class="del" onclick="delBook(${b.id})">×</span></td></tr>`;}).join('');
 }
 function renderBookDetail(b){
-  const period=b.end?`${b.start||'?'} ~ ${b.end}  (완독)`:(b.start?`${b.start} ~  (읽는 중)`:'읽는 중');
+  const period=bkStatus(b)==='stop'?`${b.start||'?'} ~ ${b.stopDate||''}  (중단)`:bkStatus(b)==='wait'?(b.start?`${b.start} ~  (대기)`:'대기'):b.end?`${b.start||'?'} ~ ${b.end}  (완독)`:(b.start?`${b.start} ~  (읽는 중)`:'읽는 중');
   const toc=bookToc(b), lvOf={};
   const grouped={};toc.forEach(c=>{grouped[c.t]=[];lvOf[c.t]=c.lv;});
   b.excerpts.forEach(e=>{(grouped[e.chapter]=grouped[e.chapter]||[]).push(e);});
@@ -12859,7 +12926,7 @@ function renderBookDetail(b){
           <div class="field"><label>종료일 (읽는 중이면 비움)</label><input type="date" id="ebEnd" oninput="bkAutoSave(${b.id})" onchange="bkAutoSave(${b.id})" value="${b.end||''}"></div>
         </div>
         <div class="two">
-          <div class="field"><label>상태 <span class="lb-sub">· 읽는 중 / 대기 / 완독</span></label>${bkStatusSel(b.id,'ebStatus')}</div>
+          <div class="field"><label>상태 <span class="lb-sub">· 읽는 중 / 대기 / 완독 / 중단</span></label>${bkStatusSel(b.id,'ebStatus')}</div>
           <div class="field"><label>카테고리</label><input id="ebCat" oninput="bkAutoSave(${b.id})" value="${escA(b.category||'')}"></div>
         </div>
         <div class="two">
@@ -12882,6 +12949,7 @@ function renderBookDetail(b){
         <div><span style="color:var(--muted)">발췌</span><br><b>${b.excerpts.length}개</b></div>
         ${b.link?`<div><span style="color:var(--muted)">연결</span><br><a href="${escA(b.link)}" target="_blank" style="color:var(--green)">링크 열기</a></div>`:''}
       </div>
+      ${bkStopInfoHTML(b)}
     </div>`}
     <div class="card">
       <h3><span class="dot" style="background:var(--green)"></span> 목차 <span class="more">${b.excerpts.length}개 발췌</span></h3>
@@ -13074,7 +13142,7 @@ function rdPlanBook(){
   var list=db.reading||[];if(!list.length)return null;
   var b=list.find(function(x){return x.id===rdPlanBookId;});
   if(b)return b;
-  b=list.filter(function(x){return !x.end;})[0]||list[list.length-1];
+  b=list.filter(function(x){return bkActive(x);})[0]||list[list.length-1];
   rdPlanBookId=b.id;return b;
 }
 function rdPlanPick(v){rdPlanBookId=Number(v);renderRdPlan();}
@@ -13091,7 +13159,7 @@ function renderRdPlan(){
   var pw=document.getElementById('rdPlanBookWrap');
   if(pw){pw.style.display=(rdView==='plan'&&b)?'':'none';
     if(rdView==='plan'&&b)pw.innerHTML='<select class="rowsel" style="max-width:240px" onchange="rdPlanPick(this.value)">'
-      +(db.reading||[]).map(function(x){return '<option value="'+x.id+'"'+(x.id===b.id?' selected':'')+'>'+esc(x.title)+(x.end?' (완독)':'')+'</option>';}).join('')+'</select>';}
+      +(db.reading||[]).map(function(x){return '<option value="'+x.id+'"'+(x.id===b.id?' selected':'')+'>'+esc(x.title)+(x.end?' (완독)':(bkStatus(x)==='stop'?' (중단)':''))+'</option>';}).join('')+'</select>';}
   if(rdView==='plan'&&!b){box.innerHTML='<div class="empty">등록된 책이 없습니다. 아래 «＋ 책 추가»에서 등록하세요.</div>';return;}
   /* 자동 동기화 등으로 다시 그려져도 입력 중이던 값은 지킨다
      (다른 렌더가 먼저 칸을 지울 수 있어, 입력 때마다 적어 둔 __rdgKeep 을 쓴다) */
@@ -13229,7 +13297,7 @@ function rdgRender(){
       var prev=(document.getElementById('rdgAddBook')||{}).value||'';
       aw.style.display='';
       /* 기록을 붙일 책: 완독한 책은 목록에서 뺀다 */
-      var pool=(db.reading||[]).filter(function(bk){return !bk.end;});
+      var pool=(db.reading||[]).filter(function(bk){return bkActive(bk);});
       aw.innerHTML='<select id="rdgAddBook" class="rowsel" style="max-width:160px" title="기록을 붙일 책 (완독한 책은 빠집니다)" onchange="rdgKeep(this);rdgAutoStart()">'
         +(pool.length?pool.map(function(bk){return '<option value="'+bk.id+'"'+(String(bk.id)===prev?' selected':'')+'>'+esc(bk.title)+'</option>';}).join('')
           :'<option value="">읽는 중인 책 없음</option>')+'</select>';
@@ -15319,7 +15387,7 @@ function hmProjHTML(){
 /* 4. 독서: 최근 수정 책 표지 + ‹› 넘기기 */
 var hmReadIdx=0;
 function hmReadBooks(){
-  return (db.reading||[]).filter(function(b){return bkStatus(b)!=='done';}).sort(function(a,b){   /* 완독한 책은 대시보드에서 뺀다 */
+  return (db.reading||[]).filter(function(b){return bkActive(b);}).sort(function(a,b){   /* 완독·중단한 책은 대시보드에서 뺀다 */
     var r=function(x){
       var m=String(x.start||'')+String(x.end||'');
       (x.excerpts||[]).forEach(function(e){if(e.date>m)m=e.date;});
