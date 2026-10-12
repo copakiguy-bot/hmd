@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-11 · r194">
+<meta name="hmd-build" content="2026-10-12 · r196">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -459,6 +459,12 @@
   #ideaCard{min-height:200px}
   #mindCanvas{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fbfbf8;min-height:460px;margin-top:4px}
   .mind-expand-btn{cursor:pointer;flex-shrink:0;margin-left:8px;font-size:14px;line-height:1;padding:5px 9px}
+  .dx-imp{margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fafaf6;font-size:12.5px;line-height:1.6}
+  .dx-imp.err{color:#c0503f}
+  .dx-imp .dx-h b{color:var(--dark)} .dx-imp .dx-h span{color:var(--muted)}
+  .dx-imp .dx-c{color:var(--muted)}
+  .dx-imp .dx-b{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
+  .dx-imp .dx-n{font-size:11.5px;color:var(--muted)}
   .st-bar{height:8px;border-radius:5px;background:var(--line);overflow:hidden;margin-bottom:6px}.st-bar i{display:block;height:100%;border-radius:5px}
 .st-txt{font-size:12px;color:var(--muted);line-height:1.6}
 .bk-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
@@ -648,6 +654,9 @@
   .sched-item .imp-btn{flex:none;width:12px;height:12px;border-radius:50%;border:1.5px solid #e6b3b2;background:#fff;cursor:pointer;padding:0;margin-left:2px;opacity:.55}
   .sched-item:hover .imp-btn{opacity:1}
   .sched-item .imp-btn.on{background:#e34948;border-color:#e34948;opacity:1}
+  .tlr-item .imp-btn{flex:none;margin-right:auto;width:12px;height:12px;border-radius:50%;border:1.5px solid #e6b3b2;background:#fff;cursor:pointer;padding:0;opacity:.45}
+  .tlr-item:hover .imp-btn{opacity:1}
+  .tlr-item .imp-btn.on{background:#e34948;border-color:#e34948;opacity:1}
   .lunar-toggle.imp i,.cn-chk.imp i,.btn.imp i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#e34948;margin-right:4px;vertical-align:0}
   .cn-chk.imp{color:#a3564b}
   .cn-chk.imp input{accent-color:#e34948}
@@ -1701,7 +1710,7 @@
   .tlr-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--green);cursor:pointer;flex:none}
   .tlr-item .tlr-time{font-size:11.5px;font-weight:700;color:var(--muted);flex:none}
   .tlr-item b{flex:1;font-size:13px;color:var(--dark);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .tlr-item b.tlr-name{cursor:text;border-radius:5px;padding:1px 4px;margin-left:-4px;outline:none;min-width:40px}
+  .tlr-item b.tlr-name{flex:0 1 auto;cursor:text;border-radius:5px;padding:1px 4px;margin-left:-4px;outline:none;min-width:40px}
   .tlr-item b.tlr-name:hover{background:rgba(0,0,0,.04)}
   .tlr-item b.tlr-name:focus{background:#fff;box-shadow:0 0 0 1.5px var(--yellow,#f4b740);text-overflow:clip}
   .tlr-item.off b,.tlr-item.off .tlr-time{opacity:.4;text-decoration:line-through}
@@ -3502,6 +3511,19 @@
         <div id="storeUse"></div>
       </div>
     </div>
+    <div class="card" id="dxCard">
+      <h3><span class="dot" style="background:#4a7c59"></span> 전체 데이터 백업 <span class="more" id="dxLast"></span></h3>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:12px">
+        지금까지 HMD에 등록한 모든 기록(일정·업무·독서·학습·가계부·일기·연대기·루틴 등)을 파일 하나(.json)로 받습니다.
+        일주일에 한 번 받아 두면, 기기나 클라우드에서 데이터가 사라져도 이 파일로 되살릴 수 있습니다.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="btn y" onclick="dxExport()">⬇ 전체 데이터 받기</button>
+        <button class="btn ghost" onclick="document.getElementById('dxFile').click()">백업 파일로 복원…</button>
+        <input type="file" id="dxFile" accept=".json,application/json" style="display:none" onchange="dxImportPick(this)">
+        <span id="dxInfo" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+      <div id="dxImport"></div>
+    </div>
     <div class="card">
       <h3><span class="dot" style="background:var(--yellow)"></span> 아이폰 «뒷면 탭»으로 포스트잇 열기</h3>
       <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:10px">
@@ -3972,7 +3994,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-11 · r194';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-12 · r196';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4412,6 +4434,94 @@ function backupMerge(i){
   if(syncCode())cloudPush();
   alert(n+'건을 채웠습니다.'+(syncCode()?'\n클라우드에도 올렸습니다.':''));
 }
+/* ================= 전체 데이터 백업 (파일로 받기 · 파일로 복원) =================
+   설정 → «전체 데이터 받기»: db 전체를 .json 한 파일로. 일주일 넘게 안 받았으면 알려준다.
+   (깃허브 토큰 같은 이 기기 전용 값은 db 에 없으므로 파일에도 들어가지 않는다) */
+var DX_KEY='hmd_lastExport', DX_DAYS=7;
+function dxLast(){var a=0;try{a=Number(localStorage.getItem(DX_KEY))||0;}catch(e){}return Math.max(a,Number(db&&db.lastExport)||0);}
+function dxDaysSince(){var t=dxLast();return t?Math.floor((Date.now()-t)/86400000):null;}
+function dxCounts(d){
+  var n=function(v){return Array.isArray(v)?v.length:0;};
+  var ex=0;(d.reading||[]).forEach(function(b){ex+=n(b.excerpts);});
+  return [['일정',n(d.schedules)],['업무',n(d.work)],['학습',n(d.study)],['독서',n(d.reading)],['발췌',ex],['가계부',n(d.assets)],
+    ['일기',n(d.diary)],['인박스',n(d.inbox)],['연대기',n(d.chrono)],['루틴',n(d.tlRoutines)],['제텔',n(d.zettel)]].filter(function(x){return x[1];});
+}
+function dxCountsStr(d){return dxCounts(d).map(function(x){return x[0]+' '+x[1];}).join(' · ');}
+function dxExport(){
+  try{
+    var now=new Date(),stamp=today()+'_'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0');
+    db.lastExport=Date.now();try{localStorage.setItem(DX_KEY,String(db.lastExport));}catch(e){}
+    save();
+    var pack={app:'HMD',kind:'full-backup',build:HMD_BUILD,exportedAt:now.toISOString(),counts:dxCounts(db),data:db};
+    var blob=new Blob([JSON.stringify(pack)],{type:'application/json'});
+    var fn='HMD_전체백업_'+stamp+'.json';
+    var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=fn;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){a.remove();URL.revokeObjectURL(u);},4000);
+    renderDxUI();
+    var info=document.getElementById('dxInfo');if(info)info.textContent=fn+' · '+fmtKB(blob.size)+' 받음';
+    hkChip('전체 데이터를 받았습니다');setTimeout(function(){hkChip('');},1600);
+  }catch(e){alert('받기에 실패했습니다: '+(e&&e.message||e));}
+}
+function renderDxUI(){
+  var el=document.getElementById('dxLast');if(!el)return;
+  var d=dxDaysSince();
+  el.innerHTML=d==null?'<span style="color:#c0503f">아직 받은 적 없음</span>'
+    :('마지막 받기 '+(d===0?'오늘':d+'일 전')+(d>=DX_DAYS?' · <b style="color:#c0503f">받을 때가 됐습니다</b>':' · 다음은 '+(DX_DAYS-d)+'일 뒤'));
+}
+/* 일주일 넘으면 하루 한 번 살짝 알려준다 */
+function dxRemind(){
+  var d=dxDaysSince();if(d!=null&&d<DX_DAYS)return;
+  var k='hmd_dxNag',td=today();try{if(localStorage.getItem(k)===td)return;localStorage.setItem(k,td);}catch(e){}
+  setTimeout(function(){try{liveFlash(d==null?'전체 데이터 백업을 한 번 받아 두세요 · 설정 → 전체 데이터 받기':'전체 데이터 백업 '+d+'일째 · 설정 → 전체 데이터 받기');}catch(e){}},4000);
+}
+/* 복원: 파일을 고르면 내용을 보여주고 «빠진 항목 합치기» 또는 «통째로 되돌리기» */
+var __dxSrc=null;
+function dxImportPick(inp){
+  var f=inp.files&&inp.files[0];inp.value='';if(!f)return;
+  var rd=new FileReader();
+  rd.onload=function(){
+    var j=null;try{j=JSON.parse(rd.result);}catch(e){}
+    var src=j&&j.data&&typeof j.data==='object'?j.data:j;
+    var box=document.getElementById('dxImport');
+    if(!src||typeof src!=='object'||!Array.isArray(src.work)){__dxSrc=null;if(box)box.innerHTML='<div class="dx-imp err">HMD 백업 파일이 아닙니다.</div>';return;}
+    __dxSrc=src;
+    var when=j.exportedAt?new Date(j.exportedAt).toLocaleString('ko-KR'):(src.__updated?new Date(src.__updated).toLocaleString('ko-KR'):'');
+    if(box)box.innerHTML='<div class="dx-imp"><div class="dx-h"><b>'+esc(f.name)+'</b>'+(when?' <span>· '+esc(when)+' 저장본</span>':'')+'</div>'
+      +'<div class="dx-c">파일: '+esc(dxCountsStr(src)||'비어 있음')+'</div>'
+      +'<div class="dx-c">지금: '+esc(dxCountsStr(db)||'비어 있음')+'</div>'
+      +'<div class="dx-b"><button class="btn y" onclick="dxImportApply(\'merge\')" title="지금 내용은 그대로 두고, 파일에만 있는 항목을 더합니다">빠진 항목 합치기</button>'
+      +'<button class="btn ghost" onclick="dxImportApply(\'replace\')" title="파일 시점으로 통째로 바꿉니다">통째로 되돌리기</button>'
+      +'<button class="btn ghost" onclick="dxImportClose()">닫기</button></div>'
+      +'<div class="dx-n">어느 쪽이든 바꾸기 직전 상태를 «되돌리기» 목록에 백업해 둡니다.</div></div>';
+  };
+  rd.onerror=function(){alert('파일을 읽지 못했습니다.');};
+  rd.readAsText(f);
+}
+function dxImportClose(){__dxSrc=null;var b=document.getElementById('dxImport');if(b)b.innerHTML='';}
+function dxImportApply(mode){
+  var src=__dxSrc;if(!src)return;
+  if(mode==='merge'){
+    var probe=JSON.parse(JSON.stringify(db)),n=smAddMissing(probe,src);
+    if(!n){alert('이 파일에는 지금 없는 항목이 없습니다.');return;}
+    if(!confirm('백업 파일에만 있는 항목 '+n+'건을 지금 내용에 더할까요?\n\n지금 있는 내용은 그대로 둡니다.\n(일부러 지운 항목이 다시 살아날 수 있습니다)'))return;
+    backupSave('파일 합치기 직전');
+    smAddMissing(db,JSON.parse(JSON.stringify(src)));delRevive();ensureFields();idSnapTake();db.__updated=Date.now();
+    lsPutMain(JSON.stringify(db));
+    dxImportClose();renderAll();renderBackupUI();if(syncCode())cloudPush();
+    alert(n+'건을 채웠습니다.'+(syncCode()?'\n클라우드에도 올렸습니다.':''));
+  }else{
+    if(!confirm('백업 파일 시점으로 통째로 되돌릴까요?\n\n파일: '+dxCountsStr(src)+'\n지금: '+dxCountsStr(db)+'\n\n지금 내용은 «파일 복원 직전»으로 따로 백업해 둡니다.'))return;
+    backupSave('파일 복원 직전');
+    var keepDel=db.__del,keepRev=db.__rev,keepExp=db.lastExport;
+    db=JSON.parse(JSON.stringify(src));
+    db.__del=delUnion(keepDel,db.__del);db.__rev=delUnion(keepRev,db.__rev);delRevive();idSnapTake();
+    ensureFields();db.__updated=Date.now();if(keepExp)db.lastExport=Math.max(keepExp,Number(db.lastExport)||0);
+    lsPutMain(JSON.stringify(db));
+    dxImportClose();renderAll();renderBackupUI();if(syncCode())cloudPush();
+    alert('복원했습니다.'+(syncCode()?'\n클라우드에도 올렸습니다.':''));
+  }
+  renderDxUI();
+}
 function backupRestore(i){
   var list=backupList(), b=list[i];if(!b)return;
   if(!confirm(new Date(b.t).toLocaleString('ko-KR')+' 시점으로 되돌릴까요?\n지금 내용은 «복구 직전»으로 따로 백업해 둡니다.'))return;
@@ -4437,6 +4547,7 @@ function renderBackupUI(){
       '<button class="btn ghost" style="flex:none;padding:5px 11px;font-size:12px" onclick="backupRestore('+i+')">되돌리기</button></div>';
   }).join(''):'<div class="empty" style="padding:10px 0">아직 백업이 없습니다.</div>';
   try{renderStoreUI();}catch(e){}
+  try{renderDxUI();}catch(e){}
 }
 function uid(){return Date.now()+Math.floor(Math.random()*1000);}
 function seed(){
@@ -4743,7 +4854,7 @@ function renderTimeline(){
   });
   tlrFor(selDate,true).forEach(function(r){
     var mn=tlParseMin(r.time);
-    var e={k:'r',id:r.id,mn:mn,time:r.time,dur:(r.dur>0?r.dur:30),title:r.title,ok:tlrOk(r.id,selDate)};
+    var e={k:'r',id:r.id,mn:mn,time:r.time,dur:(r.dur>0?r.dur:30),title:r.title,ok:tlrOk(r.id,selDate),imp:!!r.imp};
     if(mn==null||mn<TL_START*60||mn>TL_END*60)untimed.push(e);else evs.push(e);
   });
   evs.sort(function(a,b){return a.mn-b.mn;});
@@ -4764,7 +4875,7 @@ function renderTimeline(){
     var tip=det||(e.title+' ('+range+')');       /* 마우스를 올리면 세부정보 */
     html+='<div class="tl-ev'+(e.k==='r'?' rt':'')+(e.done?' done':'')+(e.ok?' ok':'')+(e.cn?' cn':'')+(e.hl?' hl':'')+(e.imp?' imp':'')+(e.two?' twol':'')+'" data-k="'+e.k+'" data-id="'+e.id+'"'
       +' style="left:'+left+'px;top:'+(8+li*38)+'px;width:'+bw+'px'+(e.cn?';border-left:3px solid '+CN_MONO_BAR:'')+(e.hl?';background:'+e.hl:'')+'" title="'+escA(e.cn?(e.cnl+' · '+tip):tip)+'">'
-      +'<b>'+esc(lbl)+'</b>'+(e.imp?'<span class="imp-dot" title="주요일정"></span>':'')+(e.nf?'<span class="ev-clip" title="붙은 문서 '+e.nf+'개">📎'+(e.nf>1?'<i>'+e.nf+'</i>':'')+'</span>':'')
+      +'<b>'+esc(lbl)+'</b>'+(e.imp?'<span class="imp-dot" title="'+(e.k==='r'?'주요루틴':'주요일정')+'"></span>':'')+(e.nf?'<span class="ev-clip" title="붙은 문서 '+e.nf+'개">📎'+(e.nf>1?'<i>'+e.nf+'</i>':'')+'</span>':'')
       +'<span class="tl-time">'+range+'</span></div>';
   });
   var trackH=Math.max(110,8+Math.max(1,lanes.length)*38+18);
@@ -4943,7 +5054,7 @@ function nowEvents(){
   });
   tlrFor(td,true).forEach(function(r){
     var mn=tlParseMin(r.time);if(mn==null)return;
-    out.push({k:'r',id:r.id,mn:mn,dur:(r.dur>0?r.dur:30),title:r.title||'',done:tlrOk(r.id,td)});
+    out.push({k:'r',id:r.id,mn:mn,dur:(r.dur>0?r.dur:30),title:r.title||'',done:tlrOk(r.id,td),imp:!!r.imp});
   });
   return out.sort(function(a,b){return a.mn-b.mn;});
 }
@@ -5050,6 +5161,7 @@ function renderNowBar(){
   if(tt){
     tt.textContent=e.title||'(제목 없음)';
     if(e.k==='s'){var __s=db.schedules.find(function(x){return x.id===e.id;});if(__s&&__s.imp)tt.innerHTML=esc(tt.textContent)+'<i class="imp-dot" title="주요일정"></i>';}
+    else if(e.k==='r'&&e.imp)tt.innerHTML=esc(tt.textContent)+'<i class="imp-dot" title="주요루틴"></i>';
     tt.classList.toggle('done',!!e.done);
     tt.title=(e.done?'완료됨 · ':'')+'두 번 누르면 완료 표시';
   }
@@ -5654,6 +5766,14 @@ function tlrEditTime(id,val){
   r.time=(v==='-'||v==='')?'':normTime(v);
   save();renderTlRoutines();renderTimeline();
 }
+/* 주요루틴: 주요일정처럼 빨간 점 */
+function tlrImpToggle(id){
+  var r=db.tlRoutines.find(function(x){return x.id===id;});if(!r)return;
+  if(r.imp)delete r.imp;else r.imp=true;
+  save();renderTlRoutines();renderTimeline();
+  hkChip(r.imp?'주요루틴으로 표시했습니다':'주요루틴을 해제했습니다');setTimeout(function(){hkChip('');},1200);
+}
+function tlrImpDot(r){return (r&&r.imp)?'<span class="imp-dot" title="주요루틴"></span>':'';}
 /* 루틴명 고치기: 줄에서 이름을 눌러 바로 고친다 (비우면 원래 이름으로) */
 function tlrTitleKey(e,el){
   if(e.isComposing)return;
@@ -5684,6 +5804,7 @@ function tlrItemHTML(r,cls,badge){
     +'<input type="checkbox" '+(r.active!==false?'checked':'')+' onchange="tlrToggleActive('+r.id+')" title="타임라인 표시 여부">'
     +'<span class="tlr-time" contenteditable title="눌러서 시간 수정 (예: 0700)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}" onblur="tlrEditTime('+r.id+',this.innerText)">'+esc(r.time||'-')+'</span>'
     +'<b class="tlr-name" contenteditable spellcheck="false" title="눌러서 루틴명 수정 (Enter 저장 · Esc 취소)" onkeydown="tlrTitleKey(event,this)" onblur="tlrEditTitle('+r.id+',this)">'+esc(r.title)+'</b>'
+    +'<button type="button" class="imp-btn'+(r.imp?' on':'')+'" title="'+(r.imp?'주요루틴 해제':'주요루틴으로 표시 (빨간 점)')+'" onclick="tlrImpToggle('+r.id+')"></button>'
     +(badge||'')
     +'<span class="tlr-kind'+(tlrKindOf(r)==='hd'?' hd':'')+'" onclick="tlrKindTgl('+r.id+')" title="눌러서 평일↔휴일 바꾸기">'+(tlrKindOf(r)==='hd'?'휴일':'평일')+'</span>'
     +'<span class="tlr-ok'+(ok?' on':'')+'" onclick="tlrToggleOk('+r.id+')" title="선택한 날짜의 성공 여부">성공</span>'
@@ -5755,7 +5876,7 @@ function tlrDayOpen(ds){
     return '<div class="rgd-item'+(done?' ok':'')+'" onclick="tlrDayTgl(\''+ds+'\','+r.id+')" title="눌러서 성공/실패 바꾸기">'
       +'<span class="bx">'+(done?'✓':'')+'</span>'
       +(r.time?'<span class="tm">'+esc(r.time)+'</span>':'')
-      +'<b>'+esc(r.title)+'</b></div>';};
+      +'<b>'+esc(r.title)+tlrImpDot(r)+'</b></div>';};
   ov.innerHTML='<div class="chp rgd"><div class="rgd-h"><b>'+(+ds.slice(5,7))+'월 '+(+ds.slice(8,10))+'일 ('+dow+')'+esc(hol)+'</b>'
     +'<span class="rgd-n">'+okL.length+' / '+list.length+' 성공</span>'
     +'<span class="rgd-x" onclick="tlrDayClose()">✕</span></div>'
@@ -5942,7 +6063,7 @@ function tlrStatsHTML(kind){
     var cnt=0;for(var d5=1;d5<=dim;d5++)if(app(d5)&&ok(r,d5))cnt++;
     var pct=mDays?Math.round(cnt/mDays*100):0;
     var col=TLR_ACC[ri%TLR_ACC.length];
-    return '<tr><td class="rn" title="'+escA(r.title)+'">'+(r.time?'<span class="tm">'+esc(r.time)+'</span>':'')+esc(r.title)+'</td>'
+    return '<tr><td class="rn" title="'+escA(r.title)+'">'+(r.time?'<span class="tm">'+esc(r.time)+'</span>':'')+esc(r.title)+tlrImpDot(r)+'</td>'
       +cells
       +'<td class="pr"><div class="prw"><span>'+cnt+'/'+mDays+'일</span><div class="pbar"><i style="width:'+Math.min(100,pct)+'%;background:'+col+'"></i></div><b>'+pct+'%</b></div></td>'
       +'<td class="st"><b>'+tlrStreak(r)+'</b></td></tr>';
@@ -17260,7 +17381,7 @@ function renderAll(){
   try{naverKeyStatus();}catch(_){}
   try{ghCfgPaint();}catch(_){}})();
 try{bkInit();}catch(e){}
-[renderAll,applyTopState,renderSyncUI,renderBackupUI,renderStoreUI,backupTick].forEach(function(f){
+[renderAll,applyTopState,renderSyncUI,renderBackupUI,renderStoreUI,renderDxUI,backupTick,dxRemind].forEach(function(f){
   try{f();}catch(e){try{console.error('boot · '+(f.name||'?')+':',e);}catch(_){}}
 });
 __boot=false;                                  /* 마이그레이션 구간 끝 */
