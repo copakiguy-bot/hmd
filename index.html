@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-12 · r196">
+<meta name="hmd-build" content="2026-10-13 · r197">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2709,6 +2709,10 @@
   .hma-h .x:hover{color:var(--dark)}
   .hma .in{width:100%;box-sizing:border-box}
   .hma .fld{margin-bottom:8px}
+  .hma-bulk-tg{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-size:12px;color:var(--muted);cursor:pointer;font-family:inherit}
+  .hma-bulk-tg:hover,.hma-bulk-tg.on{border-color:#e0a83a;color:#9a6b12;background:#fdf6e6}
+  .hma-bulk-pv{font-size:12px;color:var(--muted);line-height:1.6;margin:-2px 0 4px}
+  .hma-bulk-pv b{color:var(--dark)} .hma-bulk-pv span{color:#9a6b12} .hma-bulk-pv span.no{color:#c0503f}
   .hma textarea.in{min-height:80px;resize:vertical}
   .hma-foot{display:flex;align-items:center;gap:8px;margin-top:10px}
   .hsv .hma-h b{font-size:17px;line-height:1.4}
@@ -3994,7 +3998,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-12 · r196';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-13 · r197';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -15609,7 +15613,9 @@ function hmAddOpen(tab){
   hmAddClose();hmaTab=tab;var info=HMA_INFO[tab];
   var date='<input id="hqDate" type="date" class="in" style="width:150px" value="'+today()+'">';
   var body;
-  if(tab==='단어')body='<div class="fld">'+date+'</div><div class="fld"><input id="hqTerm" class="in" placeholder="단어" onkeydown="hmAddKey(event)"></div><div class="fld"><input id="hqMean" class="in" placeholder="뜻" onkeydown="hmAddKey(event)"></div>';
+  if(tab==='단어')body='<div class="fld" style="display:flex;align-items:center;gap:10px">'+date+'<button type="button" class="hma-bulk-tg" onclick="hmBulkTgl()" id="hmBulkTg">여러 개 한 번에</button></div>'
+    +'<div id="hmOneBox"><div class="fld"><input id="hqTerm" class="in" placeholder="단어" onkeydown="hmAddKey(event)"></div><div class="fld"><input id="hqMean" class="in" placeholder="뜻" onkeydown="hmAddKey(event)"></div></div>'
+    +'<div id="hmBulkBox" style="display:none"><div class="fld"><textarea id="hqBulk" class="in" style="min-height:170px" placeholder="한 줄에 하나씩 · 단어 = 뜻\n예)\nbribe = 뇌물; 뇌물을 주다\nhypocrite = 위선자\n(= · : · - · 탭 으로 나눠도 됩니다)" oninput="hmBulkPreview()" onkeydown="hmAddKey(event)"></textarea></div><div class="hma-bulk-pv" id="hqBulkPv"></div></div>';
   else if(tab==='영어')body='<div class="fld">'+date+'</div><div class="fld"><textarea id="hqTerm" class="in" placeholder="문장" onkeydown="hmAddKey(event)"></textarea></div><div class="fld"><textarea id="hqMean" class="in" placeholder="해석" onkeydown="hmAddKey(event)"></textarea></div>';
   else if(tab==='지식')body='<div class="fld" style="display:flex;gap:8px">'+date+'<input id="hqCat" class="in" list="hqCatList" placeholder="카테고리 (직접 입력하면 목록에 추가)"></div>'
     +'<datalist id="hqCatList">'+studyCatList('지식').map(function(c){return '<option value="'+escA(c)+'">';}).join('')+'</datalist>'
@@ -15625,6 +15631,29 @@ function hmAddOpen(tab){
   setTimeout(function(){var f=document.getElementById(tab==='지식'?'hqTitle':tab==='문화'?'hqTitle':'hqTerm');if(f)f.focus();},40);
 }
 function hmAddEsc(e){if(e.key==='Escape'&&document.getElementById('hmaOv')){e.stopPropagation();hmAddClose();}}
+/* 단어 여러 개 한 번에: «단어 = 뜻» 한 줄에 하나 */
+function hmBulkTgl(){
+  var on=document.getElementById('hmBulkBox').style.display==='none';
+  document.getElementById('hmBulkBox').style.display=on?'':'none';
+  document.getElementById('hmOneBox').style.display=on?'none':'';
+  var t=document.getElementById('hmBulkTg');if(t){t.classList.toggle('on',on);t.textContent=on?'하나씩 넣기':'여러 개 한 번에';}
+  var h=document.querySelector('#hmaOv .hma-foot .hint');if(h)h.textContent=on?'Ctrl+Enter 저장 · Esc 닫기':'Enter 저장 · Esc 닫기';
+  setTimeout(function(){var f=document.getElementById(on?'hqBulk':'hqTerm');if(f)f.focus();},20);
+}
+function hmBulkParse(txt){
+  var out=[];
+  String(txt||'').split(/\r?\n/).forEach(function(line){
+    var l=line.replace(/^\s*(?:[-*•·]|\d+[.)])\s+/,'').trim();if(!l)return;
+    var m=l.match(/^(.+?)\s*(?:\t|=|:|\s-\s|\s–\s|\s—\s|\|)\s*(.+)$/);
+    if(m)out.push({term:m[1].trim(),meaning:m[2].trim()});else out.push({term:l,meaning:''});
+  });
+  return out;
+}
+function hmBulkPreview(){
+  var pv=document.getElementById('hqBulkPv');if(!pv)return;
+  var l=hmBulkParse((document.getElementById('hqBulk')||{}).value);
+  pv.innerHTML=l.length?('<b>'+l.length+'개</b> · '+l.slice(0,6).map(function(x){return esc(x.term)+(x.meaning?' <span>'+esc(x.meaning)+'</span>':' <span class="no">뜻 없음</span>');}).join(' / ')+(l.length>6?' …':'')):'';
+}
 function hmAddKey(e){
   if(e.key!=='Enter'||e.isComposing)return;
   var ta=e.target.tagName==='TEXTAREA';
@@ -15636,6 +15665,17 @@ function hmAddSave(){
   var t=hmaTab;if(!t)return;
   var v=function(id){var e=document.getElementById(id);return e?String(e.value||'').trim():'';};
   var d=v('hqDate')||today();
+  var bb=document.getElementById('hmBulkBox');
+  if(t==='단어'&&bb&&bb.style.display!=='none'){
+    var items=hmBulkParse((document.getElementById('hqBulk')||{}).value);
+    if(!items.length){alert('단어를 한 줄에 하나씩 넣으세요. 예) bribe = 뇌물');return;}
+    var base=uid();
+    items.forEach(function(x,i){db.study.push({id:base+i,date:d,tab:'단어',term:x.term,meaning:x.meaning});});
+    save();renderStudyAll();renderCal();
+    hmOff[t]=0;hmAddClose();if(typeof renderHome==='function')renderHome();
+    hkChip('단어 '+items.length+'개를 추가했습니다');setTimeout(function(){hkChip('');},1600);
+    return;
+  }
   if(t==='단어'||t==='영어'){
     var term=v('hqTerm'),mean=v('hqMean');
     if(!term){alert(t==='단어'?'단어를 입력하세요.':'문장을 입력하세요.');var f=document.getElementById('hqTerm');if(f)f.focus();return;}
