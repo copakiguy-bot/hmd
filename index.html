@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-14 · r200">
+<meta name="hmd-build" content="2026-10-14 · r201">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -4018,7 +4018,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-14 · r200';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-14 · r201';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -11451,7 +11451,8 @@ function wvLawMainHTML(law){
   var a=lawAnn(law.id);
   return '<div class="wv-tabstrip"><span class="wv-tabon">📜 '+esc(law.title)+'</span></div>'
     +'<div class="wv-head"><span class="wv-path">법규정  /  '+esc(law.cat)+'  /  '+esc(law.title)+'</span>'
-    +'<span class="wv-htools"><span class="wv-lawro">읽기 전용 · 조문을 드래그하면 주석</span>'
+    +'<span class="wv-htools"><span class="wv-lawro">읽기 전용 · 드래그 = 주석 · 줄을 더블클릭 = 여기까지 읽음</span>'
+    +'<i class="wv-hbtn lw-readbtn" id="lawReadBtn" onclick="lawReadGo()" title="빨간 줄(읽은 곳)로 가기"'+(lawRead(law.id)?'':' style="display:none"')+'>📍 읽은 곳</i>'
     +'<i class="wv-hbtn" onclick="wvToggleFull()" title="전체화면">'+(window.__wvFull?'⤡ 축소':'⤢ 확장')+'</i></span></div>'
     +'<div class="law-wrap"><iframe id="lawFrame" class="law-frame" title="'+escA(law.title)+'"></iframe></div>';
 }
@@ -11466,7 +11467,11 @@ var LAW_MARK_CSS='mark.lw-hl{background:#fff3a3;padding:1px 0;border-radius:2px;
   /* HMD 안에서는 언제나 밝은 바탕 (기기 다크모드 무시) · 좁은 칸에서도 본문이 잘리지 않게 */
   +':root{--bg:#fbfaf7!important;--panel:#fff!important;--ink:#1c1b19!important;--ink-soft:#55524c!important;--ink-faint:#8b8780!important;--rule:#e3ded4!important;--accent:#1b4f72!important;--accent-soft:#eaf0f5!important;--mark:#a1663a!important;--hi:#ffe9a8!important}'
   +'html,body{overflow-x:hidden}.bar-in{flex-wrap:wrap;gap:.5rem}.search input{max-width:38vw}.count{white-space:nowrap}main{max-width:none;min-width:0}.wrap>*{min-width:0}.meta,.src,.titleblock{white-space:normal}'
-  +'@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)!important}}';
+  +'@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)!important}}'
+  +'.lw-read{position:relative;border-bottom:2.5px solid #e34948!important;padding-bottom:4px;margin-bottom:26px!important}'
+  +'.lw-read::after{content:attr(data-read);position:absolute;right:0;bottom:-21px;background:#e34948;color:#fff;font-size:11px;font-weight:700;line-height:1.5;padding:1px 8px;border-radius:0 0 6px 6px;font-family:system-ui,sans-serif;white-space:nowrap}'
+  +'.lw-read-flash{background:#ffe3e1!important;transition:background .3s}'
+  +'main p,main li,main h2,main h3,main h4{cursor:default}';
 function lawFrameDoc(){var f=document.getElementById('lawFrame');try{return f&&f.contentDocument;}catch(e){return null;}}
 function lawFrameWin(){var f=document.getElementById('lawFrame');try{return f&&f.contentWindow;}catch(e){return null;}}
 function wvLawMount(law){
@@ -11474,11 +11479,13 @@ function wvLawMount(law){
   f.onload=function(){
     var doc=lawFrameDoc();if(!doc||!doc.body)return;
     if(!doc.getElementById('lw-mark-style')){var st=doc.createElement('style');st.id='lw-mark-style';st.textContent=LAW_MARK_CSS;(doc.head||doc.documentElement).appendChild(st);}
-    doc.addEventListener('mouseup',function(){lawOnMouseUp(law.id);});
+    doc.addEventListener('mouseup',function(e){if(e&&e.detail>=2)return;lawOnMouseUp(law.id);});   /* 더블클릭은 주석이 아니라 «읽은 곳» */
+    doc.addEventListener('dblclick',function(e){lawReadDbl(e,law.id);});
     doc.addEventListener('click',function(e){lawOnClick(e,law.id);});
     lawWireDoc(doc);
     lawApplyAll(law.id);
     lawAnnRender(law.id);
+    lawReadApply(law.id,true);
   };
   f.srcdoc=law.full;
 }
@@ -11566,6 +11573,52 @@ function lawOnMouseUp(lawId){
   var V=db.workVault[WV_MAIN];var tree=document.getElementById('wvTree');if(tree&&V)tree.innerHTML=wvTreeHTML(V);
 }
 /* 원문 안의 ☰ 목차 단추와 조문 검색은 원래 스크립트가 빠져 있어 여기서 살려 준다 */
+/* ===== 법규정 «여기까지 읽음»: 줄(문단)을 더블클릭하면 그 아래에 빨간 줄 · 다시 더블클릭하면 지움 =====
+   저장: db.lawRead[법령id] = {art: 조문 id, txt: 그 줄 앞부분, idx: 본문 안 몇 번째 줄, at: 날짜} */
+var LAW_READ_SEL='main p, main h2, main h3, main h4, main li, main .meta, main .src';
+function lawRead(id){return (db.lawRead||{})[id]||null;}
+function lawReadBlocks(doc){return Array.prototype.slice.call(doc.querySelectorAll(LAW_READ_SEL)).filter(function(b){return !b.querySelector(LAW_READ_SEL)&&b.textContent.trim();});}
+function lawReadKey(b){return b.textContent.replace(/\s+/g,' ').trim().slice(0,40);}
+function lawReadFind(doc,r){
+  var bl=lawReadBlocks(doc);if(!r)return null;
+  var pool=bl;
+  if(r.art){var art=doc.getElementById(r.art);if(art)pool=bl.filter(function(b){return art.contains(b);});}
+  var hit=pool.find(function(b){return lawReadKey(b)===r.txt;});
+  if(!hit)hit=bl.find(function(b){return lawReadKey(b)===r.txt;});
+  if(!hit&&r.idx!=null&&bl[r.idx])hit=bl[r.idx];
+  return hit||null;
+}
+function lawReadApply(lawId,scroll){
+  var doc=lawFrameDoc();if(!doc||!doc.body)return;
+  doc.querySelectorAll('.lw-read').forEach(function(x){x.classList.remove('lw-read');x.removeAttribute('data-read');});
+  var r=lawRead(lawId),btn=document.getElementById('lawReadBtn');
+  if(btn)btn.style.display=r?'':'none';
+  if(!r)return;
+  var b=lawReadFind(doc,r);if(!b)return;
+  b.classList.add('lw-read');b.setAttribute('data-read','여기까지 읽음'+(r.at?' · '+(+r.at.slice(5,7))+'/'+(+r.at.slice(8,10)):''));
+  if(scroll)setTimeout(function(){try{b.scrollIntoView({block:'center'});}catch(e){}},60);
+}
+function lawReadDbl(e,lawId){
+  var doc=lawFrameDoc(),win=lawFrameWin();if(!doc)return;
+  var t=e.target;if(!t||!t.closest)return;
+  if(t.closest('header,nav,input,button,a,sup.lw-annref'))return;
+  var b=t.closest(LAW_READ_SEL);
+  while(b&&b.querySelector(LAW_READ_SEL)){b=null;}
+  if(!b||!doc.querySelector('main')||!doc.querySelector('main').contains(b))return;
+  try{win.getSelection().removeAllRanges();}catch(err){}
+  db.lawRead=db.lawRead||{};
+  var bl=lawReadBlocks(doc);
+  if(b.classList.contains('lw-read')){delete db.lawRead[lawId];save();lawReadApply(lawId);hkChip('읽은 곳 표시를 지웠습니다');setTimeout(function(){hkChip('');},1200);return;}
+  var art=b.closest('article[id]');
+  db.lawRead[lawId]={art:art?art.id:'',txt:lawReadKey(b),idx:bl.indexOf(b),at:today()};
+  save();lawReadApply(lawId);
+  hkChip('여기까지 읽음'+(art?' · '+art.id:''));setTimeout(function(){hkChip('');},1300);
+}
+function lawReadGo(){
+  var V=db.workVault&&db.workVault[WV_MAIN],id=wvLawActive(V);if(!id)return;
+  var doc=lawFrameDoc();if(!doc)return;var b=lawReadFind(doc,lawRead(id));
+  if(b){b.scrollIntoView({block:'center',behavior:'smooth'});b.classList.add('lw-read-flash');setTimeout(function(){b.classList.remove('lw-read-flash');},900);}
+}
 function lawWireDoc(doc){
   var mb=doc.getElementById('menuBtn'),toc=doc.querySelector('nav.toc');
   if(mb&&toc)mb.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();toc.classList.toggle('open');});
