@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-14 · r199">
+<meta name="hmd-build" content="2026-10-14 · r200">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2677,6 +2677,18 @@
   .hm-wk{grid-column:1/-1;display:flex;flex-direction:column;gap:8px;padding:16px;margin:0}
   .hm-wk>h3{margin-bottom:0}
   .hmwk-title{font-weight:700}
+  .hmwk-trow{display:flex;align-items:center;gap:6px}
+  .hmwk-trow .hmwk-title{flex:1;min-width:0}
+  .hmwk-grip{flex:none;width:22px;height:34px;display:flex;align-items:center;justify-content:center;color:#b9b2a2;cursor:grab;border-radius:7px;font-size:15px;user-select:none;touch-action:none}
+  .hmwk-grip:hover,.hmwk-grip.on{background:#f4efe2;color:var(--dark)}
+  .hmwk-grip.on{cursor:grabbing}
+  .hmwk-title.drop-on{box-shadow:0 0 0 2px #f4b740;background:#fffbea}
+  .hmwk-title.drop-flash{animation:dropFlash .7s ease-out}
+  @keyframes dropFlash{0%{background:#ffe7a0}100%{background:#fff}}
+  .drag-ghost{position:fixed;z-index:100000;pointer-events:none;display:none;background:var(--dark);color:#fff;font-size:12px;font-weight:700;padding:6px 11px;border-radius:9px;box-shadow:0 8px 22px rgba(0,0,0,.25);max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tl-ev.lifted{opacity:.45}
+  .tl-dropline{position:absolute;top:0;bottom:0;width:2px;background:#f4b740;z-index:6;pointer-events:none}
+  .tl-dropline::after{content:attr(data-t);position:absolute;top:2px;left:4px;background:#f4b740;color:#3a2a00;font-size:10.5px;font-weight:800;padding:1px 5px;border-radius:5px;white-space:nowrap}
   .hmwk-box .fw-rich{min-height:190px;max-height:230px;background:#fff;border:1px solid #efede8}
   .hmwk-mind{min-height:200px;max-height:260px;flex:none}
   .hmwk-mapwrap .wv-maptools{margin-bottom:6px}
@@ -3078,7 +3090,7 @@
         <div class="card hm-wk" id="hmWorkEd">
           <h3><span class="dot" style="background:var(--yellow)"></span> 메모
             <button type="button" class="lunar-toggle" style="margin-left:auto" onclick="go('work')">업무 →</button></h3>
-          <input id="hmwkTitle" class="in hmwk-title" placeholder="제목">
+          <div class="hmwk-trow"><span class="hmwk-grip" id="hmwkGrip" title="끌어서 타임라인에 놓으면 그 시각 일정으로 들어갑니다">⠿</span><input id="hmwkTitle" class="in hmwk-title" placeholder="제목 · 타임라인의 일정·루틴을 끌어다 놓아도 됩니다"></div>
           <div id="hmwkBox" class="hmwk-box"><div class="fw-rich" id="hmwkEd" contenteditable="true" data-noenter="1"></div></div>
           <div id="hmwkMapWrap" class="hmwk-mapwrap" style="display:none"><div class="wv-maptools"><button type="button" class="btn y" style="padding:5px 12px;font-size:12px" onclick="mindAddFocus(mindRoot())">＋ 생각 추가</button><span class="wv-xlhint"><b>Tab</b>=하위 · <b>Enter</b>=대등 · 칸을 끌어 이동</span></div><div id="hmwkMind" class="wv-mindcv hmwk-mind"></div></div>
           <div class="hmwk-foot">
@@ -4006,7 +4018,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-14 · r199';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-14 · r200';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -5208,21 +5220,32 @@ function tlBindDrag(){
   document.querySelectorAll('#tlInner .tl-ev[data-k]').forEach(function(el){
     el.addEventListener('pointerdown',function(e){
       e.preventDefault();
-      tlDrag={el:el,k:el.getAttribute('data-k'),id:Number(el.getAttribute('data-id')),startX:e.clientX,origLeft:parseFloat(el.style.left),moved:false};
+      tlDrag={el:el,k:el.getAttribute('data-k'),id:Number(el.getAttribute('data-id')),startX:e.clientX,startY:e.clientY,origLeft:parseFloat(el.style.left),moved:false,lifted:false};
       if(el.setPointerCapture)try{el.setPointerCapture(e.pointerId);}catch(err){}
       el.classList.add('dragging');
     });
     el.addEventListener('pointermove',function(e){
       if(!tlDrag||tlDrag.el!==el)return;
+      /* 위아래로 크게 끌면 «들어올리기»: 시간 이동 대신 메모 제목으로 옮길 수 있게 */
+      if(!tlDrag.lifted&&Math.abs(e.clientY-tlDrag.startY)>42&&dragTitleTargetVisible()){
+        tlDrag.lifted=true;tlDrag.moved=true;el.style.left=tlDrag.origLeft+'px';el.classList.add('lifted');
+        dragGhostShow(tlEvTitle(tlDrag.k,tlDrag.id),e.clientX,e.clientY);
+      }
+      if(tlDrag.lifted){dragGhostMove(e.clientX,e.clientY);dragTitleHover(e.clientX,e.clientY);return;}
       var nl=tlDrag.origLeft+(e.clientX-tlDrag.startX);
       nl=Math.max(0,Math.min(nl,(TL_END-TL_START)*TL_HW-12));
       if(Math.abs(nl-tlDrag.origLeft)>5)tlDrag.moved=true;   /* 더블클릭 중의 손떨림은 이동으로 보지 않는다 */
       el.style.left=nl+'px';
     });
-    function finish(){
+    function finish(e){
       if(!tlDrag||tlDrag.el!==el)return;
-      el.classList.remove('dragging');
+      el.classList.remove('dragging');el.classList.remove('lifted');
       var d=tlDrag;tlDrag=null;
+      if(d.lifted){                      /* 메모 제목으로 놓기 */
+        dragGhostHide();dragTitleHover(-1,-1);
+        if(e&&dragOverMemo(e.clientX,e.clientY))memoTitleDrop(tlEvTitle(d.k,d.id));
+        return;
+      }
       if(!d.moved){
         /* 이동 없이 탭: 두 번 = 완료 처리 · 세 번 = 타이머 (모바일 포함) */
         var now=Date.now();
@@ -5263,8 +5286,82 @@ function tlBindDrag(){
       save();renderSchedule();renderCal();
     }
     el.addEventListener('pointerup',finish);
-    el.addEventListener('pointercancel',function(){if(tlDrag&&tlDrag.el===el){tlDrag=null;el.classList.remove('dragging');renderTimeline();}});
+    el.addEventListener('pointercancel',function(){if(tlDrag&&tlDrag.el===el){tlDrag=null;el.classList.remove('dragging');el.classList.remove('lifted');dragGhostHide();dragTitleHover(-1,-1);renderTimeline();}});
   });
+}
+/* ===== 타임라인 ↔ 대시보드 메모 제목: 끌어다 놓기 =====
+   · 타임라인의 일정·루틴을 위나 아래로 끌어 메모 칸에 놓으면 → 그 이름이 메모 제목으로
+   · 메모 제목 왼쪽 ⠿ 를 끌어 타임라인(Daily)에 놓으면 → 놓은 시각(5분 단위)의 일정으로 */
+function tlEvTitle(k,id){
+  if(k==='s'){var s=schById(id);return s?String(s.title||''):'';}
+  var r=(db.tlRoutines||[]).find(function(x){return x.id===id;});return r?String(r.title||''):'';
+}
+function dragTitleTargetVisible(){var c=document.getElementById('hmWorkEd');return !!(c&&c.offsetParent);}
+function dragGhostShow(txt,x,y){
+  var g=document.getElementById('dragGhost');
+  if(!g){g=document.createElement('div');g.id='dragGhost';g.className='drag-ghost';document.body.appendChild(g);}
+  g.textContent=txt||'(제목 없음)';g.style.display='block';dragGhostMove(x,y);
+}
+function dragGhostMove(x,y){var g=document.getElementById('dragGhost');if(g){g.style.left=(x+12)+'px';g.style.top=(y+10)+'px';}}
+function dragGhostHide(){var g=document.getElementById('dragGhost');if(g)g.style.display='none';var l=document.getElementById('tlDropLine');if(l)l.remove();}
+function dragOverMemo(x,y){var c=document.getElementById('hmWorkEd');if(!c||!c.offsetParent)return false;var r=c.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom;}
+function dragTitleHover(x,y){var t=document.getElementById('hmwkTitle');if(t)t.classList.toggle('drop-on',dragOverMemo(x,y));}
+function memoTitleDrop(txt){
+  var t=document.getElementById('hmwkTitle');if(!t||!txt)return;
+  t.value=txt;t.classList.add('drop-flash');setTimeout(function(){t.classList.remove('drop-flash');},700);
+  try{hmWkDraftSave(true);}catch(e){}
+  hkChip('메모 제목에 «'+txt+'»');setTimeout(function(){hkChip('');},1300);
+}
+/* 메모 제목 → 타임라인 */
+var __mgDrag=null;
+function tlTrackAt(x,y){
+  var tr=document.querySelector('#tlInner .tl-track');if(!tr||!tr.offsetParent)return null;
+  var r=tr.getBoundingClientRect(),wrap=tr.closest('.tl-wrap')||tr,wr=wrap.getBoundingClientRect();
+  if(y<r.top-6||y>r.bottom+6||x<Math.max(r.left,wr.left)||x>Math.min(r.right,wr.right))return null;
+  var mn=Math.round(((x-r.left)/TL_HW*60)/5)*5+TL_START*60;
+  mn=Math.max(TL_START*60,Math.min(mn,TL_END*60-5));
+  return {tr:tr,mn:mn,left:(mn-TL_START*60)/60*TL_HW};
+}
+function memoGripBind(){
+  var g=document.getElementById('hmwkGrip');if(!g||g.__bound)return;g.__bound=1;
+  g.addEventListener('pointerdown',function(e){
+    var t=document.getElementById('hmwkTitle'),txt=(t&&t.value||'').trim();
+    if(!txt){var ed=document.getElementById('hmwkEd');txt=ed?String(ed.innerText||'').trim().split('\n')[0].trim():'';}
+    if(!txt){hkChip('제목을 먼저 쓰세요');setTimeout(function(){hkChip('');},1300);return;}
+    e.preventDefault();
+    __mgDrag={txt:txt.slice(0,80)};
+    try{g.setPointerCapture(e.pointerId);}catch(err){}
+    dragGhostShow(__mgDrag.txt,e.clientX,e.clientY);g.classList.add('on');
+  });
+  g.addEventListener('pointermove',function(e){
+    if(!__mgDrag)return;
+    dragGhostMove(e.clientX,e.clientY);
+    var hit=tlTrackAt(e.clientX,e.clientY),ln=document.getElementById('tlDropLine');
+    if(hit){
+      if(!ln||ln.parentNode!==hit.tr){if(ln)ln.remove();ln=document.createElement('div');ln.id='tlDropLine';ln.className='tl-dropline';hit.tr.appendChild(ln);}
+      ln.style.left=hit.left+'px';ln.setAttribute('data-t',tlFmt(hit.mn));
+    }else if(ln)ln.remove();
+    var gh=document.getElementById('dragGhost');if(gh)gh.textContent=(hit?tlFmt(hit.mn)+' · ':'')+__mgDrag.txt;
+  });
+  function end(e){
+    if(!__mgDrag)return;
+    var d=__mgDrag;__mgDrag=null;g.classList.remove('on');
+    var hit=e&&e.type==='pointerup'?tlTrackAt(e.clientX,e.clientY):null;
+    dragGhostHide();
+    if(!hit){
+      var card=document.getElementById('timelineCard');
+      if(e&&card&&card.offsetParent){var r=card.getBoundingClientRect();
+        if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){hkChip('타임라인 Daily 화면의 시간 줄 위에 놓아 주세요');setTimeout(function(){hkChip('');},1800);}}
+      return;
+    }
+    var date=selDate||today(),time=tlFmt(hit.mn);
+    db.schedules.push({id:uid(),date:date,time:time,dur:30,title:d.txt,detail:''});
+    save();try{renderCal();renderSchedule();}catch(err){}
+    if(typeof renderHome==='function')renderHome();
+    hkChip((date===today()?'':(+date.slice(5,7))+'/'+(+date.slice(8,10))+' ')+time+' «'+d.txt+'» 일정을 넣었습니다');setTimeout(function(){hkChip('');},1800);
+  }
+  g.addEventListener('pointerup',end);
+  g.addEventListener('pointercancel',end);
 }
 /* ===== 초과근무: 기존 달력에 통합 (버튼 → 날짜칸에 시간 입력 + 주합계·월합계) ===== */
 var showOvertime=false;
@@ -15839,6 +15936,7 @@ var hmwkMode='text',hmwkMap={mind:[{id:1,t:'주제',x:30,y:30,p:0}]};
 function hmWkCtx(){return {obj:hmwkMap,canvas:'hmwkMind',onRender:function(){hmWkDraftSave();},onSync:function(){hmWkDraftSave();}};}
 function hmWkMount(){
   var ed=document.getElementById('hmwkEd'),box=document.getElementById('hmwkBox'),tt=document.getElementById('hmwkTitle');if(!ed||!box)return;
+  try{memoGripBind();}catch(e){}
   if(!box.dataset.tb){box.dataset.tb='1';
     ed.addEventListener('input',function(){hmWkDraftSave();});
     ed.addEventListener('blur',function(){hmWkDraftSave(true);});
