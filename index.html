@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-13 · r197">
+<meta name="hmd-build" content="2026-10-14 · r199">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1512,6 +1512,11 @@
   .hmq{margin:0;padding:14px 16px}
   .hmq h3{margin-bottom:10px}
   .hmq-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .tnow-w{position:relative;display:inline-flex;flex:none}
+  .tnow-w>.in{padding-right:40px!important}
+  .tnow{position:absolute;right:5px;top:50%;transform:translateY(-50%);border:none;background:#eef3f0;color:var(--green);font-size:10.5px;font-weight:800;border-radius:6px;padding:3px 6px;cursor:pointer;line-height:1.2;font-family:inherit}
+  .tnow:hover{background:var(--green);color:#fff}
+  .in.tnow-flash{box-shadow:0 0 0 2px #f4b740}
   .hmq-row .in{padding:7px 9px;font-size:13px;min-width:0}
   .hmq-row .sep{color:var(--muted);font-size:12px}
   .hmq h3 .hmq-book{margin-left:10px;max-width:230px;font-size:12.5px;font-weight:700}
@@ -2681,6 +2686,8 @@
   .hmwk-save:hover{background:var(--yellow)}
   .hmwk-dy{border-color:#b9a7e6}
   .hmwk-dy:hover{background:#e9e4f7}
+  .hmwk-ib{border-color:#f0d36b}
+  .hmwk-ib:hover{background:#fff6cf}
   .hm-half{grid-column:span 2;padding:16px}
   @media(max-width:1000px){.hm-grid{grid-template-columns:1fr 1fr}.hm-half{grid-column:1/-1}}
   @media(max-width:640px){.hm-grid{grid-template-columns:1fr}}
@@ -3022,7 +3029,7 @@
 
 <button class="menu-btn" onclick="toggleMenu()">☰</button>
 <aside class="sidebar">
-  <div class="logo" id="hmdLogo" title="매일매일 · 독서 · 일기 열기" onclick="showMyThree()">HMD</div>
+  <div class="logo" id="hmdLogo" title="대시보드로" style="cursor:pointer" onclick="goTop('home')">HMD</div>
   <div class="nav active" data-v="dashboard">Dashboard</div>
   <div class="nav" data-v="schedcard">Schedule</div>
   <div class="nav" data-v="work">Work</div>
@@ -3080,6 +3087,7 @@
             <button type="button" class="btn ghost hmwk-save" onclick="hmWkSave('의회운영')" title="«의회운영» 폴더에 노트로 저장">의회운영</button>
             <button type="button" class="btn ghost hmwk-save" onclick="hmWkSave('매뉴얼')" title="«매뉴얼» 폴더에 노트로 저장">매뉴얼</button>
             <button type="button" class="btn ghost hmwk-save hmwk-dy" onclick="hmWkDiary()" title="오늘 일기로 보내기">일기</button>
+            <button type="button" class="btn ghost hmwk-save hmwk-ib" onclick="hmWkInbox()" title="인박스로 보내기">인박스</button>
           </div>
         </div>
       <div class="hmzk-col">
@@ -3998,7 +4006,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-13 · r197';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-14 · r199';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -6745,6 +6753,13 @@ function tlDayShift(n){
 }
 
 /* ---------- schedules ---------- */
+/* 시각 칸 옆 «지금» 단추: 지금 시각(HH:MM)을 넣는다 (직접 입력도 그대로 된다) */
+function tNow(id){
+  var el=document.getElementById(id);if(!el)return;
+  var t=new Date();el.value=String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');
+  try{el.dispatchEvent(new Event('input',{bubbles:true}));}catch(e){}
+  el.classList.add('tnow-flash');setTimeout(function(){el.classList.remove('tnow-flash');},500);
+}
 function normTime(v){v=String(v).trim();const d=v.replace(/[^0-9]/g,'');if(/^[0-9]{3,4}$/.test(d)){const H=parseInt(d.slice(0,d.length-2),10),M=parseInt(d.slice(-2),10);if(H<24&&M<60)return String(H).padStart(2,'0')+':'+String(M).padStart(2,'0');}return v;}
 
 /* ---------- 구글 캘린더 연동 ---------- */
@@ -7498,7 +7513,7 @@ function moveNextGrp(id){
 function inbList(){return (db.inbox||[]).filter(function(x){return grpOf(x)==='inbox'&&!x.buried;});}
 function graveList(){return (db.inbox||[]).filter(function(x){return !!x.buried;});}
 function inbSrcBadge(x){
-  var m={direct:['직접등록','direct'],long:['장기프로젝트','long'],memo:['포스트잇','memo']};
+  var m={direct:['직접등록','direct'],long:['장기프로젝트','long'],memo:['포스트잇','memo'],dash:['대시보드 메모','memo']};
   var s=m[x.src];return s?'<span class="inb-src '+s[1]+'">'+s[0]+'</span>':'';
 }
 /* 주석이 걸린 구간을 형광펜으로 표시 (겹쳐도 안전하게 글자 단위 처리) */
@@ -13332,9 +13347,9 @@ function rdgBoxHTML(){
       +'<input type="date" id="rdgDate" class="in" style="flex:none;width:138px" oninput="rdgKeep(this)">'
       +'<span id="rdgAddWrap" style="display:none"></span>'
       +'<span class="rdg-fl">시각</span>'
-      +'<input id="rdgS" class="in" inputmode="numeric" placeholder="예:2130" style="flex:none;width:82px" oninput="rdgKeep(this)" onblur="this.value=normTime(this.value);rdgKeep(this)">'
+      +'<span class="tnow-w"><input id="rdgS" class="in" inputmode="numeric" placeholder="예:2130" style="flex:none;width:106px" oninput="rdgKeep(this)" onblur="this.value=normTime(this.value);rdgKeep(this)"><button type="button" class="tnow" tabindex="-1" onclick="tNow(\'rdgS\')" title="지금 시각 넣기">지금</button></span>'
       +'<span class="rdp-sep">~</span>'
-      +'<input id="rdgE" class="in" inputmode="numeric" placeholder="예:2240" style="flex:none;width:82px" oninput="rdgKeep(this)" onblur="this.value=normTime(this.value);rdgKeep(this)" onkeydown="if(event.key===\'Enter\')rdgAdd()">'
+      +'<span class="tnow-w"><input id="rdgE" class="in" inputmode="numeric" placeholder="예:2240" style="flex:none;width:106px" oninput="rdgKeep(this)" onblur="this.value=normTime(this.value);rdgKeep(this)" onkeydown="if(event.key===\'Enter\')rdgAdd()"><button type="button" class="tnow" tabindex="-1" onclick="tNow(\'rdgE\')" title="지금 시각 넣기">지금</button></span>'
       +'<span class="rdg-fl">쪽</span>'
       +'<input id="rdgP1" class="in" inputmode="numeric" placeholder="40" style="flex:none;width:58px" oninput="rdgKeep(this)">'
       +'<span class="rdp-sep">~</span>'
@@ -15916,6 +15931,31 @@ function hmWkDiary(){
   try{renderDiary();renderDiaryPage();renderCal();}catch(e){}
   hkChip('오늘 일기에 넣었습니다');setTimeout(function(){hkChip('');},1500);
 }
+/* 메모 → 인박스: 제목(없으면 첫 줄)이 항목 이름, 나머지 글은 항목 메모로 · 마인드맵은 그대로 붙인다 */
+function hmWkInbox(){
+  var ed=document.getElementById('hmwkEd'),tt=document.getElementById('hmwkTitle'),st=document.getElementById('hmwkSt');if(!ed)return;
+  var isMap=(hmwkMode==='map'),title=(tt&&tt.value||'').trim(),text='',mind=null;
+  if(isMap){var root=hmwkMap.mind[0];
+    if(hmwkMap.mind.length>1||(root&&root.t&&root.t!=='주제')){mind=hmwkMap.mind.map(function(n){return Object.assign({},n);});
+      if(!title&&root&&root.t&&root.t!=='주제')title=root.t;
+      text=hmWkMindText().replace(/<br>/g,'\n').replace(/&nbsp;/g,' ').replace(/<[^>]+>/g,'');
+      text=text.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&amp;/g,'&');}}
+  else text=String(ed.innerText||'').replace(/\u00a0/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+  if(!title&&!text){hkChip(isMap?'마인드맵에 생각을 넣고 보내세요':'내용을 쓰고 인박스로 보내세요');setTimeout(function(){hkChip('');},1400);if(!isMap)ed.focus();return;}
+  var t=title,memo=text;
+  if(!t){var ls=text.split('\n');t=ls.shift().trim();memo=ls.join('\n').trim();}
+  if(t.length>140){memo=(t.slice(140)+(memo?'\n'+memo:'')).trim();t=t.slice(0,140)+'…';}
+  var item={id:uid(),date:today(),t:t,done:false,grp:'inbox',src:'dash',notes:[],tags:'',memo:memo};
+  if(mind){item.mind=mind;if(hmwkMap.mindShape)item.mindShape=hmwkMap.mindShape;if(hmwkMap.mindMode)item.mindMode=hmwkMap.mindMode;}
+  db.inbox.push(item);
+  hmWkDraftClear();
+  save();
+  ed.innerHTML='';if(tt)tt.value='';
+  if(isMap){hmWkMapReset();window.__mindCtx=hmWkCtx();renderMind();}
+  if(st)st.textContent='인박스로 보냈습니다 '+new Date().toTimeString().slice(0,5);
+  try{renderInbox();renderInboxPage();}catch(e){}
+  hkChip('인박스에 넣었습니다');setTimeout(function(){hkChip('');},1500);
+}
 function hmWkSave(folder){
   var ed=document.getElementById('hmwkEd'),tt=document.getElementById('hmwkTitle'),st=document.getElementById('hmwkSt');if(!ed)return;
   var isMap=(hmwkMode==='map');
@@ -15961,8 +16001,8 @@ function hmRdQuickHTML(){
   return '<h3><span class="dot" style="background:#6a8fd8"></span> 독서기록'
     +'<select id="hmqBook" class="rowsel hmq-book" title="기록할 책" onchange="hmqAutoStart()">'+bs.map(function(b){return '<option value="'+b.id+'"'+(String(b.id)===prev?' selected':'')+'>'+esc(b.title)+'</option>';}).join('')+'</select></h3>'
     +'<div class="hmq-row">'
-    +'<span class="fl">시각</span><input id="hmqS" class="in" inputmode="numeric" placeholder="시작" style="flex:1;min-width:58px;max-width:90px" onblur="this.value=normTime(this.value)">'
-    +'<span class="sep">~</span><input id="hmqE" class="in" inputmode="numeric" placeholder="끝" style="flex:1;min-width:58px;max-width:90px" onblur="this.value=normTime(this.value)" onkeydown="if(event.key===\'Enter\')hmRdgAdd()">'
+    +'<span class="fl">시각</span><span class="tnow-w" style="flex:1;min-width:84px;max-width:112px"><input id="hmqS" class="in" inputmode="numeric" placeholder="시작" style="width:100%" onblur="this.value=normTime(this.value)"><button type="button" class="tnow" tabindex="-1" onclick="tNow(\'hmqS\')" title="지금 시각 넣기">지금</button></span>'
+    +'<span class="sep">~</span><span class="tnow-w" style="flex:1;min-width:84px;max-width:112px"><input id="hmqE" class="in" inputmode="numeric" placeholder="끝" style="width:100%" onblur="this.value=normTime(this.value)" onkeydown="if(event.key===\'Enter\')hmRdgAdd()"><button type="button" class="tnow" tabindex="-1" onclick="tNow(\'hmqE\')" title="지금 시각 넣기">지금</button></span>'
     +'<span class="fl">쪽</span><input id="hmqP1" class="in" inputmode="numeric" placeholder="시작" style="flex:1;min-width:52px;max-width:80px">'
     +'<span class="sep">~</span><input id="hmqP2" class="in" inputmode="numeric" placeholder="끝" style="flex:1;min-width:52px;max-width:80px" onkeydown="if(event.key===\'Enter\')hmRdgAdd()">'
     +'<button type="button" class="btn y" style="flex:none;padding:7px 14px;margin-left:auto" onclick="hmRdgAdd()">기록</button></div>';
