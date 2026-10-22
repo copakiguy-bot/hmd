@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-20 · r202">
+<meta name="hmd-build" content="2026-10-22 · r203">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -121,6 +121,27 @@
   .nowbar .tt{max-width:44vw;font-size:20px;font-weight:800;color:var(--text);
     letter-spacing:-.4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     cursor:pointer;line-height:1.25}
+  .nowtimer{display:flex;justify-content:center}
+  .ntm-in{display:flex;align-items:center;gap:14px;padding:2px 6px}
+  .ntm-stack{display:flex;flex-direction:column;align-items:center;min-width:0}
+  .ntm-t{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;max-width:46vw;overflow:hidden;text-overflow:ellipsis}
+  .ntm-c{font-family:'Nunito',system-ui,sans-serif;font-size:36px;font-weight:800;line-height:1.05;color:var(--dark);letter-spacing:1px;font-variant-numeric:tabular-nums}
+  .ntm-in.paused .ntm-c{color:var(--muted)}
+  .ntm-in.done .ntm-c{color:#e34948;animation:ntmPulse 1s ease-in-out infinite}
+  @keyframes ntmPulse{50%{opacity:.45}}
+  .ntm-bar{display:block;width:150px;height:3px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:3px}
+  .ntm-bar i{display:block;height:100%;background:#f4b740;width:0}
+  .ntm-ctl{display:flex;gap:5px}
+  .ntm-b{border:1px solid var(--line);background:#fff;border-radius:9px;padding:5px 9px;font-size:12px;font-weight:800;color:var(--dark);cursor:pointer;font-family:inherit}
+  .ntm-b:hover{border-color:#f4b740}
+  .ntm-b.x{color:var(--muted)}
+  .ntm-b.ok{background:var(--green);color:#fff;border-color:var(--green)}
+  .rt-act{flex:none;border:1px dashed var(--line);background:#fff;border-radius:999px;padding:2px 8px;font-size:10.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;white-space:nowrap}
+  .rt-act.on{border-style:solid;border-color:#cfe3d9;background:#eef6f1;color:var(--green)}
+  .rta-l{font-size:12.5px;color:var(--muted);margin:2px 0 6px}
+  .rta-opts{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+  .rta-opt{font-size:13.5px;display:flex;align-items:center;gap:6px;cursor:pointer}
+  .rta-q{border:1px solid var(--line);background:#fff;border-radius:7px;padding:4px 8px;font-size:11.5px;cursor:pointer;font-family:inherit}
   .nowbar .tt.done{text-decoration:line-through;text-decoration-thickness:2px;color:var(--muted)}
   .nowbar.past .tt{color:var(--muted)}
   .nowbar.idle .tt{font-size:15px;font-weight:700;color:var(--muted);cursor:default}
@@ -3073,7 +3094,7 @@
 
 <main class="main">
   <!-- 맨 위 가운데: 지금 일정 (손잡이를 누르면 스르륵 숨는다) -->
-  <div id="topSecBar"><div id="nowWrap"><div id="nowHandle" title="일정 숨기기" onclick="nowToggleHide(event)"></div><div id="nowClip"><div id="nowBar" class="nowbar idle" title="누르면 스케줄로 이동" onclick="goTop('cal')"><span class="arw" id="nowPrev" title="이전 일정" onclick="nowStep(-1,event)">‹</span><span class="nb-stack"><span class="rg" id="nowRange" title="세 번 누르면 타이머" onclick="nowRangeTap(event)">&nbsp;</span><b class="tt" id="nowTitle" title="두 번 누르면 완료 표시" onclick="event.stopPropagation()" ondblclick="nowToggleDone(event)">—</b></span><span class="arw" id="nowNext" title="다음 일정" onclick="nowStep(1,event)">›</span></div></div></div></div>
+  <div id="topSecBar"><div id="nowWrap"><div id="nowHandle" title="일정 숨기기" onclick="nowToggleHide(event)"></div><div id="nowClip"><div id="nowTimer" class="nowtimer" style="display:none" onclick="event.stopPropagation()"></div><div id="nowBar" class="nowbar idle" title="누르면 스케줄로 이동" onclick="goTop('cal')"><span class="arw" id="nowPrev" title="이전 일정" onclick="nowStep(-1,event)">‹</span><span class="nb-stack"><span class="rg" id="nowRange" title="세 번 누르면 타이머" onclick="nowRangeTap(event)">&nbsp;</span><b class="tt" id="nowTitle" title="두 번 누르면 완료 표시" onclick="event.stopPropagation()" ondblclick="nowToggleDone(event)">—</b></span><span class="arw" id="nowNext" title="다음 일정" onclick="nowStep(1,event)">›</span></div></div></div></div>
   <div class="topbar">
     <div></div>
     <div class="right">
@@ -4018,7 +4039,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-20 · r202';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-22 · r203';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -5159,6 +5180,7 @@ function nowToggleDone(ev){
 }
 function renderNowBar(){
   var bar=document.getElementById('nowBar');if(!bar)return;
+  if(rtTimerPaint())return;                      /* 루틴 타이머가 돌고 있으면 그 자리를 타이머가 쓴다 */
   if(typeof db==='undefined'||!db||!db.schedules)return;
   var tt=document.getElementById('nowTitle'),
       rg=document.getElementById('nowRange'),
@@ -5201,6 +5223,159 @@ function tlTextW(t,font){
   if(!__tlCv)__tlCv=document.createElement('canvas');
   var cx=__tlCv.getContext('2d');cx.font=(font||'600 10.5px')+' "Noto Sans KR",Pretendard,sans-serif';
   return cx.measureText(String(t)).width;
+}
+/* ===== 루틴 한 번 누르기 → 타이머 (상단 일정 자리에 크게) · 메뉴로 이동 + 타이머 =====
+   루틴마다: act = 'timer'(타이머만) | 'go'(메뉴로 가서 타이머) | 'none' · go = 이동할 곳 · tmin = 타이머 분(기본 10) */
+var RT_GO={
+  hanja:{n:'한자',v:'study:한자'},
+  cheonil:{n:'천일문',v:'study:언어',sel:'#ldChapter'},
+  ec100:{n:'영어회화 100',v:'study:언어',sel:'#ec100Card'},
+  chrono:{n:'연대기',v:'chrono'},
+  work:{n:'업무',v:'work'},
+  assets:{n:'가계부',v:'assets'},
+  excerpt:{n:'독서 · 발췌 입력',v:'reading',sel:'#exBook'},
+  know:{n:'공부 · 지식',v:'study:지식'},
+  project:{n:'프로젝트 (타임라인)',fn:function(){goTop('home');tlSetMode('project');setTimeout(function(){var c=document.getElementById('timelineCard');if(c)c.scrollIntoView({block:'start',behavior:'smooth'});},120);}},
+  culture:{n:'문화',v:'study:문화'},
+  words:{n:'단어',v:'study:단어'},
+  sent:{n:'문장',v:'study:영어'},
+  diary:{n:'일기',v:'diary'},
+  zettel:{n:'제텔카스텐',v:'zettel'},
+  reading:{n:'독서',v:'reading'},
+  inbox:{n:'인박스',v:'inbox'}
+};
+/* 처음 한 번, 이름으로 알맞은 동작을 정해 둔다 (직접 바꾼 것은 건드리지 않는다) */
+var RT_AUTO_TIMER=['스트레칭','복습','시사인1개','명상','파일정리','회의록읽기','우수조례읽기','프로젝트추진','익일계획세우기','법읽기','오전운동','방청소','밤복습','밤독서'];
+var RT_AUTO_GO={'한자5개':'hanja','천일문1unit':'cheonil','연대기적기':'chrono','뭐라도적기(업무)':'work','가계부쓰기':'assets','영어회화100일':'ec100',
+  '발췌문장타이핑':'excerpt','뭐라도적기(공부)':'know','뭐라도추진(프로젝트)':'project','뭐라도쓰기(문화)':'culture'};
+function rtNameKey(t){return String(t||'').replace(/\s+/g,'').replace(/（/g,'(').replace(/）/g,')').toLowerCase();}
+function rtActAuto(){
+  var ch=false;
+  (db.tlRoutines||[]).forEach(function(r){
+    if(r.act!==undefined)return;
+    var k=rtNameKey(r.title);
+    if(RT_AUTO_GO[k]){r.act='go';r.go=RT_AUTO_GO[k];ch=true;}
+    else if(RT_AUTO_TIMER.indexOf(k)>=0){r.act='timer';ch=true;}
+  });
+  return ch;
+}
+function rtMin(r){var m=Number(r&&r.tmin);return m>0?m:10;}
+function rtActChip(r){
+  var a=r.act==='timer'||r.act==='go'?r.act:'';
+  var lbl=a==='go'?('→ '+((RT_GO[r.go]||{}).n||'메뉴')+' · ⏱'+rtMin(r)+'분'):a==='timer'?('⏱ '+rtMin(r)+'분'):'⏱ 설정';
+  return '<button type="button" class="rt-act'+(a?' on':'')+'" title="한 번 누르면 할 일 · 타이머 시간 설정" onclick="rtActOpen('+r.id+')">'+esc(lbl)+'</button>';
+}
+function rtActOpen(id){
+  var r=(db.tlRoutines||[]).find(function(x){return x.id===id;});if(!r)return;
+  rtActClose();
+  var a=r.act==='timer'||r.act==='go'?r.act:'none';
+  var ov=document.createElement('div');ov.className='hma-ov';ov.id='rtActOv';
+  ov.addEventListener('click',function(e){if(e.target===ov)rtActClose();});
+  ov.innerHTML='<div class="hma" style="max-width:430px"><div class="hma-h"><span class="dot" style="background:var(--green)"></span><b>'+esc(r.title)+'</b><span class="x" onclick="rtActClose()" title="닫기 (Esc)">×</span></div>'
+    +'<div class="rta-l">타임라인에서 <b>한 번</b> 누르면</div>'
+    +'<div class="rta-opts">'+[['timer','타이머 시작'],['go','메뉴로 가서 타이머'],['none','아무것도 안 함']].map(function(o){
+      return '<label class="rta-opt"><input type="radio" name="rtaAct" value="'+o[0]+'"'+(a===o[0]?' checked':'')+' onchange="rtActPaint()"> '+o[1]+'</label>';}).join('')+'</div>'
+    +'<div class="fld" id="rtaGoRow"><select id="rtaGo" class="in">'+Object.keys(RT_GO).map(function(k){return '<option value="'+k+'"'+(r.go===k?' selected':'')+'>'+esc(RT_GO[k].n)+'</option>';}).join('')+'</select></div>'
+    +'<div class="fld" id="rtaMinRow" style="display:flex;align-items:center;gap:8px"><span class="rta-l" style="margin:0">타이머</span>'
+    +'<input id="rtaMin" class="in" type="number" min="1" max="600" style="width:90px" value="'+rtMin(r)+'"><span class="rta-l" style="margin:0">분</span>'
+    +[5,10,15,20,30].map(function(m){return '<button type="button" class="rta-q" onclick="document.getElementById(\'rtaMin\').value='+m+'">'+m+'</button>';}).join('')+'</div>'
+    +'<div class="hma-foot"><span class="hint">두 번 = 완료 · 세 번 = 체크리스트 는 그대로</span><button type="button" class="btn ghost" onclick="rtActClose()">취소</button><button type="button" class="btn y" onclick="rtActSave('+id+')">저장</button></div></div>';
+  document.body.appendChild(ov);
+  document.addEventListener('keydown',rtActEsc);
+  rtActPaint();
+}
+function rtActPaint(){
+  var v=(document.querySelector('input[name="rtaAct"]:checked')||{}).value||'none';
+  var g=document.getElementById('rtaGoRow'),m=document.getElementById('rtaMinRow');
+  if(g)g.style.display=v==='go'?'':'none';if(m)m.style.display=v==='none'?'none':'flex';
+}
+function rtActEsc(e){if(e.key==='Escape'&&document.getElementById('rtActOv')){e.stopPropagation();rtActClose();}}
+function rtActClose(){var o=document.getElementById('rtActOv');if(o)o.remove();document.removeEventListener('keydown',rtActEsc);}
+function rtActSave(id){
+  var r=(db.tlRoutines||[]).find(function(x){return x.id===id;});if(!r)return;
+  var v=(document.querySelector('input[name="rtaAct"]:checked')||{}).value||'none';
+  r.act=v;
+  if(v==='go')r.go=(document.getElementById('rtaGo')||{}).value||'work';
+  var m=parseInt((document.getElementById('rtaMin')||{}).value,10);if(m>0)r.tmin=Math.min(600,m);
+  save();rtActClose();renderTlRoutines();
+  hkChip(v==='none'?'한 번 누르기 동작을 껐습니다':'저장했습니다 · '+rtMin(r)+'분');setTimeout(function(){hkChip('');},1300);
+}
+/* 타임라인 블록 한 번 누르기 (두 번째 누르기가 오면 취소된다) */
+function rtTap1(el,d){
+  if(d.k!=='r')return;
+  var r=(db.tlRoutines||[]).find(function(x){return x.id===d.id;});
+  if(!r||(r.act!=='timer'&&r.act!=='go'))return;
+  clearTimeout(el.__rtT);
+  el.__rtT=setTimeout(function(){
+    if(el.__taps!==1)return;
+    el.__taps=0;el.__lastTap=0;
+    rtRun(r.id);
+  },460);
+}
+function rtRun(id){
+  var r=(db.tlRoutines||[]).find(function(x){return x.id===id;});if(!r)return;
+  if(r.act==='go'){var g=RT_GO[r.go];
+    if(g){if(g.fn)g.fn();else{go(g.v);if(g.sel)setTimeout(function(){var e=document.querySelector(g.sel);if(e)e.scrollIntoView({block:'center',behavior:'smooth'});},160);}}}
+  rtTimerStart(r);
+}
+/* --- 타이머 상태: 이 기기에만 (새로고침해도 이어진다) --- */
+var RT_TM_KEY='hmd_rtTimer',__rtTm=null,__rtTmTick=null;
+function rtTmLoad(){if(__rtTm)return __rtTm;try{__rtTm=JSON.parse(localStorage.getItem(RT_TM_KEY)||'null');}catch(e){__rtTm=null;}return __rtTm;}
+function rtTmSave(){try{if(__rtTm)localStorage.setItem(RT_TM_KEY,JSON.stringify(__rtTm));else localStorage.removeItem(RT_TM_KEY);}catch(e){}}
+function rtTmLeft(t){t=t||__rtTm;if(!t)return 0;return t.paused?t.left:Math.max(0,Math.round((t.endAt-Date.now())/1000));}
+function rtTimerStart(r){
+  var sec=rtMin(r)*60;
+  __rtTm={rid:r.id,title:r.title,total:sec,endAt:Date.now()+sec*1000,paused:false,left:sec,done:false};
+  rtTmSave();
+  var w=document.getElementById('nowWrap');if(w&&w.classList.contains('hide'))w.classList.remove('hide');
+  rtTmTickOn();rtTimerPaint();
+  try{window.scrollTo({top:0,behavior:'smooth'});}catch(e){}
+}
+function rtTmTickOn(){if(!__rtTmTick)__rtTmTick=setInterval(function(){if(!rtTimerPaint()){clearInterval(__rtTmTick);__rtTmTick=null;}},250);}
+function rtTmFmt(sec){sec=Math.max(0,sec|0);var m=Math.floor(sec/60),s=sec%60;return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');}
+function rtTimerPaint(){
+  var box=document.getElementById('nowTimer'),bar=document.getElementById('nowBar');if(!box)return false;
+  var t=rtTmLoad();
+  if(!t){if(box.style.display!=='none'){box.style.display='none';box.innerHTML='';if(bar)bar.style.display='';}return false;}
+  var left=rtTmLeft(t);
+  if(!t.done&&!t.paused&&left<=0){t.done=true;t.left=0;rtTmSave();rtTmBeep();
+    try{hkChip('⏱ 「'+t.title+'」 '+Math.round(t.total/60)+'분 끝');setTimeout(function(){hkChip('');},3000);}catch(e){}}
+  if(bar)bar.style.display='none';box.style.display='';
+  var pct=t.total?Math.round((1-left/t.total)*100):100;
+  var okNow=!!(db.tlrLog&&db.tlrLog[today()]&&db.tlrLog[today()][t.rid]);
+  var key=(t.done?'d':t.paused?'p':'r')+'|'+okNow;
+  if(box.__key!==key||!box.querySelector('.ntm-c')){
+    box.__key=key;
+    box.innerHTML='<div class="ntm-in'+(t.done?' done':'')+(t.paused?' paused':'')+'">'
+      +'<div class="ntm-stack"><span class="ntm-t">'+esc(t.title)+' · '+Math.round(t.total/60)+'분</span><b class="ntm-c"></b><span class="ntm-bar"><i></i></span></div>'
+      +'<span class="ntm-ctl">'
+      +(t.done?('<button type="button" class="ntm-b ok'+(okNow?' on':'')+'" onclick="rtTmOk()" title="오늘 이 루틴 성공으로 표시">'+(okNow?'✓ 성공':'성공 표시')+'</button>')
+        :('<button type="button" class="ntm-b" onclick="rtTmPause()" title="'+(t.paused?'다시 시작':'잠깐 멈춤')+'">'+(t.paused?'▶':'❚❚')+'</button>'
+          +'<button type="button" class="ntm-b" onclick="rtTmAdd(5)" title="5분 더">+5</button>'))
+      +'<button type="button" class="ntm-b x" onclick="rtTmStop()" title="타이머 끄기">✕</button></span></div>';
+  }
+  var c=box.querySelector('.ntm-c');if(c)c.textContent=t.done?'끝!':rtTmFmt(left);
+  var bi=box.querySelector('.ntm-bar i');if(bi)bi.style.width=pct+'%';
+  return true;
+}
+function rtTmPause(){var t=rtTmLoad();if(!t||t.done)return;
+  if(t.paused){t.paused=false;t.endAt=Date.now()+t.left*1000;}else{t.left=rtTmLeft(t);t.paused=true;}
+  rtTmSave();rtTimerPaint();}
+function rtTmAdd(m){var t=rtTmLoad();if(!t)return;
+  if(t.paused)t.left+=m*60;else t.endAt+=m*60000;t.total+=m*60;rtTmSave();rtTimerPaint();}
+function rtTmStop(){__rtTm=null;rtTmSave();rtTimerPaint();renderNowBar();}
+function rtTmOk(){var t=rtTmLoad();if(!t)return;var td=today();
+  db.tlrLog=db.tlrLog||{};db.tlrLog[td]=db.tlrLog[td]||{};
+  if(!db.tlrLog[td][t.rid]){db.tlrLog[td][t.rid]=true;save();try{renderTlRoutines();renderTimeline();if(typeof renderHome==='function')renderHome();}catch(e){}}
+  hkChip('「'+t.title+'」 성공');setTimeout(function(){hkChip('');},1300);
+  rtTmStop();
+}
+function rtTmBeep(){
+  try{var C=window.AudioContext||window.webkitAudioContext;if(!C)return;var ac=new C();
+    [0,0.35,0.7].forEach(function(at){var o=ac.createOscillator(),g=ac.createGain();o.frequency.value=880;o.connect(g);g.connect(ac.destination);
+      g.gain.setValueAtTime(0.0001,ac.currentTime+at);g.gain.exponentialRampToValueAtTime(0.25,ac.currentTime+at+0.02);g.gain.exponentialRampToValueAtTime(0.0001,ac.currentTime+at+0.25);
+      o.start(ac.currentTime+at);o.stop(ac.currentTime+at+0.27);});
+    setTimeout(function(){try{ac.close();}catch(e){}},1500);}catch(e){}
 }
 /* ----- 타임라인 블록 드래그로 시간 이동 (5분 단위) ----- */
 var tlDrag=null;
@@ -5261,7 +5436,7 @@ function tlBindDrag(){
             el.__taps=0;el.__lastTap=0;
             tlTap2(d.k,d.id);
           },430);
-        }else tlCnTap1(el,d);
+        }else{tlCnTap1(el,d);rtTap1(el,d);}
         return;
       }
       var left=parseFloat(el.style.left);
@@ -5277,7 +5452,7 @@ function tlBindDrag(){
         if(el.__taps>=3){el.__taps=0;el.__lastTap=0;rtPopOpen(d.k,d.id);}
         else if(el.__taps===2){el.__tapT=setTimeout(function(){
           el.__taps=0;el.__lastTap=0;tlTap2(d.k,d.id);},430);}
-        else tlCnTap1(el,d);
+        else{tlCnTap1(el,d);rtTap1(el,d);}
         return;
       }
       var t=tlFmt(mn);
@@ -5865,7 +6040,7 @@ function addTlRoutine(){
   var title=tt.value.trim();if(!title){alert('루틴 이름을 입력하세요.');return;}
   var d=parseInt(du.value,10);
   db.tlRoutines.push({id:uid(),time:normTime(tm.value),dur:(d>0?d:30),title:title,active:true,kind:(kd&&kd.value==='hd')?'hd':'wd'});
-  save();tt.value='';tm.value='';du.value='';
+  rtActAuto();save();tt.value='';tm.value='';du.value='';
   renderTlRoutines();renderTimeline();
 }
 function tlrToggleActive(id){var r=db.tlRoutines.find(function(x){return x.id===id;});if(!r)return;r.active=(r.active===false);save();renderTlRoutines();renderTimeline();}
@@ -5914,6 +6089,7 @@ function tlrItemHTML(r,cls,badge){
     +'<span class="tlr-time" contenteditable title="눌러서 시간 수정 (예: 0700)" onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}" onblur="tlrEditTime('+r.id+',this.innerText)">'+esc(r.time||'-')+'</span>'
     +'<b class="tlr-name" contenteditable spellcheck="false" title="눌러서 루틴명 수정 (Enter 저장 · Esc 취소)" onkeydown="tlrTitleKey(event,this)" onblur="tlrEditTitle('+r.id+',this)">'+esc(r.title)+'</b>'
     +'<button type="button" class="imp-btn'+(r.imp?' on':'')+'" title="'+(r.imp?'주요루틴 해제':'주요루틴으로 표시 (빨간 점)')+'" onclick="tlrImpToggle('+r.id+')"></button>'
+    +rtActChip(r)
     +(badge||'')
     +'<span class="tlr-kind'+(tlrKindOf(r)==='hd'?' hd':'')+'" onclick="tlrKindTgl('+r.id+')" title="눌러서 평일↔휴일 바꾸기">'+(tlrKindOf(r)==='hd'?'휴일':'평일')+'</span>'
     +'<span class="tlr-ok'+(ok?' on':'')+'" onclick="tlrToggleOk('+r.id+')" title="선택한 날짜의 성공 여부">성공</span>'
@@ -17663,6 +17839,8 @@ function renderAll(){
   try{naverKeyStatus();}catch(_){}
   try{ghCfgPaint();}catch(_){}})();
 try{bkInit();}catch(e){}
+try{if(rtActAuto())save();}catch(e){}
+try{if(rtTmLoad())rtTmTickOn();}catch(e){}
 [renderAll,applyTopState,renderSyncUI,renderBackupUI,renderStoreUI,renderDxUI,backupTick,dxRemind].forEach(function(f){
   try{f();}catch(e){try{console.error('boot · '+(f.name||'?')+':',e);}catch(_){}}
 });
