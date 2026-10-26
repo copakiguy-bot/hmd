@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-26 · r205">
+<meta name="hmd-build" content="2026-10-26 · r206">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -566,6 +566,29 @@
   .toc-li .mv{cursor:pointer;color:#c3cbc7;font-size:12px;flex:none;padding:0 1px}
   .toc-li .mv:hover{color:var(--dark)}
   .toc-li .del{margin-top:0}
+  .toc-body{display:flex;gap:8px;align-items:flex-start;margin-top:9px;border-top:1px dashed var(--line);padding-top:6px}
+  .toc-body .toc-list{flex:1;min-width:0;margin-top:0;border-top:none;padding-top:0}
+  .toc-box .toc-ck,.toc-ck{flex:none!important;width:15px!important;min-width:0!important;padding:0!important;height:15px;margin:0;accent-color:#f4b740;cursor:pointer}
+  .toc-li.sel{background:#fff6dc}
+  .toc-li.sel:hover{background:#ffefc2}
+  .toc-tools{flex:none;display:flex;flex-direction:column;align-items:stretch;gap:5px;width:64px;padding:6px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  .toc-tools .tt-n{font-size:11px;font-weight:800;color:var(--muted);text-align:center}
+  .toc-tools .tt-b{border:1px solid var(--line);background:#fff;border-radius:8px;font-size:15px;padding:7px 0;cursor:pointer;color:var(--dark);font-family:inherit}
+  .toc-tools .tt-b:not(:disabled):hover{background:#fff3c4;border-color:#f4b740}
+  .toc-tools .tt-s{border:1px solid var(--line);background:#fff;border-radius:7px;font-size:11px;padding:4px 0;cursor:pointer;color:var(--dark);font-family:inherit}
+  .toc-tools .tt-s:not(:disabled):hover{border-color:#f4b740}
+  .toc-tools .tt-lv{font-size:11px;padding:3px 2px;border-radius:7px;border:1px solid var(--line);width:100%!important}
+  .toc-tools button:disabled,.toc-tools select:disabled{opacity:.4;cursor:default}
+  .toc-full-bg{position:fixed;inset:0;background:rgba(18,30,26,.45);z-index:10040;display:none}
+  .toc-box.toc-full{position:fixed;left:50%;top:4vh;transform:translateX(-50%);width:min(980px,94vw);height:92vh;z-index:10050;display:flex;flex-direction:column;box-shadow:0 30px 70px rgba(0,0,0,.35);background:#fff;padding:16px 18px}
+  .toc-box.toc-full .toc-body{flex:1;min-height:0}
+  .toc-box.toc-full .toc-list{max-height:none;height:100%;overflow:auto}
+  .toc-box.toc-full .toc-li{padding-top:6px;padding-bottom:6px}
+  .toc-box.toc-full .toc-li .t{font-size:15.5px}
+  .toc-box.toc-full .toc-li.lv1 .t{font-size:17px}
+  .toc-box.toc-full .toc-li.lv3 .t{font-size:14.5px}
+  .toc-box.toc-full .toc-tools{width:76px}
+  .toc-box.toc-full .toc-fullbtn{background:var(--dark);color:#fff}
   /* .field 안에서도 줄 모양이 흐트러지지 않게 */
   .field .toc-box .toc-li select,.toc-box .toc-li select{width:auto;flex:none;padding:2px 3px;font-size:11px;border-radius:6px}
   .field .toc-box input,.field .toc-box textarea{width:auto}
@@ -4075,7 +4098,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-26 · r205';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-26 · r206';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -12418,23 +12441,87 @@ function tocBoxRender(k){
     +'<input id="tocIn_'+k+'" class="in" placeholder="'+escA(tocBoxPh(st.lv))+'" onkeydown="if(event.key===\'Enter\'){event.preventDefault();tocBoxAdd(\''+k+'\');}">'
     +'<button type="button" class="btn y" onclick="tocBoxAdd(\''+k+'\')">추가</button>'
     +'<button type="button" class="btn ghost" onclick="tocBoxPasteTgl(\''+k+'\')" title="목차를 통째로 붙여넣기">📋 붙여넣기</button>'
+    +'<button type="button" class="btn ghost toc-fullbtn" onclick="tocBoxFull(\''+k+'\')" title="목차만 크게 보기 (Esc 닫기)">'+(st.full?'✕ 닫기':'⤢ 크게')+'</button>'
     +'</div>';
   var paste=st.paste?('<div class="toc-paste">'
     +'<textarea id="tocPaste_'+k+'" rows="6" placeholder="1부 인지혁명&#10;  1장 뇌의 혁명&#10;    1절 언어의 탄생&#10;2부 농업혁명"></textarea>'
     +'<div class="toc-paste-f"><span class="lb-sub">있는 목차·발췌는 그대로 두고 빠진 것만 넣으며, 붙여넣은 순서로 다시 정렬 · «a /b /c» 줄은 절 여러 개</span>'
     +'<button type="button" class="btn y" onclick="tocBoxPasteDo(\''+k+'\')">넣기</button>'
     +'<button type="button" class="btn ghost" onclick="tocBoxPasteTgl(\''+k+'\')">닫기</button></div></div>'):'';
-  var list=st.list.length?('<div class="toc-list">'+st.list.map(function(c,i){
-    return '<div class="toc-li lv'+c.lv+'" style="padding-left:'+(6+(c.lv-1)*20)+'px">'
+  var nSel=st.list.filter(function(c){return c.__sel;}).length;
+  var list=st.list.length?('<div class="toc-body"><div class="toc-list" id="tocList_'+k+'">'+st.list.map(function(c,i){
+    return '<div class="toc-li lv'+c.lv+(c.__sel?' sel':'')+'" data-i="'+i+'" style="padding-left:'+(4+(c.lv-1)*20)+'px">'
+      +'<input type="checkbox" class="toc-ck"'+(c.__sel?' checked':'')+' title="골라서 오른쪽 ▲▼로 옮기기 (Shift = 범위 선택)" onclick="tocSelClick(event,\''+k+'\','+i+')">'
       +'<select class="ch-lvsel" title="단 바꾸기" onchange="tocBoxLvSet(\''+k+'\','+i+',this.value)">'
       +[1,2,3].map(function(v){return '<option value="'+v+'"'+(v===c.lv?' selected':'')+'>'+TOC_LVN[v]+'</option>';}).join('')+'</select>'
       +'<span class="t" contenteditable onblur="tocBoxName(\''+k+'\','+i+',this.innerText)">'+esc(c.t)+'</span>'
-      +'<span class="mv" title="위로" onclick="tocBoxMove(\''+k+'\','+i+',-1)">↑</span>'
-      +'<span class="mv" title="아래로" onclick="tocBoxMove(\''+k+'\','+i+',1)">↓</span>'
       +'<span class="del" onclick="tocBoxDel(\''+k+'\','+i+')">×</span></div>';
-  }).join('')+'</div>'):'<div class="toc-none">아직 넣은 목차가 없습니다. 위에서 <b>부·장·절</b>을 고르고 이름을 넣어 보세요.</div>';
+  }).join('')+'</div>'
+    +'<div class="toc-tools" id="tocTools_'+k+'">'
+    +'<span class="tt-n" id="tocSelN_'+k+'">'+(nSel?nSel+'개':'선택')+'</span>'
+    +'<button type="button" class="tt-b" onclick="tocSelMove(\''+k+'\',-1)" title="고른 것 위로 한 칸"'+(nSel?'':' disabled')+'>▲</button>'
+    +'<button type="button" class="tt-b" onclick="tocSelMove(\''+k+'\',1)" title="고른 것 아래로 한 칸"'+(nSel?'':' disabled')+'>▼</button>'
+    +'<button type="button" class="tt-s" onclick="tocSelMove(\''+k+'\',-99999)" title="맨 위로"'+(nSel?'':' disabled')+'>⤒</button>'
+    +'<button type="button" class="tt-s" onclick="tocSelMove(\''+k+'\',99999)" title="맨 아래로"'+(nSel?'':' disabled')+'>⤓</button>'
+    +'<select class="tt-lv" onchange="tocSelLv(\''+k+'\',this.value);this.value=\'\'" title="고른 것 단 바꾸기"'+(nSel?'':' disabled')+'><option value="">단</option><option value="1">부</option><option value="2">장</option><option value="3">절</option></select>'
+    +'<button type="button" class="tt-s" onclick="tocSelKids(\''+k+'\')" title="고른 부·장 아래 항목까지 함께 고르기"'+(nSel?'':' disabled')+'>+하위</button>'
+    +'<button type="button" class="tt-s" onclick="tocSelNone(\''+k+'\')" title="선택 해제"'+(nSel?'':' disabled')+'>해제</button>'
+    +'</div></div>'):'<div class="toc-none">아직 넣은 목차가 없습니다. 위에서 <b>부·장·절</b>을 고르고 이름을 넣어 보세요.</div>';
+  var oldL=document.getElementById('tocList_'+k),keepTop=oldL?oldL.scrollTop:0;
   el.innerHTML=head+paste+list;
+  var nl=document.getElementById('tocList_'+k);if(nl)nl.scrollTop=keepTop;
+  el.classList.toggle('toc-full',!!st.full);
 }
+/* ---- 체크박스로 골라 여러 개 한꺼번에 옮기기 ---- */
+function tocSelPaint(k){
+  var st=tocBoxState(k),n=st.list.filter(function(c){return c.__sel;}).length;
+  var box=document.getElementById('tocBox_'+k);if(!box)return;
+  box.querySelectorAll('.toc-li').forEach(function(r){var i=+r.getAttribute('data-i'),c=st.list[i];if(!c)return;r.classList.toggle('sel',!!c.__sel);var ck=r.querySelector('.toc-ck');if(ck)ck.checked=!!c.__sel;});
+  var nn=document.getElementById('tocSelN_'+k);if(nn)nn.textContent=n?n+'개':'선택';
+  box.querySelectorAll('#tocTools_'+k+' button, #tocTools_'+k+' select').forEach(function(b){b.disabled=!n;});
+}
+function tocSelClick(e,k,i){
+  var st=tocBoxState(k),c=st.list[i];if(!c)return;
+  if(e.shiftKey&&st.lastSel!=null&&st.list[st.lastSel]){
+    var a=Math.min(st.lastSel,i),b=Math.max(st.lastSel,i),on=!c.__sel||true;
+    for(var j=a;j<=b;j++)st.list[j].__sel=on;
+  }else c.__sel=!c.__sel;
+  st.lastSel=i;tocSelPaint(k);
+}
+function tocSelNone(k){var st=tocBoxState(k);st.list.forEach(function(c){c.__sel=false;});st.lastSel=null;tocSelPaint(k);}
+function tocSelKids(k){
+  var st=tocBoxState(k),L=st.list;
+  for(var i=0;i<L.length;i++){if(!L[i].__sel)continue;for(var j=i+1;j<L.length&&L[j].lv>L[i].lv;j++)L[j].__sel=true;}
+  tocSelPaint(k);
+}
+function tocSelLv(k,v){v=+v;if(!(v>=1&&v<=3))return;var st=tocBoxState(k);st.list.forEach(function(c){if(c.__sel)c.lv=v;});tocBoxRender(k);}
+/* 고른 것들을 d 칸 옮긴다 (서로의 순서는 그대로 · 큰 수 = 맨 위/맨 아래) */
+function tocSelMove(k,d){
+  var st=tocBoxState(k),L=st.list,steps=Math.min(Math.abs(d),L.length),dir=d<0?-1:1,moved=false;
+  for(var s2=0;s2<steps;s2++){
+    var any=false;
+    if(dir<0){for(var i=1;i<L.length;i++)if(L[i].__sel&&!L[i-1].__sel){var t=L[i];L[i]=L[i-1];L[i-1]=t;any=true;}}
+    else{for(var j=L.length-2;j>=0;j--)if(L[j].__sel&&!L[j+1].__sel){var t2=L[j];L[j]=L[j+1];L[j+1]=t2;any=true;}}
+    if(!any)break;moved=true;
+  }
+  if(!moved)return;
+  st.lastSel=null;tocBoxRender(k);
+  /* 옮긴 줄이 보이게 */
+  var box=document.getElementById('tocList_'+k);if(box){var f=box.querySelector('.toc-li.sel');
+    if(f){var r=f.getBoundingClientRect(),br=box.getBoundingClientRect();if(r.top<br.top||r.bottom>br.bottom)box.scrollTop+=r.top-br.top-box.clientHeight/3;}}
+}
+/* 목차만 크게 보기 */
+function tocBoxFull(k){
+  var st=tocBoxState(k);st.full=!st.full;
+  var bg=document.getElementById('tocFullBg');
+  var el=document.getElementById('tocBox_'+k);
+  if(st.full){if(!bg){bg=document.createElement('div');bg.id='tocFullBg';bg.className='toc-full-bg';}
+    if(el&&el.parentNode)el.parentNode.insertBefore(bg,el);else document.body.appendChild(bg);   /* 같은 층(팝업 안)에 깔아야 목차가 어둡게 덮이지 않는다 */
+    bg.onclick=function(){tocBoxFull(k);};bg.style.display='block';document.addEventListener('keydown',tocFullEsc,true);window.__tocFullK=k;}
+  else{if(bg)bg.style.display='none';document.removeEventListener('keydown',tocFullEsc,true);window.__tocFullK=null;}
+  tocBoxRender(k);
+}
+function tocFullEsc(e){if(e.key==='Escape'&&window.__tocFullK){e.stopPropagation();e.preventDefault();tocBoxFull(window.__tocFullK);}}
 function tocBoxLv(k,v){var st=tocBoxState(k);st.lv=(v===2||v===3)?v:1;tocBoxRender(k);var i=document.getElementById('tocIn_'+k);if(i)i.focus();}
 function tocBoxAdd(k){
   var st=tocBoxState(k),inp=document.getElementById('tocIn_'+k);if(!inp)return;
