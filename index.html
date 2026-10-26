@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-26 · r206">
+<meta name="hmd-build" content="2026-10-26 · r207">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -136,20 +136,6 @@
   .ntm-b:hover{border-color:#f4b740}
   .ntm-b.x{color:var(--muted)}
   .ntm-b.ok{background:var(--green);color:#fff;border-color:var(--green)}
-  .kjy-form{flex-wrap:wrap}
-  .kjy-mh{font-size:12.5px;font-weight:800;color:var(--dark);margin:14px 0 4px;padding-bottom:4px;border-bottom:1px solid var(--line)}
-  .kjy-mh:first-child{margin-top:0}
-  .kjy-mh span{font-weight:600;color:#c0587a;margin-left:6px;font-size:11.5px}
-  .kjy-row{display:flex;align-items:center;gap:10px;padding:7px 2px;border-bottom:1px dashed var(--line);font-size:13.5px}
-  .kjy-d{border:none;background:transparent;font-family:inherit;font-size:13px;color:var(--muted);width:126px;flex:none;padding:2px 0}
-  .kjy-dw{flex:none;width:16px;font-size:12px;color:var(--muted)}
-  .kjy-p{flex:none;min-width:80px;max-width:40%;font-weight:700;color:var(--dark);outline:none;border-radius:5px;padding:1px 4px}
-  .kjy-m{flex:1;min-width:0;color:var(--text);outline:none;border-radius:5px;padding:1px 4px}
-  .kjy-m:empty::before{content:attr(data-ph);color:#c9c4b8}
-  .kjy-p:focus,.kjy-m:focus{background:#fff6f9;box-shadow:0 0 0 1.5px #f0b8c9}
-  .kjy-top{display:flex;flex-wrap:wrap;gap:6px}
-  .kjy-chip{border:1px solid #f0d3dc;background:#fff7fa;color:#9b3d5c;border-radius:999px;padding:5px 11px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit}
-  .kjy-chip b{margin-left:6px;font-size:11px;color:#c0587a}
   .rt-act{flex:none;border:1px dashed var(--line);background:#fff;border-radius:999px;padding:2px 8px;font-size:10.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;white-space:nowrap}
   .rt-act.on{border-style:solid;border-color:#cfe3d9;background:#eef6f1;color:var(--green)}
   .rta-l{font-size:12.5px;color:var(--muted);margin:2px 0 6px}
@@ -3119,7 +3105,6 @@
   <div class="nav" data-v="zettel">Zettelkasten</div>
   <div class="nav" data-v="chrono">Chronicle</div>
   <div class="nav" data-v="diary">Diary</div>
-  <div class="nav" data-v="kjy">김주연</div>
   <div class="nav" data-v="map">Map</div>
   <div class="nav" data-v="assets">Assets</div>
   <div class="nav" data-v="settings">Settings</div>
@@ -3443,27 +3428,6 @@
   <div class="mind-backdrop" id="mindBackdrop" onclick="toggleMindExpand()"></div>
 
   <!-- ===== 일기 ===== -->
-  <section class="view" id="view-kjy">
-    <div class="page-head"><h1>김주연</h1><p id="kjySum">만난 날과 장소</p></div>
-    <div class="card">
-      <h3><span class="dot" style="background:#e07b9a"></span> 만남 기록</h3>
-      <div class="inrow kjy-form">
-        <input type="date" id="kjyDate" class="in" style="flex:none;width:150px">
-        <input id="kjyPlace" class="in" list="kjyPlaces" style="flex:1;min-width:140px" placeholder="만난 장소" onkeydown="if(event.key==='Enter'&&!event.isComposing){event.preventDefault();kjyAdd();}">
-        <datalist id="kjyPlaces"></datalist>
-        <input id="kjyMemo" class="in" style="flex:1.4;min-width:140px" placeholder="한 줄 메모 (선택)" onkeydown="if(event.key==='Enter'&&!event.isComposing){event.preventDefault();kjyAdd();}">
-        <button class="btn y" style="flex:none" onclick="kjyAdd()">추가</button>
-      </div>
-    </div>
-    <div class="card">
-      <h3><span class="dot" style="background:#e07b9a"></span> 만난 날 <span class="more" id="kjyCnt"></span></h3>
-      <div id="kjyList"></div>
-    </div>
-    <div class="card" id="kjyTopCard">
-      <h3><span class="dot" style="background:#e07b9a"></span> 자주 만난 곳</h3>
-      <div id="kjyTop"></div>
-    </div>
-  </section>
   <section class="view" id="view-diary">
     <div class="page-head"><h1>일기</h1></div>
     <div class="card">
@@ -4098,7 +4062,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-26 · r206';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-26 · r207';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -17972,75 +17936,13 @@ function artExRender(){
   }).join(''):'<div class="empty" style="padding:12px 0">아직 발췌가 없습니다.</div>';
 }
 
-/* ===== 김주연: 만난 날 · 만난 장소 (db.kjy = [{id,date,place,memo}]) ===== */
-function kjyArr(){if(!Array.isArray(db.kjy))db.kjy=[];return db.kjy;}
-function kjyDow(d){return ['일','월','화','수','목','금','토'][new Date(d+'T00:00:00').getDay()];}
-function kjyAdd(){
-  var dEl=document.getElementById('kjyDate'),pEl=document.getElementById('kjyPlace'),mEl=document.getElementById('kjyMemo');if(!pEl)return;
-  var date=(dEl&&dEl.value)||today(),place=String(pEl.value||'').trim(),memo=String((mEl&&mEl.value)||'').trim();
-  if(!place){alert('만난 장소를 입력하세요.');pEl.focus();return;}
-  kjyArr().push({id:uid(),date:date,place:place,memo:memo});
-  save();pEl.value='';if(mEl)mEl.value='';
-  renderKjy();pEl.focus();
-  hkChip(date.slice(5).replace('-','/')+' · '+place+' 기록했습니다');setTimeout(function(){hkChip('');},1400);
-}
-function kjySet(id,k,v){
-  var x=kjyArr().find(function(a){return a.id===id;});if(!x)return;
-  v=String(v==null?'':v).replace(/\s+/g,' ').trim();
-  if(k==='place'&&!v){renderKjy();return;}
-  if(k==='date'&&!/^\d{4}-\d{2}-\d{2}$/.test(v)){renderKjy();return;}
-  if(x[k]===v)return;
-  x[k]=v;save();renderKjy();
-}
-function kjyDel(id){
-  var x=kjyArr().find(function(a){return a.id===id;});if(!x)return;
-  if(!confirm(x.date+' · '+x.place+' 기록을 지울까요?'))return;
-  db.kjy=kjyArr().filter(function(a){return a.id!==id;});save();renderKjy();
-}
-function kjyKey(e,el){if(e.key==='Enter'&&!e.isComposing){e.preventDefault();el.blur();}}
-function renderKjy(){
-  var box=document.getElementById('kjyList');if(!box)return;
-  var dEl=document.getElementById('kjyDate');if(dEl&&!dEl.value)dEl.value=today();
-  var arr=kjyArr().slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date))||b.id-a.id;});
-  var cnt=document.getElementById('kjyCnt');if(cnt)cnt.textContent=arr.length?arr.length+'번':'';
-  /* 요약: 횟수 · 마지막 만남 · 올해 */
-  var sum=document.getElementById('kjySum');
-  if(sum){
-    if(!arr.length)sum.textContent='만난 날과 장소를 적어 두는 곳';
-    else{var last=arr[0].date,days=Math.round((new Date(today()+'T00:00:00')-new Date(last+'T00:00:00'))/86400000);
-      var yr=today().slice(0,4),ny=arr.filter(function(x){return String(x.date).slice(0,4)===yr;}).length;
-      sum.textContent='모두 '+arr.length+'번 · 올해 '+ny+'번 · 마지막 만남 '+(days===0?'오늘':days>0?days+'일 전':(-days)+'일 뒤')+' ('+arr[0].place+')';}
-  }
-  /* 장소 자동완성 · 자주 간 곳 */
-  var pc={};arr.forEach(function(x){if(x.place)pc[x.place]=(pc[x.place]||0)+1;});
-  var places=Object.keys(pc).sort(function(a,b){return pc[b]-pc[a]||a.localeCompare(b);});
-  var dl=document.getElementById('kjyPlaces');if(dl)dl.innerHTML=places.map(function(p){return '<option value="'+escA(p)+'">';}).join('');
-  var top=document.getElementById('kjyTop'),tc=document.getElementById('kjyTopCard');
-  if(tc)tc.style.display=places.length?'':'none';
-  if(top)top.innerHTML='<div class="kjy-top">'+places.slice(0,12).map(function(p){
-    return '<button type="button" class="kjy-chip" title="이 장소로 입력칸 채우기" onclick="var e=document.getElementById(\'kjyPlace\');e.value=this.dataset.p;e.focus();" data-p="'+escA(p)+'">'+esc(p)+'<b>'+pc[p]+'</b></button>';}).join('')+'</div>';
-  if(!arr.length){box.innerHTML='<div class="empty">아직 기록이 없습니다. 위에서 날짜와 장소를 넣고 «추가»를 누르세요.</div>';return;}
-  var out='',curM='';
-  arr.forEach(function(x){
-    var m=String(x.date).slice(0,7);
-    if(m!==curM){curM=m;var n=arr.filter(function(y){return String(y.date).slice(0,7)===m;}).length;
-      out+='<div class="kjy-mh">'+(+m.slice(0,4))+'년 '+(+m.slice(5,7))+'월 <span>'+n+'번</span></div>';}
-    out+='<div class="kjy-row">'
-      +'<input type="date" class="kjy-d" value="'+escA(x.date)+'" onchange="kjySet('+x.id+',\'date\',this.value)" title="날짜 바꾸기">'
-      +'<span class="kjy-dw">'+kjyDow(x.date)+'</span>'
-      +'<span class="kjy-p" contenteditable spellcheck="false" title="눌러서 장소 고치기" onkeydown="kjyKey(event,this)" onblur="kjySet('+x.id+',\'place\',this.innerText)">'+esc(x.place)+'</span>'
-      +'<span class="kjy-m" contenteditable spellcheck="false" data-ph="메모" title="눌러서 메모 고치기" onkeydown="kjyKey(event,this)" onblur="kjySet('+x.id+',\'memo\',this.innerText)">'+esc(x.memo||'')+'</span>'
-      +'<span class="del" title="지우기" onclick="kjyDel('+x.id+')">×</span></div>';
-  });
-  box.innerHTML=out;
-}
 function renderAll(){
   /* 한 칸이 죽어도 나머지 화면과 버튼은 살아 있게, 하나씩 감싸서 그린다 */
   [gcalStatus,renderBackupUI,
    renderTop,renderCal,renderSchedule,renderTodos,renderInbox,renderInboxPage,renderSessions,
    renderWork,renderDashWork,renderReading,renderRdLog,renderStudy,renderDashStudy,
    renderAssets,renderDashAsset,renderDiary,renderDiaryPage,renderRoutiner,renderZettel,renderDash,
-   renderMemoUrl,renderChrono,renderArticle,renderCouncil,renderSpots,renderEtc,renderFiles,renderKjy].forEach(function(f){
+   renderMemoUrl,renderChrono,renderArticle,renderCouncil,renderSpots,renderEtc,renderFiles].forEach(function(f){
     try{f();}catch(e){try{console.error('renderAll · '+(f.name||'?')+':',e);}catch(_){}}
   });
 }
