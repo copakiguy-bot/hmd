@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-26 · r207">
+<meta name="hmd-build" content="2026-10-27 · r209">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1471,6 +1471,20 @@
   #inboxFab:hover{transform:scale(1.08)}
   #memoPad{display:none;position:fixed;right:16px;top:calc(45% + 156px);z-index:117;width:250px;background:#FFF3A6;border-radius:3px 3px 16px 3px;box-shadow:0 14px 34px rgba(18,49,43,.28);padding:10px 12px 12px;font-family:'Noto Sans KR',sans-serif;animation:fwIn .14s ease-out}
   #memoPad.on{display:block}
+  .pi-recent,.pi-sync{display:none}
+  html.postit-mode,html.postit-mode body{background:#FFF3A6!important;overflow:hidden}
+  html.postit-mode body>.menu-btn,html.postit-mode .sidebar,html.postit-mode .main,html.postit-mode #memoFab,html.postit-mode #dashFab,html.postit-mode #inboxFab{display:none!important}
+  html.postit-mode #memoPad{display:flex!important;flex-direction:column;position:fixed;inset:0;width:auto!important;top:0;right:0;border-radius:0;box-shadow:none;padding:10px 12px 12px;animation:none}
+  html.postit-mode #memoPad .memo-x{display:none}
+  html.postit-mode #memoText{flex:1;min-height:0;resize:none}
+  @media (max-height:330px){html.postit-mode .pi-recent{display:none!important}}
+  html.postit-mode .pi-sync{display:inline;margin-left:8px;font-size:11px;font-weight:700;color:#a3922f}
+  html.postit-mode .pi-sync.on{color:#2f7d5e}
+  html.postit-mode .pi-recent{display:block;margin-top:10px;max-height:36vh;overflow:auto}
+  .pi-h{font-size:11.5px;font-weight:800;color:#7a6a1e;margin-bottom:4px}
+  .pi-it{display:flex;gap:6px;align-items:baseline;font-size:13px;color:#4a4320;padding:3px 0;border-top:1px dashed rgba(122,106,30,.25);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pi-ck{cursor:pointer;color:#a3922f;flex:none}
+  .pi-ck:hover{color:#2f7d5e}
   #memoPad .memo-head{font-size:12px;font-weight:800;color:#7a6a1e;display:flex;align-items:center;margin-bottom:6px}
   #memoPad .memo-x{margin-left:auto;cursor:pointer;font-size:17px;line-height:1;color:#a3922f}
   #memoPad .memo-x:hover{color:#6b5d15}
@@ -3083,6 +3097,8 @@
 </head>
 <body>
 
+<script>/* 주소에 ?postit 이 있으면 «포스트잇 전용 화면» (컴퓨터에서 작은 창으로 띄워 두는 용도) */
+try{if(/[?&]postit\b/.test(location.search)){document.documentElement.classList.add('postit-mode');document.title='HMD 포스트잇';}}catch(e){}</script>
 <button class="menu-btn" onclick="toggleMenu()">☰</button>
 <aside class="sidebar">
   <div class="logo" id="hmdLogo" title="대시보드로" style="cursor:pointer" onclick="goTop('home')">HMD</div>
@@ -3605,6 +3621,18 @@
       <div id="memoUrlMsg" style="margin-top:8px;font-size:12.5px;color:var(--muted);line-height:1.7"></div>
     </div>
     <div class="card">
+      <h3><span class="dot" style="background:var(--yellow)"></span> 컴퓨터에 포스트잇만 띄워 두기</h3>
+      <p style="font-size:13px;color:var(--muted);line-height:1.75;margin-bottom:10px">
+        주소 끝에 <b>?postit</b> 을 붙이면 대시보드 없이 포스트잇만, HMD 포스트잇과 같은 크기의 작은 창으로 열립니다(창 크기를 바꾸면 그 크기를 기억). 쓰고 «인박스»(Ctrl+Enter)·«스케줄»을 누르면 HMD에 그대로 저장·동기화됩니다.<br>
+        <b>앱으로 설치</b>: 그 창에서 엣지 메뉴(…) → 앱 → <b>이 사이트를 앱으로 설치</b> · 크롬 메뉴(⋮) → 전송, 저장, 공유 → <b>바로가기 만들기</b> → «창으로 열기» 체크.<br>
+        <b>항상 위에</b>: 윈도우는 무료 PowerToys 설치 후 창을 누르고 <b>Win + Ctrl + T</b>.</p>
+      <div class="inrow">
+        <input id="postitUrl" class="in" style="flex:1;font-size:12.5px" readonly onclick="this.select()">
+        <button class="btn ghost" style="flex:none" onclick="var e=document.getElementById('postitUrl');e.select();try{navigator.clipboard.writeText(e.value);}catch(_){document.execCommand('copy');}hkChip('주소를 복사했습니다');setTimeout(function(){hkChip('');},1200);">주소 복사</button>
+        <button class="btn y" style="flex:none" onclick="postitOpenWin()">작은 창으로 열기</button>
+      </div>
+    </div>
+    <div class="card">
       <h3><span class="dot" style="background:#03c75a"></span> 네이버 지도 <span class="more">선택</span></h3>
       <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:10px">
         지도 탭은 기본으로 OpenStreetMap을 씁니다. 네이버 클라우드 플랫폼에서 받은 <b>Client ID</b>를 넣으면 지도 배경이 네이버 지도로 바뀝니다(핀·목록은 그대로).
@@ -3868,11 +3896,12 @@
 <button id="dashFab" onclick="dashFabGo()" title="대시보드" aria-label="대시보드"></button>
 <button id="inboxFab" onclick="inboxFabGo()" title="인박스" aria-label="인박스"></button>
 <div id="memoPad">
-  <div class="memo-head">포스트잇 <span class="memo-x" onclick="memoToggle()">×</span></div>
-  <textarea id="memoText" placeholder="메모 후 보낼 곳을 고르세요"></textarea>
+  <div class="memo-head">포스트잇 <span class="pi-sync" id="piSync"></span><span class="memo-x" onclick="memoToggle()">×</span></div>
+  <textarea id="memoText" placeholder="메모 후 보낼 곳을 고르세요" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();memoSave('inbox');}"></textarea>
   <div class="memo-foot"><span id="memoMsg"></span>
     <button class="btn ghost" onclick="memoSave('inbox')" title="바로 처리할 일 → 인박스">인박스</button>
     <button class="btn y" onclick="memoSched()" title="날짜·시간을 정해 일정으로">스케줄</button></div>
+  <div class="pi-recent" id="piRecent"></div>
 </div>
 
 <div class="exv-back" id="exvBack" onclick="closeExcerptView()">
@@ -4062,7 +4091,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-26 · r207';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-27 · r209';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4538,6 +4567,7 @@ function renderDxUI(){
 }
 /* 일주일 넘으면 하루 한 번 살짝 알려준다 */
 function dxRemind(){
+  if(document.documentElement.classList.contains('postit-mode'))return;
   var d=dxDaysSince();if(d!=null&&d<DX_DAYS)return;
   var k='hmd_dxNag',td=today();try{if(localStorage.getItem(k)===td)return;localStorage.setItem(k,td);}catch(e){}
   setTimeout(function(){try{liveFlash(d==null?'전체 데이터 백업을 한 번 받아 두세요 · 설정 → 전체 데이터 받기':'전체 데이터 백업 '+d+'일째 · 설정 → 전체 데이터 받기');}catch(e){}},4000);
@@ -7918,7 +7948,8 @@ function tlQuickAdd(ev){
   mn=Math.max(TL_START*60,Math.min(mn,TL_END*60-5));
   tlqOpen(tlFmt(mn));
 }
-function tlqClose(){var e=document.getElementById('tlqOv');if(e)e.remove();document.removeEventListener('keydown',tlqEsc);window.__tlqAfter=null;window.__tlqOpt=null;schFormFiles=[];}
+function tlqClose(){var e=document.getElementById('tlqOv');if(e)e.remove();document.removeEventListener('keydown',tlqEsc);window.__tlqAfter=null;window.__tlqOpt=null;schFormFiles=[];
+  if(window.__piPrev)setTimeout(function(){if(!document.getElementById('tlqOv'))postitShrink();},80);}
 function tlqEsc(e){if(e.key==='Escape')tlqClose();}
 /* 의회 일정용 기관·세부 고르기 (빠른 추가 창 안) */
 function tlqCnPaint(org,dept){
@@ -17942,7 +17973,7 @@ function renderAll(){
    renderTop,renderCal,renderSchedule,renderTodos,renderInbox,renderInboxPage,renderSessions,
    renderWork,renderDashWork,renderReading,renderRdLog,renderStudy,renderDashStudy,
    renderAssets,renderDashAsset,renderDiary,renderDiaryPage,renderRoutiner,renderZettel,renderDash,
-   renderMemoUrl,renderChrono,renderArticle,renderCouncil,renderSpots,renderEtc,renderFiles].forEach(function(f){
+   renderMemoUrl,renderChrono,renderArticle,renderCouncil,renderSpots,renderEtc,renderFiles,postitPaint].forEach(function(f){
     try{f();}catch(e){try{console.error('renderAll · '+(f.name||'?')+':',e);}catch(_){}}
   });
 }
@@ -17951,6 +17982,7 @@ function renderAll(){
   try{naverKeyStatus();}catch(_){}
   try{ghCfgPaint();}catch(_){}})();
 try{bkInit();}catch(e){}
+try{if(isPostitMode()){postitPaint();postitFit();setTimeout(function(){var t=document.getElementById('memoText');if(t)t.focus();},200);}}catch(e){}
 try{if(rtActAuto())save();}catch(e){}
 try{if(rtTmLoad())rtTmTickOn();}catch(e){}
 [renderAll,applyTopState,renderSyncUI,renderBackupUI,renderStoreUI,renderDxUI,backupTick,dxRemind].forEach(function(f){
@@ -18561,6 +18593,7 @@ function liveBusy(){
   var qw=document.getElementById('qwOv');
   if(qw&&qw.classList.contains('on'))return true;                   /* 바로 쓰기 팝업 */
   var a=document.activeElement;
+  if(a&&a.id==='memoText'&&document.documentElement.classList.contains('postit-mode'))return false;   /* 포스트잇 칸은 다시 그려도 그대로라 막지 않는다 */
   if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.isContentEditable))return true;
   return false;
 }
@@ -18782,6 +18815,7 @@ document.addEventListener('keydown',function(e){
 /* ---------- 포스트잇 메모: 저장하면 인박스로 ---------- */
 function memoToggle(){
   var p=document.getElementById('memoPad');if(!p)return;
+  if(isPostitMode()){p.classList.add('on');var t0=document.getElementById('memoText');if(t0)t0.focus();return;}
   p.classList.toggle('on');
   if(p.classList.contains('on'))setTimeout(function(){var t=document.getElementById('memoText');if(t)t.focus();},30);
 }
@@ -18790,6 +18824,7 @@ function memoUrlBase(){return location.href.split('#')[0].split('?')[0];}
 function renderMemoUrl(){
   var el=document.getElementById('memoUrl');if(!el)return;
   el.value=memoUrlBase()+'#memo';
+  var pu=document.getElementById('postitUrl');if(pu)pu.value=memoUrlBase()+'?postit';
   var m=document.getElementById('memoUrlMsg');if(!m)return;
   if(location.protocol==='file:'){
     m.innerHTML='<b style="color:var(--red)">지금은 파일로 열려 있어 단축어로는 열 수 없습니다.</b><br>'
@@ -18838,6 +18873,50 @@ window.addEventListener('pageshow',memoFromUrl);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)memoFromUrl();});
 setTimeout(memoFromUrl,60);
 /* 안내 문구: 앞선 타이머가 새 문구를 지우지 않도록 */
+/* ---------- 포스트잇 전용 화면 (?postit): 포스트잇만 창 가득 · 최근에 보낸 것 몇 개 · 동기화 표시 ---------- */
+function isPostitMode(){return document.documentElement.classList.contains('postit-mode');}
+function postitPaint(){
+  if(!isPostitMode())return;
+  var p=document.getElementById('memoPad');if(p&&!p.classList.contains('on'))p.classList.add('on');
+  var box=document.getElementById('piRecent');
+  if(box){
+    var l=(db.inbox||[]).filter(function(x){return x.grp==='inbox'&&!x.done&&!x.buried;}).slice(-5).reverse();
+    box.innerHTML=l.length?('<div class="pi-h">인박스 · 남은 '+(db.inbox||[]).filter(function(x){return x.grp==='inbox'&&!x.done&&!x.buried;}).length+'개</div>'
+      +l.map(function(x){return '<div class="pi-it" title="'+escA(x.t)+'"><span class="pi-ck" onclick="toggleInbox('+x.id+');postitPaint()" title="완료">○</span>'+esc(x.t)+'</div>';}).join('')):'';
+  }
+  var sy=document.getElementById('piSync');
+  if(sy){var c=typeof syncCode==='function'&&syncCode();sy.textContent=c?'● 동기화':'○ 이 기기만';sy.title=c?'다른 기기와 동기화 중':'설정 → 클라우드 동기화에 코드를 넣으면 다른 기기와 합쳐집니다';sy.className='pi-sync'+(c?' on':'');}
+}
+/* 창 크기: 처음엔 HMD 포스트잇과 같은 크기(250×240 안팎) · 사용자가 늘리거나 줄이면 그 크기를 기억 */
+var PI_SIZE_KEY='hmd_postitSize',PI_W=260,PI_H=250;
+function postitSize(){try{var v=JSON.parse(localStorage.getItem(PI_SIZE_KEY)||'null');if(v&&v.w>=180&&v.h>=160)return v;}catch(e){}return {w:PI_W,h:PI_H};}
+function postitResize(w,h){
+  try{var dw=Math.max(0,window.outerWidth-window.innerWidth),dh=Math.max(0,window.outerHeight-window.innerHeight);
+    window.resizeTo(Math.round(w+dw),Math.round(h+dh));}catch(e){}
+}
+function postitFit(){
+  if(!isPostitMode())return;
+  var sz=postitSize();
+  if(Math.abs(window.innerWidth-sz.w)>8||Math.abs(window.innerHeight-sz.h)>8)postitResize(sz.w,sz.h);
+  var t=null;
+  window.addEventListener('resize',function(){
+    if(window.__piPrev)return;                       /* 스케줄 창 때문에 잠깐 키운 크기는 기억하지 않는다 */
+    clearTimeout(t);t=setTimeout(function(){try{localStorage.setItem(PI_SIZE_KEY,JSON.stringify({w:window.innerWidth,h:window.innerHeight}));}catch(e){}},500);
+  });
+}
+/* 스케줄로 보내기 창이 들어가도록 잠깐 키웠다가 닫으면 원래대로 */
+function postitGrow(){
+  if(!isPostitMode()||window.__piPrev)return;
+  if(window.innerWidth>=380&&window.innerHeight>=520)return;
+  window.__piPrev={w:window.innerWidth,h:window.innerHeight};
+  postitResize(Math.max(400,window.innerWidth),Math.max(560,window.innerHeight));
+}
+function postitShrink(){var p=window.__piPrev;if(!p)return;window.__piPrev=null;postitResize(p.w,p.h);}
+function postitOpenWin(){
+  var u=memoUrlBase()+'?postit',sz=postitSize();
+  var w=window.open(u,'hmdPostit','width='+sz.w+',height='+sz.h+',menubar=no,toolbar=no,location=no,status=no');
+  if(!w)location.href=u;
+}
 function memoFlash(msg,ms){
   var m=document.getElementById('memoMsg');if(!m)return;
   clearTimeout(window.__memoMsgT);
@@ -18849,6 +18928,7 @@ function memoSched(){
   var t=document.getElementById('memoText');if(!t)return;
   var v=t.value.trim();
   if(!v){alert('메모를 입력한 뒤 스케줄로 보내세요.');t.focus();return;}
+  try{postitGrow();}catch(e){}
   var lines=v.split(/\r?\n/);
   var title=(lines.shift()||'').trim();
   var detail=lines.join('\n').trim();
@@ -18871,6 +18951,8 @@ function memoSave(grp){
   if(typeof renderInboxPage==='function')renderInboxPage();
   t.value='';
   memoFlash(grp==='inbox'?'인박스로 저장 ✓':'IDEA로 저장 ✓',1800);
+  try{postitPaint();}catch(e){}
+  if(isPostitMode())setTimeout(function(){t.focus();},20);
 }
 function fwSave(){
   if(!fwCfg)return;
