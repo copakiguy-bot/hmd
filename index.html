@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-27 · r210">
+<meta name="hmd-build" content="2026-10-27 · r211">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1474,6 +1474,12 @@
   .pi-recent,.pi-sync{display:none}
   html.postit-mode,html.postit-mode body{background:#FFF3A6!important;overflow:hidden}
   html.postit-mode body>.menu-btn,html.postit-mode .sidebar,html.postit-mode .main,html.postit-mode #memoFab,html.postit-mode #dashFab,html.postit-mode #inboxFab{display:none!important}
+  html.postit-mode:not(.pi-ready) #memoPad{visibility:hidden}
+  #piEarly{display:none}
+  html.postit-mode #piEarly{display:flex;flex-direction:column;position:fixed;inset:0;z-index:200;background:#FFF3A6;padding:10px 12px 12px;font-family:'Noto Sans KR',sans-serif}
+  html.postit-mode #piEarly .memo-head{font-size:12px;font-weight:800;color:#7a6a1e;margin-bottom:6px}
+  html.postit-mode #piEarly .pi-sync{display:inline;margin-left:8px;font-size:11px;font-weight:700;color:#a3922f}
+  #piEarlyText{flex:1;width:100%;border:none;outline:none;resize:none;background:transparent;font-family:'Noto Sans KR',sans-serif;font-size:10pt;line-height:1.65;color:#4a4110}
   html.postit-mode #memoPad{display:flex!important;flex-direction:column;position:fixed;inset:0;width:auto!important;top:0;right:0;border-radius:0;box-shadow:none;padding:10px 12px 12px;animation:none}
   html.postit-mode #memoPad .memo-x{display:none}
   html.postit-mode #memoText{flex:1;min-height:0;resize:none}
@@ -3098,7 +3104,14 @@
 <body>
 
 <script>/* 주소에 ?postit 이 있으면 «포스트잇 전용 화면» (컴퓨터에서 작은 창으로 띄워 두는 용도) */
-try{if(/[?&]postit\b/.test(location.search)){document.documentElement.classList.add('postit-mode');document.title='HMD 포스트잇';}}catch(e){}</script>
+try{if(/[?&]postit\b/.test(location.search)){document.documentElement.classList.add('postit-mode');document.title='HMD 포스트잇';
+  /* 나머지 HMD 가 다 읽히기 전에 바로 쓸 수 있게: 임시 포스트잇을 먼저 띄우고, 준비되면 진짜로 넘긴다 */
+  var e=document.createElement('div');e.id='piEarly';
+  e.innerHTML='<div class="memo-head">포스트잇 <span class="pi-sync">불러오는 중…</span></div><textarea id="piEarlyText" placeholder="메모 후 보낼 곳을 고르세요"></textarea>';
+  document.body.appendChild(e);
+  var ta=document.getElementById('piEarlyText');
+  ta.addEventListener('keydown',function(ev){if((ev.ctrlKey||ev.metaKey)&&ev.key==='Enter'){ev.preventDefault();window.__piEarlySend=true;}});
+  ta.focus();}}catch(e){}</script>
 <button class="menu-btn" onclick="toggleMenu()">☰</button>
 <aside class="sidebar">
   <div class="logo" id="hmdLogo" title="대시보드로" style="cursor:pointer" onclick="goTop('home')">HMD</div>
@@ -4091,7 +4104,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-27 · r210';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-27 · r211';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -17968,6 +17981,7 @@ function artExRender(){
 }
 
 function renderAll(){
+  if(document.documentElement.classList.contains('postit-mode')){try{postitPaint();}catch(e){}return;}   /* 포스트잇 창: 다른 화면은 그리지 않는다 (빠르게) */
   /* 한 칸이 죽어도 나머지 화면과 버튼은 살아 있게, 하나씩 감싸서 그린다 */
   [gcalStatus,renderBackupUI,
    renderTop,renderCal,renderSchedule,renderTodos,renderInbox,renderInboxPage,renderSessions,
@@ -17985,7 +17999,7 @@ try{bkInit();}catch(e){}
 try{if(isPostitMode()){postitPaint();postitFit();setTimeout(function(){var t=document.getElementById('memoText');if(t)t.focus();},200);}}catch(e){}
 try{if(rtActAuto())save();}catch(e){}
 try{if(rtTmLoad())rtTmTickOn();}catch(e){}
-[renderAll,applyTopState,renderSyncUI,renderBackupUI,renderStoreUI,renderDxUI,backupTick,dxRemind].forEach(function(f){
+(document.documentElement.classList.contains('postit-mode')?[renderAll,backupTick]:[renderAll,applyTopState,renderSyncUI,renderBackupUI,renderStoreUI,renderDxUI,backupTick,dxRemind]).forEach(function(f){
   try{f();}catch(e){try{console.error('boot · '+(f.name||'?')+':',e);}catch(_){}}
 });
 __boot=false;                                  /* 마이그레이션 구간 끝 */
@@ -18875,8 +18889,18 @@ setTimeout(memoFromUrl,60);
 /* 안내 문구: 앞선 타이머가 새 문구를 지우지 않도록 */
 /* ---------- 포스트잇 전용 화면 (?postit): 포스트잇만 창 가득 · 최근에 보낸 것 몇 개 · 동기화 표시 ---------- */
 function isPostitMode(){return document.documentElement.classList.contains('postit-mode');}
+function postitHandoff(){
+  var e=document.getElementById('piEarly');if(!e)return;
+  var et=document.getElementById('piEarlyText'),t=document.getElementById('memoText');
+  if(et&&t){t.value=et.value;var ss=et.selectionStart,se=et.selectionEnd;
+    document.documentElement.classList.add('pi-ready');e.remove();
+    t.focus();try{t.setSelectionRange(ss,se);}catch(_){}}
+  else{document.documentElement.classList.add('pi-ready');e.remove();}
+  if(window.__piEarlySend){window.__piEarlySend=false;setTimeout(function(){memoSave('inbox');},0);}
+}
 function postitPaint(){
   if(!isPostitMode())return;
+  postitHandoff();
   var p=document.getElementById('memoPad');if(p&&!p.classList.contains('on'))p.classList.add('on');
   var box=document.getElementById('piRecent');
   if(box){
