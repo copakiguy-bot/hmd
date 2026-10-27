@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-27 · r209">
+<meta name="hmd-build" content="2026-10-27 · r210">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1478,7 +1478,7 @@
   html.postit-mode #memoPad .memo-x{display:none}
   html.postit-mode #memoText{flex:1;min-height:0;resize:none}
   @media (max-height:330px){html.postit-mode .pi-recent{display:none!important}}
-  html.postit-mode .pi-sync{display:inline;margin-left:8px;font-size:11px;font-weight:700;color:#a3922f}
+  html.postit-mode .pi-sync{display:inline;margin-left:8px;font-size:11px;font-weight:700;color:#a3922f;cursor:pointer}
   html.postit-mode .pi-sync.on{color:#2f7d5e}
   html.postit-mode .pi-recent{display:block;margin-top:10px;max-height:36vh;overflow:auto}
   .pi-h{font-size:11.5px;font-weight:800;color:#7a6a1e;margin-bottom:4px}
@@ -3896,7 +3896,7 @@ try{if(/[?&]postit\b/.test(location.search)){document.documentElement.classList.
 <button id="dashFab" onclick="dashFabGo()" title="대시보드" aria-label="대시보드"></button>
 <button id="inboxFab" onclick="inboxFabGo()" title="인박스" aria-label="인박스"></button>
 <div id="memoPad">
-  <div class="memo-head">포스트잇 <span class="pi-sync" id="piSync"></span><span class="memo-x" onclick="memoToggle()">×</span></div>
+  <div class="memo-head">포스트잇 <span class="pi-sync" id="piSync" onclick="postitSyncSet()"></span><span class="memo-x" onclick="memoToggle()">×</span></div>
   <textarea id="memoText" placeholder="메모 후 보낼 곳을 고르세요" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key==='Enter'){event.preventDefault();memoSave('inbox');}"></textarea>
   <div class="memo-foot"><span id="memoMsg"></span>
     <button class="btn ghost" onclick="memoSave('inbox')" title="바로 처리할 일 → 인박스">인박스</button>
@@ -4091,7 +4091,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-27 · r209';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-27 · r210';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -18885,7 +18885,7 @@ function postitPaint(){
       +l.map(function(x){return '<div class="pi-it" title="'+escA(x.t)+'"><span class="pi-ck" onclick="toggleInbox('+x.id+');postitPaint()" title="완료">○</span>'+esc(x.t)+'</div>';}).join('')):'';
   }
   var sy=document.getElementById('piSync');
-  if(sy){var c=typeof syncCode==='function'&&syncCode();sy.textContent=c?'● 동기화':'○ 이 기기만';sy.title=c?'다른 기기와 동기화 중':'설정 → 클라우드 동기화에 코드를 넣으면 다른 기기와 합쳐집니다';sy.className='pi-sync'+(c?' on':'');}
+  if(sy){var c=typeof syncCode==='function'&&syncCode();sy.textContent=c?'● 동기화':'○ 동기화 연결';sy.title=c?'다른 기기와 동기화 중':'눌러서 동기화 코드를 넣으면 HMD와 합쳐집니다';sy.className='pi-sync'+(c?' on':'');}
 }
 /* 창 크기: 처음엔 HMD 포스트잇과 같은 크기(250×240 안팎) · 사용자가 늘리거나 줄이면 그 크기를 기억 */
 var PI_SIZE_KEY='hmd_postitSize',PI_W=260,PI_H=250;
@@ -18912,6 +18912,15 @@ function postitGrow(){
   postitResize(Math.max(400,window.innerWidth),Math.max(560,window.innerHeight));
 }
 function postitShrink(){var p=window.__piPrev;if(!p)return;window.__piPrev=null;postitResize(p.w,p.h);}
+/* 포스트잇 창이 다른 브라우저(예: 바로가기의 엣지)에서 열려 동기화 코드가 없을 때: 여기서 바로 넣는다 */
+function postitSyncSet(){
+  if(syncCode()){hkChip('동기화 중 · 코드 '+syncCode());setTimeout(function(){hkChip('');},1600);return;}
+  var v=prompt('HMD 설정 → 클라우드 동기화에 쓰는 코드를 넣으세요.\n(넣으면 이 포스트잇이 HMD와 합쳐집니다)','');
+  if(v==null)return;v=v.trim();if(!v)return;
+  localStorage.setItem(SYNC_KEY,v);
+  cloudPull(true,function(found){if(!found)cloudPush();try{syncReady();}catch(e){}postitPaint();});
+  postitPaint();
+}
 function postitOpenWin(){
   var u=memoUrlBase()+'?postit',sz=postitSize();
   var w=window.open(u,'hmdPostit','width='+sz.w+',height='+sz.h+',menubar=no,toolbar=no,location=no,status=no');
