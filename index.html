@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-10-27 · r211">
+<meta name="hmd-build" content="2026-10-31 · r212">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3298,7 +3298,7 @@ try{if(/[?&]postit\b/.test(location.search)){document.documentElement.classList.
           <div class="form">
             <div class="isbnrow" style="display:flex;gap:8px;align-items:flex-end;margin-bottom:4px">
               <div class="field" style="flex:1"><label>ISBN으로 자동 입력</label><input id="nIsbn" placeholder="예: 9788934972464" onkeydown="if(event.key==='Enter'){event.preventDefault();isbnLookup('n')}"></div>
-              <button class="btn ghost" style="flex:none" onclick="isbnLookup('n')">조회</button><button class="btn ghost" style="flex:none;padding:7px 9px" title="알라딘 API 키 설정 (한국 도서 정확 조회)" onclick="setAladinKey()">⚙</button>
+              <button class="btn ghost" style="flex:none" onclick="isbnLookup('n')">조회</button><button class="btn ghost" style="flex:none;padding:7px 9px" title="카카오 책 검색 키 설정 (한국 도서 정확 조회)" onclick="setKakaoKey()">⚙</button>
               <span id="nIsbnStat" style="font-size:11.5px;color:var(--muted);padding-bottom:10px"></span><input type="hidden" id="nCover"><img id="nCoverPrev" style="display:none;height:52px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.15)" alt="표지">
             </div>
             <div class="two">
@@ -4104,7 +4104,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-10-27 · r211';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-10-31 · r212';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -12631,14 +12631,31 @@ let readOpenId=null, editBookMode=false, chOpen=null;
 function bookById(id){return db.reading.find(b=>b.id===id);}
 function toggleBookForm(){const f=document.getElementById('bookForm');f.style.display=f.style.display==='none'?'block':'none';if(f.style.display!=='none')tocBoxRender('b');}
 /* ---------- ISBN 서지정보 자동 입력 ---------- */
-/* 한국 도서는 알라딘 무료 API 키(ttbkey)를 넣으면 정확하게 조회됩니다. 키 없으면 구글/오픈라이브러리만 사용 */
-function aladinKey(){return localStorage.getItem('aladin_ttb')||'';}
-function setAladinKey(){
-  var k=prompt('알라딘 TTB 키를 입력하세요.\n(www.aladin.co.kr/ttb 에서 무료 발급 · 비우면 삭제)',aladinKey());
+/* 한국 도서는 카카오(다음) 책 검색 REST API 키를 넣으면 정확하게 조회됩니다 (알라딘 OpenAPI 는 2026-11-01 종료)
+   키는 이 브라우저에만 저장 (데이지 관리 페이지와 같은 주소라 함께 씀). 키 없으면 구글/오픈라이브러리만 사용 */
+function kakaoKey(){try{return localStorage.getItem('kakao_rest')||'';}catch(e){return '';}}
+function setKakaoKey(){
+  var k=prompt('카카오 REST API 키를 입력하세요.\n(developers.kakao.com → 내 애플리케이션 → 앱 키 → REST API 키 · 비우면 삭제)',kakaoKey());
   if(k===null)return;
-  k=k.trim();
-  if(k)localStorage.setItem('aladin_ttb',k);else localStorage.removeItem('aladin_ttb');
+  k=k.trim().replace(/^KakaoAK\s+/i,'');
+  try{if(k)localStorage.setItem('kakao_rest',k);else localStorage.removeItem('kakao_rest');localStorage.removeItem('aladin_ttb');}catch(e){}
   alert(k?'저장했습니다.':'삭제했습니다.');
+}
+/* 카카오 책 검색: ISBN → 제목·저자(/역자)·출판사·출간일·표지 (쪽수는 없어서 구글에서 보충) */
+function kakaoBook(isbn,key){
+  return fetch('https://dapi.kakao.com/v3/search/book?target=isbn&size=1&query='+encodeURIComponent(isbn),{headers:{Authorization:'KakaoAK '+key}})
+    .then(function(r){if(r.status===401||r.status===403)throw new Error('KEY');if(!r.ok)throw new Error(String(r.status));return r.json();})
+    .then(function(j){
+      var d=j&&j.documents&&j.documents[0];if(!d)return null;
+      var th=String(d.thumbnail||''),m=/[?&]fname=([^&]+)/.exec(th);
+      var cover=m?decodeURIComponent(m[1]):th;cover=cover.replace(/^http:/,'https:');
+      return {title:d.title||'',authors:(d.authors||[]).concat(d.translators||[]).join(', '),author1:(d.authors||[]).join(', '),
+        publisher:d.publisher||'',year:(/^(\d{4})/.exec(d.datetime||'')||[])[1]||'',pages:'',cover:cover,src:'카카오'};
+    });
+}
+function googlePages(isbn){
+  return fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:'+isbn).then(function(r){return r.json();})
+    .then(function(j){var v=j&&j.items&&j.items[0]&&j.items[0].volumeInfo;return (v&&v.pageCount)||'';}).catch(function(){return '';});
 }
 function jsonp(url,cb,onerr){
   var name='__jp'+Math.floor(Math.random()*1e9);
@@ -12676,7 +12693,7 @@ function isbnLookup(prefix){
   }
   isbnFetch(isbn,fill,stat);
 }
-/* ISBN → 서지정보 (구글북스 → 오픈라이브러리 → 알라딘 키가 있으면 알라딘 먼저) */
+/* ISBN → 서지정보 (카카오 키가 있으면 카카오 먼저 → 구글북스 → 오픈라이브러리) */
 function isbnFetch(isbn,fill,stat){
   function tryGoogle(){
     fetch('https://www.googleapis.com/books/v1/volumes?q=isbn:'+isbn)
@@ -12698,22 +12715,19 @@ function isbnFetch(isbn,fill,stat){
         if(d){fill({title:d.title||'',authors:(d.authors||[]).map(function(a){return a.name;}).join(', '),
           publisher:(d.publishers||[]).map(function(x){return x.name;}).join(', '),pages:d.number_of_pages||'',
           cover:(d.cover&&(d.cover.large||d.cover.medium))||('https://covers.openlibrary.org/b/isbn/'+isbn+'-M.jpg'),src:'Open Library'});}
-        else if(stat)stat.textContent='결과 없음 · 한국 도서는 ⚙로 알라딘 키를 등록하면 잘 찾아요';
+        else if(stat)stat.textContent='결과 없음 · 한국 도서는 ⚙로 카카오 키를 등록하면 잘 찾아요';
       })
       .catch(function(){if(stat)stat.textContent='조회 실패 (네트워크 확인)';});
   }
-  var key=aladinKey();
+  var key=kakaoKey();
   if(key){
-    jsonp('https://www.aladin.co.kr/ttb/api/ItemLookUp.aspx?ttbkey='+encodeURIComponent(key)
-      +'&itemIdType=ISBN13&ItemId='+isbn+'&output=js&Version=20131101&OptResult=packing',
-      function(d){
-        var it=d&&d.item&&d.item[0];
-        if(it){
-          fill({title:it.title||'',authors:it.author||'',publisher:it.publisher||'',
-            pages:(it.subInfo&&it.subInfo.itemPage)||(it.bookinfo&&it.bookinfo.itemPage)||'',
-            cover:String(it.cover||'').replace(/coversum|cover200|cover150|cover100/,'cover500'),src:'알라딘'});
-        }else tryGoogle();
-      },tryGoogle);
+    kakaoBook(isbn,key).then(function(info){
+      if(!info)return tryGoogle();
+      googlePages(isbn).then(function(pg){info.pages=pg;fill(info);});
+    }).catch(function(e){
+      if(e&&e.message==='KEY'&&stat)stat.textContent='카카오 키가 맞지 않습니다 · 구글에서 찾는 중…';
+      tryGoogle();
+    });
   }else tryGoogle();
 }
 function isbnLookupTo(isbn,cb){
@@ -13597,7 +13611,7 @@ function renderBookDetail(b){
       <div class="form">
         <div class="isbnrow" style="display:flex;gap:8px;align-items:flex-end;margin-bottom:4px">
           <div class="field" style="flex:1"><label>ISBN으로 표지·서지 불러오기</label><input id="ebIsbn" oninput="bkAutoSave(${b.id})" value="${escA(b.isbn||'')}" placeholder="예: 9788934972464" onkeydown="if(event.key==='Enter'){event.preventDefault();isbnLookup('eb')}"></div>
-          <button class="btn ghost" style="flex:none" onclick="isbnLookup('eb')">조회</button><button class="btn ghost" style="flex:none;padding:7px 9px" title="알라딘 API 키 설정 (한국 도서 정확 조회)" onclick="setAladinKey()">⚙</button>
+          <button class="btn ghost" style="flex:none" onclick="isbnLookup('eb')">조회</button><button class="btn ghost" style="flex:none;padding:7px 9px" title="카카오 책 검색 키 설정 (한국 도서 정확 조회)" onclick="setKakaoKey()">⚙</button>
           <span id="ebIsbnStat" style="font-size:11.5px;color:var(--muted);padding-bottom:10px"></span>
           <input type="hidden" id="ebCover" value="${escA(b.cover||'')}">
           <img id="ebCoverPrev" src="${escA(b.cover||'')}" style="${b.cover?'':'display:none;'}height:52px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.15)" onerror="this.style.display='none'" alt="표지">
