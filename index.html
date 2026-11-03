@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-03 · r213">
+<meta name="hmd-build" content="2026-11-03 · r214">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3732,7 +3732,7 @@ try{if(/[?&]postit\b/.test(location.search)){document.documentElement.classList.
       <div class="gcal-sec">
         <div class="gcal-t">방법 2 · 버튼 한 번으로 바로 반영 <span class="gcal-badge">최초 1회 설치</span></div>
         <div class="gcal-d">구글 Apps Script 웹앱을 한 번 만들어 두면, 아래 «구글 캘린더로 보내기»를 누를 때마다 일정이 캘린더에 반영됩니다. 이미 보낸 일정은 덮어쓰고, 앱에서 지운 일정은 캘린더에서도 지웁니다.<br>
-        루틴은 구글이 쓰기를 차단하지 않도록 <b>오늘·내일 이틀치만</b> 등록합니다(다음 날 다시 누르면 하루치가 이어집니다). <b>바뀐 것이 없는 항목은 건너뛰므로</b> 여러 번 눌러도 구글 호출이 늘어나지 않습니다.</div>
+        <b>직접 등록한 일정만</b> 보내고 루틴은 보내지 않습니다(예전에 보낸 루틴은 다음 전송 때 캘린더에서 정리됩니다). <b>바뀐 것이 없는 항목은 건너뛰므로</b> 여러 번 눌러도 구글 호출이 늘어나지 않습니다.</div>
         <div class="inrow">
           <input id="gcalUrl" class="in" style="flex:1" placeholder="Apps Script 웹앱 URL (https://script.google.com/…/exec)">
           <button class="btn y" style="flex:none" onclick="gcalConnect()">연결 확인</button>
@@ -4133,7 +4133,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-03 · r213';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-03 · r214';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -7137,8 +7137,7 @@ function icsDate(d){return String(d||'').replace(/-/g,'');}
 function exportICS(futureOnly){
   var tk=today();
   var list=db.schedules.filter(function(s){return s.date&&(!futureOnly||s.date>=tk);});
-  var rts=(db.tlRoutines||[]).filter(function(r){return r.active!==false;});
-  if(!list.length&&!rts.length){alert('내보낼 일정이 없습니다.');return;}
+  if(!list.length){alert('내보낼 일정이 없습니다.');return;}   /* 직접 등록한 일정만 (루틴은 넣지 않는다) */
   var out=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//HMD//KO','CALSCALE:GREGORIAN'];
   list.forEach(function(s){
     var d=icsDate(s.date), hasTime=/^\d{2}:\d{2}$/.test(s.time||'');
@@ -7159,27 +7158,6 @@ function exportICS(futureOnly){
     out.push('SUMMARY:'+icsEsc(s.title));
     if(s.detail)out.push('DESCRIPTION:'+icsEsc(s.detail));
     if(s.done)out.push('STATUS:CANCELLED');
-    out.push('END:VEVENT');
-  });
-  /* 루틴: 매일 반복 일정으로 등록 (HMD 달력에는 표시하지 않음) */
-  rts.forEach(function(r){
-    var d=icsDate(tk), hasTime=/^\d{2}:\d{2}$/.test(r.time||'');
-    out.push('BEGIN:VEVENT');
-    out.push('UID:hmd-rt-'+r.id+'@hmd.local');
-    out.push('DTSTAMP:'+d+'T000000Z');
-    if(hasTime){
-      var hm=r.time.replace(':','');
-      out.push('DTSTART;TZID=Asia/Seoul:'+d+'T'+hm+'00');
-      var h=Number(r.time.slice(0,2)), m=Number(r.time.slice(3,5))+(r.dur>0?r.dur:30);
-      var end=new Date(2000,0,1,h,m);
-      var endD=(end.getDate()>1)?icsDate(nextDay(tk)):d;
-      out.push('DTEND;TZID=Asia/Seoul:'+endD+'T'+String(end.getHours()).padStart(2,'0')+String(end.getMinutes()).padStart(2,'0')+'00');
-    }else{
-      out.push('DTSTART;VALUE=DATE:'+d);
-      out.push('DTEND;VALUE=DATE:'+icsDate(nextDay(tk)));
-    }
-    out.push('RRULE:FREQ=DAILY');
-    out.push('SUMMARY:'+icsEsc('[루틴] '+r.title));
     out.push('END:VEVENT');
   });
   out.push('END:VCALENDAR');
@@ -7265,27 +7243,15 @@ function gcalPushAll(futureOnly){
   if(!u){alert('먼저 Apps Script 웹앱 URL을 넣고 «연결 확인»을 눌러 주세요.\n설치 방법은 «설치 방법·코드 보기»에 있습니다.');return;}
   var tk=today();
   var list=db.schedules.filter(function(s){return s.date&&(!futureOnly||s.date>=tk);});
-  var rts=(db.tlRoutines||[]).filter(function(r){return r.active!==false;});
-  if(!list.length&&!rts.length){alert('보낼 일정이 없습니다.');return;}
-  /* 루틴은 「오늘·내일 이틀치」 낱개 일정으로만 보낸다.
-     반복 일정(series) 방식은 루틴이 많으면 구글이 쓰기를 차단해서 접었다.
-     uid 를 hmd-rtd-{id}-{날짜} 로 두면 날마다 내일치 하나만 새로 만들면 된다. */
-  var tm=nextDay(tk);
-  var rtEvents=[];
-  rts.forEach(function(r){
-    [tk,tm].forEach(function(d){
-      if(tlrKindOf(r)!==dayKind(d))return;   /* 평일 루틴은 평일에만, 휴일 루틴은 휴일에만 */
-      rtEvents.push({uid:'hmd-rtd-'+r.id+'-'+d,date:d,
-        time:(/^\d{2}:\d{2}$/.test(r.time||'')?r.time:''),
-        dur:(r.dur>0?r.dur:30),title:'[루틴] '+r.title,detail:''});
-    });
-  });
-  var msg='일정 '+list.length+'건'+(rts.length?' + 루틴 '+rts.length+'개(오늘·내일 이틀치 = '+rtEvents.length+'건)':'')+'를 구글 캘린더로 보낼까요?'
+  /* 직접 등록한 일정만 보낸다 — 루틴은 보내지 않는다.
+     예전에 보낸 루틴(hmd-rtd-… 낱개 · 반복 일정)은 목록에 없으므로 이번 전송(sync)에서 캘린더에서 지워진다 */
+  if(!list.length&&!confirm('보낼 일정이 없습니다.\n그래도 보내서 예전에 보낸 루틴·지운 일정을 구글 캘린더에서 정리할까요?'))return;
+  var msg='일정 '+list.length+'건을 구글 캘린더로 보낼까요? (루틴은 보내지 않습니다)'
     +'\n\n※ 지난번과 달라진 것이 없는 항목은 구글을 호출하지 않고 건너뜁니다.'
-    +'\n※ 예전 방식으로 만들어 둔 «반복 일정» 루틴은 이번 전송에서 자동으로 정리됩니다.';
-  if(!confirm(msg))return;
+    +'\n※ 예전에 보낸 루틴 일정은 이번 전송에서 구글 캘린더에서 정리됩니다.';
+  if(list.length&&!confirm(msg))return;
   gcalSend({type:'bulk',sync:true,from:futureOnly?tk:'',
-    events:list.map(function(s){return gcalEventPayload(s,'upsert');}).concat(rtEvents)},
+    events:list.map(function(s){return gcalEventPayload(s,'upsert');})},
     function(ok,text,verified){gcalReport(ok,text,verified);});
 }
 /* 전송 결과 안내 — ok(정상) / limit(구글이 쓰기 차단) / 그 외 오류 를 구분해서 보여준다 */
