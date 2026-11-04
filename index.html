@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-04 · r217">
+<meta name="hmd-build" content="2026-11-04 · r218">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -859,6 +859,8 @@
     font-size:11px;font-weight:800;color:var(--dark);z-index:5;pointer-events:none;
     background:rgba(255,255,255,.92);padding-left:2px}
   .tlc-org i{width:8px;height:8px;border-radius:2px;flex:none}
+  .tlc-org{white-space:nowrap;letter-spacing:-.03em}
+  .tlc-dept .lb{display:block;line-height:1.25;word-break:keep-all}
   .tlc-row{position:relative;border-bottom:1px dashed #f0ede6}
   .tlc-row:last-child{border-bottom:none}
   .tlc-dept{position:absolute;left:76px;top:0;height:100%;width:50px;display:flex;align-items:center;
@@ -4165,7 +4167,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-04 · r217';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-04 · r218';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -5298,7 +5300,7 @@ function tlCnGridHTML(W,gridBg){
       var tone=cnDeptTone(org,dp);
       var tall=evh.indexOf(' twol')>=0;
       return '<div class="tlc-row'+(tall?' tall':'')+'">'
-        +'<div class="tlc-dept"'+(tone?' style="color:'+tone+'"':'')+' ondblclick="cnDeptFiles(event,\''+escA(org)+'\',\''+escA(dp)+'\')" title="두 번 누르면 이 세분류에 붙은 문서 (붙이기·보기)">'+(dp==='__etc__'?'—':(dp||''))+deptClip(org,dp)+'</div>'
+        +'<div class="tlc-dept"'+(tone?' style="color:'+tone+'"':'')+' ondblclick="cnDeptFiles(event,\''+escA(org)+'\',\''+escA(dp)+'\')" title="두 번 누르면 이 세분류에 붙은 문서 (붙이기·보기)">'+cnDeptLb(dp)+deptClip(org,dp)+'</div>'
         +'<div class="tlc-track" ondblclick="cnQuickAdd(event,\''+escA(org)+'\',\''+escA(dp)+'\')" title="빈 곳 더블클릭 → 그 시각에 의회 일정 추가" style="width:'+W+'px;background-image:'+gridBg+'">'+evh+nowL+'</div>'
       +'</div>';
     }).join('');
@@ -5374,7 +5376,7 @@ function renderTlCnWeek(inner){
       });
       var tone=cnDeptTone(org,dp);
       return '<div class="tlc-row" style="height:'+H+'px">'
-        +'<div class="tlc-dept"'+(tone?' style="color:'+tone+'"':'')+' ondblclick="cnDeptFiles(event,\''+escA(org)+'\',\''+escA(dp)+'\')" title="두 번 누르면 이 세분류에 붙은 문서 (붙이기·보기)">'+(dp==='__etc__'?'—':(dp||''))+deptClip(org,dp)+'</div>'
+        +'<div class="tlc-dept"'+(tone?' style="color:'+tone+'"':'')+' ondblclick="cnDeptFiles(event,\''+escA(org)+'\',\''+escA(dp)+'\')" title="두 번 누르면 이 세분류에 붙은 문서 (붙이기·보기)">'+cnDeptLb(dp)+deptClip(org,dp)+'</div>'
         +'<div class="tlc-track" ondblclick="cnQuickAddW(event,\''+escA(org)+'\',\''+escA(dp)+'\',\''+d0+'\','+CW+')" data-days="'+escA(days.join(','))+'" title="빈 곳 더블클릭 → 그 날짜에 의회 일정 추가" style="width:'+W+'px;height:'+H+'px;background-image:'+colBg+'">'+tdBar+evh+'</div>'
       +'</div>';
     }).join('');
@@ -7748,6 +7750,9 @@ function gcalShowScript(){
 var CN_ORGS=['의장실','부의장실','본회의','상임위','특위','사무처'];
 var CN_COL={'의장실':'#b03a48','부의장실':'#3f8fa3','본회의':'#2f6f5e','상임위':'#2a78d6','특위':'#c98500','사무처':'#6d7a84'};
 function cnDepts(org){return (org==='본회의'||org==='의장실')?[]:((db.cnOrgs||{})[org]||[]);}
+/* 트랙 왼쪽 세분류 이름: «1부의장(건소위)» → 1부의장 / (건소위) 두 줄로 */
+function cnDeptLb(dp){if(dp==='__etc__')return '—';var t=String(dp||''),i=t.indexOf('(');
+  return '<span class="lb">'+(i>0?esc(t.slice(0,i))+'<br>'+esc(t.slice(i)):esc(t))+'</span>';}
 function cnLabel(s){return s&&s.cn?(s.cnOrg||'의회')+(s.cnDept?' · '+s.cnDept:''):'';}
 function cnColor(s){return cnDeptColor(s&&s.cnOrg,s&&s.cnDept);}
 /* 세부(위원회·부서)마다 다른 색 — 새로 추가한 세부는 팔레트에서 순서대로 */
