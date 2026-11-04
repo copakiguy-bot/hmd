@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-04 · r216">
+<meta name="hmd-build" content="2026-11-04 · r217">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -637,6 +637,15 @@
   .schip.cn{background:#d8e7f1;color:#2b5a7e}
   .tl-ev.cn{background:#edece7;color:#3d4a46}
   .tlc-ev,.tlcw-ev{color:#3d4a46}
+  .cn-hv{position:fixed;z-index:240;display:none;max-width:340px;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:0 12px 30px rgba(18,49,43,.18);padding:9px 12px 10px;pointer-events:none;font-size:12.5px;color:var(--text);line-height:1.6}
+  .cn-hv.on{display:block}
+  .cn-hv .h{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--muted)}
+  .cn-hv .h .o{flex:none;width:8px;height:8px;border-radius:50%}
+  .cn-hv .h .d{margin-left:auto;font-weight:600;white-space:nowrap}
+  .cn-hv .t{font-weight:800;color:var(--dark);font-size:13px;margin-top:3px;display:flex;align-items:center;gap:5px}
+  .cn-hv .b{margin-top:5px;white-space:pre-line;word-break:keep-all}
+  .cn-hv .m{margin-top:5px;font-size:12px;color:#7a5a00;background:#fff7dd;border-radius:7px;padding:3px 7px;white-space:pre-line}
+  .cn-hv .f{margin-top:4px;font-size:11.5px;color:var(--muted)}
   .tl-ev.cn b{color:inherit}
   /* 주단위 (회기 날짜축) */
   .tlcw-head{position:relative;height:30px;border-bottom:1px solid var(--line)}
@@ -4156,7 +4165,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-04 · r216';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-04 · r217';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4188,7 +4197,7 @@ function ensureFields(){
   Object.keys(db.rdGoal||{}).forEach(function(k){var g=db.rdGoal[k];if(g&&g.page!=null&&g.n==null)delete db.rdGoal[k];});   /* 예전 «쪽까지» 목표는 버린다 */
   if(!db.nw||typeof db.nw!=='object'||Array.isArray(db.nw))db.nw={items:[],snaps:{}};if(!Array.isArray(db.nw.items))db.nw.items=[];if(!db.nw.snaps||typeof db.nw.snaps!=='object')db.nw.snaps={};
   if(!db.cnOrgs||typeof db.cnOrgs!=='object')db.cnOrgs={};
-  if(!Array.isArray(db.cnOrgs['비서실']))db.cnOrgs['비서실']=['의장실','부의장실'];
+  if(!Array.isArray(db.cnOrgs['부의장실']))db.cnOrgs['부의장실']=['1부의장(건소위)','2부의장(복환위)'];
   if(!Array.isArray(db.cnOrgs['상임위']))db.cnOrgs['상임위']=['운영위','기경위','행문위','복환위','농수위','건소위','교육위'];
   if(!Array.isArray(db.cnOrgs['특위']))db.cnOrgs['특위']=['예결위','윤리위'];
   if(!db.__cnYun){if(db.cnOrgs['특위'].indexOf('윤리위')<0)db.cnOrgs['특위'].splice(1,0,'윤리위');db.__cnYun=1;}
@@ -4401,6 +4410,31 @@ function ensureFields(){
     db.__s372=1;
   }
   if(!Array.isArray(db.cnOrgs['사무처']))db.cnOrgs['사무처']=['총무','의사','홍보','입법','예산'];
+  /* 비서실 → «의장실» «부의장실» 두 대분류로 (최초 1회)
+     · 예전 비서실 일정은 의장실/부의장실로 옮기고
+     · 부의장실 = 1부의장(건소위) · 2부의장(복환위) — 지금 건소위·복환위에 있는 일정을 복사해 둔다
+       (복사본 id = 원래 id×10+1/2 로 고정 → 여러 기기에서 각각 옮겨도 동기화 때 겹치지 않는다) */
+  if(!db.__cnVP){
+    delete db.cnOrgs['비서실'];
+    (db.schedules||[]).forEach(function(x){
+      if(!x||x.cnOrg!=='비서실')return;
+      if(x.cnDept==='부의장실'){x.cnOrg='부의장실';x.cnDept='';}else{x.cnOrg='의장실';x.cnDept='';}
+    });
+    if(db.cnDeptFiles&&typeof db.cnDeptFiles==='object')Object.keys(db.cnDeptFiles).forEach(function(k){
+      var m=/^dept:비서실\|(.*)$/.exec(k);if(!m)return;
+      var nk=m[1]==='부의장실'?'dept:부의장실|':'dept:의장실|';
+      if(!db.cnDeptFiles[nk])db.cnDeptFiles[nk]=db.cnDeptFiles[k];delete db.cnDeptFiles[k];
+    });
+    var VP={'건소위':['1부의장(건소위)',1],'복환위':['2부의장(복환위)',2]},ids={};
+    (db.schedules||[]).forEach(function(x){if(x)ids[x.id]=1;});
+    (db.schedules||[]).slice().forEach(function(x){
+      if(!x||!x.cn||x.cnOrg!=='상임위'||!VP[x.cnDept]||typeof x.id!=='number')return;
+      var v=VP[x.cnDept],nid=x.id*10+v[1];if(ids[nid])return;
+      var c=JSON.parse(JSON.stringify(x));c.id=nid;c.cnOrg='부의장실';c.cnDept=v[0];c.vpFrom=x.id;
+      db.schedules.push(c);ids[nid]=1;
+    });
+    db.__cnVP=1;
+  }
   /* 배열 필드가 빠진 옛 데이터가 화면 전체를 멈추지 않게 (매 로드마다, 멱등)
      — 정리 자체가 실패해도 앱은 반드시 뜬다 */
   try{
@@ -5258,7 +5292,7 @@ function tlCnGridHTML(W,gridBg){
         var need2=Math.ceil(tlTextW(sh))+16+(schFiles(s).length?(schFiles(s).length>1?26:18):0)+(s.imp?12:0);
         var two=need2>256, bw2=two?256:Math.max(need2,26);
         return '<div class="tl-ev cn tlc-ev'+cnMemoCls(s)+(s.imp?' imp':'')+(two?' twol':'')+'" data-k="s" data-id="'+s.id+'" style="left:'+left+'px;top:3px;width:'+bw2
-          +'px;color:'+col+';background:'+(hlOk(s.hl)?s.hl:CN_MONO_BG)+';border-left:3px solid '+(s.imp?'#e34948':CN_MONO_BAR)+'" title="'+escA(cnLabel(s)+' \u00b7 '+lbl+' ('+tlFmt(mn)+'~'+tlFmt(endMn)+')'+(cnNoteHas(s)?' \u00b7 \ud83d\udcdd 메모 있음':'')+' — 한 번 누르면 세부일정 · 두 번 = 붙은 문서')+'">'
+          +'px;color:'+col+';background:'+(hlOk(s.hl)?s.hl:CN_MONO_BG)+';border-left:3px solid '+(s.imp?'#e34948':CN_MONO_BAR)+'" title="'+escA(cnLabel(s)+' \u00b7 '+lbl+' ('+tlFmt(mn)+'~'+tlFmt(endMn)+')'+(cnNoteHas(s)?' \u00b7 \ud83d\udcdd 메모 있음':''))+'" data-cnh="1">'
           +'<b>'+esc(sh)+'</b>'+impDot(s)+pdfClip(s)+'</div>';
       }).join('');
       var tone=cnDeptTone(org,dp);
@@ -5333,7 +5367,7 @@ function renderTlCnWeek(inner){
           var col=CN_MONO,h=chipH(s);
           evh+='<div class="tlcw-ev'+(s.done?' done':'')+cnMemoCls(s)+(s.imp?' imp':'')+(h>19?' twol':'')+'" data-sid="'+s.id+'" onclick="cnChipTap(event,'+s.id+')" ondblclick="cnChipDbl(event,'+s.id+')" style="left:'+(i*CW+2)
             +'px;top:'+top+'px;width:'+(CW-6)+'px;height:'+h+'px;color:'+col+';background:'+(hlOk(s.hl)?s.hl:CN_MONO_BG)+';border-left:3px solid '+(s.imp?'#e34948':CN_MONO_BAR)+'" title="'
-            +escA(cnLabel(s)+' · '+(s.time?s.time+' · ':'')+(s.title||'')+' — 누르면 세부일정 · 두 번 누르면 붙은 문서')+'">'
+            +escA(cnLabel(s)+' · '+(s.time?s.time+' · ':'')+(s.title||''))+'" data-cnh="1">'
             +'<span class="t">'+esc(chipTxt(s))+'</span>'+impDot(s)+pdfClip(s)+'</div>';
           top+=h+4;
         });
@@ -7711,14 +7745,14 @@ function gcalShowScript(){
 }
 
 /* ===== 의회 일정: 기관·세부 ===== */
-var CN_ORGS=['비서실','본회의','상임위','특위','사무처'];
-var CN_COL={'비서실':'#a3564b','본회의':'#2f6f5e','상임위':'#2a78d6','특위':'#c98500','사무처':'#6d7a84'};
-function cnDepts(org){return org==='본회의'?[]:((db.cnOrgs||{})[org]||[]);}
+var CN_ORGS=['의장실','부의장실','본회의','상임위','특위','사무처'];
+var CN_COL={'의장실':'#b03a48','부의장실':'#3f8fa3','본회의':'#2f6f5e','상임위':'#2a78d6','특위':'#c98500','사무처':'#6d7a84'};
+function cnDepts(org){return (org==='본회의'||org==='의장실')?[]:((db.cnOrgs||{})[org]||[]);}
 function cnLabel(s){return s&&s.cn?(s.cnOrg||'의회')+(s.cnDept?' · '+s.cnDept:''):'';}
 function cnColor(s){return cnDeptColor(s&&s.cnOrg,s&&s.cnDept);}
 /* 세부(위원회·부서)마다 다른 색 — 새로 추가한 세부는 팔레트에서 순서대로 */
 var CN_DEPT_COL={
-  '의장실':'#b03a48','부의장실':'#3f8fa3',
+  '1부의장(건소위)':'#c8641d','2부의장(복환위)':'#1b9e6f',
   '운영위':'#5b6ee0','기경위':'#2a78d6','행문위':'#c85f8f','복환위':'#1b9e6f',
   '농수위':'#7a9a2e','건소위':'#c8641d','교육위':'#8a5bd0',
   '예결위':'#b58500','윤리위':'#6d7a84','인특위':'#9e3a63',
@@ -7754,6 +7788,34 @@ function pdfClip(s){var n=schFiles(s).length;return n?'<span class="ev-clip" tit
 /* 쪽지가 붙어 있는 일정 표시 */
 function cnNoteHas(s){return !!(s&&((s.memo&&s.memo.trim())||(!s.memo&&s.mind&&s.mind.length>1)));}
 function cnMemoCls(s){return cnNoteHas(s)?' memo':'';}
+/* 의회 일정 칩에 커서를 대면: 세부일정을 바로 보여 준다 (안내 문구 대신) */
+var cnHvT=null;
+function cnHvBox(){var b=document.getElementById('cnHv');if(!b){b=document.createElement('div');b.id='cnHv';b.className='cn-hv';document.body.appendChild(b);}return b;}
+function cnHvShow(el,e){
+  var id=Number(el.getAttribute('data-id')||el.getAttribute('data-sid'));var s=(db.schedules||[]).find(function(x){return x.id===id;});if(!s)return;
+  if(el.getAttribute('title')){el.setAttribute('data-t',el.getAttribute('title'));el.removeAttribute('title');}   /* 브라우저 기본 말풍선은 끈다 */
+  var b=cnHvBox(),end='';
+  if(s.time&&/^\d{1,2}:\d{2}$/.test(s.time)){var p=s.time.split(':'),mn=(+p[0])*60+(+p[1])+(s.dur>0?s.dur:30);mn=Math.min(mn,24*60-1);end='~'+String(Math.floor(mn/60)).padStart(2,'0')+':'+String(mn%60).padStart(2,'0');}
+  var nf=schFiles(s).length,memo=cnNoteHas(s)?String(s.memo||'').trim():'';
+  b.innerHTML='<div class="h"><span class="o" style="background:'+cnColor(s)+'"></span>'+esc(cnLabel(s))+'<span class="d">'+esc(String(s.date||'').slice(5).replace('-','.'))+(s.time?' · '+esc(s.time)+end:'')+'</span></div>'
+    +'<div class="t">'+(s.imp?'<span class="imp-dot"></span>':'')+esc(s.title||'')+'</div>'
+    +(s.detail?'<div class="b">'+esc(s.detail)+'</div>':'')
+    +(memo?'<div class="m">📝 '+esc(memo)+'</div>':'')
+    +(nf?'<div class="f">📎 문서 '+nf+'개</div>':'');
+  b.classList.add('on');cnHvMove(e);
+}
+function cnHvMove(e){
+  var b=document.getElementById('cnHv');if(!b||!b.classList.contains('on'))return;
+  var w=b.offsetWidth,h=b.offsetHeight,x=e.clientX+14,y=e.clientY+16;
+  if(x+w>innerWidth-8)x=Math.max(8,e.clientX-w-14);if(y+h>innerHeight-8)y=Math.max(8,e.clientY-h-12);
+  b.style.left=x+'px';b.style.top=y+'px';
+}
+function cnHvHide(){var b=document.getElementById('cnHv');if(b)b.classList.remove('on');}
+if(window.matchMedia&&matchMedia('(hover:hover)').matches){
+  document.addEventListener('mouseover',function(e){var el=e.target.closest&&e.target.closest('[data-cnh]');if(!el){cnHvHide();return;}cnHvShow(el,e);});
+  document.addEventListener('mousemove',function(e){if(e.target.closest&&e.target.closest('[data-cnh]'))cnHvMove(e);});
+  document.addEventListener('mousedown',cnHvHide,true);document.addEventListener('scroll',cnHvHide,true);
+}
 /* 세부일정 팝업 (주단위 칩 두 번 누르기) */
 function cnEvOpen(id){
   var s=(db.schedules||[]).find(function(x){return x.id===id;});if(!s)return;
