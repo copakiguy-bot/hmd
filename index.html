@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-04 · r219">
+<meta name="hmd-build" content="2026-11-05 · r221">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -637,6 +637,7 @@
   .schip.cn{background:#d8e7f1;color:#2b5a7e}
   .tl-ev.cn{background:#edece7;color:#3d4a46}
   .tlc-ev,.tlcw-ev{color:#3d4a46}
+  .tlc-ev.lnk,.tlcw-ev.lnk{border-left-style:dashed!important;opacity:.85}   /* 공통 줄의 본회의 연동 일정 */
   .cn-hv{position:fixed;z-index:240;display:none;max-width:340px;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:0 12px 30px rgba(18,49,43,.18);padding:9px 12px 10px;pointer-events:none;font-size:12.5px;color:var(--text);line-height:1.6}
   .cn-hv.on{display:block}
   .cn-hv .h{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--muted)}
@@ -4167,7 +4168,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-04 · r219';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-05 · r221';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4199,7 +4200,8 @@ function ensureFields(){
   Object.keys(db.rdGoal||{}).forEach(function(k){var g=db.rdGoal[k];if(g&&g.page!=null&&g.n==null)delete db.rdGoal[k];});   /* 예전 «쪽까지» 목표는 버린다 */
   if(!db.nw||typeof db.nw!=='object'||Array.isArray(db.nw))db.nw={items:[],snaps:{}};if(!Array.isArray(db.nw.items))db.nw.items=[];if(!db.nw.snaps||typeof db.nw.snaps!=='object')db.nw.snaps={};
   if(!db.cnOrgs||typeof db.cnOrgs!=='object')db.cnOrgs={};
-  if(!Array.isArray(db.cnOrgs['부의장실']))db.cnOrgs['부의장실']=['1부의장(건소위)','2부의장(복환위)'];
+  if(!Array.isArray(db.cnOrgs['부의장실']))db.cnOrgs['부의장실']=['공통','1부의장(건소위)','2부의장(복환위)'];
+  if(!db.__cnVP2){if(db.cnOrgs['부의장실'].indexOf('공통')<0)db.cnOrgs['부의장실'].unshift('공통');db.__cnVP2=1;}   /* 1·2부의장 함께하는 일정 + 본회의 연동 */
   if(!Array.isArray(db.cnOrgs['상임위']))db.cnOrgs['상임위']=['운영위','기경위','행문위','복환위','농수위','건소위','교육위'];
   if(!Array.isArray(db.cnOrgs['특위']))db.cnOrgs['특위']=['예결위','윤리위'];
   if(!db.__cnYun){if(db.cnOrgs['특위'].indexOf('윤리위')<0)db.cnOrgs['특위'].splice(1,0,'윤리위');db.__cnYun=1;}
@@ -5275,12 +5277,8 @@ function tlCnGridHTML(W,gridBg){
     var loose=cnEvs.filter(function(s){return s.cnOrg===org&&(ds.length? (s.cnDept?rows.indexOf(s.cnDept)<0:true) :false);});
     if(ds.length&&loose.length)rows.push('__etc__');
     var cells=rows.map(function(dp,ri){
-      var list=cnEvs.filter(function(s){
-        if(s.cnOrg!==org)return false;
-        if(!ds.length)return true;
-        if(dp==='__etc__')return s.cnDept?rows.indexOf(s.cnDept)<0:!s.cnDept;
-        return s.cnDept===dp;
-      });
+      var rbg=cnRowBg(org,dp);
+      var list=cnEvs.filter(function(s){return cnRowHas(s,org,dp,ds,rows);});
       var evh=list.map(function(s){
         var mn=tlParseMin(s.time);
         var lbl=(s.done?'✓ ':'')+(s.title||'');
@@ -5293,8 +5291,8 @@ function tlCnGridHTML(W,gridBg){
         var sh=(s.done?'\u2713 ':'')+cnShortTitle(s);
         var need2=Math.ceil(tlTextW(sh))+16+(schFiles(s).length?(schFiles(s).length>1?26:18):0)+(s.imp?12:0);
         var two=need2>256, bw2=two?256:Math.max(need2,26);
-        return '<div class="tl-ev cn tlc-ev'+cnMemoCls(s)+(s.imp?' imp':'')+(two?' twol':'')+'" data-k="s" data-id="'+s.id+'" style="left:'+left+'px;top:3px;width:'+bw2
-          +'px;color:'+col+';background:'+(hlOk(s.hl)?s.hl:CN_MONO_BG)+';border-left:3px solid '+(s.imp?'#e34948':CN_MONO_BAR)+'" title="'+escA(cnLabel(s)+' \u00b7 '+lbl+' ('+tlFmt(mn)+'~'+tlFmt(endMn)+')'+(cnNoteHas(s)?' \u00b7 \ud83d\udcdd 메모 있음':''))+'" data-cnh="1">'
+        return '<div class="tl-ev cn tlc-ev'+cnMemoCls(s)+(s.imp?' imp':'')+(two?' twol':'')+(cnLinked(s,org)?' lnk':'')+'" data-k="s" data-id="'+s.id+'" style="left:'+left+'px;top:3px;width:'+bw2
+          +'px;color:'+col+';background:'+(hlOk(s.hl)?s.hl:(rbg||CN_MONO_BG))+';border-left:3px solid '+(s.imp?'#e34948':CN_MONO_BAR)+'" title="'+escA(cnLabel(s)+' \u00b7 '+lbl+' ('+tlFmt(mn)+'~'+tlFmt(endMn)+')'+(cnNoteHas(s)?' \u00b7 \ud83d\udcdd 메모 있음':''))+'" data-cnh="1">'
           +'<b>'+esc(sh)+'</b>'+impDot(s)+pdfClip(s)+'</div>';
       }).join('');
       var tone=cnDeptTone(org,dp);
@@ -5346,11 +5344,8 @@ function renderTlCnWeek(inner){
     var loose=cnEvs.filter(function(s){return s.cnOrg===org&&ds.length&&(s.cnDept?rows.indexOf(s.cnDept)<0:true);});
     if(ds.length&&loose.length)rows.push('__etc__');
     var cells=rows.map(function(dp){
-      var list=cnEvs.filter(function(s){
-        if(s.cnOrg!==org)return false;
-        if(!ds.length)return true;
-        if(dp==='__etc__')return s.cnDept?rows.indexOf(s.cnDept)<0:!s.cnDept;
-        return s.cnDept===dp;});
+      var rbg=cnRowBg(org,dp);
+      var list=cnEvs.filter(function(s){return cnRowHas(s,org,dp,ds,rows);});
       var byDay={};
       list.forEach(function(s){(byDay[s.date]=byDay[s.date]||[]).push(s);});
       /* 칩 글이 한 줄에 안 들어가면 두 줄(높이 32) — 그 날 칸의 높이는 칩 높이를 더해 잡는다 */
@@ -5367,8 +5362,8 @@ function renderTlCnWeek(inner){
         var top=3;
         (byDay[x]||[]).forEach(function(s){
           var col=CN_MONO,h=chipH(s);
-          evh+='<div class="tlcw-ev'+(s.done?' done':'')+cnMemoCls(s)+(s.imp?' imp':'')+(h>19?' twol':'')+'" data-sid="'+s.id+'" onclick="cnChipTap(event,'+s.id+')" ondblclick="cnChipDbl(event,'+s.id+')" style="left:'+(i*CW+2)
-            +'px;top:'+top+'px;width:'+(CW-6)+'px;height:'+h+'px;color:'+col+';background:'+(hlOk(s.hl)?s.hl:CN_MONO_BG)+';border-left:3px solid '+(s.imp?'#e34948':CN_MONO_BAR)+'" title="'
+          evh+='<div class="tlcw-ev'+(s.done?' done':'')+cnMemoCls(s)+(s.imp?' imp':'')+(h>19?' twol':'')+(cnLinked(s,org)?' lnk':'')+'" data-sid="'+s.id+'" onclick="cnChipTap(event,'+s.id+')" ondblclick="cnChipDbl(event,'+s.id+')" style="left:'+(i*CW+2)
+            +'px;top:'+top+'px;width:'+(CW-6)+'px;height:'+h+'px;color:'+col+';background:'+(hlOk(s.hl)?s.hl:(rbg||CN_MONO_BG))+';border-left:3px solid '+(s.imp?'#e34948':CN_MONO_BAR)+'" title="'
             +escA(cnLabel(s)+' · '+(s.time?s.time+' · ':'')+(s.title||''))+'" data-cnh="1">'
             +'<span class="t">'+esc(chipTxt(s))+'</span>'+impDot(s)+pdfClip(s)+'</div>';
           top+=h+4;
@@ -7757,7 +7752,7 @@ function cnLabel(s){return s&&s.cn?(s.cnOrg||'의회')+(s.cnDept?' · '+s.cnDept
 function cnColor(s){return cnDeptColor(s&&s.cnOrg,s&&s.cnDept);}
 /* 세부(위원회·부서)마다 다른 색 — 새로 추가한 세부는 팔레트에서 순서대로 */
 var CN_DEPT_COL={
-  '1부의장(건소위)':'#c8641d','2부의장(복환위)':'#1b9e6f',
+  '공통':'#6d7a84','1부의장(건소위)':'#2a78d6','2부의장(복환위)':'#e0463f',
   '운영위':'#5b6ee0','기경위':'#2a78d6','행문위':'#c85f8f','복환위':'#1b9e6f',
   '농수위':'#7a9a2e','건소위':'#c8641d','교육위':'#8a5bd0',
   '예결위':'#b58500','윤리위':'#6d7a84','인특위':'#9e3a63',
@@ -7772,7 +7767,20 @@ function cnDeptColor(org,dept){
 /* 세분류 이름 글씨색: 연대기 카테고리와 같은 결의 차분한 색 (기관 안에서 순서대로) */
 var CN_MONO='#3d4a46', CN_MONO_BG='rgba(18,49,43,.07)', CN_MONO_BAR='rgba(18,49,43,.3)';   /* 일정 칩 기본 = 모노톤 */
 var CN_DEPT_TONE=['#a35f5a','#5f6f86','#6f7a41','#8a7340','#3f6f57','#4a7d9e','#7a7369','#3f5f9c'];
-function cnDeptTone(org,dept){if(!dept||dept==='__etc__')return '';var i=cnDepts(org).indexOf(dept);return i<0?'':CN_DEPT_TONE[i%CN_DEPT_TONE.length];}
+/* 부의장실: 1부의장 = 파랑 · 2부의장 = 빨강 (이름칸 글씨 · 칩 바탕) */
+var CN_VP_TONE={'공통':'#5f6b67','1부의장(건소위)':'#2a78d6','2부의장(복환위)':'#d63c35'};
+var CN_VP_BG={'1부의장(건소위)':'rgba(42,120,214,.12)','2부의장(복환위)':'rgba(214,60,53,.10)'};
+function cnRowBg(org,dp){return org==='부의장실'&&CN_VP_BG[dp]?CN_VP_BG[dp]:'';}
+/* 부의장실 «공통» 줄에는 본회의 일정이 저절로 함께 보인다 (복사가 아니라 같은 일정) */
+function cnRowHas(s,org,dp,ds,rows){
+  if(org==='부의장실'&&dp==='공통'&&s.cnOrg==='본회의')return true;
+  if(s.cnOrg!==org)return false;
+  if(!ds.length)return true;
+  if(dp==='__etc__')return s.cnDept?rows.indexOf(s.cnDept)<0:!s.cnDept;
+  return s.cnDept===dp;
+}
+function cnLinked(s,org){return org==='부의장실'&&s.cnOrg==='본회의';}
+function cnDeptTone(org,dept){if(!dept||dept==='__etc__')return '';if(org==='부의장실'&&CN_VP_TONE[dept])return CN_VP_TONE[dept];var i=cnDepts(org).indexOf(dept);return i<0?'':CN_DEPT_TONE[i%CN_DEPT_TONE.length];}
 /* 트랙 안 표시용 짧은 이름: 왼쪽에 부서가 있으니 「3차 회의」「현장방문」 정도만 */
 function cnShortTitle(s){
   var t=String(s&&s.title||'').trim();
@@ -10334,7 +10342,7 @@ function otCalc(){
 }
 function otRender(){otCalc();}
 /* ================= Etc · 부의장 업무추진비 집행내역 ================= */
-var BX_WHO=['1부의장','2부의장'], BX_COL={'1부의장':'#2a78d6','2부의장':'#eb6834'};
+var BX_WHO=['1부의장','2부의장'], BX_COL={'1부의장':'#2a78d6','2부의장':'#e0463f'};
 var BX_HOWS=['만찬','오찬','조찬','차담회','격려품','기타'];
 var bxPeriod='all', bxWho='', bxYear=null, bxEditId=null;
 function bxDb(){
@@ -10672,15 +10680,12 @@ function bxReportHTML(who,p){
   var lg=segs.map(function(g){return '<div class="bx-rep-lg"><i style="background:'+g.col+'"></i><span>'+esc(g.k)+'</span><b>'+bxWon(g.v)+'</b><em>'+(spent?Math.round(g.v/spent*100):0)+'% · '+g.n+'건</em></div>';}).join('');
   var howChart='<div class="bx-rep-ch"><div class="bx-rep-chh">집행방법별 비중</div><div class="bx-rep-dnw">'+dn+'<div class="bx-rep-lgs">'+(lg||'<div class="bx-rep-lg">내역 없음</div>')+'</div></div></div>';
   h+='<div class="bx-rep-grid"><div style="flex:1.55">'+monthChart+'</div><div style="flex:1">'+howChart+'</div></div>';
-  /* ── 3행: 지역별 상위 / 월별 표 ── */
-  var areas=Object.keys(byA).sort(function(a,b){return byA[b].amt-byA[a].amt;}).slice(0,6),amax=areas.length?byA[areas[0]].amt:1;
-  var ab=areas.map(function(a2,i){var v=byA[a2].amt,w=Math.max(2,Math.round(v/amax*100));return '<div class="bx-rep-hb"><span class="k">'+esc(a2)+'</span><span class="bar"><i style="width:'+w+'%;background:'+col+';opacity:'+(1-i*0.11)+'"></i></span><b>'+bxWon(v)+'</b><em>'+byA[a2].n+'건</em></div>';}).join('');
-  var areaChart='<div class="bx-rep-ch"><div class="bx-rep-chh">지역별 집행 상위 '+areas.length+'</div>'+(ab||'<div class="bx-rep-lg">내역 없음</div>')+'</div>';
+  /* ── 3행: 월별 표 (지역별 상위는 넣지 않는다) ── */
   var tb='<table class="bx-rep-tb small"><thead><tr><th>월</th><th class="r">건수</th><th class="r">집행액</th><th class="r">누적</th><th class="r">잔액</th></tr></thead><tbody>';
   run=0;for(m=m0;m<=m1;m++){var q=byM[m]||{n:0,amt:0};run+=q.amt;var fut=(y===String(today()).slice(0,4)&&m>curM);
     tb+='<tr'+(fut?' class="fut"':'')+'><td>'+m+'월</td><td class="r">'+(q.n||'—')+'</td><td class="r">'+(q.amt?bxWon(q.amt):'—')+'</td><td class="r">'+(fut?'':bxWon(run))+'</td><td class="r'+(bud-run<0?' over':'')+'">'+(fut?'':bxWon(bud-run))+'</td></tr>';}
   tb+='<tr class="tot"><td>계</td><td class="r">'+rows.length+'</td><td class="r">'+bxWon(spent)+'</td><td></td><td class="r'+(over?' over':'')+'">'+bxWon(left)+'</td></tr></tbody></table>';
-  h+='<div class="bx-rep-grid"><div style="flex:1">'+areaChart+'</div><div style="flex:1.2"><div class="bx-rep-ch"><div class="bx-rep-chh">월별 집행과 잔액</div>'+tb+'</div></div></div>';
+  h+='<div class="bx-rep-grid"><div style="flex:1"><div class="bx-rep-ch"><div class="bx-rep-chh">월별 집행과 잔액</div>'+tb+'</div></div></div>';
   h+='<div class="bx-rep-foot">HMD · '+y+'년 부의장님 업무추진비 · '+esc(bxHon(who))+' · '+esc(bxRepPeriodLabel(p))+'</div></div>';
   return h;
 }
