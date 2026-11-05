@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-05 · r221">
+<meta name="hmd-build" content="2026-11-05 · r222">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1061,6 +1061,34 @@
   /* 리포트 (화면) */
   .bx-rep-ov{display:none;position:fixed;inset:0;z-index:170;background:rgba(18,49,43,.55);align-items:flex-start;justify-content:center;padding:14px;overflow:auto}
   .bx-rep-ov.on{display:flex}
+  /* 부의장실 일정표: 공통 · 1부의장 · 2부의장 세 칸 · 인쇄하면 행사명이 잘리지 않고 다 나온다 */
+  .vp-sheet{background:#fff;color:#111;padding:12mm 10mm;margin:0 auto 16px;width:277mm;max-width:100%;box-sizing:border-box;box-shadow:0 4px 18px rgba(0,0,0,.15);font-family:'Noto Sans KR',sans-serif;font-size:11px;line-height:1.45}
+  .vp-hd{display:flex;align-items:flex-end;gap:12px;margin-bottom:8px}
+  .vp-hd h1{margin:0;font-size:19px;color:#12312b;letter-spacing:-.02em}
+  .vp-hd .sub{font-size:11px;color:#666}
+  .vp-hd .lg{margin-left:auto;display:flex;gap:10px;font-size:10.5px;color:#444}
+  .vp-hd .lg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+  .vp-tb{width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid #cfcac0}
+  .vp-tb th{font-size:11px;font-weight:800;padding:5px 6px;border:1px solid #cfcac0;background:#f4f2ec;text-align:left}
+  .vp-tb th.c0{width:70px;text-align:center}
+  .vp-tb th.cA{border-top:3px solid #6d7a84}.vp-tb th.c1{border-top:3px solid #2a78d6;color:#1d5fae}.vp-tb th.c2{border-top:3px solid #d63c35;color:#b52e28}
+  .vp-tb td{vertical-align:top;border:1px solid #dcd7cc;padding:4px 6px}
+  .vp-tb td.d{text-align:center;font-weight:800;color:#12312b;background:#faf9f6;white-space:nowrap}
+  .vp-tb td.d small{display:block;font-weight:600;color:#777;font-size:10px}
+  .vp-tb tr.we td.d{color:#c0392b}
+  .vp-tb tr.today td.d{background:#fff6dc}
+  .vp-it{padding:2px 0 3px;border-bottom:1px dotted #e3dfd6;word-break:keep-all;overflow-wrap:anywhere}
+  .vp-it:last-child{border-bottom:none}
+  .vp-it b{font-variant-numeric:tabular-nums;color:#12312b;margin-right:4px}
+  .vp-it .tt{font-weight:700;color:#111}
+  .vp-it .dt{display:block;font-size:10px;color:#666;line-height:1.4;white-space:pre-line}
+  .vp-it .tg{display:inline-block;font-size:9px;font-weight:700;border-radius:3px;padding:0 4px;margin-left:3px;vertical-align:1px;background:#e8f0ec;color:#2f6f5e}
+  .vp-it.minor .tt{font-weight:400;color:#777}
+  .vp-it.imp .tt::before{content:'●';color:#e34948;font-size:8px;margin-right:3px;vertical-align:1px}
+  .vp-tb td.c1{background:rgba(42,120,214,.035)}.vp-tb td.c2{background:rgba(214,60,53,.035)}
+  .vp-empty{color:#bbb}
+  .vp-foot{margin-top:6px;font-size:9px;color:#888;text-align:right}
+  .vp-bar input[type=date]{border:1px solid var(--line);border-radius:7px;padding:3px 6px;font-family:inherit;font-size:12px}
   .bx-rep-box{background:#e9e7e0;border-radius:14px;width:min(1180px,100%);max-height:calc(100vh - 28px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.35)}
   .bx-rep-bar{display:flex;align-items:center;gap:10px;padding:9px 14px;background:#fff;border-bottom:1px solid var(--line);flex-wrap:wrap}
   .bx-rep-bar>b{font-size:14px;color:var(--dark)}
@@ -1126,9 +1154,16 @@
   @media print{
     @page{size:A4 landscape;margin:10mm}
     html,body{background:#fff!important;display:block!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;overflow:visible!important}
-    body>*:not(#bxRepOv):not(#rvRepOv){display:none!important}
+    body>*:not(#bxRepOv):not(#rvRepOv):not(#vpOv){display:none!important}
     body.rv-printing>#bxRepOv{display:none!important}
+    body.vp-printing>#bxRepOv,body.vp-printing>#rvRepOv{display:none!important}
+    body:not(.vp-printing)>#vpOv{display:none!important}
     #bxRepOv,#rvRepOv{width:100%!important;inset:auto!important}
+    #vpOv{width:100%!important;inset:auto!important}
+    #vpOv.on{display:block!important;position:static!important;background:none!important;padding:0!important;overflow:visible!important}
+    .vp-sheet{box-shadow:none!important;width:auto!important;max-width:none!important;padding:0!important;margin:0!important}
+    .vp-tb tr{page-break-inside:avoid;break-inside:avoid}
+    .vp-tb thead{display:table-header-group}
     #bxRepOv,#bxRepOv.on,#rvRepOv.on{display:block!important;position:static!important;background:none!important;padding:0!important;overflow:visible!important}
     .rv-rep{font-size:11px}.rv-rep-sec{page-break-inside:auto}.rv-rep-it{page-break-inside:avoid;break-inside:avoid}.rv-rep-sec h2{page-break-after:avoid}
     .bx-rep-box{max-height:none!important;overflow:visible!important;box-shadow:none!important;background:none!important;width:auto!important;border-radius:0!important;display:block!important}
@@ -4168,7 +4203,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-05 · r221';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-05 · r222';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -5135,7 +5170,7 @@ function tlcBarHTML(st){
     +'<span class="tlc-bar-g">'
     +'<button class="lunar-toggle'+(!tlCnOrgSel.length?' on':'')+'" onclick="tlCnOrgSet(\'\')" title="모든 기관">전체</button>'
     +CN_ORGS.map(function(o){return '<button class="lunar-toggle'+(tlCnOrgSel.indexOf(o)>=0?' on':'')+'" onclick="tlCnOrgSet(\''+o+'\')" title="누를 때마다 켜고 끄기 · 여러 기관 함께 볼 수 있음"><i style="background:'+CN_COL[o]+'"></i>'+o+'</button>';}).join('')
-    +'</span></div>';
+    +'</span><span class="tlc-bar-sep"></span><button class="lunar-toggle" onclick="vpOpen()" title="부의장실(공통 · 1부의장 · 2부의장) 일정만 따로 보고 PDF로 출력">🖨 부의장실 일정표</button></div>';
 }
 function tlSetMode(m){tlMode=m;tlModeBtns();renderTimeline();}
 /* Daily ↔ 의회일정: 둘 중 하나만 켜진다 */
@@ -10601,6 +10636,79 @@ function bxReportClose(){var ov=document.getElementById('bxRepOv');if(ov)ov.clas
 function bxRepEsc(e){if(e.key==='Escape'){e.stopPropagation();bxReportClose();}}
 function bxRepSet(k,v){if(k==='who')bxRepWho=v;else bxRepPeriod=v;bxReportPaint();}
 function bxRepPrint(){window.print();}
+/* ================= 부의장실 일정표 (공통 · 1부의장 · 2부의장) · PDF 출력 =================
+   공통 = 부의장실 «공통» + 본회의(연동) · 1부의장(건소위) · 2부의장(복환위) */
+var vpRng={k:'week',off:0,from:'',to:''},vpDet=true;
+try{var __vp=JSON.parse(localStorage.getItem('hmd_vpRng')||'null');if(__vp&&__vp.k){vpRng.k=__vp.k;vpDet=__vp.det!==false;}}catch(e){}
+var VP_COLS=[['A','공통','#6d7a84'],['1','1부의장(건소위)','#2a78d6'],['2','2부의장(복환위)','#d63c35']];
+function vpOpen(){
+  var ov=document.getElementById('vpOv');
+  if(!ov){ov=document.createElement('div');ov.id='vpOv';ov.className='bx-rep-ov';ov.addEventListener('click',function(e){if(e.target===ov)vpClose();});document.body.appendChild(ov);}
+  vpRng.off=0;ov.classList.add('on');document.body.classList.add('vp-printing');
+  var st=document.getElementById('vpPageStyle');if(!st){st=document.createElement('style');st.id='vpPageStyle';document.head.appendChild(st);}
+  st.textContent='@media print{@page{size:A4 landscape;margin:8mm}}';
+  document.addEventListener('keydown',vpEsc);vpPaint();
+}
+function vpClose(){var ov=document.getElementById('vpOv');if(ov)ov.classList.remove('on');document.body.classList.remove('vp-printing');var st=document.getElementById('vpPageStyle');if(st)st.remove();document.removeEventListener('keydown',vpEsc);}
+function vpEsc(e){if(e.key==='Escape'){e.stopPropagation();vpClose();}}
+function vpSave(){try{localStorage.setItem('hmd_vpRng',JSON.stringify({k:vpRng.k,det:vpDet}));}catch(e){}}
+function vpSet(k){vpRng.k=k;vpRng.off=0;vpSave();vpPaint();}
+function vpShift(d){vpRng.off+=d;vpPaint();}
+function vpDetTgl(){vpDet=!vpDet;vpSave();vpPaint();}
+function vpCustom(){var a=(document.getElementById('vpFrom')||{}).value,b=(document.getElementById('vpTo')||{}).value;if(!a||!b)return;if(b<a){var t=a;a=b;b=t;}vpRng.k='custom';vpRng.from=a;vpRng.to=b;vpPaint();}
+/* 고른 기간 → [첫날, 끝날, 이름] */
+function vpRange(){
+  var t=today(),k=vpRng.k,o=vpRng.off;
+  if(k==='custom'&&vpRng.from)return [vpRng.from,vpRng.to||vpRng.from,'기간 지정'];
+  if(k==='month'){var d=new Date(t.slice(0,7)+'-01T00:00:00');d.setMonth(d.getMonth()+o);var y=d.getFullYear(),m=d.getMonth()+1,last=new Date(y,m,0).getDate();
+    var a=y+'-'+String(m).padStart(2,'0')+'-01';return [a,a.slice(0,8)+String(last).padStart(2,'0'),y+'년 '+m+'월'];}
+  if(k==='session'){var L=sortedSessions().filter(function(x){return x&&x.start;});if(L.length){
+      var i=L.findIndex(function(x){return (x.end||x.start)>=t;});if(i<0)i=L.length-1;i=Math.max(0,Math.min(L.length-1,i+o));var S=L[i];return [S.start,S.end||S.start,S.name||'회기'];}}
+  var w=new Date(t+'T00:00:00').getDay(),mon=shiftDayStr(t,-((w+6)%7)+o*7);
+  return [mon,shiftDayStr(mon,6),o===0?'이번 주':o===1?'다음 주':o===-1?'지난 주':(o>0?o+'주 뒤':(-o)+'주 전')];
+}
+function vpColOf(s){
+  if(s.cnOrg==='본회의')return 'A';
+  if(s.cnOrg!=='부의장실')return null;
+  return s.cnDept==='1부의장(건소위)'?'1':s.cnDept==='2부의장(복환위)'?'2':'A';
+}
+function vpItem(s){
+  var minor=/^(지역 의정활동|감사자료 검토|감사결과 정리)$/.test(String(s.title||'').trim());
+  var tag=s.cnOrg==='본회의'?'<span class="tg">본회의</span>':(s.cnOrg==='부의장실'&&s.cnDept&&s.cnDept!=='공통'&&vpColOf(s)==='A'?'<span class="tg">'+esc(s.cnDept)+'</span>':'');
+  return '<div class="vp-it'+(minor?' minor':'')+(s.imp?' imp':'')+'">'+(s.time?'<b>'+esc(s.time)+'</b>':'')+'<span class="tt">'+esc(s.title||'')+'</span>'+tag
+    +(vpDet&&s.detail&&!minor?'<span class="dt">'+esc(s.detail)+'</span>':'')+'</div>';
+}
+function vpSheetHTML(){
+  var R=vpRange(),d0=R[0],d1=R[1],wdn=['일','월','화','수','목','금','토'];
+  var evs=(db.schedules||[]).filter(function(s){return s&&s.cn&&s.date>=d0&&s.date<=d1&&vpColOf(s);});
+  var by={};evs.forEach(function(s){var k=s.date+'|'+vpColOf(s);(by[k]=by[k]||[]).push(s);});
+  Object.keys(by).forEach(function(k){by[k].sort(function(a,b){return String(a.time||'99:99').localeCompare(String(b.time||'99:99'));});});
+  var days=[],d=d0,g=0;while(d<=d1&&g<400){days.push(d);d=shiftDayStr(d,1);g++;}
+  var f=function(x){return x.slice(0,4)+'.'+x.slice(5,7)+'.'+x.slice(8,10);};
+  var rows=days.map(function(x){
+    var w=new Date(x+'T00:00:00').getDay(),we=(w===0||w===6),any=VP_COLS.some(function(c){return by[x+'|'+c[0]];});
+    if(we&&!any)return '';                                        /* 일정 없는 주말은 줄을 만들지 않는다 */
+    return '<tr class="'+(we?'we':'')+(x===today()?' today':'')+'"><td class="d">'+(+x.slice(5,7))+'.'+(+x.slice(8,10))+'<small>('+wdn[w]+')</small></td>'
+      +VP_COLS.map(function(c){var L=by[x+'|'+c[0]]||[];return '<td class="c'+c[0]+'">'+(L.length?L.map(vpItem).join(''):'<span class="vp-empty">·</span>')+'</td>';}).join('')+'</tr>';
+  }).join('');
+  var n=evs.length;
+  return '<div class="vp-sheet"><div class="vp-hd"><div><h1>부의장실 일정표</h1><div class="sub">'+esc(R[2])+' · '+f(d0)+' ~ '+f(d1)+' · 일정 '+n+'건 · 출력 '+f(today())+'</div></div>'
+    +'<div class="lg">'+VP_COLS.map(function(c){return '<span><i style="background:'+c[2]+'"></i>'+(c[0]==='A'?'공통 (본회의 포함)':c[1])+'</span>';}).join('')+'</div></div>'
+    +'<table class="vp-tb"><thead><tr><th class="c0">날짜</th>'+VP_COLS.map(function(c){return '<th class="c'+c[0]+'">'+(c[0]==='A'?'공통':c[1])+'</th>';}).join('')+'</tr></thead>'
+    +'<tbody>'+(rows||'<tr><td colspan="4" style="text-align:center;color:#999;padding:20px">이 기간에 부의장실 일정이 없습니다.</td></tr>')+'</tbody></table>'
+    +'<div class="vp-foot">HMD · 충청남도의회 부의장실 · 공통 칸에는 본회의 일정이 함께 들어갑니다</div></div>';
+}
+function vpPaint(){
+  var ov=document.getElementById('vpOv');if(!ov)return;
+  var R=vpRange(),k=vpRng.k;
+  ov.innerHTML='<div class="bx-rep-box"><div class="bx-rep-bar vp-bar no-print"><b>🖨 부의장실 일정표</b>'
+    +'<span class="bx-rep-grp">'+[['week','주'],['month','월'],['session','회기']].map(function(x){return '<button class="lunar-toggle'+(k===x[0]?' on':'')+'" onclick="vpSet(\''+x[0]+'\')">'+x[1]+'</button>';}).join('')+'</span>'
+    +(k!=='custom'?'<span class="bx-rep-grp"><button class="lunar-toggle" onclick="vpShift(-1)" title="앞">‹</button><span style="font-size:12.5px;font-weight:700;padding:0 4px">'+esc(R[2])+'</span><button class="lunar-toggle" onclick="vpShift(1)" title="뒤">›</button></span>':'')
+    +'<span class="bx-rep-grp" title="기간을 직접 고르기"><input type="date" id="vpFrom" value="'+R[0]+'" onchange="vpCustom()"> ~ <input type="date" id="vpTo" value="'+R[1]+'" onchange="vpCustom()"></span>'
+    +'<label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox"'+(vpDet?' checked':'')+' onchange="vpDetTgl()"> 세부 내용</label>'
+    +'<span class="bx-rep-tools"><button class="btn y" onclick="window.print()">🖨 인쇄 / PDF</button><span class="bkv-x" onclick="vpClose()" title="닫기 (Esc)">×</span></span></div>'
+    +'<div class="bx-rep-body">'+vpSheetHTML()+'</div></div>';
+}
 function bxRepPeriodLabel(p){return p==='h1'?'상반기 (1~6월)':p==='h2'?'하반기 (7~12월)':'연간 (1~12월)';}
 function bxRepRows(who,p){
   var y=bxYearNow();
