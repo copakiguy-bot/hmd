@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-05 · r222">
+<meta name="hmd-build" content="2026-11-06 · r223">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1071,6 +1071,7 @@
   .vp-tb{width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid #cfcac0}
   .vp-tb th{font-size:11px;font-weight:800;padding:5px 6px;border:1px solid #cfcac0;background:#f4f2ec;text-align:left}
   .vp-tb th.c0{width:70px;text-align:center}
+  .vp-tb th.c1,.vp-tb th.c2{text-align:center}
   .vp-tb th.cA{border-top:3px solid #6d7a84}.vp-tb th.c1{border-top:3px solid #2a78d6;color:#1d5fae}.vp-tb th.c2{border-top:3px solid #d63c35;color:#b52e28}
   .vp-tb td{vertical-align:top;border:1px solid #dcd7cc;padding:4px 6px}
   .vp-tb td.d{text-align:center;font-weight:800;color:#12312b;background:#faf9f6;white-space:nowrap}
@@ -1086,6 +1087,21 @@
   .vp-it.minor .tt{font-weight:400;color:#777}
   .vp-it.imp .tt::before{content:'●';color:#e34948;font-size:8px;margin-right:3px;vertical-align:1px}
   .vp-tb td.c1{background:rgba(42,120,214,.035)}.vp-tb td.c2{background:rgba(214,60,53,.035)}
+  /* 공통 = 1·2부의장 두 칸을 합친 칸 (엑셀 셀 병합처럼) · 가운데 정렬 */
+  .vp-tb td.cA{background:#f3f2ee;text-align:center}
+  .vp-tb td.cA .vp-it{border-bottom-color:#e2ded4}
+  .vp-tb tr.dfirst>td{border-top:1.5px solid #c9c3b6}
+  /* 화면에서 바로 쓰고 고치기 (인쇄에는 안 나온다) */
+  .vp-sheet.ed .vp-it{cursor:pointer;border-radius:4px}
+  .vp-sheet.ed .vp-it:hover{background:rgba(242,197,61,.22)}
+  .vp-sheet.ed td.c1,.vp-sheet.ed td.c2,.vp-sheet.ed td.cA{cursor:copy}
+  .vp-sheet.ed td.d{cursor:copy}
+  .vp-sheet.ed td.d:hover{background:#fff1c4}
+  .vp-sheet.ed td:not(.d):hover{box-shadow:inset 0 0 0 1.5px rgba(242,197,61,.75)}
+  .vp-add{display:none;font-size:10px;color:#b08a1c;font-weight:700;margin-top:2px}
+  .vp-sheet.ed td:not(.d):hover>.vp-add{display:block}
+  .vp-hint{font-size:11.5px;color:var(--muted)}
+  body.vp-printing .tlq-ov{z-index:190}
   .vp-empty{color:#bbb}
   .vp-foot{margin-top:6px;font-size:9px;color:#888;text-align:right}
   .vp-bar input[type=date]{border:1px solid var(--line);border-radius:7px;padding:3px 6px;font-family:inherit;font-size:12px}
@@ -1164,6 +1180,9 @@
     .vp-sheet{box-shadow:none!important;width:auto!important;max-width:none!important;padding:0!important;margin:0!important}
     .vp-tb tr{page-break-inside:avoid;break-inside:avoid}
     .vp-tb thead{display:table-header-group}
+    .vp-add,.vp-empty{display:none!important}
+    .vp-sheet.ed td:not(.d){box-shadow:none!important}
+    .vp-it{background:none!important}
     #bxRepOv,#bxRepOv.on,#rvRepOv.on{display:block!important;position:static!important;background:none!important;padding:0!important;overflow:visible!important}
     .rv-rep{font-size:11px}.rv-rep-sec{page-break-inside:auto}.rv-rep-it{page-break-inside:avoid;break-inside:avoid}.rv-rep-sec h2{page-break-after:avoid}
     .bx-rep-box{max-height:none!important;overflow:visible!important;box-shadow:none!important;background:none!important;width:auto!important;border-radius:0!important;display:block!important}
@@ -2824,7 +2843,13 @@
   .tl-dropline{position:absolute;top:0;bottom:0;width:2px;background:#f4b740;z-index:6;pointer-events:none}
   .tl-dropline::after{content:attr(data-t);position:absolute;top:2px;left:4px;background:#f4b740;color:#3a2a00;font-size:10.5px;font-weight:800;padding:1px 5px;border-radius:5px;white-space:nowrap}
   .hmwk-box .fw-rich{min-height:190px;max-height:230px;background:#fff;border:1px solid #efede8}
-  .hmwk-mind{min-height:200px;max-height:260px;flex:none}
+  /* 가지가 늘면 칸이 아래로 같이 길어진다 (잘리지 않게) · 가로만 넘치면 옆으로 스크롤 */
+  .hmwk-mind{min-height:120px;flex:none;overflow-x:auto;overflow-y:hidden}
+  /* 크게 보기: 화면 가득 · 그 자리에서 그대로 고친다 */
+  #hmwkMapWrap.mx{position:fixed;inset:20px;z-index:150;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 24px 70px rgba(0,0,0,.35);display:flex!important;flex-direction:column}
+  #hmwkMapWrap.mx .hmwk-mind{flex:1;min-height:0;overflow:auto}
+  .hmwk-mxbd{position:fixed;inset:0;background:rgba(18,49,43,.45);z-index:149}
+  .hmwk-mxbtn{margin-left:auto}
   .hmwk-mapwrap .wv-maptools{margin-bottom:6px}
   .hmwk-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .hmwk-st{font-size:11.5px;color:var(--muted);margin-right:auto}
@@ -3258,7 +3283,7 @@ try{if(/[?&]postit\b/.test(location.search)){document.documentElement.classList.
             <button type="button" class="lunar-toggle" style="margin-left:auto" onclick="go('work')">업무 →</button></h3>
           <div class="hmwk-trow"><span class="hmwk-grip" id="hmwkGrip" title="끌어서 타임라인에 놓으면 그 시각 일정으로 들어갑니다">⠿</span><input id="hmwkTitle" class="in hmwk-title" placeholder="제목 · 타임라인의 일정·루틴을 끌어다 놓아도 됩니다"></div>
           <div id="hmwkBox" class="hmwk-box"><div class="fw-rich" id="hmwkEd" contenteditable="true" data-noenter="1"></div></div>
-          <div id="hmwkMapWrap" class="hmwk-mapwrap" style="display:none"><div class="wv-maptools"><button type="button" class="btn y" style="padding:5px 12px;font-size:12px" onclick="mindAddFocus(mindRoot())">＋ 생각 추가</button><span class="wv-xlhint"><b>Tab</b>=하위 · <b>Enter</b>=대등 · 칸을 끌어 이동</span></div><div id="hmwkMind" class="wv-mindcv hmwk-mind"></div></div>
+          <div id="hmwkMapWrap" class="hmwk-mapwrap" style="display:none"><div class="wv-maptools"><button type="button" class="btn y" style="padding:5px 12px;font-size:12px" onclick="mindAddFocus(mindRoot())">＋ 생각 추가</button><span class="wv-xlhint"><b>Tab</b>=하위 · <b>Enter</b>=대등 · 칸을 끌어 이동</span><button type="button" class="lunar-toggle hmwk-mxbtn" id="hmwkMxBtn" onclick="hmWkMx()" title="크게 보기">⤢ 크게 보기</button></div><div id="hmwkMind" class="wv-mindcv hmwk-mind"></div></div>
           <div class="hmwk-foot">
             <button type="button" class="lunar-toggle" id="hmwkMapBtn" onclick="hmWkMapTgl()" title="줄 글 ↔ 마인드맵">마인드맵</button>
             <span class="hmwk-st" id="hmwkSt"></span>
@@ -4203,7 +4228,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-05 · r222';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-06 · r223';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -7208,10 +7233,12 @@ function renderMind(){
     minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x+p.w);
     minY=Math.min(minY,mindTop(p));maxY=Math.max(maxY,mindBot(p));});
   var compact=!!(window.__mindCtx&&window.__mindCtx.compact);
-  var padX=compact?28:100,padY=compact?22:80, offX=padX-minX, offY=padY-minY;
-  var W=compact?((maxX-minX)+padX*2):Math.max(560,(maxX-minX)+padX*2), H=compact?((maxY-minY)+padY*2):Math.max(340,(maxY-minY)+padY*2);
-  var cw=compact?0:(el.clientWidth||0), ch=compact?0:(el.clientHeight||0);
-  if(cw>W){offX+=(cw-W)/2;W=cw;}
+  var autoH=!compact&&!!(window.__mindCtx&&window.__mindCtx.autoH);        /* 칸 높이 = 마인드맵 높이 (대시보드 메모) */
+  var leftA=!compact&&!!(window.__mindCtx&&window.__mindCtx.leftAlign);    /* 주제를 왼쪽에 붙인다 */
+  var padX=compact?28:(leftA?26:100),padY=compact?22:(autoH?22:80), offX=padX-minX, offY=padY-minY;
+  var W=compact?((maxX-minX)+padX*2):Math.max(leftA?0:560,(maxX-minX)+padX*2), H=compact?((maxY-minY)+padY*2):Math.max(autoH?110:340,(maxY-minY)+padY*2);
+  var cw=compact?0:(el.clientWidth||0), ch=(compact||autoH)?0:(el.clientHeight||0);
+  if(cw>W){if(!leftA)offX+=(cw-W)/2;W=cw;}
   if(ch>H){offY+=(ch-H)/2;H=ch;}
   var shape=mindShape(x), multi=mindRootsOf(x).length>1;
   var nodesHTML=x.mind.map(function(n){
@@ -7237,7 +7264,7 @@ function renderMind(){
       if(lb){var has=x.mind.length>1,txt=lb.lastChild;if(txt&&txt.nodeType===3){var t0=txt.nodeValue.replace(/ ✦$/,'');txt.nodeValue=has?t0+' ✦':t0;}lb.classList.toggle('hasmind',has);}}
     return;}
   if(mindHoldScroll){el.scrollLeft=keepL;el.scrollTop=keepT;}
-  else{var rp=pos[x.mind[0].id];if(rp){el.scrollLeft=Math.max(0,offX+rp.x-el.clientWidth/2);el.scrollTop=Math.max(0,offY+rp.y-el.clientHeight/2);}}
+  else{var rp=pos[x.mind[0].id];if(rp){el.scrollLeft=leftA?0:Math.max(0,offX+rp.x-el.clientWidth/2);el.scrollTop=Math.max(0,offY+rp.y-el.clientHeight/2);}}
 }
 function updateMindPanel(){var mc=document.getElementById("mindCanvas");if(!mc)return;if(curIdea){renderMind();}else{mc.innerHTML='<div class="empty"></div>';}}
 function mindToggle(e,id){e.stopPropagation();var x=curIdeaObj();if(!x)return;var n=x.mind.find(function(a){return a.id===id;});if(!n)return;n.collapsed=!n.collapsed;save();renderMind();}
@@ -8312,6 +8339,7 @@ function tlqDel(id){
   db.schedules=db.schedules.filter(function(x){return x.id!==id;});save();
   window.__tlqAfter=null;tlqClose();
   renderCal();renderSchedule();renderTimeline();
+  if(typeof vpIsOpen==='function'&&vpIsOpen())vpPaint();
 }
 function tlqSetDur(m){var e=document.getElementById('tlqDur');if(e){e.value=m;var t=document.getElementById('tlqTitle');if(t)t.focus();}}
 function tlqSave(){
@@ -8338,6 +8366,7 @@ function tlqSave(){
   tlqClose();
   renderCal();renderSchedule();renderTimeline();
   if(typeof renderHome==='function')renderHome();
+  if(typeof vpIsOpen==='function'&&vpIsOpen())vpPaint();
   if(after)after(date,normTime(tm.value));
 }
 /* ================= 의회 타임라인: 빈 곳 더블클릭 → 일정 추가 ================= */
@@ -10641,6 +10670,7 @@ function bxRepPrint(){window.print();}
 var vpRng={k:'week',off:0,from:'',to:''},vpDet=true;
 try{var __vp=JSON.parse(localStorage.getItem('hmd_vpRng')||'null');if(__vp&&__vp.k){vpRng.k=__vp.k;vpDet=__vp.det!==false;}}catch(e){}
 var VP_COLS=[['A','공통','#6d7a84'],['1','1부의장(건소위)','#2a78d6'],['2','2부의장(복환위)','#d63c35']];
+var VP_DEPT={A:'공통','1':'1부의장(건소위)','2':'2부의장(복환위)'};
 function vpOpen(){
   var ov=document.getElementById('vpOv');
   if(!ov){ov=document.createElement('div');ov.id='vpOv';ov.className='bx-rep-ov';ov.addEventListener('click',function(e){if(e.target===ov)vpClose();});document.body.appendChild(ov);}
@@ -10650,7 +10680,12 @@ function vpOpen(){
   document.addEventListener('keydown',vpEsc);vpPaint();
 }
 function vpClose(){var ov=document.getElementById('vpOv');if(ov)ov.classList.remove('on');document.body.classList.remove('vp-printing');var st=document.getElementById('vpPageStyle');if(st)st.remove();document.removeEventListener('keydown',vpEsc);}
-function vpEsc(e){if(e.key==='Escape'){e.stopPropagation();vpClose();}}
+function vpEsc(e){if(e.key==='Escape'){if(document.getElementById('tlqOv'))return;e.stopPropagation();vpClose();}}
+/* 일정표에서 바로 쓰기·고치기 → db.schedules 에 의회 일정(부의장실)으로 저장되어 의회일정 타임라인과 그대로 연동된다 */
+function vpIsOpen(){var o=document.getElementById('vpOv');return !!(o&&o.classList.contains('on'));}
+function vpAdd(ev,date,col){if(ev){if(ev.target.closest('.vp-it'))return;ev.stopPropagation();}
+  tlqOpen('',{date:date,pickDate:true,head:'부의장실 일정 추가 · '+(col==='A'?'공통':VP_DEPT[col]),cn:{org:'부의장실',dept:VP_DEPT[col]||'공통'}});}
+function vpEdit(ev,id){if(ev)ev.stopPropagation();tlqOpen('',{edit:id});}
 function vpSave(){try{localStorage.setItem('hmd_vpRng',JSON.stringify({k:vpRng.k,det:vpDet}));}catch(e){}}
 function vpSet(k){vpRng.k=k;vpRng.off=0;vpSave();vpPaint();}
 function vpShift(d){vpRng.off+=d;vpPaint();}
@@ -10675,7 +10710,7 @@ function vpColOf(s){
 function vpItem(s){
   var minor=/^(지역 의정활동|감사자료 검토|감사결과 정리)$/.test(String(s.title||'').trim());
   var tag=s.cnOrg==='본회의'?'<span class="tg">본회의</span>':(s.cnOrg==='부의장실'&&s.cnDept&&s.cnDept!=='공통'&&vpColOf(s)==='A'?'<span class="tg">'+esc(s.cnDept)+'</span>':'');
-  return '<div class="vp-it'+(minor?' minor':'')+(s.imp?' imp':'')+'">'+(s.time?'<b>'+esc(s.time)+'</b>':'')+'<span class="tt">'+esc(s.title||'')+'</span>'+tag
+  return '<div class="vp-it'+(minor?' minor':'')+(s.imp?' imp':'')+'" onclick="vpEdit(event,'+s.id+')" title="눌러서 수정">'+(s.time?'<b>'+esc(s.time)+'</b>':'')+'<span class="tt">'+esc(s.title||'')+'</span>'+tag
     +(vpDet&&s.detail&&!minor?'<span class="dt">'+esc(s.detail)+'</span>':'')+'</div>';
 }
 function vpSheetHTML(){
@@ -10686,28 +10721,42 @@ function vpSheetHTML(){
   var days=[],d=d0,g=0;while(d<=d1&&g<400){days.push(d);d=shiftDayStr(d,1);g++;}
   var f=function(x){return x.slice(0,4)+'.'+x.slice(5,7)+'.'+x.slice(8,10);};
   var rows=days.map(function(x){
-    var w=new Date(x+'T00:00:00').getDay(),we=(w===0||w===6),any=VP_COLS.some(function(c){return by[x+'|'+c[0]];});
-    if(we&&!any)return '';                                        /* 일정 없는 주말은 줄을 만들지 않는다 */
-    return '<tr class="'+(we?'we':'')+(x===today()?' today':'')+'"><td class="d">'+(+x.slice(5,7))+'.'+(+x.slice(8,10))+'<small>('+wdn[w]+')</small></td>'
-      +VP_COLS.map(function(c){var L=by[x+'|'+c[0]]||[];return '<td class="c'+c[0]+'">'+(L.length?L.map(vpItem).join(''):'<span class="vp-empty">·</span>')+'</td>';}).join('')+'</tr>';
+    var w=new Date(x+'T00:00:00').getDay(),we=(w===0||w===6);
+    var L=[].concat(by[x+'|A']||[],by[x+'|1']||[],by[x+'|2']||[]).sort(function(a,b){return String(a.time||'99:99').localeCompare(String(b.time||'99:99'))||(a.id-b.id);});
+    if(we&&!L.length)return '';                                    /* 일정 없는 주말은 줄을 만들지 않는다 */
+    /* 시간 순으로 훑으며 공통은 두 칸을 합친 줄, 1·2부의장은 나란히 놓인 줄로 나눈다 */
+    var seg=[];
+    L.forEach(function(e){var c=vpColOf(e),last=seg[seg.length-1];
+      if(c==='A'){if(last&&last.t==='A')last.L.push(e);else seg.push({t:'A',L:[e]});}
+      else{if(!last||last.t!=='S')seg.push(last={t:'S','1':[],'2':[]});last[c].push(e);}});
+    if(!seg.length)seg.push({t:'S','1':[],'2':[]});
+    var cls=(we?'we':'')+(x===today()?' today':''),add='<span class="vp-add">＋ 추가</span>';
+    return seg.map(function(g,i){
+      var dc=i?'':'<td class="d" rowspan="'+seg.length+'" onclick="vpAdd(event,\''+x+'\',\'A\')" title="누르면 이 날 공통 일정 추가">'+(+x.slice(5,7))+'.'+(+x.slice(8,10))+'<small>('+wdn[w]+')</small></td>';
+      var body=g.t==='A'
+        ?'<td class="cA" colspan="2" onclick="vpAdd(event,\''+x+'\',\'A\')">'+g.L.map(vpItem).join('')+'</td>'
+        :['1','2'].map(function(c){return '<td class="c'+c+'" onclick="vpAdd(event,\''+x+'\',\''+c+'\')">'+(g[c].length?g[c].map(vpItem).join(''):'<span class="vp-empty">·</span>')+add+'</td>';}).join('');
+      return '<tr class="'+cls+(i?'':' dfirst')+'">'+dc+body+'</tr>';
+    }).join('');
   }).join('');
   var n=evs.length;
-  return '<div class="vp-sheet"><div class="vp-hd"><div><h1>부의장실 일정표</h1><div class="sub">'+esc(R[2])+' · '+f(d0)+' ~ '+f(d1)+' · 일정 '+n+'건 · 출력 '+f(today())+'</div></div>'
-    +'<div class="lg">'+VP_COLS.map(function(c){return '<span><i style="background:'+c[2]+'"></i>'+(c[0]==='A'?'공통 (본회의 포함)':c[1])+'</span>';}).join('')+'</div></div>'
-    +'<table class="vp-tb"><thead><tr><th class="c0">날짜</th>'+VP_COLS.map(function(c){return '<th class="c'+c[0]+'">'+(c[0]==='A'?'공통':c[1])+'</th>';}).join('')+'</tr></thead>'
-    +'<tbody>'+(rows||'<tr><td colspan="4" style="text-align:center;color:#999;padding:20px">이 기간에 부의장실 일정이 없습니다.</td></tr>')+'</tbody></table>'
-    +'<div class="vp-foot">HMD · 충청남도의회 부의장실 · 공통 칸에는 본회의 일정이 함께 들어갑니다</div></div>';
+  return '<div class="vp-sheet ed"><div class="vp-hd"><div><h1>부의장실 일정표</h1><div class="sub">'+esc(R[2])+' · '+f(d0)+' ~ '+f(d1)+' · 일정 '+n+'건 · 출력 '+f(today())+'</div></div>'
+    +'<div class="lg">'+VP_COLS.map(function(c){return '<span><i style="background:'+(c[0]==='A'?'#cfcbc0':c[2])+'"></i>'+(c[0]==='A'?'공통 · 본회의 (두 칸 합침)':c[1])+'</span>';}).join('')+'</div></div>'
+    +'<table class="vp-tb"><thead><tr><th class="c0">날짜</th>'+VP_COLS.slice(1).map(function(c){return '<th class="c'+c[0]+'">'+c[1]+'</th>';}).join('')+'</tr></thead>'
+    +'<tbody>'+(rows||'<tr><td colspan="3" style="text-align:center;color:#999;padding:20px">이 기간에 부의장실 일정이 없습니다.</td></tr>')+'</tbody></table>'
+    +'<div class="vp-foot">HMD · 충청남도의회 부의장실 · 두 칸을 합친 줄은 공통 일정(본회의 포함)입니다</div></div>';
 }
 function vpPaint(){
   var ov=document.getElementById('vpOv');if(!ov)return;
-  var R=vpRange(),k=vpRng.k;
+  var R=vpRange(),k=vpRng.k,ob=ov.querySelector('.bx-rep-body'),keep=ob?ob.scrollTop:0;
   ov.innerHTML='<div class="bx-rep-box"><div class="bx-rep-bar vp-bar no-print"><b>🖨 부의장실 일정표</b>'
     +'<span class="bx-rep-grp">'+[['week','주'],['month','월'],['session','회기']].map(function(x){return '<button class="lunar-toggle'+(k===x[0]?' on':'')+'" onclick="vpSet(\''+x[0]+'\')">'+x[1]+'</button>';}).join('')+'</span>'
     +(k!=='custom'?'<span class="bx-rep-grp"><button class="lunar-toggle" onclick="vpShift(-1)" title="앞">‹</button><span style="font-size:12.5px;font-weight:700;padding:0 4px">'+esc(R[2])+'</span><button class="lunar-toggle" onclick="vpShift(1)" title="뒤">›</button></span>':'')
     +'<span class="bx-rep-grp" title="기간을 직접 고르기"><input type="date" id="vpFrom" value="'+R[0]+'" onchange="vpCustom()"> ~ <input type="date" id="vpTo" value="'+R[1]+'" onchange="vpCustom()"></span>'
-    +'<label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox"'+(vpDet?' checked':'')+' onchange="vpDetTgl()"> 세부 내용</label>'
+    +'<label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox"'+(vpDet?' checked':'')+' onchange="vpDetTgl()"> 세부 내용</label><span class="vp-hint">일정 누르면 수정 · 빈 칸 누르면 추가 · 날짜 누르면 공통 추가</span>'
     +'<span class="bx-rep-tools"><button class="btn y" onclick="window.print()">🖨 인쇄 / PDF</button><span class="bkv-x" onclick="vpClose()" title="닫기 (Esc)">×</span></span></div>'
     +'<div class="bx-rep-body">'+vpSheetHTML()+'</div></div>';
+  if(keep){var nb=ov.querySelector('.bx-rep-body');if(nb)nb.scrollTop=keep;}
 }
 function bxRepPeriodLabel(p){return p==='h1'?'상반기 (1~6월)':p==='h2'?'하반기 (7~12월)':'연간 (1~12월)';}
 function bxRepRows(who,p){
@@ -16854,7 +16903,9 @@ function renderHome(){
 }
 /* ===== 대시보드 업무 편집창: 업무 노트의 WORD 편집창(fw-rich + 서식 도구) · 의회운영/매뉴얼 단추로 그 폴더에 저장 ===== */
 var hmwkMode='text',hmwkMap={mind:[{id:1,t:'주제',x:30,y:30,p:0}]};
-function hmWkCtx(){return {obj:hmwkMap,canvas:'hmwkMind',onRender:function(){hmWkDraftSave();},onSync:function(){hmWkDraftSave();}};}
+var hmwkMxOn=false;
+function hmWkCtx(){if(!hmwkMap.mindMode||hmwkMap.mindMode==='LR')hmwkMap.mindMode='R';   /* 주제는 왼쪽, 가지는 오른쪽으로 */
+  return {obj:hmwkMap,canvas:'hmwkMind',autoH:!hmwkMxOn,leftAlign:true,onRender:function(){hmWkDraftSave();},onSync:function(){hmWkDraftSave();}};}
 function hmWkMount(){
   var ed=document.getElementById('hmwkEd'),box=document.getElementById('hmwkBox'),tt=document.getElementById('hmwkTitle');if(!ed||!box)return;
   try{memoGripBind();}catch(e){}
@@ -16921,10 +16972,25 @@ function hmWkModePaint(){
     var t=(document.getElementById('hmwkTitle')||{}).value;if(t&&t.trim()&&hmwkMap.mind.length===1&&hmwkMap.mind[0].t==='주제')hmwkMap.mind[0].t=t.trim();
     window.__mindCtx=hmWkCtx();
     renderMind();
-  }else if(window.__mindCtx&&window.__mindCtx.canvas==='hmwkMind')window.__mindCtx=null;
+  }else{if(hmwkMxOn)hmWkMx(false);if(window.__mindCtx&&window.__mindCtx.canvas==='hmwkMind')window.__mindCtx=null;}
 }
 function hmWkMapTgl(){hmwkMode=(hmwkMode==='map')?'text':'map';hmWkModePaint();hmWkDraftSave(true);
   if(hmwkMode==='map')setTimeout(function(){var el=mindQ('.mnode .mtext');if(el)el.focus();},30);}
+/* 마인드맵 크게 보기 ↔ 원래 크기 (크게 볼 때도 같은 마인드맵이라 그대로 고쳐진다) */
+function hmWkMx(on){
+  var w=document.getElementById('hmwkMapWrap');if(!w)return;
+  on=(on==null)?!hmwkMxOn:!!on;hmwkMxOn=on;
+  w.classList.toggle('mx',on);document.body.classList.toggle('mind-lock',on);
+  var bd=document.getElementById('hmwkMxBd');
+  if(on&&!bd){bd=document.createElement('div');bd.id='hmwkMxBd';bd.className='hmwk-mxbd';bd.onclick=function(){hmWkMx(false);};document.body.appendChild(bd);}
+  if(!on&&bd)bd.remove();
+  var b=document.getElementById('hmwkMxBtn');if(b){b.textContent=on?'⤡ 원래 크기':'⤢ 크게 보기';b.title=on?'원래 크기로 (Esc)':'크게 보기';}
+  if(on)document.addEventListener('keydown',hmWkMxEsc,true);else document.removeEventListener('keydown',hmWkMxEsc,true);
+  if(hmwkMode==='map'){window.__mindCtx=hmWkCtx();renderMind();}
+}
+function hmWkMxEsc(e){if(e.key!=='Escape'||!hmwkMxOn)return;if(document.getElementById('tlqOv'))return;
+  var a=document.activeElement;if(a&&a.classList&&a.classList.contains('mtext'))a.blur();
+  e.stopPropagation();e.preventDefault();hmWkMx(false);}
 function hmWkMapReset(){hmwkMap={mind:[{id:1,t:'주제',x:30,y:30,p:0}]};}
 /* 메모 → 일기: 오늘 날짜·지금 시각의 «기록»으로 넘긴다 (제목이 있으면 첫 줄 굵게 · 마인드맵은 들여쓴 목록으로) */
 function hmWkMindText(){
