@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-10 · r226">
+<meta name="hmd-build" content="2026-11-10 · r227">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -4390,7 +4390,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-10 · r226';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-10 · r227';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -9837,6 +9837,19 @@ function chQuickAt(t,cat){
   if(chWinOn){chFormOpen();return;}                  /* 창에서는 사건 기록 칸이 팝업으로 */
   var tEl=document.getElementById('chTitle');if(tEl){tEl.focus();tEl.scrollIntoView({behavior:'smooth',block:'center'});}
 }
+/* 빈 곳 더블클릭 → 연대기: 시간 그래프를 더블클릭했을 때와 같은 «사건 기록» 창 (오늘 날짜로) */
+function chQuickPop(){
+  try{chFormInit();}catch(e){}
+  if(chEditId!=null)chCancelEdit();
+  var n=new Date(),q={y:n.getFullYear(),m:n.getMonth()+1,d:n.getDate()};
+  chNoDate=false;try{chNoDatePaint();}catch(e){}
+  var yEl=document.getElementById('chY');if(yEl)yEl.value=chBigNum(q.y);
+  try{chYHint();}catch(e){}
+  var mEl=document.getElementById('chM'),dEl=document.getElementById('chD');if(mEl)mEl.value=q.m;if(dEl)dEl.value=q.d;
+  chSelCats=[];try{chCatPickRender();}catch(e){}
+  var hint=document.getElementById('chEditHint');if(hint)hint.textContent=chDateStr(q.y,q.m,q.d)+' 자리에 새 사건';
+  chFormOpen();
+}
 function chPopOpen(id){
   var x=(db.chrono||[]).find(function(v){return String(v.id)===String(id);});if(!x)return;
   chPopId=x.id;
@@ -11341,6 +11354,7 @@ var QM_ICON={
   work:'<rect x="2.8" y="6.8" width="18.4" height="13.6" rx="2.2"/><path d="M8.4 6.8V5.1a1.4 1.4 0 0 1 1.4-1.4h4.4a1.4 1.4 0 0 1 1.4 1.4v1.7"/><path d="M2.8 12.6h18.4"/><path d="M12 11.4v2.4"/>',
   diary:'<path d="M16.4 3.2a2.2 2.2 0 0 1 3.1 3.1L8.2 17.6l-4.1 1 1-4.1z"/><path d="M14.6 5l3.1 3.1"/><path d="M4.4 21h15.2"/>',
   vp:'<rect x="3.2" y="4.6" width="17.6" height="16" rx="2.2"/><path d="M3.2 9.4h17.6M8 2.8v3.6M16 2.8v3.6M7.4 13.2h3M13.6 13.2h3M7.4 16.8h3"/>',
+  chrono:'<path d="M3 12h18"/><circle cx="7" cy="12" r="2.2"/><circle cx="13.5" cy="12" r="2.2"/><circle cx="19" cy="12" r="1.6"/><path d="M7 9.8V6M13.5 14.2V18"/>',
   memo:'<path d="M5 3.4h10.4l3.6 3.6v13.6H5z"/><path d="M15.2 3.4V7.2H19"/><path d="M8.2 11.4h7.6M8.2 14.6h7.6M8.2 17.8h4.6"/>',
   read:'<path d="M12 6.4c-2-1.6-4.8-2.2-8.6-2v13.4c3.8-.2 6.6.4 8.6 2 2-1.6 4.8-2.2 8.6-2V4.4c-3.8-.2-6.6.4-8.6 2z"/><path d="M12 6.4v13.4"/>',
   know:'<path d="M12 3.4 2.6 8 12 12.6 21.4 8z"/><path d="M6.2 10.2v5.1c0 1.6 2.6 2.9 5.8 2.9s5.8-1.3 5.8-2.9v-5.1"/><path d="M21.4 8v5.6"/>'
@@ -11351,7 +11365,7 @@ var QM_ITEMS=[
   {k:'vp',     lb:'부의장실 일정표'},
   {k:'memo',   lb:'메모'},
   {k:'read',   lb:'독서'},
-  {k:'diary',  lb:'Diary'}
+  {k:'chrono', lb:'연대기'}
 ];
 function qmClose(){var e=document.getElementById('qmOv');if(e)e.remove();document.removeEventListener('keydown',qmEsc);}
 function qmEsc(e){if(e.key==='Escape')qmClose();}
@@ -11360,6 +11374,7 @@ function qmGo(k){
   qmClose();
   if(k==='zettel'){ if(curView()!=='zettel')go('zettel'); setTimeout(function(){zkCardOpen();},20); return; }
   if(k==='diary'){ setTimeout(function(){fwStart('diary');},20); return; }
+  if(k==='chrono'){ chQuickPop(); return; }
   if(k==='work'||k==='know'){ qwOpen(k); return; }
   if(k==='vp'){ vpOpen('부의장실'); return; }
   if(k==='memo'){ hmWkPop(); return; }
@@ -11677,7 +11692,7 @@ function rdCurPage(bid){                   /* 기록넣기에서 가장 마지�
   var r=rs[rs.length-1];return {page:Number(r.p2)||Number(r.p1)||0,date:r.date};
 }
 /* 다음 독서기록의 시작 쪽 = 그 책의 마지막 기록 끝 쪽 (자동으로 채운 값은 기억해 두어, 책을 바꾸면 따라 바뀌고 직접 고친 값은 건드리지 않는다) */
-function rdNextStart(bid){var c=rdCurPage(Number(bid));return c.page?String(c.page):'';}
+function rdNextStart(bid){var c=rdCurPage(Number(bid));return c.page?String(c.page+1):'';}   /* 31쪽(31조)까지 읽었으면 다음은 32부터 */
 function rdAutoFill(inpId,bid,key,force){
   var el=document.getElementById(inpId);if(!el)return;
   var prevAuto=window[key]||'',cur=el.value;
