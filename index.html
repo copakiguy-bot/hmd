@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-10 · r229">
+<meta name="hmd-build" content="2026-11-10 · r230">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1108,7 +1108,11 @@
   .vp-hint{font-size:11.5px;color:var(--muted)}
   /* 하루 일정표 */
   .dp-btn{margin-left:8px}
-  .dp-box{width:min(900px,100%)}
+  .dp-box{width:min(1180px,100%)}
+  .dp-sheet.land{width:279mm;padding:8mm 9mm}
+  .dp-sheet.land .dp-body{grid-template-columns:96mm 1fr}
+  .dp-sheet.land .dp-hd h1{font-size:22px}
+  .dp-sheet.land .dp-memo{margin-top:3mm}.dp-sheet.land .dp-ml{height:6mm}.dp-sheet.land .dp-tb td{padding:3px 4px}.dp-sheet.land .dp-foot{margin-top:2mm}.dp-sheet.land .dp-hd{margin-bottom:5px}
   .dp-date{border:1px solid var(--line);border-radius:7px;padding:3px 6px;font-family:inherit;font-size:12.5px}
   .dp-ck{font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer}
   .dp-sheet{background:#fff;color:#111;width:192mm;max-width:100%;box-sizing:border-box;margin:0 auto 16px;padding:10mm 9mm;box-shadow:0 4px 18px rgba(0,0,0,.15);font-family:'Noto Sans KR',sans-serif;font-size:11px;line-height:1.45}
@@ -4440,7 +4444,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-10 · r229';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-10 · r230';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -11024,9 +11028,11 @@ function dpOpen(d){
   if(!ov){ov=document.createElement('div');ov.id='dpOv';ov.className='bx-rep-ov';ov.addEventListener('click',function(e){if(e.target===ov)dpClose();});document.body.appendChild(ov);}
   ov.classList.add('on');document.body.classList.add('dp-printing');
   var st=document.getElementById('dpPageStyle');if(!st){st=document.createElement('style');st.id='dpPageStyle';document.head.appendChild(st);}
-  st.textContent='@media print{@page{size:A4 portrait;margin:9mm}}';
+  dpPageStyle();
   document.addEventListener('keydown',dpEsc);dpPaint();
 }
+function dpPageStyle(){var st=document.getElementById('dpPageStyle');if(st)st.textContent='@media print{@page{size:A4 '+(dpOpt.land?'landscape':'portrait')+';margin:9mm}}';}
+function dpLand(v){dpOpt.land=!!v;try{localStorage.setItem('hmd_dpOpt',JSON.stringify(dpOpt));}catch(e){}dpPageStyle();dpPaint();}
 function dpClose(){var ov=document.getElementById('dpOv');if(ov)ov.classList.remove('on');document.body.classList.remove('dp-printing');var st=document.getElementById('dpPageStyle');if(st)st.remove();document.removeEventListener('keydown',dpEsc);}
 function dpEsc(e){if(e.key==='Escape'){if(document.getElementById('tlqOv'))return;e.stopPropagation();dpClose();}}
 function dpShift(n){dpDate=shiftDayStr(dpDate,n);dpPaint();}
@@ -11043,7 +11049,7 @@ function dpItems(d){
     out.push({id:s.id,k:s.cn?'cn':'me',t:m,dur:(s.dur>0?s.dur:60),title:s.title||'',detail:s.detail||'',tag:s.cn?cnLabel(s):'',col:col,done:!!s.done,imp:!!s.imp});
   });
   if(dpOpt.rt)try{tlrFor(d,true).forEach(function(r){var m=tlParseMin(r.time);out.push({id:null,k:'rt',t:m,dur:(r.dur>0?r.dur:30),title:r.title||'',detail:'',tag:'루틴',col:'#8a9a92',done:false,imp:!!r.imp});});}catch(e){}
-  out.sort(function(a,b){return (a.t==null?-1:a.t)-(b.t==null?-1:b.t)||(a.k==='rt')-(b.k==='rt');});
+  out.sort(function(a,b){return (a.t==null?1e6:a.t)-(b.t==null?1e6:b.t)||(a.k==='rt')-(b.k==='rt');});   /* 종일(시간 없음)은 맨 아래 */
   return out;
 }
 function dpHM(m){m=((m%1440)+1440)%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
@@ -11051,7 +11057,7 @@ function dpSheetHTML(){
   var d=dpDate,dt=new Date(d+'T00:00:00'),wd=['일','월','화','수','목','금','토'][dt.getDay()];
   var L=dpItems(d),timed=L.filter(function(x){return x.t!=null;}),allday=L.filter(function(x){return x.t==null;});
   var h0=7,h1=22;timed.forEach(function(x){h0=Math.min(h0,Math.floor(x.t/60));h1=Math.max(h1,Math.min(24,Math.ceil((x.t+x.dur)/60)));});
-  var NH=h1-h0,RH=Math.min(15,Math.max(8,214/NH)),GH=NH*RH;     /* 시간 한 칸 높이(mm) */
+  var NH=h1-h0,RH=dpOpt.land?Math.min(11,Math.max(6,150/NH)):Math.min(15,Math.max(8,214/NH)),GH=NH*RH;     /* 시간 한 칸 높이(mm) */
   /* 겹치는 일정은 나란히 */
   var cl=[],cur=null;timed.forEach(function(x){var e=x.t+Math.max(x.dur,20);
     if(!cur||x.t>=cur.end){cur={end:e,items:[],lanes:[]};cl.push(cur);}
@@ -11071,19 +11077,20 @@ function dpSheetHTML(){
   var ses=[];try{ses=sessionsOn(d).map(function(z){return z.name||'회기';});}catch(e){}
   var hol=(typeof HOLIDAYS!=='undefined'&&HOLIDAYS[d])||'',lun='';try{lun=lunarOf(d);}catch(e){}
   var nMe=L.filter(function(x){return x.k==='me';}).length,nCn=L.filter(function(x){return x.k==='cn';}).length,nRt=L.filter(function(x){return x.k==='rt';}).length;
-  return '<div class="dp-sheet">'
+  return '<div class="dp-sheet'+(dpOpt.land?' land':'')+'">'
     +'<div class="dp-hd"><div><div class="dp-y">'+dt.getFullYear()+'</div><h1>'+(dt.getMonth()+1)+'월 '+dt.getDate()+'일 <span class="'+(dt.getDay()===0||hol?'sun':dt.getDay()===6?'sat':'')+'">('+wd+')</span></h1>'
     +'<div class="sub">'+[lun?'음력 '+lun:'',hol,ses.join(' · ')].filter(Boolean).map(esc).join(' · ')+'</div></div>'
     +'<div class="dp-cnt">'+[nMe?'일정 '+nMe:'',nCn?'의회 '+nCn:'',nRt?'루틴 '+nRt:''].filter(Boolean).join(' · ')+(L.length?'':'일정 없음')+'</div></div>'
     +'<div class="dp-body"><div class="dp-grid" style="height:'+GH.toFixed(2)+'mm">'+grid+'</div>'
     +'<div class="dp-list"><table class="dp-tb"><tbody>'+(L.length?L.map(row).join(''):'<tr><td colspan="2" class="dp-empty">이 날은 일정이 없습니다.</td></tr>')+'</tbody></table>'
-    +'<div class="dp-memo"><div class="dp-mh">메모</div>'+new Array(6).join('<div class="dp-ml"></div>')+'</div></div></div>'
+    +'<div class="dp-memo"><div class="dp-mh">메모</div>'+new Array(dpOpt.land?3:6).join('<div class="dp-ml"></div>')+'</div></div></div>'
     +'<div class="dp-foot">HMD · 하루 일정표 · 출력 '+esc(today())+'</div></div>';
 }
 function dpPaint(){
   var ov=document.getElementById('dpOv');if(!ov)return;
   var ck=function(k,lb){return '<label class="dp-ck"><input type="checkbox"'+(dpOpt[k]?' checked':'')+' onchange="dpOptTgl(\''+k+'\')"> '+lb+'</label>';};
   ov.innerHTML='<div class="bx-rep-box dp-box"><div class="bx-rep-bar no-print"><b>🖨 하루 일정표</b>'
+    +'<span class="bx-rep-grp"><button class="lunar-toggle'+(dpOpt.land?'':' on')+'" onclick="dpLand(false)" title="A4 세로">세로</button><button class="lunar-toggle'+(dpOpt.land?' on':'')+'" onclick="dpLand(true)" title="A4 가로">가로</button></span>'
     +'<span class="bx-rep-grp"><button class="lunar-toggle" onclick="dpShift(-1)" title="전날">‹</button><input type="date" class="dp-date" value="'+dpDate+'" onchange="dpSetDate(this.value)"><button class="lunar-toggle" onclick="dpShift(1)" title="다음날">›</button>'
     +(dpDate!==today()?'<button class="lunar-toggle" onclick="dpSetDate(today())">오늘</button>':'')+'</span>'
     +ck('cn','의회일정')+ck('rt','루틴')+ck('det','세부 내용')
