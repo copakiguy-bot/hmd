@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-10 · r227">
+<meta name="hmd-build" content="2026-11-10 · r228">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3989,7 +3989,7 @@ try{if(/[?&]postit\b/.test(location.search)){document.documentElement.classList.
       <div class="gcal-sec">
         <div class="gcal-t">방법 2 · 버튼 한 번으로 바로 반영 <span class="gcal-badge">최초 1회 설치</span></div>
         <div class="gcal-d">구글 Apps Script 웹앱을 한 번 만들어 두면, 아래 «구글 캘린더로 보내기»를 누를 때마다 일정이 캘린더에 반영됩니다. 이미 보낸 일정은 덮어쓰고, 앱에서 지운 일정은 캘린더에서도 지웁니다.<br>
-        <b>직접 등록한 일정만</b> 보내고 루틴은 보내지 않습니다(예전에 보낸 루틴은 다음 전송 때 캘린더에서 정리됩니다). <b>바뀐 것이 없는 항목은 건너뛰므로</b> 여러 번 눌러도 구글 호출이 늘어나지 않습니다.</div>
+        <b>직접 등록한 일정만</b> 보내고 루틴·의회일정은 보내지 않습니다(예전에 보낸 루틴·의회일정은 다음 전송 때 캘린더에서 정리됩니다). <b>바뀐 것이 없는 항목은 건너뛰므로</b> 여러 번 눌러도 구글 호출이 늘어나지 않습니다.</div>
         <div class="inrow">
           <input id="gcalUrl" class="in" style="flex:1" placeholder="Apps Script 웹앱 URL (https://script.google.com/…/exec)">
           <button class="btn y" style="flex:none" onclick="gcalConnect()">연결 확인</button>
@@ -4390,7 +4390,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-10 · r227';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-10 · r228';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -7566,8 +7566,8 @@ function icsEsc(t){return String(t||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;'
 function icsDate(d){return String(d||'').replace(/-/g,'');}
 function exportICS(futureOnly){
   var tk=today();
-  var list=db.schedules.filter(function(s){return s.date&&(!futureOnly||s.date>=tk);});
-  if(!list.length){alert('내보낼 일정이 없습니다.');return;}   /* 직접 등록한 일정만 (루틴은 넣지 않는다) */
+  var list=db.schedules.filter(function(s){return s.date&&!s.cn&&(!futureOnly||s.date>=tk);});
+  if(!list.length){alert('내보낼 일정이 없습니다.');return;}   /* 직접 등록한 일정만 (루틴·의회일정은 넣지 않는다) */
   var out=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//HMD//KO','CALSCALE:GREGORIAN'];
   list.forEach(function(s){
     var d=icsDate(s.date), hasTime=/^\d{2}:\d{2}$/.test(s.time||'');
@@ -7672,13 +7672,13 @@ function gcalPushAll(futureOnly){
   var u=gcalGet();
   if(!u){alert('먼저 Apps Script 웹앱 URL을 넣고 «연결 확인»을 눌러 주세요.\n설치 방법은 «설치 방법·코드 보기»에 있습니다.');return;}
   var tk=today();
-  var list=db.schedules.filter(function(s){return s.date&&(!futureOnly||s.date>=tk);});
-  /* 직접 등록한 일정만 보낸다 — 루틴은 보내지 않는다.
+  var list=db.schedules.filter(function(s){return s.date&&!s.cn&&(!futureOnly||s.date>=tk);});
+  /* 직접 등록한 일정만 보낸다 — 루틴·의회일정은 보내지 않는다 (예전에 보낸 의회일정도 이번 sync에서 캘린더에서 지워진다).
      예전에 보낸 루틴(hmd-rtd-… 낱개 · 반복 일정)은 목록에 없으므로 이번 전송(sync)에서 캘린더에서 지워진다 */
-  if(!list.length&&!confirm('보낼 일정이 없습니다.\n그래도 보내서 예전에 보낸 루틴·지운 일정을 구글 캘린더에서 정리할까요?'))return;
-  var msg='일정 '+list.length+'건을 구글 캘린더로 보낼까요? (루틴은 보내지 않습니다)'
+  if(!list.length&&!confirm('보낼 일정이 없습니다.\n그래도 보내서 예전에 보낸 루틴·의회일정·지운 일정을 구글 캘린더에서 정리할까요?'))return;
+  var msg='일정 '+list.length+'건을 구글 캘린더로 보낼까요? (루틴·의회일정은 보내지 않습니다)'
     +'\n\n※ 지난번과 달라진 것이 없는 항목은 구글을 호출하지 않고 건너뜁니다.'
-    +'\n※ 예전에 보낸 루틴 일정은 이번 전송에서 구글 캘린더에서 정리됩니다.';
+    +'\n※ 예전에 보낸 루틴·의회일정은 이번 전송에서 구글 캘린더에서 정리됩니다.';
   if(list.length&&!confirm(msg))return;
   gcalSend({type:'bulk',sync:true,from:futureOnly?tk:'',
     events:list.map(function(s){return gcalEventPayload(s,'upsert');})},
