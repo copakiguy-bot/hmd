@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-11 · r234">
+<meta name="hmd-build" content="2026-11-11 · r235">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -4534,7 +4534,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-11 · r234';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-11 · r235';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -12289,7 +12289,7 @@ function rbAnc(toc,name){var o={},i=-1;for(var k=0;k<toc.length;k++)if(toc[k].t=
   var lv=toc[i].lv;for(var j=i-1;j>=0&&lv>1;j--)if(toc[j].lv<lv){o[toc[j].t]=1;lv=toc[j].lv;}return o;}
 function rbKeep(){var o={};['rbDate','rbS','rbE','rbP1','rbP2','rbGoal','rbExText','rbExPage'].forEach(function(id){var e=document.getElementById(id);if(e)o[id]=e.value;});
   var l=document.querySelector('#rbOv .rb-list'),d=document.querySelector('#rbOv .rb-det'),tc=document.querySelector('#rbOv .rb-chs'),ex=document.querySelector('#rbOv .rb-exl');
-  o.__s=[l?l.scrollTop:0,d?d.scrollTop:0,tc?tc.scrollTop:0,ex?ex.scrollTop:0];o.__b=rbBid;return o;}
+  o.__s=[l?l.scrollTop:0,d?d.scrollTop:0,tc?tc.scrollTop:0,ex?ex.scrollTop:0];o.__b=(d&&d.dataset.bid)?Number(d.dataset.bid):null;return o;}   /* 화면에 그려져 있던 책 (방금 고른 책이 아니라) — 다른 책의 입력값이 따라오지 않게 */
 function rbPaint(clear){
   var ov=document.getElementById('rbOv');if(!ov)return;
   var K=(!clear&&ov.innerHTML)?rbKeep():null,bs=rbBooks(),b=bookById(rbBid);
@@ -12303,7 +12303,7 @@ function rbPaint(clear){
   }).join('')||'<div class="hm-empty">읽는 중인 책이 없습니다.</div>';
   ov.innerHTML='<div class="rb-box"><div class="rb-top"><b>📚 독서</b><span class="more">읽는 중 '+bs.length+'권 · 책을 고르면 기록·목차·발췌</span>'
     +'<button type="button" class="lunar-toggle" style="margin-left:auto" onclick="rbClose();goRead()">독서 페이지 →</button><span class="bkv-x" onclick="rbClose()" title="닫기 (Esc)">×</span></div>'
-    +'<div class="rb-main"><div class="rb-list">'+rows+'</div><div class="rb-det">'+(b?rbDetHTML(b):'<div class="hm-empty">왼쪽에서 책을 고르세요.</div>')+'</div></div></div>';
+    +'<div class="rb-main"><div class="rb-list">'+rows+'</div><div class="rb-det" data-bid="'+(b?b.id:'')+'">'+(b?rbDetHTML(b):'<div class="hm-empty">왼쪽에서 책을 고르세요.</div>')+'</div></div></div>';
   if(K&&K.__b===rbBid){Object.keys(K).forEach(function(id){if(id.indexOf('__')===0)return;var e=document.getElementById(id);if(e&&K[id]!=null&&(id!=='rbP1'||K[id]))e.value=K[id];});}
   if(K){var l=ov.querySelector('.rb-list'),d=ov.querySelector('.rb-det'),tc=ov.querySelector('.rb-chs'),ex=ov.querySelector('.rb-exl');
     if(l)l.scrollTop=K.__s[0];if(K.__b===rbBid){if(d)d.scrollTop=K.__s[1];if(tc)tc.scrollTop=K.__s[2];if(ex)ex.scrollTop=K.__s[3];}}
