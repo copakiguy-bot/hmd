@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-11 · r232">
+<meta name="hmd-build" content="2026-11-11 · r233">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1212,6 +1212,15 @@
   .dp-tg{font-weight:800;font-size:8.2px}
   .dp-rt{position:absolute;left:1.2mm;right:.8mm;font-size:7.4px;line-height:1.15;color:#7d8a84;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transform:translateY(-1px)}
   .dp-gb .dp-now{left:9mm}
+  /* 하루 일정표 v3: 회색 음영 · 부의장실 연녹색 · 겹치면 아래로 */
+  .dp-sheet.v2 .dp-blk{left:1px!important;right:1px!important;width:auto!important;background:#ecebe7;border-left:3px solid #b5b2a9;color:#1d2a26;border-radius:3px;box-sizing:border-box}
+  .dp-sheet.v2 .dp-blk.vpc{background:#dcefe2;border-left-color:#3f9a6b}
+  .dp-sheet.v2 .dp-blk.band{background:#e4e3de;border-left-color:#8f8c83;border-left-width:4px}
+  .dp-sheet.v2 .dp-tg{color:#4a5752}
+  .dp-sheet.v2 .dp-chip{background:#ecebe7;border-left:3px solid #b5b2a9}
+  .dp-sheet.v2 .dp-chip.vpc{background:#dcefe2;border-left-color:#3f9a6b}
+  .dp-sheet.v2 .dp-rtc{border-right:none;border-left:1px solid #ebe7de;width:24mm}
+  .dp-sheet.v2 .dp-rt{left:1.6mm;white-space:normal;line-height:1.2;transform:none}
   /* 방문기록 */
   .hmwk-visit{display:none}
   .hm-wk.vs-on #hmwkBox,.hm-wk.vs-on #hmwkMapWrap,.hm-wk.vs-on .hmwk-trow,.hm-wk.vs-on .hmwk-save,.hm-wk.vs-on .hmwk-st{display:none!important}
@@ -4519,7 +4528,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-11 · r232';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-11 · r233';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -11156,14 +11165,42 @@ function dpLanes(L){
     for(var j=x.lane+1;j<n;j++){if(x.cl.items.some(function(o){return o!==x&&o.lane===j&&o.t<e&&(o.t+Math.max(o.dur,20))>x.t;}))break;sp++;}x.sp=sp;x.n=n;});
   return cl.reduce(function(m,c){return Math.max(m,c.lanes.length);},0);
 }
+/* 블록: 시간 자리에 놓되, 겹치면 나란히·포개지 않고 아래로 내려 놓는다 (dpLayoutFix) · 부의장실만 연녹색, 나머지는 회색 */
 function dpBlk(x,h0,RH,band){
   var top=(x.t/60-h0)*RH,hh=Math.max(4.4,x.dur/60*RH);
-  var pos=band?'left:0;right:0':'left:calc('+(x.lane/x.n*100).toFixed(3)+'% + 1px);width:calc('+(100*x.sp/x.n).toFixed(3)+'% - 2px)';
-  var showDt=dpOpt.det&&x.detail&&hh>=9;
-  return '<div class="dp-blk'+(band?' band':'')+(x.done?' done':'')+'" style="top:'+top.toFixed(2)+'mm;height:'+hh.toFixed(2)+'mm;'+pos+';border-left-color:'+x.col+';background:'+vpRgba(x.col,band?.10:.15)+'"'+(x.id?' onclick="dpEdit('+x.id+')" title="'+escA(dpHM(x.t)+'~'+dpHM(x.t+x.dur)+' '+x.title+(x.detail?'\n'+x.detail:''))+'"':'')+'>'
-    +'<b>'+dpHM(x.t)+'</b>'+(x.imp?'<span class="dp-imp">●</span>':' ')+(x.tag?'<span class="dp-tg" style="color:'+x.col+'">'+esc(x.tag)+'</span> ':'')+esc(x.title)
-    +(showDt?'<span class="dt">'+esc(x.detail)+'</span>':'')+'</div>';
+  var tc=(x.c==='vp'&&BX_COL[x.tag])?BX_COL[x.tag]:'#4a5752';
+  return '<div class="dp-blk'+(x.c==='vp'?' vpc':'')+(band?' band':'')+(x.done?' done':'')+'" data-a="'+top.toFixed(2)+'" data-dh="'+hh.toFixed(2)+'" style="top:'+top.toFixed(2)+'mm;min-height:'+hh.toFixed(2)+'mm"'+(x.id?' onclick="dpEdit('+x.id+')" title="'+escA(dpHM(x.t)+'~'+dpHM(x.t+x.dur)+' '+x.title+(x.detail?'\n'+x.detail:''))+'"':'')+'>'
+    +'<b>'+dpHM(x.t)+'</b>'+(x.imp?'<span class="dp-imp">●</span>':' ')+(x.tag?'<span class="dp-tg" style="color:'+tc+'">'+esc(x.tag)+'</span> ':'')+esc(x.title)
+    +(dpOpt.det&&x.detail?'<span class="dt">'+esc(x.detail)+'</span>':'')+'</div>';
 }
+var DP_MM=96/25.4;
+function dpLayoutFix(){
+  var gb=document.querySelector('#dpOv .dp-gb');if(!gb)return;
+  gb.style.height=gb.dataset.h+'mm';
+  var GAP=2,all=[].slice.call(gb.querySelectorAll('.dp-blk,.dp-rt'));
+  all.forEach(function(el){el.style.top=el.dataset.a+'mm';el.style.height='';el.style.minHeight='';});
+  var place=function(list,obst){
+    list.sort(function(a,b){return parseFloat(a.dataset.a)-parseFloat(b.dataset.a);});
+    var prev=-1e9;
+    list.forEach(function(el,i){
+      var t=Math.max(parseFloat(el.dataset.a)*DP_MM,prev+GAP);
+      el.style.height='auto';var ch=el.offsetHeight;
+      if(obst){var mv=true,g=0;while(mv&&g++<40){mv=false;obst.forEach(function(o){var ot=o.offsetTop,ob=ot+o.offsetHeight;if(t<ob&&t+ch>ot){t=ob+GAP;mv=true;}});}}
+      var nx=list[i+1],dh=parseFloat(el.dataset.dh||0)*DP_MM,lim=nx?(parseFloat(nx.dataset.a)*DP_MM-t-GAP):1e9;
+      var h=Math.max(ch,Math.min(dh,lim));
+      el.style.top=t.toFixed(1)+'px';el.style.height=h.toFixed(1)+'px';prev=t+h;
+    });
+  };
+  var band=[].slice.call(gb.querySelectorAll('.dp-band .dp-blk'));place(band,null);
+  [].slice.call(gb.querySelectorAll('.dp-col')).forEach(function(c){place([].slice.call(c.querySelectorAll('.dp-blk')),c.dataset.cn==='1'&&band.length?band:null);});
+  var rc=gb.querySelector('.dp-rtc');if(rc)place([].slice.call(rc.querySelectorAll('.dp-rt')),null);
+  var mb=0;all.forEach(function(el){mb=Math.max(mb,el.offsetTop+el.offsetHeight);});
+  if(mb+4>gb.offsetHeight)gb.style.height=(mb+4)+'px';
+}
+(function(){try{var mq=window.matchMedia('print'),f=function(){if(typeof dpIsOpen==='function'&&dpIsOpen())dpLayoutFix();};if(mq.addEventListener)mq.addEventListener('change',f);else mq.addListener(f);}catch(e){}
+  window.addEventListener('beforeprint',function(){if(dpIsOpen())setTimeout(dpLayoutFix,0);});
+  window.addEventListener('afterprint',function(){if(dpIsOpen())dpLayoutFix();});
+  window.addEventListener('resize',function(){if(dpIsOpen())dpLayoutFix();});})();
 function dpSheetHTML(){
   var d=dpDate,dt=new Date(d+'T00:00:00'),wd=['일','월','화','수','목','금','토'][dt.getDay()];
   var L=dpItems(d),RT=dpRoutines(d),showRt=RT.length>0,timed=L.filter(function(x){return x.t!=null;}),allday=L.filter(function(x){return x.t==null;});
@@ -11171,27 +11208,25 @@ function dpSheetHTML(){
   var NH=h1-h0,avail=dpOpt.land?(allday.length?138:150):(allday.length?222:234),RH=Math.max(6,Math.min(dpOpt.land?11:15,avail/NH)),GH=NH*RH;
   var by={};DP_COLS.forEach(function(c){by[c[0]]=timed.filter(function(x){return x.c===c[0];});});
   var band=timed.filter(function(x){return x.c==='band';});
-  var lanes={};DP_COLS.forEach(function(c){lanes[c[0]]=dpLanes(by[c[0]]);});
-  var base={chair:1,vp:1.15,cm:1.6,sec:.9,me:1.25};
-  var w={};DP_COLS.forEach(function(c){var k=c[0];w[k]=Math.max(base[k],Math.min(k==='cm'?4:2.2,.62*lanes[k]));});
+  var w={chair:1,vp:1.2,cm:1.6,sec:.9,me:1.2};
   var tot=0;DP_COLS.forEach(function(c){tot+=w[c[0]];});
   var pct={};DP_COLS.forEach(function(c){pct[c[0]]=w[c[0]]/tot*100;});
   var cnPct=pct.chair+pct.vp+pct.cm+pct.sec;
-  var head='<div class="dp-ch"><div class="dp-tax"></div>'+(showRt?'<div class="dp-rtc h">루틴</div>':'')+'<div class="dp-cols">'
-    +DP_COLS.map(function(c){var n=L.filter(function(x){return x.c===c[0];}).length;return '<div class="dp-cht" style="width:'+pct[c[0]].toFixed(3)+'%;border-top-color:'+c[2]+';color:'+c[2]+'">'+c[1]+(n?' <small>'+n+'</small>':'')+'</div>';}).join('')+'</div></div>';
+  var head='<div class="dp-ch"><div class="dp-tax"></div><div class="dp-cols">'
+    +DP_COLS.map(function(c){var n=L.filter(function(x){return x.c===c[0];}).length;return '<div class="dp-cht" style="width:'+pct[c[0]].toFixed(3)+'%;border-top-color:'+c[2]+';color:'+c[2]+'">'+c[1]+(n?' <small>'+n+'</small>':'')+'</div>';}).join('')+'</div>'+(showRt?'<div class="dp-rtc h">루틴</div>':'')+'</div>';
   var ad='';
   if(allday.length){
-    ad='<div class="dp-ad"><div class="dp-tax"><span>종일</span></div>'+(showRt?'<div class="dp-rtc"></div>':'')+'<div class="dp-cols">'
-      +(allday.some(function(x){return x.c==='band';})?'<div class="dp-adc" style="width:'+cnPct.toFixed(3)+'%">'+allday.filter(function(x){return x.c==='band';}).map(function(x){return '<span class="dp-chip" style="border-color:'+x.col+'" onclick="dpEdit('+x.id+')">'+esc(x.title)+'</span>';}).join('')+'</div>':'')
+    ad='<div class="dp-ad"><div class="dp-tax"><span>종일</span></div><div class="dp-cols">'
+      +(allday.some(function(x){return x.c==='band';})?'<div class="dp-adc" style="width:'+cnPct.toFixed(3)+'%">'+allday.filter(function(x){return x.c==='band';}).map(function(x){return '<span class="dp-chip" onclick="dpEdit('+x.id+')">'+esc(x.title)+'</span>';}).join('')+'</div>':'')
       +DP_COLS.map(function(c){var A=allday.filter(function(x){return x.c===c[0];});
         if(allday.some(function(x){return x.c==='band';})&&c[0]!=='me')return '';
-        return '<div class="dp-adc" style="width:'+pct[c[0]].toFixed(3)+'%">'+A.map(function(x){return '<span class="dp-chip'+(x.done?' done':'')+'" style="border-color:'+x.col+'" onclick="dpEdit('+x.id+')">'+(x.tag?'<b style="color:'+x.col+'">'+esc(x.tag)+'</b> ':'')+esc(x.title)+'</span>';}).join('')+'</div>';}).join('')
-      +'</div></div>';
+        return '<div class="dp-adc" style="width:'+pct[c[0]].toFixed(3)+'%">'+A.map(function(x){return '<span class="dp-chip'+(x.c==='vp'?' vpc':'')+(x.done?' done':'')+'" onclick="dpEdit('+x.id+')">'+(x.tag?'<b>'+esc(x.tag)+'</b> ':'')+esc(x.title)+'</span>';}).join('')+'</div>';}).join('')
+      +'</div>'+(showRt?'<div class="dp-rtc"></div>':'')+'</div>';
   }
   var hr='';for(var h=h0;h<=h1;h++)hr+='<div class="dp-hr" style="top:'+((h-h0)*RH).toFixed(2)+'mm"><span>'+String(h).padStart(2,'0')+'</span></div>';
-  var rt=showRt?'<div class="dp-rtc">'+RT.map(function(r){return '<div class="dp-rt" style="top:'+((r.t/60-h0)*RH).toFixed(2)+'mm" title="'+escA(dpHM(r.t)+' '+r.title)+'">'+dpHM(r.t)+' '+esc(r.title)+'</div>';}).join('')+'</div>':'';
+  var rt=showRt?'<div class="dp-rtc">'+RT.map(function(r){var a=((r.t/60-h0)*RH).toFixed(2);return '<div class="dp-rt" data-a="'+a+'" style="top:'+a+'mm" title="'+escA(dpHM(r.t)+' '+r.title)+'">'+esc(r.title)+'</div>';}).join('')+'</div>':'';
   var cols='<div class="dp-cols">'+(band.length?'<div class="dp-band" style="width:'+cnPct.toFixed(3)+'%">'+band.map(function(x){return dpBlk(x,h0,RH,true);}).join('')+'</div>':'')
-    +DP_COLS.map(function(c){return '<div class="dp-col" style="width:'+pct[c[0]].toFixed(3)+'%">'+by[c[0]].map(function(x){return dpBlk(x,h0,RH,false);}).join('')+'</div>';}).join('')+'</div>';
+    +DP_COLS.map(function(c){return '<div class="dp-col" data-cn="'+(c[0]==='me'?'0':'1')+'" style="width:'+pct[c[0]].toFixed(3)+'%">'+by[c[0]].map(function(x){return dpBlk(x,h0,RH,false);}).join('')+'</div>';}).join('')+'</div>';
   var now='';if(d===today()){var nm=new Date().getHours()*60+new Date().getMinutes();if(nm>=h0*60&&nm<=h1*60)now='<div class="dp-now no-print" style="top:'+((nm/60-h0)*RH).toFixed(2)+'mm"></div>';}
   var ses=[];try{ses=sessionsOn(d).map(function(z){return z.name||'회기';});}catch(e){}
   var hol=(typeof HOLIDAYS!=='undefined'&&HOLIDAYS[d])||'',lun='';try{lun=lunarOf(d);}catch(e){}
@@ -11201,7 +11236,7 @@ function dpSheetHTML(){
     +'<div class="sub">'+[lun?'음력 '+lun:'',hol,ses.join(' · ')].filter(Boolean).map(esc).join(' · ')+'</div></div>'
     +'<div class="dp-cnt">'+[nCn?'의회 '+nCn:'',nMe?'개인 '+nMe:'',RT.length?'루틴 '+RT.length:''].filter(Boolean).join(' · ')+(L.length?'':'일정 없음')+(band.length?'<div class="dp-bandlg">가로 띠 = 본회의</div>':'')+'</div></div>'
     +head+ad
-    +'<div class="dp-gb" style="height:'+GH.toFixed(2)+'mm"><div class="dp-tax"></div>'+hr+(showRt?rt:'')+cols+now+'</div>'
+    +'<div class="dp-gb" data-h="'+GH.toFixed(2)+'" style="height:'+GH.toFixed(2)+'mm"><div class="dp-tax"></div>'+hr+cols+(showRt?rt:'')+now+'</div>'
     +'<div class="dp-foot">HMD · 하루 일정표 · 출력 '+esc(today())+'</div></div>';
 }
 function dpPaint(){
@@ -11215,6 +11250,7 @@ function dpPaint(){
     +'<button class="btn ghost" style="padding:5px 10px;font-size:12px" onclick="dpAdd()">＋ 일정</button>'
     +'<span class="bx-rep-tools"><button class="btn y" onclick="window.print()">🖨 인쇄 / PDF</button><span class="bkv-x" onclick="dpClose()" title="닫기 (Esc)">×</span></span></div>'
     +'<div class="bx-rep-body">'+dpSheetHTML()+'</div></div>';
+  dpLayoutFix();
 }
 function bxRepPeriodLabel(p){return p==='h1'?'상반기 (1~6월)':p==='h2'?'하반기 (7~12월)':'연간 (1~12월)';}
 function bxRepRows(who,p){
