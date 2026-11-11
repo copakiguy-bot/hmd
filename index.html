@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-11 · r233">
+<meta name="hmd-build" content="2026-11-11 · r234">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1221,6 +1221,12 @@
   .dp-sheet.v2 .dp-chip.vpc{background:#dcefe2;border-left-color:#3f9a6b}
   .dp-sheet.v2 .dp-rtc{border-right:none;border-left:1px solid #ebe7de;width:24mm}
   .dp-sheet.v2 .dp-rt{left:1.6mm;white-space:normal;line-height:1.2;transform:none}
+  /* 같은 시각 묶음: 왼쪽 세로 괄호 + 시각 한 번 */
+  .dp-sheet.v2 .dp-blk.grp{left:8.4mm!important}
+  .dp-grp{position:absolute;left:1px;width:7.6mm;box-sizing:border-box;border-left:2px solid #5f6b67;border-top:1.2px solid #5f6b67;border-bottom:1.2px solid #5f6b67;border-radius:2px 0 0 2px;pointer-events:none}
+  .dp-grp.vpc{border-color:#3f9a6b}
+  .dp-grp span{position:absolute;left:.7mm;top:.5mm;font-size:8px;font-weight:800;color:#1d2a26;letter-spacing:-.2px;font-variant-numeric:tabular-nums}
+  .dp-band .dp-grp{pointer-events:none}
   /* 방문기록 */
   .hmwk-visit{display:none}
   .hm-wk.vs-on #hmwkBox,.hm-wk.vs-on #hmwkMapWrap,.hm-wk.vs-on .hmwk-trow,.hm-wk.vs-on .hmwk-save,.hm-wk.vs-on .hmwk-st{display:none!important}
@@ -4528,7 +4534,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-11 · r233';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-11 · r234';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -11166,11 +11172,11 @@ function dpLanes(L){
   return cl.reduce(function(m,c){return Math.max(m,c.lanes.length);},0);
 }
 /* 블록: 시간 자리에 놓되, 겹치면 나란히·포개지 않고 아래로 내려 놓는다 (dpLayoutFix) · 부의장실만 연녹색, 나머지는 회색 */
-function dpBlk(x,h0,RH,band){
+function dpBlk(x,h0,RH,band,grp){
   var top=(x.t/60-h0)*RH,hh=Math.max(4.4,x.dur/60*RH);
   var tc=(x.c==='vp'&&BX_COL[x.tag])?BX_COL[x.tag]:'#4a5752';
-  return '<div class="dp-blk'+(x.c==='vp'?' vpc':'')+(band?' band':'')+(x.done?' done':'')+'" data-a="'+top.toFixed(2)+'" data-dh="'+hh.toFixed(2)+'" style="top:'+top.toFixed(2)+'mm;min-height:'+hh.toFixed(2)+'mm"'+(x.id?' onclick="dpEdit('+x.id+')" title="'+escA(dpHM(x.t)+'~'+dpHM(x.t+x.dur)+' '+x.title+(x.detail?'\n'+x.detail:''))+'"':'')+'>'
-    +'<b>'+dpHM(x.t)+'</b>'+(x.imp?'<span class="dp-imp">●</span>':' ')+(x.tag?'<span class="dp-tg" style="color:'+tc+'">'+esc(x.tag)+'</span> ':'')+esc(x.title)
+  return '<div class="dp-blk'+(x.c==='vp'?' vpc':'')+(band?' band':'')+(grp?' grp':'')+(x.done?' done':'')+'"'+(grp?' data-g="'+grp+'"':'')+' data-a="'+top.toFixed(2)+'" data-dh="'+hh.toFixed(2)+'" style="top:'+top.toFixed(2)+'mm;min-height:'+hh.toFixed(2)+'mm"'+(x.id?' onclick="dpEdit('+x.id+')" title="'+escA(dpHM(x.t)+'~'+dpHM(x.t+x.dur)+' '+x.title+(x.detail?'\n'+x.detail:''))+'"':'')+'>'
+    +(grp?'':'<b>'+dpHM(x.t)+'</b>')+(x.imp?'<span class="dp-imp">●</span>':(grp?'':' '))+(x.tag?'<span class="dp-tg" style="color:'+tc+'">'+esc(x.tag)+'</span> ':'')+esc(x.title)
     +(dpOpt.det&&x.detail?'<span class="dt">'+esc(x.detail)+'</span>':'')+'</div>';
 }
 var DP_MM=96/25.4;
@@ -11194,6 +11200,11 @@ function dpLayoutFix(){
   var band=[].slice.call(gb.querySelectorAll('.dp-band .dp-blk'));place(band,null);
   [].slice.call(gb.querySelectorAll('.dp-col')).forEach(function(c){place([].slice.call(c.querySelectorAll('.dp-blk')),c.dataset.cn==='1'&&band.length?band:null);});
   var rc=gb.querySelector('.dp-rtc');if(rc)place([].slice.call(rc.querySelectorAll('.dp-rt')),null);
+  /* 같은 시각에 시작하는 묶음: 왼쪽 괄호를 첫 블록 위부터 마지막 블록 아래까지 */
+  [].slice.call(gb.querySelectorAll('.dp-grp')).forEach(function(g){
+    var bs=[].slice.call(g.parentNode.querySelectorAll('.dp-blk[data-g="'+g.dataset.g+'"]'));if(!bs.length)return;
+    var t=1e9,b=0;bs.forEach(function(el){t=Math.min(t,el.offsetTop);b=Math.max(b,el.offsetTop+el.offsetHeight);});
+    g.style.top=t+'px';g.style.height=(b-t)+'px';});
   var mb=0;all.forEach(function(el){mb=Math.max(mb,el.offsetTop+el.offsetHeight);});
   if(mb+4>gb.offsetHeight)gb.style.height=(mb+4)+'px';
 }
@@ -11225,8 +11236,13 @@ function dpSheetHTML(){
   }
   var hr='';for(var h=h0;h<=h1;h++)hr+='<div class="dp-hr" style="top:'+((h-h0)*RH).toFixed(2)+'mm"><span>'+String(h).padStart(2,'0')+'</span></div>';
   var rt=showRt?'<div class="dp-rtc">'+RT.map(function(r){var a=((r.t/60-h0)*RH).toFixed(2);return '<div class="dp-rt" data-a="'+a+'" style="top:'+a+'mm" title="'+escA(dpHM(r.t)+' '+r.title)+'">'+esc(r.title)+'</div>';}).join('')+'</div>':'';
-  var cols='<div class="dp-cols">'+(band.length?'<div class="dp-band" style="width:'+cnPct.toFixed(3)+'%">'+band.map(function(x){return dpBlk(x,h0,RH,true);}).join('')+'</div>':'')
-    +DP_COLS.map(function(c){return '<div class="dp-col" data-cn="'+(c[0]==='me'?'0':'1')+'" style="width:'+pct[c[0]].toFixed(3)+'%">'+by[c[0]].map(function(x){return dpBlk(x,h0,RH,false);}).join('')+'</div>';}).join('')+'</div>';
+  /* 같은 칸에서 시작 시각이 똑같은 일정이 2개 이상이면 한 묶음 (시각은 괄호 위에 한 번만) */
+  var grpHTML=function(L2,key,band2){var n={};L2.forEach(function(x){n[x.t]=(n[x.t]||0)+1;});
+    var gk=function(x){return n[x.t]>1?(key+'-'+x.t):'';};
+    var marks=Object.keys(n).filter(function(t){return n[t]>1;}).map(function(t){return '<div class="dp-grp'+(key==='vp'?' vpc':'')+'" data-g="'+key+'-'+t+'"><span>'+dpHM(+t)+'</span></div>';}).join('');
+    return marks+L2.map(function(x){return dpBlk(x,h0,RH,band2,gk(x));}).join('');};
+  var cols='<div class="dp-cols">'+(band.length?'<div class="dp-band" style="width:'+cnPct.toFixed(3)+'%">'+grpHTML(band,'band',true)+'</div>':'')
+    +DP_COLS.map(function(c){return '<div class="dp-col" data-cn="'+(c[0]==='me'?'0':'1')+'" style="width:'+pct[c[0]].toFixed(3)+'%">'+grpHTML(by[c[0]],c[0],false)+'</div>';}).join('')+'</div>';
   var now='';if(d===today()){var nm=new Date().getHours()*60+new Date().getMinutes();if(nm>=h0*60&&nm<=h1*60)now='<div class="dp-now no-print" style="top:'+((nm/60-h0)*RH).toFixed(2)+'mm"></div>';}
   var ses=[];try{ses=sessionsOn(d).map(function(z){return z.name||'회기';});}catch(e){}
   var hol=(typeof HOLIDAYS!=='undefined'&&HOLIDAYS[d])||'',lun='';try{lun=lunarOf(d);}catch(e){}
