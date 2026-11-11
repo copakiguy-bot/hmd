@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-10 · r230">
+<meta name="hmd-build" content="2026-11-11 · r232">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1150,6 +1150,68 @@
   .dp-ml{height:8mm;border-bottom:1px dashed #d8d3c8}
   .dp-foot{margin-top:5mm;font-size:8.5px;color:#999;text-align:right}
   @media(max-width:700px){.dp-sheet{width:100%;padding:12px}.dp-body{grid-template-columns:1fr}.dp-grid{display:none}}
+  /* 의회일지 */
+  .hmwk-cj{display:none}
+  .hm-wk.cj-on #hmwkBox,.hm-wk.cj-on #hmwkMapWrap,.hm-wk.cj-on .hmwk-trow,.hm-wk.cj-on .hmwk-save,.hm-wk.cj-on .hmwk-st{display:none!important}
+  .hm-wk.cj-on .hmwk-cj{display:block}
+  .cj-kinds{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+  .cj-kb{border:1.5px solid;background:#fff;border-radius:999px;padding:3px 11px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}
+  .cj-imp{border:1.5px solid #e0b43a;background:#fff;color:#b8860b;border-radius:999px;padding:3px 11px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;margin-left:auto}
+  .cj-imp.on{background:#f2c53d;color:#5a4300;border-color:#f2c53d}
+  .cj-ctx{font-size:11.5px;color:#2f5d8a;font-weight:700}
+  .cj-text{width:100%;box-sizing:border-box;min-height:120px;resize:vertical;font-family:inherit;font-size:13.5px;line-height:1.6}
+  .cj-rr{display:flex;gap:6px;align-items:flex-start;font-size:12.5px;padding:5px 2px;border-bottom:1px dashed #efede8}
+  .cj-rr .d{color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
+  .cj-rr .n{color:#33413c;white-space:pre-wrap;min-width:0;flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .cj-star{color:#e0a83a;flex:none}
+  .cj-k{display:inline-block;flex:none;font-size:10px;font-weight:800;border:1px solid;border-radius:4px;padding:0 5px;margin-right:3px;background:#fff;line-height:1.6}
+  .cj-form{display:flex;flex-direction:column;gap:8px;background:#fbfbf8;border:1px solid #efede8;border-radius:12px;padding:12px;margin-bottom:12px}
+  .cj-frow{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start}
+  .cj-frow .cj-text{flex:1;min-width:260px;width:auto;min-height:80px}
+  .cj-fbtn{display:flex;flex-direction:column;gap:6px}
+  .cj-filt{display:flex;gap:5px;flex-wrap:wrap;margin:0 0 10px}
+  .cj-filt .lunar-toggle{font-size:11.5px;padding:3px 9px}
+  .cj-mon{font-size:13px;font-weight:800;color:var(--dark);margin:14px 0 6px;padding-bottom:4px;border-bottom:2px solid #12312b}
+  .cj-day{border:1px solid var(--line);border-radius:12px;background:#fff;margin-bottom:8px;overflow:hidden}
+  .cj-dh{display:flex;align-items:baseline;gap:6px;padding:7px 12px;background:#f6f5f0;border-bottom:1px solid var(--line)}
+  .cj-dh b{font-size:14px;color:var(--dark)}.cj-dh .w{font-size:11.5px;color:var(--muted)}.cj-dh .c{font-size:11px;color:#2f5d8a;font-weight:700;margin-left:6px}
+  .cj-dh .add{margin-left:auto;cursor:pointer;color:#8a9490;font-weight:800}.cj-dh .add:hover{color:var(--dark)}
+  .cj-it{display:flex;gap:8px;padding:8px 12px;border-top:1px solid #f1efe9;align-items:flex-start}
+  .cj-it:first-of-type{border-top:none}
+  .cj-it.on{background:#fffbea}.cj-it.imp{background:#fffaf0}
+  .cj-st{cursor:pointer;color:#d8c48a;font-size:14px;line-height:1.4;flex:none}.cj-it.imp .cj-st{color:#e0a83a}
+  .cj-b{flex:1;min-width:0}
+  .cj-meta{display:flex;gap:3px;align-items:center;margin-bottom:2px}.cj-meta .t{font-size:11px;color:var(--muted);margin-right:4px;font-variant-numeric:tabular-nums}
+  .cj-tx{font-size:13.5px;line-height:1.65;white-space:pre-wrap;color:#1f2b27;word-break:keep-all;overflow-wrap:anywhere}
+  .cj-act{flex:none;display:flex;gap:8px;opacity:.5}.cj-it:hover .cj-act{opacity:1}.cj-act span{cursor:pointer}
+  /* 하루 일정표 v2: 고정 칸 */
+  .dp-sheet.v2 .dp-hd{margin-bottom:5px}
+  .dp-bandlg{font-size:9.5px;font-weight:600;color:#8a9490;text-align:right}
+  .dp-ch,.dp-ad{display:flex;align-items:stretch}
+  .dp-tax{width:9mm;flex:none;position:relative}
+  .dp-rtc{width:22mm;flex:none;position:relative;border-right:1px solid #ebe7de}
+  .dp-rtc.h{font-size:9.5px;font-weight:800;color:#8a9490;display:flex;align-items:flex-end;padding:0 0 3px 3px;box-sizing:border-box}
+  .dp-cols{flex:1;display:flex;position:relative;min-width:0}
+  .dp-cht{box-sizing:border-box;text-align:center;font-size:11px;font-weight:800;border-top:3px solid;padding:3px 2px 4px;background:#f7f6f2;border-left:1px solid #fff}
+  .dp-cht small{font-size:9px;font-weight:700;opacity:.75}
+  .dp-ad{border-bottom:1px solid #e3ded4;min-height:7mm}
+  .dp-ad .dp-tax span{position:absolute;right:1.5mm;top:1.5mm;font-size:9px;font-weight:700;color:#8a9490}
+  .dp-adc{box-sizing:border-box;padding:2px 2px;display:flex;flex-wrap:wrap;gap:2px;align-content:flex-start;border-left:1px solid #f0ede6}
+  .dp-chip{font-size:8.6px;line-height:1.3;border-left:3px solid;background:#f7f6f2;border-radius:3px;padding:1px 4px;cursor:pointer;max-width:100%}
+  .dp-chip.done{opacity:.5;text-decoration:line-through}
+  .dp-gb{position:relative;display:flex;margin-top:0}
+  .dp-gb .dp-hr{left:9mm}
+  .dp-gb .dp-hr span{left:-9mm}
+  .dp-gb .dp-cols{height:100%}
+  .dp-col{position:relative;height:100%;box-sizing:border-box;border-left:1px solid #f0ede6}
+  .dp-band{position:absolute;left:0;top:0;bottom:0;pointer-events:none;z-index:0}
+  .dp-band .dp-blk{pointer-events:auto;border-left-width:4px;font-weight:700}
+  .dp-col .dp-blk{z-index:1}
+  .dp-sheet.v2 .dp-blk{font-size:8.6px}
+  .dp-blk .dt{display:block;font-size:7.8px;color:#5f6b67;font-weight:400;white-space:pre-line;margin-top:.3mm}
+  .dp-tg{font-weight:800;font-size:8.2px}
+  .dp-rt{position:absolute;left:1.2mm;right:.8mm;font-size:7.4px;line-height:1.15;color:#7d8a84;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transform:translateY(-1px)}
+  .dp-gb .dp-now{left:9mm}
   /* 방문기록 */
   .hmwk-visit{display:none}
   .hm-wk.vs-on #hmwkBox,.hm-wk.vs-on #hmwkMapWrap,.hm-wk.vs-on .hmwk-trow,.hm-wk.vs-on .hmwk-save,.hm-wk.vs-on .hmwk-st{display:none!important}
@@ -3461,9 +3523,11 @@ try{if(/[?&]postit\b/.test(location.search)){document.documentElement.classList.
           <div id="hmwkBox" class="hmwk-box"><div class="fw-rich" id="hmwkEd" contenteditable="true" data-noenter="1"></div></div>
           <div id="hmwkMapWrap" class="hmwk-mapwrap" style="display:none"><div class="wv-maptools"><button type="button" class="btn y" style="padding:5px 12px;font-size:12px" onclick="mindAddFocus(mindRoot())">＋ 생각 추가</button><span class="wv-xlhint"><b>Tab</b>=하위 · <b>Enter</b>=대등 · 칸을 끌어 이동</span><button type="button" class="lunar-toggle hmwk-mxbtn" id="hmwkMxBtn" onclick="hmWkMx()" title="크게 보기">⤢ 크게 보기</button></div><div id="hmwkMind" class="wv-mindcv hmwk-mind"></div></div>
           <div id="hmwkVisit" class="hmwk-visit"></div>
+          <div id="hmwkCj" class="hmwk-cj"></div>
           <div class="hmwk-foot">
-            <button type="button" class="lunar-toggle" id="hmwkMapBtn" onclick="if(hmwkVisitOn){hmWkVisitTgl(false);if(hmwkMode!=='map')hmWkMapTgl();}else hmWkMapTgl()" title="줄 글 ↔ 마인드맵">마인드맵</button>
+            <button type="button" class="lunar-toggle" id="hmwkMapBtn" onclick="if(hmwkVisitOn||hmwkCjOn){hmWkPanelOff();if(hmwkMode!=='map')hmWkMapTgl();}else hmWkMapTgl()" title="줄 글 ↔ 마인드맵">마인드맵</button>
             <button type="button" class="lunar-toggle" id="hmwkVisitBtn" onclick="hmWkVisitTgl()" title="부의장실 방문기록 (날짜 · 시각 · 1·2부의장 · 소속 · 비고) · Etc에서 관리">방문기록</button>
+            <button type="button" class="lunar-toggle" id="hmwkCjBtn" onclick="hmWkCjTgl()" title="의회일지 — 날마다 의회에서 보고 파악한 것 · Etc에서 날짜별로">의회일지</button>
             <span class="hmwk-st" id="hmwkSt"></span>
             <button type="button" class="btn ghost hmwk-save" onclick="hmWkSave('의회운영')" title="«의회운영» 폴더에 노트로 저장">의회운영</button>
             <button type="button" class="btn ghost hmwk-save" onclick="hmWkSave('매뉴얼')" title="«매뉴얼» 폴더에 노트로 저장">매뉴얼</button>
@@ -3552,6 +3616,17 @@ try{if(/[?&]postit\b/.test(location.search)){document.documentElement.classList.
       <div id="vsTiles"></div>
       <div id="vsForm"></div>
       <div id="vsTable" class="rdl-wrap"></div>
+    </div>
+    </div>
+    <div id="etcCnj" style="display:none">
+    <div class="card">
+      <h3><span class="dot" style="background:#2f5d8a"></span> <span id="cjTitle">의회일지</span> <span class="more" id="cjCnt"></span>
+        <span class="tl-datenav" style="margin-left:10px"><button type="button" onclick="cjYearShift(-1)" title="지난해">‹</button><span class="more" id="cjYearLbl" style="margin-left:0"></span><button type="button" onclick="cjYearShift(1)" title="다음해">›</button></span>
+        <input id="cjQ" class="in" style="margin-left:auto;max-width:220px;padding:6px 10px;font-size:12.5px" placeholder="내용 검색" oninput="cjRenderList()">
+        <button type="button" class="btn ghost" style="padding:5px 10px;font-size:12px" onclick="cjExportXlsx()" title="지금 보는 연도·구분·검색 그대로 엑셀(.xlsx)">엑셀 내려받기</button></h3>
+      <div id="cjForm"></div>
+      <div id="cjKindBtns" class="cj-filt"></div>
+      <div id="cjList"></div>
     </div>
     </div>
     <div class="card" id="etcOt" style="display:none">
@@ -4444,7 +4519,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-10 · r230';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-11 · r232';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4733,6 +4808,7 @@ function ensureFields(){
     if(!Array.isArray(db.rdLog))db.rdLog=[];
     if(!Array.isArray(db.amgi))db.amgi=[];
     if(!Array.isArray(db.visits))db.visits=[];
+    if(!Array.isArray(db.cnj))db.cnj=[];
     if(!db.council||typeof db.council!=='object')db.council={sessions:[],active:null};
     if(!Array.isArray(db.council.sessions))db.council.sessions=[];
     db.council.sessions=db.council.sessions.filter(function(s){return s&&typeof s==='object';});
@@ -10694,12 +10770,13 @@ function renderEtc(){
   var pane=document.getElementById('view-etc');if(!pane)return;
   bxSeed();
   var sb=document.getElementById('bxSecBtns');
-  if(sb)sb.innerHTML=[['bizx','업무추진비'],['visit','방문기록'],['ot','초과계산기']].map(function(x){return '<button class="lunar-toggle'+(etcSec===x[0]?' on':'')+'" onclick="etcSecSet(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');
+  if(sb)sb.innerHTML=[['bizx','업무추진비'],['visit','방문기록'],['cnj','의회일지'],['ot','초과계산기']].map(function(x){return '<button class="lunar-toggle'+(etcSec===x[0]?' on':'')+'" onclick="etcSecSet(\''+x[0]+'\')">'+x[1]+'</button>';}).join('');
   var eb=document.getElementById('etcBizx'),eo=document.getElementById('etcOt');
   var ev=document.getElementById('etcVisit');
-  if(eb)eb.style.display=etcSec==='bizx'?'':'none';if(eo)eo.style.display=etcSec==='ot'?'':'none';if(ev)ev.style.display=etcSec==='visit'?'':'none';
+  if(eb)eb.style.display=etcSec==='bizx'?'':'none';if(eo)eo.style.display=etcSec==='ot'?'':'none';if(ev)ev.style.display=etcSec==='visit'?'':'none';var ej=document.getElementById('etcCnj');if(ej)ej.style.display=etcSec==='cnj'?'':'none';
   if(etcSec==='ot'){otRender();return;}
   if(etcSec==='visit'){vsRender();return;}
+  if(etcSec==='cnj'){cjRender();return;}
   var y=bxYearNow();
   var yl=document.getElementById('bxYearLbl');if(yl)yl.textContent=y+'년';
   var tt=document.getElementById('bxTitle');if(tt)tt.textContent=y+'년 부의장 업무추진비';
@@ -11040,50 +11117,91 @@ function dpSetDate(v){if(v){dpDate=v;dpPaint();}}
 function dpOptTgl(k){dpOpt[k]=!dpOpt[k];try{localStorage.setItem('hmd_dpOpt',JSON.stringify(dpOpt));}catch(e){}dpPaint();}
 function dpAdd(){tlqOpen('',{date:dpDate,pickDate:true,head:'일정 추가'});}
 function dpEdit(id){tlqOpen('',{edit:id});}
-/* 그날 보일 것: 일정(개인·의회) + 루틴 */
+/* 칸 고정: 의장실 · 부의장실 · 상임위(특위 포함) · 사무처 · 개인 일정 — 그 안에서 시간순 · 루틴은 시간 옆에 작은 글씨 · 본회의는 의회 네 칸을 가로지르는 띠 */
+var DP_COLS=[['chair','의장실','#9a5b23'],['vp','부의장실','#2a78d6'],['cm','상임위 · 특위','#3f7f6b'],['sec','사무처','#5f6b73'],['me','개인 일정','#c9951a']];
+var DP_ABBR=[[/의회\s*운영\s*위원회|운영\s*위원회/g,'운영위'],[/기획\s*경제\s*위원회|기획\s*경제위/g,'기경위'],[/행정\s*문화\s*위원회|행정\s*문화위/g,'행문위'],
+  [/보건\s*복지\s*환경\s*위원회|보건\s*복지\s*환경위/g,'복환위'],[/농업\s*수산\s*해양\s*위원회|농업\s*수산\s*해양위|농수\s*해양위/g,'농수위'],
+  [/도시\s*안전\s*건설\s*소방\s*위원회|도시\s*안전\s*건설\s*소방위/g,'건소위'],[/교육\s*위원회/g,'교육위'],[/예산\s*결산\s*특별\s*위원회|예산결산특위/g,'예결위'],[/윤리\s*특별\s*위원회/g,'윤리위']];
+function dpAbbr(t){t=String(t||'');DP_ABBR.forEach(function(p){t=t.replace(p[0],p[1]);});return t;}
+function dpColOf(s){
+  if(!s.cn)return 'me';
+  var o=s.cnOrg||'';
+  if(o==='의장실')return 'chair';if(o==='부의장실')return 'vp';if(o==='상임위'||o==='특위')return 'cm';if(o==='사무처')return 'sec';
+  if(o==='본회의')return 'band';
+  return 'cm';
+}
 function dpItems(d){
   var out=[];
   (db.schedules||[]).forEach(function(s){
-    if(!s||s.date!==d)return;if(s.cn&&!dpOpt.cn)return;
-    var m=tlParseMin(s.time),col=s.cn?(cnColor(s)||'#5f6f86'):'#d9a520';
-    out.push({id:s.id,k:s.cn?'cn':'me',t:m,dur:(s.dur>0?s.dur:60),title:s.title||'',detail:s.detail||'',tag:s.cn?cnLabel(s):'',col:col,done:!!s.done,imp:!!s.imp});
+    if(!s||s.date!==d)return;
+    var c=dpColOf(s),m=tlParseMin(s.time);
+    var col=s.cn?(cnColor(s)||'#5f6f86'):'#c9951a';
+    var tag='';if(s.cn&&s.cnDept&&s.cnDept!=='공통'){var dp=String(s.cnDept).replace(/\(.*\)/,'');if(dpAbbr(s.title).indexOf(dp)<0)tag=dp;}
+    out.push({id:s.id,c:c,t:m,dur:(s.dur>0?s.dur:60),title:dpAbbr(s.title||''),detail:s.detail||'',tag:tag,col:col,done:!!s.done,imp:!!s.imp});
   });
-  if(dpOpt.rt)try{tlrFor(d,true).forEach(function(r){var m=tlParseMin(r.time);out.push({id:null,k:'rt',t:m,dur:(r.dur>0?r.dur:30),title:r.title||'',detail:'',tag:'루틴',col:'#8a9a92',done:false,imp:!!r.imp});});}catch(e){}
-  out.sort(function(a,b){return (a.t==null?1e6:a.t)-(b.t==null?1e6:b.t)||(a.k==='rt')-(b.k==='rt');});   /* 종일(시간 없음)은 맨 아래 */
+  out.sort(function(a,b){return (a.t==null?1e6:a.t)-(b.t==null?1e6:b.t)||a.id-b.id;});
   return out;
 }
+function dpRoutines(d){var r=[];if(!dpOpt.rt)return r;try{tlrFor(d,true).forEach(function(x){var m=tlParseMin(x.time);if(m!=null)r.push({t:m,dur:(x.dur>0?x.dur:30),title:x.title||'',imp:!!x.imp});});}catch(e){}
+  return r.sort(function(a,b){return a.t-b.t;});}
 function dpHM(m){m=((m%1440)+1440)%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
-function dpSheetHTML(){
-  var d=dpDate,dt=new Date(d+'T00:00:00'),wd=['일','월','화','수','목','금','토'][dt.getDay()];
-  var L=dpItems(d),timed=L.filter(function(x){return x.t!=null;}),allday=L.filter(function(x){return x.t==null;});
-  var h0=7,h1=22;timed.forEach(function(x){h0=Math.min(h0,Math.floor(x.t/60));h1=Math.max(h1,Math.min(24,Math.ceil((x.t+x.dur)/60)));});
-  var NH=h1-h0,RH=dpOpt.land?Math.min(11,Math.max(6,150/NH)):Math.min(15,Math.max(8,214/NH)),GH=NH*RH;     /* 시간 한 칸 높이(mm) */
-  /* 겹치는 일정은 나란히 */
-  var cl=[],cur=null;timed.forEach(function(x){var e=x.t+Math.max(x.dur,20);
+/* 한 칸 안에서 겹치는 일정은 나란히 (옆이 비면 넓게) */
+function dpLanes(L){
+  var cl=[],cur=null;
+  L.forEach(function(x){var e=x.t+Math.max(x.dur,20);
     if(!cur||x.t>=cur.end){cur={end:e,items:[],lanes:[]};cl.push(cur);}
     var li=cur.lanes.findIndex(function(le){return le<=x.t;});if(li<0){li=cur.lanes.length;cur.lanes.push(e);}else cur.lanes[li]=e;
     x.lane=li;x.cl=cur;cur.items.push(x);cur.end=Math.max(cur.end,e);});
-  /* 옆 칸이 그 시간에 비어 있으면 넓게 쓴다 */
-  timed.forEach(function(x){var n=x.cl.lanes.length,e=x.t+Math.max(x.dur,20),sp=1;
-    for(var j=x.lane+1;j<n;j++){if(x.cl.items.some(function(o){return o!==x&&o.lane===j&&o.t<e&&(o.t+Math.max(o.dur,20))>x.t;}))break;sp++;}x.sp=sp;});
-  var grid='';for(var h=h0;h<=h1;h++)grid+='<div class="dp-hr" style="top:'+((h-h0)*RH).toFixed(2)+'mm"><span>'+String(h).padStart(2,'0')+'</span></div>';
-  timed.forEach(function(x){var n=x.cl.lanes.length,top=(x.t/60-h0)*RH,hh=Math.max(4.2,x.dur/60*RH);
-    grid+='<div class="dp-blk k-'+x.k+(x.done?' done':'')+'" style="top:'+top.toFixed(2)+'mm;height:'+hh.toFixed(2)+'mm;left:calc('+(x.lane/n*100).toFixed(3)+'% + 1px);width:calc('+(100*x.sp/n).toFixed(3)+'% - 2px);border-left-color:'+x.col+';background:'+vpRgba(x.col,x.k==='rt'?.10:.16)+'"'+(x.id?' onclick="dpEdit('+x.id+')"':'')+'>'
-      +'<b>'+dpHM(x.t)+'</b> '+esc(x.title)+'</div>';});
-  if(d===today()){var nm=new Date().getHours()*60+new Date().getMinutes();if(nm>=h0*60&&nm<=h1*60)grid+='<div class="dp-now no-print" style="top:'+((nm/60-h0)*RH).toFixed(2)+'mm"></div>';}
-  var row=function(x){return '<tr class="k-'+x.k+(x.done?' done':'')+'"'+(x.id?' onclick="dpEdit('+x.id+')" title="눌러서 수정"':'')+'><td class="tm">'+(x.t==null?'<span class="na">종일</span>':dpHM(x.t)+'<small>~'+dpHM(x.t+x.dur)+'</small>')+'</td>'
-    +'<td><i class="dp-dot" style="background:'+x.col+'"></i><b class="tt">'+(x.imp?'<span class="dp-imp">●</span>':'')+esc(x.title)+'</b>'+(x.tag?'<span class="dp-tag" style="color:'+x.col+';border-color:'+vpRgba(x.col,.45)+'">'+esc(x.tag)+'</span>':'')
-    +(dpOpt.det&&x.detail?'<div class="dt">'+esc(x.detail)+'</div>':'')+'</td></tr>';};
+  L.forEach(function(x){var n=x.cl.lanes.length,e=x.t+Math.max(x.dur,20),sp=1;
+    for(var j=x.lane+1;j<n;j++){if(x.cl.items.some(function(o){return o!==x&&o.lane===j&&o.t<e&&(o.t+Math.max(o.dur,20))>x.t;}))break;sp++;}x.sp=sp;x.n=n;});
+  return cl.reduce(function(m,c){return Math.max(m,c.lanes.length);},0);
+}
+function dpBlk(x,h0,RH,band){
+  var top=(x.t/60-h0)*RH,hh=Math.max(4.4,x.dur/60*RH);
+  var pos=band?'left:0;right:0':'left:calc('+(x.lane/x.n*100).toFixed(3)+'% + 1px);width:calc('+(100*x.sp/x.n).toFixed(3)+'% - 2px)';
+  var showDt=dpOpt.det&&x.detail&&hh>=9;
+  return '<div class="dp-blk'+(band?' band':'')+(x.done?' done':'')+'" style="top:'+top.toFixed(2)+'mm;height:'+hh.toFixed(2)+'mm;'+pos+';border-left-color:'+x.col+';background:'+vpRgba(x.col,band?.10:.15)+'"'+(x.id?' onclick="dpEdit('+x.id+')" title="'+escA(dpHM(x.t)+'~'+dpHM(x.t+x.dur)+' '+x.title+(x.detail?'\n'+x.detail:''))+'"':'')+'>'
+    +'<b>'+dpHM(x.t)+'</b>'+(x.imp?'<span class="dp-imp">●</span>':' ')+(x.tag?'<span class="dp-tg" style="color:'+x.col+'">'+esc(x.tag)+'</span> ':'')+esc(x.title)
+    +(showDt?'<span class="dt">'+esc(x.detail)+'</span>':'')+'</div>';
+}
+function dpSheetHTML(){
+  var d=dpDate,dt=new Date(d+'T00:00:00'),wd=['일','월','화','수','목','금','토'][dt.getDay()];
+  var L=dpItems(d),RT=dpRoutines(d),showRt=RT.length>0,timed=L.filter(function(x){return x.t!=null;}),allday=L.filter(function(x){return x.t==null;});
+  var h0=7,h1=22;timed.concat(RT).forEach(function(x){h0=Math.min(h0,Math.floor(x.t/60));h1=Math.max(h1,Math.min(24,Math.ceil((x.t+x.dur)/60)));});
+  var NH=h1-h0,avail=dpOpt.land?(allday.length?138:150):(allday.length?222:234),RH=Math.max(6,Math.min(dpOpt.land?11:15,avail/NH)),GH=NH*RH;
+  var by={};DP_COLS.forEach(function(c){by[c[0]]=timed.filter(function(x){return x.c===c[0];});});
+  var band=timed.filter(function(x){return x.c==='band';});
+  var lanes={};DP_COLS.forEach(function(c){lanes[c[0]]=dpLanes(by[c[0]]);});
+  var base={chair:1,vp:1.15,cm:1.6,sec:.9,me:1.25};
+  var w={};DP_COLS.forEach(function(c){var k=c[0];w[k]=Math.max(base[k],Math.min(k==='cm'?4:2.2,.62*lanes[k]));});
+  var tot=0;DP_COLS.forEach(function(c){tot+=w[c[0]];});
+  var pct={};DP_COLS.forEach(function(c){pct[c[0]]=w[c[0]]/tot*100;});
+  var cnPct=pct.chair+pct.vp+pct.cm+pct.sec;
+  var head='<div class="dp-ch"><div class="dp-tax"></div>'+(showRt?'<div class="dp-rtc h">루틴</div>':'')+'<div class="dp-cols">'
+    +DP_COLS.map(function(c){var n=L.filter(function(x){return x.c===c[0];}).length;return '<div class="dp-cht" style="width:'+pct[c[0]].toFixed(3)+'%;border-top-color:'+c[2]+';color:'+c[2]+'">'+c[1]+(n?' <small>'+n+'</small>':'')+'</div>';}).join('')+'</div></div>';
+  var ad='';
+  if(allday.length){
+    ad='<div class="dp-ad"><div class="dp-tax"><span>종일</span></div>'+(showRt?'<div class="dp-rtc"></div>':'')+'<div class="dp-cols">'
+      +(allday.some(function(x){return x.c==='band';})?'<div class="dp-adc" style="width:'+cnPct.toFixed(3)+'%">'+allday.filter(function(x){return x.c==='band';}).map(function(x){return '<span class="dp-chip" style="border-color:'+x.col+'" onclick="dpEdit('+x.id+')">'+esc(x.title)+'</span>';}).join('')+'</div>':'')
+      +DP_COLS.map(function(c){var A=allday.filter(function(x){return x.c===c[0];});
+        if(allday.some(function(x){return x.c==='band';})&&c[0]!=='me')return '';
+        return '<div class="dp-adc" style="width:'+pct[c[0]].toFixed(3)+'%">'+A.map(function(x){return '<span class="dp-chip'+(x.done?' done':'')+'" style="border-color:'+x.col+'" onclick="dpEdit('+x.id+')">'+(x.tag?'<b style="color:'+x.col+'">'+esc(x.tag)+'</b> ':'')+esc(x.title)+'</span>';}).join('')+'</div>';}).join('')
+      +'</div></div>';
+  }
+  var hr='';for(var h=h0;h<=h1;h++)hr+='<div class="dp-hr" style="top:'+((h-h0)*RH).toFixed(2)+'mm"><span>'+String(h).padStart(2,'0')+'</span></div>';
+  var rt=showRt?'<div class="dp-rtc">'+RT.map(function(r){return '<div class="dp-rt" style="top:'+((r.t/60-h0)*RH).toFixed(2)+'mm" title="'+escA(dpHM(r.t)+' '+r.title)+'">'+dpHM(r.t)+' '+esc(r.title)+'</div>';}).join('')+'</div>':'';
+  var cols='<div class="dp-cols">'+(band.length?'<div class="dp-band" style="width:'+cnPct.toFixed(3)+'%">'+band.map(function(x){return dpBlk(x,h0,RH,true);}).join('')+'</div>':'')
+    +DP_COLS.map(function(c){return '<div class="dp-col" style="width:'+pct[c[0]].toFixed(3)+'%">'+by[c[0]].map(function(x){return dpBlk(x,h0,RH,false);}).join('')+'</div>';}).join('')+'</div>';
+  var now='';if(d===today()){var nm=new Date().getHours()*60+new Date().getMinutes();if(nm>=h0*60&&nm<=h1*60)now='<div class="dp-now no-print" style="top:'+((nm/60-h0)*RH).toFixed(2)+'mm"></div>';}
   var ses=[];try{ses=sessionsOn(d).map(function(z){return z.name||'회기';});}catch(e){}
   var hol=(typeof HOLIDAYS!=='undefined'&&HOLIDAYS[d])||'',lun='';try{lun=lunarOf(d);}catch(e){}
-  var nMe=L.filter(function(x){return x.k==='me';}).length,nCn=L.filter(function(x){return x.k==='cn';}).length,nRt=L.filter(function(x){return x.k==='rt';}).length;
-  return '<div class="dp-sheet'+(dpOpt.land?' land':'')+'">'
+  var nCn=L.filter(function(x){return x.c!=='me';}).length,nMe=L.length-nCn;
+  return '<div class="dp-sheet v2'+(dpOpt.land?' land':'')+'">'
     +'<div class="dp-hd"><div><div class="dp-y">'+dt.getFullYear()+'</div><h1>'+(dt.getMonth()+1)+'월 '+dt.getDate()+'일 <span class="'+(dt.getDay()===0||hol?'sun':dt.getDay()===6?'sat':'')+'">('+wd+')</span></h1>'
     +'<div class="sub">'+[lun?'음력 '+lun:'',hol,ses.join(' · ')].filter(Boolean).map(esc).join(' · ')+'</div></div>'
-    +'<div class="dp-cnt">'+[nMe?'일정 '+nMe:'',nCn?'의회 '+nCn:'',nRt?'루틴 '+nRt:''].filter(Boolean).join(' · ')+(L.length?'':'일정 없음')+'</div></div>'
-    +'<div class="dp-body"><div class="dp-grid" style="height:'+GH.toFixed(2)+'mm">'+grid+'</div>'
-    +'<div class="dp-list"><table class="dp-tb"><tbody>'+(L.length?L.map(row).join(''):'<tr><td colspan="2" class="dp-empty">이 날은 일정이 없습니다.</td></tr>')+'</tbody></table>'
-    +'<div class="dp-memo"><div class="dp-mh">메모</div>'+new Array(dpOpt.land?3:6).join('<div class="dp-ml"></div>')+'</div></div></div>'
+    +'<div class="dp-cnt">'+[nCn?'의회 '+nCn:'',nMe?'개인 '+nMe:'',RT.length?'루틴 '+RT.length:''].filter(Boolean).join(' · ')+(L.length?'':'일정 없음')+(band.length?'<div class="dp-bandlg">가로 띠 = 본회의</div>':'')+'</div></div>'
+    +head+ad
+    +'<div class="dp-gb" style="height:'+GH.toFixed(2)+'mm"><div class="dp-tax"></div>'+hr+(showRt?rt:'')+cols+now+'</div>'
     +'<div class="dp-foot">HMD · 하루 일정표 · 출력 '+esc(today())+'</div></div>';
 }
 function dpPaint(){
@@ -11093,7 +11211,7 @@ function dpPaint(){
     +'<span class="bx-rep-grp"><button class="lunar-toggle'+(dpOpt.land?'':' on')+'" onclick="dpLand(false)" title="A4 세로">세로</button><button class="lunar-toggle'+(dpOpt.land?' on':'')+'" onclick="dpLand(true)" title="A4 가로">가로</button></span>'
     +'<span class="bx-rep-grp"><button class="lunar-toggle" onclick="dpShift(-1)" title="전날">‹</button><input type="date" class="dp-date" value="'+dpDate+'" onchange="dpSetDate(this.value)"><button class="lunar-toggle" onclick="dpShift(1)" title="다음날">›</button>'
     +(dpDate!==today()?'<button class="lunar-toggle" onclick="dpSetDate(today())">오늘</button>':'')+'</span>'
-    +ck('cn','의회일정')+ck('rt','루틴')+ck('det','세부 내용')
+    +ck('rt','루틴')+ck('det','세부 내용')
     +'<button class="btn ghost" style="padding:5px 10px;font-size:12px" onclick="dpAdd()">＋ 일정</button>'
     +'<span class="bx-rep-tools"><button class="btn y" onclick="window.print()">🖨 인쇄 / PDF</button><span class="bkv-x" onclick="dpClose()" title="닫기 (Esc)">×</span></span></div>'
     +'<div class="bx-rep-body">'+dpSheetHTML()+'</div></div>';
@@ -11361,9 +11479,10 @@ function vsNowHM(){var t=new Date();return String(t.getHours()).padStart(2,'0')+
 var hmwkVisitOn=false;
 function hmWkVisitTgl(on){
   hmwkVisitOn=(on==null)?!hmwkVisitOn:!!on;
+  if(hmwkVisitOn&&typeof hmwkCjOn!=='undefined'&&hmwkCjOn)hmWkCjTgl(false);
   var card=document.getElementById('hmWorkEd');if(card)card.classList.toggle('vs-on',hmwkVisitOn);
   var b=document.getElementById('hmwkVisitBtn');if(b)b.classList.toggle('on',hmwkVisitOn);
-  var mb=document.getElementById('hmwkMapBtn');if(mb)mb.classList.toggle('on',!hmwkVisitOn&&hmwkMode==='map');
+  var mb=document.getElementById('hmwkMapBtn');if(mb)mb.classList.toggle('on',!hmwkVisitOn&&!(typeof hmwkCjOn!=='undefined'&&hmwkCjOn)&&hmwkMode==='map');
   if(hmwkVisitOn){hmVisitPaint();setTimeout(function(){var o=document.getElementById('hvOrg');if(o)o.focus();},30);}
 }
 function hmVisitWho(w){hvWho=w;try{localStorage.setItem('hmd_vsWho',w);}catch(e){}hmVisitPaint();}
@@ -11475,6 +11594,146 @@ function vsExportXlsx(){
   var sh=xlSheet(out,[12,6,7,11,30,50],{freeze:3,filter:'A3:F'+last});
   var blob=xlBook([{name:'방문기록',xml:sh,filterRef:'A3:F'+last}]);
   var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='방문기록_'+y+'_'+wl.replace(/\s/g,'')+'.xlsx';a.style.display='none';document.body.appendChild(a);a.click();
+  setTimeout(function(){a.remove();URL.revokeObjectURL(u);},4000);
+  hkChip('엑셀로 내려받았습니다 · '+rows.length+'건');setTimeout(function(){hkChip('');},1800);
+}
+/* ================= 의회일지: 날마다 의회에서 보고 파악한 것을 적는다 (날짜 · 구분 · 내용 · 중요) =================
+   대시보드 메모의 «의회일지»에서 바로 적고, Etc «의회일지»에서 날짜별로 모아 보고 고친다 · db.cnj */
+var CJ_KINDS=['본회의','상임위','특위','의장실','부의장실','사무처','집행부','동향','인물','기타'];
+var CJ_COL={'본회의':'#2f5d8a','상임위':'#3f7f6b','특위':'#7a4f8a','의장실':'#9a5b23','부의장실':'#2a78d6','사무처':'#5f6b73','집행부':'#b8473b','동향':'#9a6b12','인물':'#a63e78','기타':'#8a9490'};
+var cjYear=null,cjKind='',cjImpOnly=false,cjEditId=null,hjKinds=[],hjImp=false;
+function cjArr(){if(!Array.isArray(db.cnj))db.cnj=[];return db.cnj;}
+function cjChip(k){return '<span class="cj-k" style="color:'+(CJ_COL[k]||'#8a9490')+';border-color:'+(CJ_COL[k]||'#8a9490')+'">'+esc(k)+'</span>';}
+function cjSort(a,b){return String(b.date).localeCompare(String(a.date))||String(b.time||'').localeCompare(String(a.time||''))||b.id-a.id;}
+function cjNowHM(){var t=new Date();return String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');}
+/* 그날의 회기·의회 일정 — 일지 옆에 맥락으로 */
+function cjDayCtx(d){
+  var out=[];try{sessionsOn(d).forEach(function(z){out.push(z.name||'회기');});}catch(e){}
+  var n=(db.schedules||[]).filter(function(s){return s&&s.cn&&s.date===d;}).length;if(n)out.push('의회 일정 '+n+'건');
+  return out.join(' · ');
+}
+/* ---- 대시보드 메모 · 의회일지 칸 ---- */
+var hmwkCjOn=false;
+function hmWkPanelOff(){if(hmwkVisitOn)hmWkVisitTgl(false);if(hmwkCjOn)hmWkCjTgl(false);}
+function hmWkCjTgl(on){
+  hmwkCjOn=(on==null)?!hmwkCjOn:!!on;
+  if(hmwkCjOn&&hmwkVisitOn)hmWkVisitTgl(false);
+  var card=document.getElementById('hmWorkEd');if(card)card.classList.toggle('cj-on',hmwkCjOn);
+  var b=document.getElementById('hmwkCjBtn');if(b)b.classList.toggle('on',hmwkCjOn);
+  var mb=document.getElementById('hmwkMapBtn');if(mb)mb.classList.toggle('on',!hmwkCjOn&&!hmwkVisitOn&&hmwkMode==='map');
+  if(hmwkCjOn){hmCjPaint();setTimeout(function(){var t=document.getElementById('hjText');if(t)t.focus();},30);}
+}
+function hmCjKind(k){var i=hjKinds.indexOf(k);if(i>=0)hjKinds.splice(i,1);else hjKinds.push(k);hmCjPaint();}
+function hmCjImp(){hjImp=!hjImp;hmCjPaint();}
+function hmCjPaint(){
+  var box=document.getElementById('hmwkCj');if(!box)return;
+  var keep={};['hjDate','hjText'].forEach(function(id){var e=document.getElementById(id);if(e)keep[id]=e.value;});
+  var d=keep.hjDate||today();
+  var day=cjArr().filter(function(x){return x.date===d;}).sort(function(a,b){return String(a.time||'').localeCompare(String(b.time||''))||a.id-b.id;});
+  var ctx=cjDayCtx(d);
+  box.innerHTML='<div class="vs-dform cj-dform">'
+    +'<div class="cj-kinds">'+CJ_KINDS.map(function(k){var on=hjKinds.indexOf(k)>=0,c=CJ_COL[k];return '<button type="button" class="cj-kb'+(on?' on':'')+'" style="'+(on?'background:'+c+';border-color:'+c+';color:#fff':'color:'+c+';border-color:'+vpRgba(c,.5))+'" onclick="hmCjKind(\''+k+'\')">'+k+'</button>';}).join('')
+    +'<button type="button" class="cj-imp'+(hjImp?' on':'')+'" onclick="hmCjImp()" title="중요 표시">★ 중요</button></div>'
+    +'<div class="vs-drow"><input type="date" id="hjDate" class="in" value="'+d+'" onchange="hmCjPaint()">'+(ctx?'<span class="cj-ctx">'+esc(ctx)+'</span>':'')+'</div>'
+    +'<textarea id="hjText" class="in cj-text" placeholder="오늘 의회에서 보고 파악한 것 — 누가 무엇을, 분위기, 쟁점, 다음에 볼 것 (Ctrl+Enter 저장)" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key===\'Enter\'){event.preventDefault();hmCjSave();}"></textarea>'
+    +'<div class="vs-drow2"><button type="button" class="btn y" onclick="hmCjSave()">의회일지 저장</button><span class="vs-link" onclick="go(\'etc\');etcSecSet(\'cnj\')">Etc · 의회일지에서 보기 →</span></div></div>'
+    +(day.length?'<div class="vs-recent"><div class="vs-rh">'+esc(d===today()?'오늘':d.slice(5).replace('-','/'))+' 적은 것 '+day.length+'건</div>'+day.map(function(x){return '<div class="cj-rr">'+(x.imp?'<span class="cj-star">★</span>':'')+(x.time?'<span class="d">'+esc(x.time)+'</span>':'')+(x.kinds||[]).map(cjChip).join('')+'<span class="n">'+esc(x.text)+'</span></div>';}).join('')+'</div>':'');
+  if(keep.hjText){var t=document.getElementById('hjText');if(t)t.value=keep.hjText;}
+}
+function hmCjSave(){
+  var t=document.getElementById('hjText'),dEl=document.getElementById('hjDate');
+  var text=t?String(t.value).replace(/^\s+|\s+$/g,''):'';
+  if(!text){hkChip('내용을 적어 주세요');setTimeout(function(){hkChip('');},1400);if(t)t.focus();return;}
+  var d=(dEl&&dEl.value)||today();
+  cjArr().push({id:uid(),date:d,time:d===today()?cjNowHM():'',kinds:hjKinds.slice(),text:text,imp:hjImp});save();
+  if(t)t.value='';hjImp=false;
+  hmCjPaint();try{if(curView()==='etc')renderEtc();}catch(e){}
+  hkChip('의회일지에 적었습니다'+(hjKinds.length?' · '+hjKinds.join('·'):''));setTimeout(function(){hkChip('');},1500);
+  var t2=document.getElementById('hjText');if(t2)t2.focus();
+}
+/* ---- Etc · 의회일지 ---- */
+function cjYears(){var ys={};cjArr().forEach(function(r){ys[String(r.date).slice(0,4)]=1;});ys[String(today()).slice(0,4)]=1;return Object.keys(ys).sort();}
+function cjYearNow(){return cjYear||String(today()).slice(0,4);}
+function cjYearShift(d){var ys=cjYears(),y=cjYearNow(),i=ys.indexOf(y);cjYear=ys[i+d]||String(Number(y)+d);cjRender();}
+function cjSetKind(k){cjKind=k;cjRenderList();}
+function cjImpTgl(){cjImpOnly=!cjImpOnly;cjRenderList();}
+function cjRows(){
+  var y=cjYearNow(),q=String((document.getElementById('cjQ')||{}).value||'').trim().toLowerCase();
+  return cjArr().filter(function(r){return String(r.date).slice(0,4)===y&&(!cjKind||(r.kinds||[]).indexOf(cjKind)>=0)&&(!cjImpOnly||r.imp)&&(!q||String(r.text||'').toLowerCase().indexOf(q)>=0);}).sort(cjSort);
+}
+function cjRender(){
+  var yl=document.getElementById('cjYearLbl');if(yl)yl.textContent=cjYearNow()+'년';
+  var tt=document.getElementById('cjTitle');if(tt)tt.textContent=cjYearNow()+'년 의회일지';
+  cjRenderForm();cjRenderList();
+}
+var cjFormKinds=[],cjFormImp=false;
+function cjFormKind(k){var i=cjFormKinds.indexOf(k);if(i>=0)cjFormKinds.splice(i,1);else cjFormKinds.push(k);cjRenderForm(true);}
+function cjFormImpTgl(){cjFormImp=!cjFormImp;cjRenderForm(true);}
+function cjRenderForm(keep){
+  var el=document.getElementById('cjForm');if(!el)return;
+  var e=cjEditId!=null?cjArr().find(function(r){return r.id===cjEditId;}):null;
+  var kv={};if(keep)['cjDate','cjTime','cjText'].forEach(function(id){var x=document.getElementById(id);if(x)kv[id]=x.value;});
+  el.innerHTML='<div class="cj-form">'
+    +'<div class="cj-kinds">'+CJ_KINDS.map(function(k){var on=cjFormKinds.indexOf(k)>=0,c=CJ_COL[k];return '<button type="button" class="cj-kb'+(on?' on':'')+'" style="'+(on?'background:'+c+';border-color:'+c+';color:#fff':'color:'+c+';border-color:'+vpRgba(c,.5))+'" onclick="cjFormKind(\''+k+'\')">'+k+'</button>';}).join('')
+    +'<button type="button" class="cj-imp'+(cjFormImp?' on':'')+'" onclick="cjFormImpTgl()">★ 중요</button></div>'
+    +'<div class="cj-frow"><input type="date" id="cjDate" class="in" value="'+escA(e?e.date:today())+'" style="width:140px"><input id="cjTime" class="in" placeholder="시각" value="'+escA(e?(e.time||''):'')+'" style="width:76px" onblur="this.value=normTime(this.value)">'
+    +'<textarea id="cjText" class="in cj-text" placeholder="의회에서 보고 파악한 것 (Ctrl+Enter 저장)" onkeydown="if((event.ctrlKey||event.metaKey)&&event.key===\'Enter\'){event.preventDefault();cjSave();}">'+esc(e?e.text:'')+'</textarea>'
+    +(e?'<div class="cj-fbtn"><button class="btn ghost" onclick="cjEditCancel()">취소</button><button class="btn y" onclick="cjSave()">저장</button></div>':'<div class="cj-fbtn"><button class="btn y" onclick="cjSave()">추가</button></div>')
+    +'</div></div>'+(e?'<div class="bx-edit-hint">'+esc(e.date)+' 의회일지 수정 중</div>':'');
+  Object.keys(kv).forEach(function(id){var x=document.getElementById(id);if(x)x.value=kv[id];});
+}
+function cjSave(){
+  var g=function(i){var el=document.getElementById(i);return el?String(el.value):'';};
+  var text=g('cjText').replace(/^\s+|\s+$/g,''),date=g('cjDate').trim();
+  if(!date){alert('날짜를 넣어 주세요.');return;}
+  if(!text){alert('내용을 적어 주세요.');return;}
+  var r=cjEditId!=null?cjArr().find(function(x){return x.id===cjEditId;}):null;
+  if(!r){r={id:uid()};cjArr().push(r);}
+  r.date=date;r.time=normTime(g('cjTime').trim())||'';r.text=text;r.kinds=cjFormKinds.slice();r.imp=cjFormImp;
+  save();var was=cjEditId!=null;cjEditId=null;cjFormKinds=[];cjFormImp=false;cjYear=date.slice(0,4);cjRender();
+  hkChip(was?'수정했습니다':'의회일지에 적었습니다');setTimeout(function(){hkChip('');},1400);
+}
+function cjEdit(id){var r=cjArr().find(function(x){return x.id===id;});if(!r)return;cjEditId=id;cjFormKinds=(r.kinds||[]).slice();cjFormImp=!!r.imp;cjRenderForm();cjRenderList();
+  var f=document.getElementById('cjForm');if(f)f.scrollIntoView({behavior:'smooth',block:'center'});}
+function cjEditCancel(){cjEditId=null;cjFormKinds=[];cjFormImp=false;cjRenderForm();cjRenderList();}
+function cjDel(id){var r=cjArr().find(function(x){return x.id===id;});if(!r)return;
+  if(!confirm(r.date+' 의회일지 한 줄을 지울까요?\n\n'+String(r.text).slice(0,80)))return;
+  db.cnj=cjArr().filter(function(x){return x.id!==id;});save();cjRender();}
+function cjImpSet(id){var r=cjArr().find(function(x){return x.id===id;});if(!r)return;r.imp=!r.imp;save();cjRenderList();}
+function cjRenderList(){
+  var el=document.getElementById('cjList');if(!el)return;
+  var fb=document.getElementById('cjKindBtns');
+  if(fb)fb.innerHTML=[['','전체']].concat(CJ_KINDS.map(function(k){return [k,k];})).map(function(x){return '<button class="lunar-toggle'+(cjKind===x[0]?' on':'')+'" onclick="cjSetKind(\''+x[0]+'\')">'+x[1]+'</button>';}).join('')
+    +'<button class="lunar-toggle'+(cjImpOnly?' on':'')+'" onclick="cjImpTgl()" title="중요만">★</button>';
+  var rows=cjRows(),cnt=document.getElementById('cjCnt');
+  var days={},order=[];rows.forEach(function(r){if(!days[r.date]){days[r.date]=[];order.push(r.date);}days[r.date].push(r);});
+  if(cnt)cnt.textContent=rows.length?(order.length+'일 · '+rows.length+'건'):'';
+  if(!rows.length){el.innerHTML='<div class="empty">의회일지가 없습니다. 위 칸이나 대시보드 메모의 «의회일지»에서 적어 보세요.</div>';return;}
+  var lastM='';
+  el.innerHTML=order.map(function(d){
+    var m=d.slice(0,7),mh=(m!==lastM)?'<div class="cj-mon">'+esc(m.replace('-','년 ')+'월')+'</div>':'';lastM=m;
+    var L=days[d].slice().sort(function(a,b){return String(a.time||'99').localeCompare(String(b.time||'99'))||a.id-b.id;});
+    var ctx=cjDayCtx(d),dw=vsDow(d);
+    return mh+'<div class="cj-day"><div class="cj-dh"><b>'+(+d.slice(5,7))+'.'+(+d.slice(8,10))+'</b><span class="w">('+dw+')</span>'+(ctx?'<span class="c">'+esc(ctx)+'</span>':'')+'<span class="add" onclick="cjAddOn(\''+d+'\')" title="이 날에 더 적기">＋</span></div>'
+      +L.map(function(r){return '<div class="cj-it'+(cjEditId===r.id?' on':'')+(r.imp?' imp':'')+'" ondblclick="cjEdit('+r.id+')">'
+        +'<span class="cj-st" onclick="cjImpSet('+r.id+')" title="중요">'+(r.imp?'★':'☆')+'</span>'
+        +'<div class="cj-b">'+((r.kinds||[]).length||r.time?'<div class="cj-meta">'+(r.time?'<span class="t">'+esc(r.time)+'</span>':'')+(r.kinds||[]).map(cjChip).join('')+'</div>':'')
+        +'<div class="cj-tx">'+esc(r.text)+'</div></div>'
+        +'<span class="cj-act"><span class="pen-ic" onclick="cjEdit('+r.id+')" title="수정">✎</span><span class="del" onclick="cjDel('+r.id+')" title="지우기">×</span></span></div>';}).join('')
+      +'</div>';
+  }).join('');
+}
+function cjAddOn(d){cjEditId=null;cjFormKinds=[];cjFormImp=false;cjRenderForm();var x=document.getElementById('cjDate');if(x)x.value=d;var t=document.getElementById('cjText');if(t){t.scrollIntoView({behavior:'smooth',block:'center'});t.focus();}}
+function cjExportXlsx(){
+  var rows=cjRows().slice().reverse();
+  if(!rows.length){hkChip('내려받을 의회일지가 없습니다');setTimeout(function(){hkChip('');},1500);return;}
+  var y=cjYearNow();
+  var out=[{c:[{v:y+'년 의회일지'+(cjKind?' · '+cjKind:'')+(cjImpOnly?' · 중요':''),s:7}],ht:22},{c:[{v:'출력 '+today()+' · HMD',s:0}]},['날짜','요일','시각','구분','중요','내용'].map(function(h){return {v:h,s:1};})];
+  rows.forEach(function(r){var ser=xlDateSerial(r.date);
+    out.push([ser!=null?{v:ser,t:'d',s:2}:{v:r.date||'',s:6},{v:vsDow(r.date),s:6},{v:r.time||'',s:6},{v:(r.kinds||[]).join(', '),s:6},{v:r.imp?'★':'',s:6},{v:r.text||''}]);});
+  var last=out.length,sh=xlSheet(out,[12,6,7,16,6,90],{freeze:3,filter:'A3:F'+last});
+  var blob=xlBook([{name:'의회일지',xml:sh,filterRef:'A3:F'+last}]);
+  var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='의회일지_'+y+'.xlsx';a.style.display='none';document.body.appendChild(a);a.click();
   setTimeout(function(){a.remove();URL.revokeObjectURL(u);},4000);
   hkChip('엑셀로 내려받았습니다 · '+rows.length+'건');setTimeout(function(){hkChip('');},1800);
 }
