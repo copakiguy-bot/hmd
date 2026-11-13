@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-11 · r235">
+<meta name="hmd-build" content="2026-11-12 · r236">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -4534,7 +4534,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-11 · r235';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-12 · r236';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -20614,6 +20614,27 @@ function memoFromUrl(){
   try{history.replaceState(null,'',location.pathname);}catch(e){}
   return true;
 }
+/* ---------- 주소 뒤 #go=… 로 화면 바로 열기 (엣지 «HMD 바로가기» 확장에서 씀) ----------
+   #go=vp 부의장실 일정표 · memo 메모 · read 독서 · chrono 연대기 · day 하루 일정 · home 대시보드 */
+function qmFromUrl(){
+  var m=/^#go=([a-z]+)/i.exec(location.hash||'');if(!m)return false;
+  var k=m[1].toLowerCase();
+  try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
+  setTimeout(function(){
+    try{
+      ['vpClose','dpClose','rbClose','hmWkPopClose','chFormClose','qmClose'].forEach(function(f){if(typeof window[f]==='function'&&f!=={vp:'vpClose',day:'dpClose',read:'rbClose',memo:'hmWkPopClose',chrono:'chFormClose'}[k])try{window[f]();}catch(e){}});
+      if(k==='home'){dashFabGo();return;}
+      if(k==='day'){dpOpen(today());return;}
+      if(k==='memo'&&document.getElementById('hmWkPopOv'))return;
+      if(k==='read'&&typeof rbIsOpen==='function'&&rbIsOpen())return;
+      if(k==='vp'&&typeof vpIsOpen==='function'&&vpIsOpen())return;
+      qmGo(k);
+    }catch(e){try{console.error(e);}catch(_){}}
+  },250);
+  return true;
+}
+window.addEventListener('hashchange',qmFromUrl);
+setTimeout(qmFromUrl,450);
 window.addEventListener('hashchange',memoFromUrl);
 window.addEventListener('pageshow',memoFromUrl);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)memoFromUrl();});
