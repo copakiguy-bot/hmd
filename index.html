@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-17 · r237">
+<meta name="hmd-build" content="2026-11-17 · r238">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1231,7 +1231,15 @@
   .rb-vt{display:inline-flex;gap:4px;margin-left:8px;vertical-align:1px}
   .rb-vt .lunar-toggle{font-size:11.5px;padding:3px 9px}
   .rb-mindsec .wv-maptools{margin:2px 0 8px}
-  .rb-mind{min-height:180px;max-height:none;flex:none;overflow-x:auto;overflow-y:hidden;background:#fbfbf8}
+  .rb-mind{min-height:180px;max-height:none;flex:none;overflow:visible;background:#fbfbf8}
+  /* 작은 칸: 가지가 옆으로 길어지면 칸이 오른쪽으로 늘어난다 (넘치면 오른쪽 칸 전체가 가로로 스크롤) */
+  .rb-mindsec:not(.mx){width:max-content;min-width:100%;box-sizing:border-box}
+  .rb-mxbtn{margin-left:auto;font-size:11.5px;padding:3px 9px}
+  .rb-mindsec .rb-h{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+  /* 크게 보기 */
+  .rb-mxbd{position:fixed;inset:0;z-index:139;background:rgba(18,49,43,.45)}
+  .rb-mindsec.mx{position:fixed;inset:20px;z-index:140;display:flex;flex-direction:column;box-shadow:0 24px 70px rgba(0,0,0,.35);padding:14px 16px}
+  .rb-mindsec.mx .rb-mind{flex:1;min-height:0;overflow:auto}
   .rb-mk{font-size:11px;color:#9c6ade;flex:none}
   /* 방문기록 */
   .hmwk-visit{display:none}
@@ -4540,7 +4548,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-17 · r237';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-17 · r238';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -7551,7 +7559,9 @@ function renderMind(){
   var autoH=!compact&&!!(window.__mindCtx&&window.__mindCtx.autoH);        /* 칸 높이 = 마인드맵 높이 (대시보드 메모) */
   var leftA=!compact&&!!(window.__mindCtx&&window.__mindCtx.leftAlign);    /* 주제를 왼쪽에 붙인다 */
   var padX=compact?28:(leftA?26:100),padY=compact?22:(autoH?22:80), offX=padX-minX, offY=padY-minY;
-  var W=compact?((maxX-minX)+padX*2):Math.max(leftA?0:560,(maxX-minX)+padX*2), H=compact?((maxY-minY)+padY*2):Math.max(autoH?110:340,(maxY-minY)+padY*2);
+  var W=compact?((maxX-minX)+padX*2):Math.max(leftA?0:560,(maxX-minX)+padX*2+(leftA?140:0)),   /* 왼쪽 정렬: 오른쪽 끝 칸이 눌려 줄바꿈되지 않게 여유 */
+       H=compact?((maxY-minY)+padY*2):Math.max(autoH?110:340,(maxY-minY)+padY*2);
+  if(!compact&&window.__mindCtx&&window.__mindCtx.growX){var mc0=el.querySelector('.mind-canvas');if(mc0)mc0.style.width='0px';}   /* 오른쪽으로 늘어나는 칸: 줄었을 때도 다시 재기 */
   var cw=compact?0:(el.clientWidth||0), ch=(compact||autoH)?0:(el.clientHeight||0);
   if(cw>W){if(!leftA)offX+=(cw-W)/2;W=cw;}
   if(ch>H){offY+=(ch-H)/2;H=ch;}
@@ -12276,12 +12286,13 @@ function rbOpen(bid){
   ov.classList.add('on');document.body.classList.add('mind-lock');document.addEventListener('keydown',rbEsc);rbPaint();
 }
 function rbIsOpen(){var o=document.getElementById('rbOv');return !!(o&&o.classList.contains('on'));}
-function rbClose(){rbMindRelease();var o=document.getElementById('rbOv');if(o){o.classList.remove('on');o.innerHTML='';}
+function rbClose(){rbMindRelease();rbMindMx=false;var o=document.getElementById('rbOv');if(o){o.classList.remove('on');o.innerHTML='';}
   if(!(typeof hmwkMxOn!=='undefined'&&hmwkMxOn))document.body.classList.remove('mind-lock');document.removeEventListener('keydown',rbEsc);
   try{hmRdPaint();hmQuickPaint();}catch(e){}}
 function rbEsc(e){if(e.key!=='Escape')return;if(document.getElementById('tlqOv')||document.getElementById('bkEditOv'))return;
   var a=document.activeElement;if(a&&/^(INPUT|TEXTAREA)$/.test(a.tagName)&&a.closest('#rbOv')&&a.value&&a.id!=='rbDate'){a.blur();return;}
   if(a&&a.isContentEditable&&a.closest&&a.closest('#rbOv')){a.blur();return;}
+  if(rbMindMx){e.stopPropagation();rbMindMxTgl(false);return;}
   e.stopPropagation();rbClose();}
 function rbPick(id){rbBid=id;rbCh=null;rbPaint();}
 /* 지금 읽는 쪽이 들어 있는 목차 = 시작 쪽이 그 쪽 이하인 것 중 가장 뒤 (법령은 조 번호로) */
@@ -12319,7 +12330,9 @@ function rbPaint(clear){
 }
 /* ---- 목차마다 마인드맵 (b.chMind[목차] = {mind:[…]}) · 뿌리 = 목차 이름 · HMD 마인드맵 엔진 그대로 ---- */
 var rbView=(function(){try{return localStorage.getItem('hmd_rbView')==='mind'?'mind':'ex';}catch(e){return 'ex';}})();
-function rbViewSet(v){rbView=v==='mind'?'mind':'ex';try{localStorage.setItem('hmd_rbView',rbView);}catch(e){}rbPaint();}
+var rbMindMx=false;
+function rbMindMxTgl(on){rbMindMx=(on==null)?!rbMindMx:!!on;rbPaint();}
+function rbViewSet(v){rbView=v==='mind'?'mind':'ex';if(rbView!=='mind')rbMindMx=false;try{localStorage.setItem('hmd_rbView',rbView);}catch(e){}rbPaint();}
 function rbMindHas(b,ch){var o=b&&b.chMind&&b.chMind[ch];return !!(o&&o.mind&&(o.mind.length>1||(o.mind[0]&&o.mind[0].t!==ch)));}
 function rbMindMount(b,ch){
   if(!document.getElementById('rbMind'))return;
@@ -12331,7 +12344,7 @@ function rbMindMount(b,ch){
     if(b.chMind[ch]!==o){b.chMind[ch]=o;save();
       var sel=document.querySelector('#rbOv .rb-ch.sel');if(sel&&!sel.querySelector('.rb-mk')){var cn=sel.querySelector('.rb-cn');if(cn)cn.insertAdjacentHTML('afterend','<span class="rb-mk" title="마인드맵 있음">✦</span>');}
       var vb=document.querySelectorAll('#rbOv .rb-vt .lunar-toggle')[1];if(vb&&vb.textContent.indexOf('✦')<0)vb.textContent+=' ✦';}};
-  window.__mindCtx={obj:o,canvas:'rbMind',autoH:true,leftAlign:true,rb:{bid:b.id,ch:ch},onRender:attach,onSync:attach};
+  window.__mindCtx={obj:o,canvas:'rbMind',autoH:!rbMindMx,growX:!rbMindMx,leftAlign:true,rb:{bid:b.id,ch:ch},onRender:attach,onSync:attach};
   renderMind();
 }
 function rbMindRelease(){if(window.__mindCtx&&window.__mindCtx.canvas==='rbMind'){window.__mindCtx=(typeof hmwkMode!=='undefined'&&hmwkMode==='map'&&typeof hmWkCtx==='function')?hmWkCtx():null;}}
@@ -12382,7 +12395,8 @@ function rbDetHTML(b){
     +'</div></div>';
   var exs=(b.excerpts||[]).filter(function(e){return e.chapter===ch;}).sort(function(a,c){return (parseFloat(a.page)||0)-(parseFloat(c.page)||0)||String(a.date||'').localeCompare(String(c.date||''));});
   var vt='<span class="rb-vt"><button type="button" class="lunar-toggle'+(rbView!=='mind'?' on':'')+'" onclick="rbViewSet(\'ex\')">발췌'+(exs.length?' '+exs.length:'')+'</button><button type="button" class="lunar-toggle'+(rbView==='mind'?' on':'')+'" onclick="rbViewSet(\'mind\')" title="이 목차의 마인드맵">마인드맵'+(rbMindHas(b,ch)?' ✦':'')+'</button></span>';
-  if(rbView==='mind')return head+rec+tocH+'<div class="rb-sec rb-ex rb-mindsec"><div class="rb-h">'+esc(ch)+' '+vt+'</div>'
+  if(rbView==='mind')return head+rec+tocH+(rbMindMx?'<div class="rb-mxbd" onclick="rbMindMxTgl(false)"></div>':'')+'<div class="rb-sec rb-ex rb-mindsec'+(rbMindMx?' mx':'')+'"><div class="rb-h">'+esc(ch)+' '+vt
+    +'<button type="button" class="lunar-toggle rb-mxbtn" onclick="rbMindMxTgl()" title="'+(rbMindMx?'원래 크기로 (Esc)':'마인드맵 크게 보기')+'">'+(rbMindMx?'⤡ 원래 크기':'⤢ 크게 보기')+'</button></div>'
     +'<div class="wv-maptools"><button type="button" class="btn y" style="padding:4px 11px;font-size:12px" onclick="rbMindAdd()">＋ 생각 추가</button>'
     +(exs.length?'<button type="button" class="lunar-toggle" style="font-size:11.5px" onclick="rbMindFromEx()" title="이 목차의 발췌를 가지로 붙이기 (이미 붙은 건 건너뜀)">발췌를 가지로</button>':'')
     +'<span class="wv-xlhint"><b>Tab</b>=하위 · <b>Enter</b>=대등 · 칸을 끌어 이동</span></div>'
