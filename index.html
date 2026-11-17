@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-17 · r239">
+<meta name="hmd-build" content="2026-11-17 · r240">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2219,7 +2219,8 @@
   .mnode .mtog{cursor:pointer;font-size:9px;min-width:15px;height:15px;line-height:13px;text-align:center;border:1.4px solid currentColor;border-radius:50%;background:#fff;font-weight:800;flex-shrink:0;margin-bottom:2px;user-select:none;padding:0 2px}
   .mnode .mtog.col{background:var(--cream)}
   .mnode.root{background:var(--rootbg,#12312b);border:1.5px solid var(--rootbg,#12312b);border-radius:12px;padding:7px 14px;box-shadow:0 6px 16px rgba(18,49,43,.16);align-items:center}
-  .mnode.root .mtext{border-bottom:none;font-weight:800;font-size:15.5px;color:#fff;padding:0}
+  .mnode.root .mtext{border-bottom:none;font-weight:800;font-size:15.5px;color:#fff;padding:0;white-space:pre;line-height:23px}
+  .mnode.root{max-width:none}
   .mnode.root .mtog{border-color:#fff;color:var(--rootbg,#12312b)}
   .mnode.root .mmk{color:#fff}
   .mnode .mtext{outline:none;min-width:14px;cursor:text;font-weight:600;line-height:1.5;white-space:pre-wrap;word-break:break-word;padding:0 0 0;border-bottom:calc(1.25px * var(--lw,1)) solid currentColor}
@@ -4601,7 +4602,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-17 · r239';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-17 · r240';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -7454,12 +7455,18 @@ function mindKey(e,id){
   if(mod&&(e.key==='b'||e.key==='B')){e.preventDefault();mindBarId=id;mindNodeAct('b');return;}
   if(e.key==='Backspace'&&!String(e.target.innerText).replace(/\n/g,'')){var x2=curIdeaObj(),n2=x2&&mindNodeById(x2,id);
     if(n2&&!mindIsRoot(n2)&&!mindChildrenAll(x2,id).length){e.preventDefault();var pid=n2.p;mindBarHide();mindDel(id);mindRefocus(pid);return;}}
+  if(e.key==='Enter'&&!e.shiftKey&&!mod){var xr=curIdeaObj(),nr=xr&&mindNodeById(xr,id);if(nr&&mindIsRoot(nr)){e.preventDefault();document.execCommand('insertLineBreak');return;}}   /* 중심 주제: Enter = 줄바꿈 */
   if(e.key==='Tab'){e.preventDefault();e.target.blur();mindAddFocus(id);}else if(e.key==='Enter'){if(e.shiftKey){e.preventDefault();document.execCommand('insertLineBreak');}else{e.preventDefault();e.target.blur();mindAddSiblingFocus(id);}}}
 function mindDepth(x,n){var d=0,c=n;while(c&&c.p){var pn=x.mind.find(function(a){return a.id===c.p;});if(!pn)break;d++;c=pn;}return d;}
 var MB=["#2f6f5e","#c99a2e","#d0574f","#4a76c4","#9c6ade","#3a9e93","#e07b39","#5aa469","#b8477e","#3aa0c9","#7a6cd6","#c25e8a"];
 var MBG=["#dbeee6","#fbe6b8","#f7d3d1","#dde7f8","#ece0fb","#d6f0ec","#fce3d1","#dff0e2","#f9d9e7","#d5eef7","#e6e1fb","#f7dde8"];
 function mindEdit(id,t){var x=curIdeaObj();if(!x)return;var n=x.mind.find(function(a){return a.id===id;});if(n){var nt=String(t).trim();if(nt===n.t)return;mindSnap(x);n.t=nt;save();
   if(mindIsRoot(n)&&window.__mindCtx&&window.__mindCtx.onRoot)window.__mindCtx.onRoot(n.t);
+  if(mindIsRoot(n)){var ctx0=window.__mindCtx;setTimeout(function(){   /* 주제 칸 크기가 바뀌면 가지 자리도 다시 잡는다 (누르던 칸으로 커서 복귀) */
+    if(mDrag||window.__mindCtx!==ctx0)return;var a=document.activeElement,fid=null;
+    if(a&&a.classList&&a.classList.contains('mtext')){var me=a.closest('.mnode');if(me&&mindRootEl().contains(me))fid=parseInt(me.getAttribute('data-id'),10);}
+    if(a&&a.classList&&a.classList.contains('mtext')&&fid==null)return;
+    mindHoldScroll=true;renderMind();mindHoldScroll=false;if(fid!=null)mindRefocus(fid);},0);}
   if(window.__mindCtx&&window.__mindCtx.onSync)window.__mindCtx.onSync(x);}}
 function mindDel(id){var x=curIdeaObj();if(!x)return;var tn=mindNodeById(x,id);if(!tn)return;
   if(mindIsRoot(tn)&&mindRootsOf(x).length<=1)return;mindSnap(x);var rm=[id],ch=true;while(ch){ch=false;x.mind.forEach(function(n){if(rm.indexOf(n.p)>=0&&rm.indexOf(n.id)<0){rm.push(n.id);ch=true;}});}x.mind=x.mind.filter(function(n){return rm.indexOf(n.id)<0;});save();renderMind();}
@@ -7473,10 +7480,19 @@ function mindLines2(n){var t=String((n&&n.t)||"");var br=t.split("\n").length;va
 function mindChildrenAll(x,id){return x.mind.filter(function(n){return n.p===id;});}
 function mindDescCount(x,id){var c=0;mindChildrenAll(x,id).forEach(function(ch){c+=1+mindDescCount(x,ch.id);});return c;}
 function setMindShape(v){var x=curIdeaObj();if(!x)return;x.mindShape=v;save();renderMind();}
-function mindFullW(x,n){var root=(!n.p||n.p===0);var w=mindEstW(n)+(root?28:0)+(n.mk?19:0);
+/* 중심 주제: 자동 줄바꿈 없이 글자 길이만큼 칸이 넓어진다 (줄바꿈은 Enter로 직접) — 실제 글자 폭을 잰다 */
+var __mindMeasure=null;
+function mindRootTextW(x,n){
+  var lines=String((n&&n.t)||'').split('\n'),fam=mindFontOf(x);
+  try{if(!__mindMeasure)__mindMeasure=document.createElement('canvas').getContext('2d');
+    __mindMeasure.font='800 15.5px '+(fam?'"'+fam+'",':'')+'"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+    var w=0;lines.forEach(function(l){w=Math.max(w,__mindMeasure.measureText(l).width);});return Math.max(24,Math.ceil(w)+6);
+  }catch(e){var m=0;lines.forEach(function(l){var c=0;for(var i=0;i<l.length;i++)c+=l.charCodeAt(i)>255?16:9;m=Math.max(m,c);});return Math.max(24,m+6);}
+}
+function mindFullW(x,n){var root=(!n.p||n.p===0);var w=(root?mindRootTextW(x,n):mindEstW(n))+(root?28:0)+(n.mk?19:0);
   if(!root&&mindBoxy(x))w+=mindShape(x)==='pill'?26:22;
   if(mindChildrenAll(x,n.id).length>0&&!n.collapsed)w+=18;return w;}
-function mindNodeH(x,n){var h=mindLines2(n)*20+4;if(!mindIsRoot(n)&&mindBoxy(x))h+=10;return h;}
+function mindNodeH(x,n){if(mindIsRoot(n))return String((n&&n.t)||'').split('\n').length*23+14;var h=mindLines2(n)*20+4;if(mindBoxy(x))h+=10;return h;}
 function mindTop(q){return q.ax==='v'?q.y-q.h/2:(q.depth===0?q.y-q.h/2:q.y-q.h);}
 function mindBot(q){return q.ax==='v'?q.y+q.h/2:(q.depth===0?q.y+q.h/2:q.y);}
 var MIND_MODES=[['LR','좌우 방사형'],['R','우형'],['L','좌형'],['UD','상하 방사형'],['D','하형'],['U','상형']];
