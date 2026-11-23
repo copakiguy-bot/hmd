@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-23 · r241">
+<meta name="hmd-build" content="2026-11-23 · r242">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1245,6 +1245,23 @@
   .tl-rtdiv{position:absolute;left:0;right:0;height:0;border-top:1px dashed rgba(18,49,43,.22);pointer-events:none;z-index:0}
   .tl-rtdiv span{position:absolute;left:6px;top:-8px;font-size:9.5px;font-weight:800;color:#8a9490;background:#fbfaf7;padding:0 5px;border-radius:4px;letter-spacing:.05em}
   /* Study · Words 날짜별 복습 */
+  .wd-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+  @media(max-width:900px){.wd-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  .wd-tile{border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px 10px 8px;cursor:pointer;text-align:center;position:relative;transition:box-shadow .12s,border-color .12s}
+  .wd-tile:hover{border-color:#e0c77a;box-shadow:0 4px 12px rgba(18,49,43,.08)}
+  .wd-tile.open{border-color:#2f6f5e;box-shadow:0 0 0 1px #2f6f5e}
+  .wd-td{font-size:14px;font-weight:800;color:var(--dark);font-variant-numeric:tabular-nums}
+  .wd-ts{font-size:10.5px;font-weight:700;color:#8a9490;margin-top:3px}
+  .wd-tile.l1{background:#fffaf0}.wd-tile.l1 .wd-ts{color:#8a6510}
+  .wd-tile.l2{background:#f3faf6}.wd-tile.l2 .wd-ts{color:#2f6f5e}
+  .wd-tile.l3{background:#2f6f5e;border-color:#2f6f5e}.wd-tile.l3 .wd-td{color:#fff}.wd-tile.l3 .wd-ts{color:#d9efe5}
+  .wd-tb{display:flex;justify-content:center;gap:3px;margin-top:6px;opacity:0;transition:opacity .12s}
+  .wd-tile:hover .wd-tb,.wd-tile.open .wd-tb{opacity:1}
+  .wd-tb button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 6px;font-size:10.5px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--dark)}
+  .wd-tb .wd-plus{border-color:#2f6f5e;color:#2f6f5e}
+  .wd-body{margin-top:10px;border:1px solid var(--line);border-radius:12px;padding:8px 12px 10px;background:#fcfbf8}
+  .wd-bh{font-size:12.5px;font-weight:800;color:var(--dark);display:flex;margin-bottom:4px}.wd-bx{margin-left:auto;font-size:11.5px;color:var(--muted);cursor:pointer;font-weight:700}
+
   .wd-list{display:flex;flex-direction:column;gap:7px}
   .wd-day{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
   .wd-row{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer}
@@ -4622,7 +4639,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-23 · r241';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-23 · r242';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -16384,7 +16401,7 @@ function wordDueum(a,b){
 /* 확대 화면에서 넘겨볼 목록 (같은 탭, 화면과 같은 순서) */
 var wordSeq=[],wordIdx=-1,wordRevDate=null;
 /* ===== Study · Words: 날짜(한글 단어들) 한 줄 → 누르면 그날 단어만 복습 · 복습 횟수 기록 ===== */
-var wdOpen={};
+var wdOpen=null;
 function wdKo(x){var t=String(x.term||'').replace(/\([^)]*\)/g,'').trim(),ko=t.replace(/[^가-힣\s]/g,'').trim();return ko||t;}
 function wdRevArr(){if(!db.wordRev||typeof db.wordRev!=='object')db.wordRev={};return db.wordRev;}
 function wdRev(d){var r=wdRevArr()[d];return r&&typeof r==='object'?r:{n:0};}
@@ -16398,26 +16415,25 @@ function wdRevAdd(d,k){
   save();if(typeof renderStudy==='function'&&curView&&/study/.test(curView()))renderStudy();
   hkChip(k>0?(d+' 단어 복습 '+r.n+'회째 ✓'):('복습 횟수를 하나 뺐습니다 · '+(r.n||0)+'회'));setTimeout(function(){hkChip('');},1500);
 }
-function wdToggle(d){wdOpen[d]=!wdOpen[d];renderStudy();}
+function wdToggle(d){wdOpen=wdOpen===d?null:d;renderStudy();}
 function wdDaysHTML(g){
   var days=Object.keys(g);if(!days.length)return '';
-  return '<div class="wd-list">'+days.map(function(d){
-    var L=g[d].slice().sort(function(a,b){return a.id-b.id;}),r=wdRev(d),n=r.n||0,op=!!wdOpen[d];
-    var lv=n>=5?'l3':n>=3?'l2':n>=1?'l1':'';
-    return '<div class="wd-day'+(op?' open':'')+'">'
-      +'<div class="wd-row" onclick="wdReview(\''+d+'\')" title="누르면 이 날 단어 복습">'
-      +'<span class="wd-d">'+esc(d)+'</span>'
-      +'<span class="wd-w">('+L.map(function(x){return esc(wdKo(x));}).join(', ')+')</span>'
-      +'<span class="wd-n">'+L.length+'개</span>'
-      +'<span class="wd-cnt '+lv+'" title="'+(r.last?'마지막 복습 '+esc(r.last):'아직 복습 안 함')+'">'+(n?'복습 '+n+'회':'복습 전')+(r.last?'<small>'+esc(r.last.slice(5).replace('-','/'))+'</small>':'')+'</span>'
-      +'<span class="wd-btns" onclick="event.stopPropagation()">'
-        +'<button type="button" class="wd-plus" onclick="wdRevAdd(\''+d+'\',1)" title="복습 1회 체크">✓ +1</button>'
-        +(n?'<button type="button" class="wd-minus" onclick="wdRevAdd(\''+d+'\',-1)" title="잘못 눌렀으면 하나 빼기">−</button>':'')
-        +'<button type="button" class="wd-tg" onclick="wdToggle(\''+d+'\')" title="단어 보기 · 고치기">'+(op?'▴':'▾')+'</button></span>'
-      +'</div>'
-      +(op?'<div class="wd-body">'+L.map(memRow).join('')+'</div>':'')
+  if(typeof wdOpen!=='string')wdOpen=null;
+  var tiles=days.map(function(d){
+    var r=wdRev(d),n=r.n||0,lv=n>=5?'l3':n>=3?'l2':n>=1?'l1':'';
+    return '<div class="wd-tile '+lv+(wdOpen===d?' open':'')+'" onclick="wdReview(\''+d+'\')" title="'+escA(g[d].map(wdKo).join(', '))+' — 누르면 복습">'
+      +'<div class="wd-td">'+esc(d)+'</div>'
+      +'<div class="wd-ts">'+(n?'복습 '+n+'회':'복습 전')+'</div>'
+      +'<div class="wd-tb" onclick="event.stopPropagation()">'
+        +'<button type="button" class="wd-plus" onclick="wdRevAdd(\''+d+'\',1)" title="복습 1회 체크">✓+1</button>'
+        +(n?'<button type="button" onclick="wdRevAdd(\''+d+'\',-1)" title="하나 빼기">−</button>':'')
+        +'<button type="button" onclick="wdToggle(\''+d+'\')" title="단어 보기 · 고치기">'+(wdOpen===d?'▴':'▾')+'</button></div>'
       +'</div>';
-  }).join('')+'</div>';
+  }).join('');
+  var body='';
+  if(wdOpen&&g[wdOpen]){var L=g[wdOpen].slice().sort(function(a,b){return a.id-b.id;});
+    body='<div class="wd-body"><div class="wd-bh">'+esc(wdOpen)+' 단어 '+L.length+'개<span class="wd-bx" onclick="wdToggle(\''+wdOpen+'\')">닫기</span></div>'+L.map(memRow).join('')+'</div>';}
+  return '<div class="wd-grid">'+tiles+'</div>'+body;
 }
 function wordListFor(x){
   var tab=x.tab;
