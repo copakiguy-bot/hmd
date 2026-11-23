@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-17 · r240">
+<meta name="hmd-build" content="2026-11-23 · r241">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1241,6 +1241,26 @@
   .rb-mindsec.mx{position:fixed;inset:20px;z-index:140;display:flex;flex-direction:column;box-shadow:0 24px 70px rgba(0,0,0,.35);padding:14px 16px}
   .rb-mindsec.mx .rb-mind{flex:1;min-height:0;overflow:auto}
   .rb-mk{font-size:11px;color:#9c6ade;flex:none}
+  /* 타임라인: 위 스케줄 · 아래 루틴 구분선 */
+  .tl-rtdiv{position:absolute;left:0;right:0;height:0;border-top:1px dashed rgba(18,49,43,.22);pointer-events:none;z-index:0}
+  .tl-rtdiv span{position:absolute;left:6px;top:-8px;font-size:9.5px;font-weight:800;color:#8a9490;background:#fbfaf7;padding:0 5px;border-radius:4px;letter-spacing:.05em}
+  /* Study · Words 날짜별 복습 */
+  .wd-list{display:flex;flex-direction:column;gap:7px}
+  .wd-day{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+  .wd-row{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer}
+  .wd-row:hover{background:#fbf8ee}
+  .wd-d{font-weight:800;color:var(--dark);font-variant-numeric:tabular-nums;flex:none;font-size:13.5px}
+  .wd-w{flex:1;min-width:0;font-size:14px;color:#33413c;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .wd-n{flex:none;font-size:11px;color:var(--muted)}
+  .wd-cnt{flex:none;font-size:11.5px;font-weight:800;border-radius:999px;padding:3px 10px;background:#f1efe9;color:#8a9490;display:inline-flex;gap:5px;align-items:baseline}
+  .wd-cnt small{font-weight:600;font-size:10px;opacity:.8}
+  .wd-cnt.l1{background:#fbe6b8;color:#8a6510}.wd-cnt.l2{background:#dbeee6;color:#2f6f5e}.wd-cnt.l3{background:#2f6f5e;color:#fff}
+  .wd-btns{display:inline-flex;gap:4px;flex:none}
+  .wd-btns button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;color:var(--dark)}
+  .wd-btns .wd-plus{border-color:#2f6f5e;color:#2f6f5e}.wd-btns .wd-plus:hover{background:#2f6f5e;color:#fff}
+  .wd-btns .wd-minus{color:var(--muted)}
+  .wd-body{border-top:1px solid #f1efe9;padding:6px 12px 10px;background:#fcfbf8}
+  #wordNextBtn.wd-done{background:#2f6f5e;color:#fff;border-color:#2f6f5e}
   /* 방문기록 */
   .hmwk-visit{display:none}
   .hm-wk.vs-on #hmwkBox,.hm-wk.vs-on #hmwkMapWrap,.hm-wk.vs-on .hmwk-trow,.hm-wk.vs-on .hmwk-save,.hm-wk.vs-on .hmwk-st{display:none!important}
@@ -4602,7 +4622,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-17 · r240';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-23 · r241';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4892,6 +4912,7 @@ function ensureFields(){
     if(!Array.isArray(db.amgi))db.amgi=[];
     if(!Array.isArray(db.visits))db.visits=[];
     if(!Array.isArray(db.cnj))db.cnj=[];
+    if(!db.wordRev||typeof db.wordRev!=='object')db.wordRev={};
     if(!db.council||typeof db.council!=='object')db.council={sessions:[],active:null};
     if(!Array.isArray(db.council.sessions))db.council.sessions=[];
     db.council.sessions=db.council.sessions.filter(function(s){return s&&typeof s==='object';});
@@ -5646,8 +5667,10 @@ function renderTimeline(){
     if(mn==null||mn<TL_START*60||mn>TL_END*60)untimed.push(e);else evs.push(e);
   });
   evs.sort(function(a,b){return a.mn-b.mn;});
-  var lanes=[],html='',maxRight=0;
-  evs.forEach(function(e){
+  /* 위 = 스케줄, 아래 = 루틴 (각자 겹치면 아랫줄로) */
+  var html='',maxRight=0,lanes=[],base=8;
+  var evS=evs.filter(function(e){return e.k!=='r';}),evR=evs.filter(function(e){return e.k==='r';});
+  var drawEv=function(e){
     var left=(e.mn-TL_START*60)/60*TL_HW;
     var lbl=((e.ok||e.done)?'✓ ':'')+e.title;
     var needW=Math.ceil(tlTextW(lbl))+17+(e.nf?(e.nf>1?26:18):0)+(e.imp?12:0);
@@ -5655,18 +5678,25 @@ function renderTimeline(){
     e.two=two;
     var occ=Math.max(bw,84);                                        /* 시간표기 폭까지 감안 */
     var li=0;while(li<lanes.length&&lanes[li]>left-4)li++;
-    lanes[li]=left+occ+10;
+    lanes[li]=left+occ+10;var topY=base+li*38;
     if(left+Math.max(bw,occ)>maxRight)maxRight=left+Math.max(bw,occ);
     var endMn=Math.min(e.mn+e.dur,24*60-1);
     var range=tlFmt(e.mn)+'~'+tlFmt(endMn);
     var det=tlPlain(e.detail);
     var tip=det||(e.title+' ('+range+')');       /* 마우스를 올리면 세부정보 */
     html+='<div class="tl-ev'+(e.k==='r'?' rt':'')+(e.done?' done':'')+(e.ok?' ok':'')+(e.cn?' cn':'')+(e.hl?' hl':'')+(e.imp?' imp':'')+(e.two?' twol':'')+'" data-k="'+e.k+'" data-id="'+e.id+'"'
-      +' style="left:'+left+'px;top:'+(8+li*38)+'px;width:'+bw+'px'+(e.cn?';border-left:3px solid '+CN_MONO_BAR:'')+(e.hl?';background:'+e.hl:'')+'" title="'+escA(e.cn?(e.cnl+' · '+tip):tip)+'">'
+      +' style="left:'+left+'px;top:'+topY+'px;width:'+bw+'px'+(e.cn?';border-left:3px solid '+CN_MONO_BAR:'')+(e.hl?';background:'+e.hl:'')+'" title="'+escA(e.cn?(e.cnl+' · '+tip):tip)+'">'
       +'<b>'+esc(lbl)+'</b>'+(e.imp?'<span class="imp-dot" title="'+(e.k==='r'?'주요루틴':'주요일정')+'"></span>':'')+(e.nf?'<span class="ev-clip" title="붙은 문서 '+e.nf+'개">📎'+(e.nf>1?'<i>'+e.nf+'</i>':'')+'</span>':'')
       +'<span class="tl-time">'+range+'</span></div>';
-  });
-  var trackH=Math.max(110,8+Math.max(1,lanes.length)*38+18);
+  };
+  evS.forEach(drawEv);
+  var nS=lanes.length;
+  if(evR.length){
+    var divY=8+Math.max(1,nS)*38+4;
+    html+='<div class="tl-rtdiv" style="top:'+divY+'px"><span>루틴</span></div>';
+    lanes=[];base=divY+12;evR.forEach(drawEv);
+    var trackH=Math.max(110,base+Math.max(1,lanes.length)*38+14);
+  }else var trackH=Math.max(110,8+Math.max(1,nS)*38+18);
   /* 현재 시간 세로선 (오늘일 때만) */
   var nowLine='';
   if(selDate===today()){
@@ -16352,15 +16382,52 @@ function wordDueum(a,b){
   return (ia===5&&(ib===2||ib===11))||(ia===2&&ib===11);   /* ㄹ→ㄴ/ㅇ, ㄴ→ㅇ */
 }
 /* 확대 화면에서 넘겨볼 목록 (같은 탭, 화면과 같은 순서) */
-var wordSeq=[],wordIdx=-1;
+var wordSeq=[],wordIdx=-1,wordRevDate=null;
+/* ===== Study · Words: 날짜(한글 단어들) 한 줄 → 누르면 그날 단어만 복습 · 복습 횟수 기록 ===== */
+var wdOpen={};
+function wdKo(x){var t=String(x.term||'').replace(/\([^)]*\)/g,'').trim(),ko=t.replace(/[^가-힣\s]/g,'').trim();return ko||t;}
+function wdRevArr(){if(!db.wordRev||typeof db.wordRev!=='object')db.wordRev={};return db.wordRev;}
+function wdRev(d){var r=wdRevArr()[d];return r&&typeof r==='object'?r:{n:0};}
+function wdDayIds(d){return db.study.filter(function(s){return s.tab==='단어'&&s.date===d;}).sort(function(a,b){return a.id-b.id;}).map(function(s){return s.id;});}
+function wdReview(d){var ids=wdDayIds(d);if(!ids.length)return;zoomWord(ids[0],ids,d);}
+function wdRevAdd(d,k){
+  var R=wdRevArr(),r=R[d]&&typeof R[d]==='object'?R[d]:{n:0,log:[]};if(!Array.isArray(r.log))r.log=[];
+  if(k>0){r.n=(r.n||0)+1;r.last=today();r.log.push(today());}
+  else{if(!r.n)return;r.n--;r.log.pop();r.last=r.log.length?r.log[r.log.length-1]:'';}
+  if(r.n>0)R[d]=r;else delete R[d];
+  save();if(typeof renderStudy==='function'&&curView&&/study/.test(curView()))renderStudy();
+  hkChip(k>0?(d+' 단어 복습 '+r.n+'회째 ✓'):('복습 횟수를 하나 뺐습니다 · '+(r.n||0)+'회'));setTimeout(function(){hkChip('');},1500);
+}
+function wdToggle(d){wdOpen[d]=!wdOpen[d];renderStudy();}
+function wdDaysHTML(g){
+  var days=Object.keys(g);if(!days.length)return '';
+  return '<div class="wd-list">'+days.map(function(d){
+    var L=g[d].slice().sort(function(a,b){return a.id-b.id;}),r=wdRev(d),n=r.n||0,op=!!wdOpen[d];
+    var lv=n>=5?'l3':n>=3?'l2':n>=1?'l1':'';
+    return '<div class="wd-day'+(op?' open':'')+'">'
+      +'<div class="wd-row" onclick="wdReview(\''+d+'\')" title="누르면 이 날 단어 복습">'
+      +'<span class="wd-d">'+esc(d)+'</span>'
+      +'<span class="wd-w">('+L.map(function(x){return esc(wdKo(x));}).join(', ')+')</span>'
+      +'<span class="wd-n">'+L.length+'개</span>'
+      +'<span class="wd-cnt '+lv+'" title="'+(r.last?'마지막 복습 '+esc(r.last):'아직 복습 안 함')+'">'+(n?'복습 '+n+'회':'복습 전')+(r.last?'<small>'+esc(r.last.slice(5).replace('-','/'))+'</small>':'')+'</span>'
+      +'<span class="wd-btns" onclick="event.stopPropagation()">'
+        +'<button type="button" class="wd-plus" onclick="wdRevAdd(\''+d+'\',1)" title="복습 1회 체크">✓ +1</button>'
+        +(n?'<button type="button" class="wd-minus" onclick="wdRevAdd(\''+d+'\',-1)" title="잘못 눌렀으면 하나 빼기">−</button>':'')
+        +'<button type="button" class="wd-tg" onclick="wdToggle(\''+d+'\')" title="단어 보기 · 고치기">'+(op?'▴':'▾')+'</button></span>'
+      +'</div>'
+      +(op?'<div class="wd-body">'+L.map(memRow).join('')+'</div>':'')
+      +'</div>';
+  }).join('')+'</div>';
+}
 function wordListFor(x){
   var tab=x.tab;
   return db.study.filter(function(s){return s.tab===tab&&isMemTab(tab);})
     .slice().sort(function(a,b){return String(b.date).localeCompare(String(a.date))||(a.id-b.id);});
 }
-function zoomWord(id){
+function zoomWord(id,seq,revDate){
   const x=db.study.find(s=>s.id===id);if(!x)return;
-  wordSeq=wordListFor(x).map(function(s){return s.id;});
+  wordRevDate=revDate||null;
+  wordSeq=(seq&&seq.length)?seq.slice():wordListFor(x).map(function(s){return s.id;});
   wordIdx=wordSeq.indexOf(id);
   const ov=document.createElement('div');ov.className='word-ov';ov.id='wordOv';
   ov.onclick=e=>{if(e.target===ov)closeWord();};
@@ -16406,8 +16473,9 @@ function wordPaint(){
         +'<div class="wh-msg" id="whMsg"></div></div>';
   }
   var pos=document.getElementById('wordPos');
-  if(pos)pos.textContent=(wordIdx+1)+' / '+wordSeq.length;
-  var nb2=document.getElementById('wordNextBtn');if(nb2)nb2.textContent='다음 한자 ›';
+  if(pos)pos.textContent=(wordRevDate?wordRevDate.slice(5).replace('-','/')+' 복습 · ':'')+(wordIdx+1)+' / '+wordSeq.length;
+  var nb2=document.getElementById('wordNextBtn');
+  if(nb2){var lastOne=wordRevDate&&wordIdx===wordSeq.length-1;nb2.textContent=lastOne?'✓ 복습 완료':'다음 한자 ›';nb2.classList.toggle('wd-done',!!lastOne);}
 }
 /* ---- 단어 확대 화면의 붓길: 한자를 누르면 그 자리에서 획순을 써 준다 ---- */
 var whChar=null,whData=null,whIdx=0,whRaf=null,whSt=null,whTk=0,whMode='watch';
@@ -16497,6 +16565,7 @@ function whOpen(ch){
 function whReset(){whStop();whChar=null;whData=null;whIdx=0;whTk++;}
 function wordStep(d){
   if(!wordSeq.length)return;
+  if(wordRevDate&&d>0&&wordIdx===wordSeq.length-1){var dd=wordRevDate;closeWord();wdRevAdd(dd,1);return;}   /* 그날 단어 끝 → 복습 1회 */
   wordIdx=(wordIdx+d+wordSeq.length)%wordSeq.length;
   whReset();wordPaint();
 }
@@ -16505,7 +16574,7 @@ function wordEsc(e){
   else if(e.key==='ArrowRight')wordStep(1);
   else if(e.key==='ArrowLeft')wordStep(-1);
 }
-function closeWord(){whReset();const e=document.getElementById('wordOv');if(e)e.remove();document.removeEventListener('keydown',wordEsc);}
+function closeWord(){wordRevDate=null;whReset();const e=document.getElementById('wordOv');if(e)e.remove();document.removeEventListener('keydown',wordEsc);}
 
 /* 대시보드 */
 function setDashStudyTab(t){dashStudyTab=t;renderDashStudy();}
@@ -16630,7 +16699,8 @@ function renderStudy(){
   if(h1){h1.textContent=STUDY_EN[t]||t;h1.style.color=studyColor(t);}
   const h1s=document.getElementById('studyH1Sub');if(h1s)h1s.textContent='우리는 매일매일 · '+studyKo(t);
   let list='';
-  Object.keys(g).forEach(d=>{list+=`<div class="datehdr">${d}</div>`;
+  if(t==='단어'){list=wdDaysHTML(g);}
+  else Object.keys(g).forEach(d=>{list+=`<div class="datehdr">${d}</div>`;
     g[d].forEach(x=>{list+=isMemTab(t)?memRow(x):t==='문화'?cultureRow(x):`<div class="entry">
       <div class="meta">
         <input class="rowsel" list="studyCatList" value="${escA(x.category||'')}" placeholder="카테고리" onchange="editStudy(${x.id},'category',this.value)">
