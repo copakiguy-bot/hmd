@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="hmd-build" content="2026-11-23 · r242">
+<meta name="hmd-build" content="2026-11-24 · r243">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1278,6 +1278,20 @@
   .wd-btns .wd-minus{color:var(--muted)}
   .wd-body{border-top:1px solid #f1efe9;padding:6px 12px 10px;background:#fcfbf8}
   #wordNextBtn.wd-done{background:#2f6f5e;color:#fff;border-color:#2f6f5e}
+  /* 대시보드 머리: 그날의 화두 */
+  .hm-head{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .hw-box{display:flex;align-items:center;gap:8px;min-width:0}
+  .hw-lb{font-size:11px;font-weight:800;color:#9a6b12;background:#fbe6b8;border-radius:999px;padding:3px 10px;flex:none;letter-spacing:.02em}
+  .hw-in{border:none;border-bottom:1.5px dashed #d8cfb5;background:transparent;font-family:'Nanum Myeongjo','Gowun Batang',serif;font-size:19px;font-weight:700;color:var(--dark);padding:2px 4px;outline:none;max-width:62vw}
+  .hw-in:focus{border-bottom-color:#e0a83a}
+  .hw-in::placeholder{color:#b9b2a1;font-weight:400;font-size:16px}
+  .hw-hide,.hw-chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;flex:none}
+  .hw-hide:hover,.hw-chip:hover{color:var(--dark);border-color:#d8cfb5}
+  /* 타임라인 ↔ 연대기 제목 */
+  .dash-sw{cursor:pointer;border-bottom:1px dashed transparent}
+  #homeTlSlot .dash-sw,#homeTlSlot #chTitleTx{border-bottom-color:rgba(18,49,43,.3)}
+  #homeTlSlot .dash-sw:hover{color:var(--green)}
+  #hmChronoHost.top{margin-bottom:20px}
   /* 방문기록 */
   .hmwk-visit{display:none}
   .hm-wk.vs-on #hmwkBox,.hm-wk.vs-on #hmwkMapWrap,.hm-wk.vs-on .hmwk-trow,.hm-wk.vs-on .hmwk-save,.hm-wk.vs-on .hmwk-st{display:none!important}
@@ -3633,7 +3647,7 @@ try{if(/[?&]postit\b/.test(location.search)){document.documentElement.classList.
 
   <!-- ===== DASHBOARD (오늘) ===== -->
   <section class="view on" id="view-dashboard">
-    <div class="page-head"><h1 class="go-sched" title="누르면 스케줄로 이동" onclick="goTop('cal')">Hello, My Day!</h1></div>
+    <div class="page-head hm-head"><h1 class="go-sched" title="누르면 스케줄로 이동" onclick="goTop('cal')">Hello, My Day!</h1><div id="hwBox" class="hw-box"></div></div>
     <div id="homeTlSlot"></div>
     <div class="hmzk-grid" id="homeZkCard" style="display:none">
         <div class="card hm-wk" id="hmWorkEd">
@@ -4060,7 +4074,7 @@ try{if(/[?&]postit\b/.test(location.search)){document.documentElement.classList.
   <section class="view" id="view-chrono">
     <div class="page-head"><h1>연대기</h1><p>배운 것과 겪은 것을 시간 위에 점으로 찍습니다.</p></div>
     <div class="card" id="chGraphCard">
-      <h3><span class="dot" style="background:var(--green)"></span> 시간 그래프 <button class="lunar-toggle" id="chFullBtn" style="margin-left:auto" onclick="chFullTgl()" title="그래프를 화면 가득 크게 봅니다 (Esc 로 닫기)">⤢ 확장</button></h3>
+      <h3><span class="dot" style="background:var(--green)"></span> <span class="dash-sw" id="chTitleTx" onclick="dashTlTgl()" title="대시보드 맨 위에서 누르면 타임라인으로 돌아갑니다">시간 그래프</span> <button class="lunar-toggle" id="chFullBtn" style="margin-left:auto" onclick="chFullTgl()" title="그래프를 화면 가득 크게 봅니다 (Esc 로 닫기)">⤢ 확장</button></h3>
       <div class="ch-bar">
         <div class="ch-units" id="chUnits"></div>
         <button class="btn ghost" style="flex:none;padding:5px 12px;font-size:12px" onclick="chToday()">오늘</button>
@@ -4330,7 +4344,7 @@ try{if(/[?&]postit\b/.test(location.search)){document.documentElement.classList.
     </div>
 
     <div class="card" id="timelineCard" style="display:none">
-      <h3><span class="dot" style="background:var(--yellow)"></span> 타임라인
+      <h3><span class="dot" style="background:var(--yellow)"></span> <span class="dash-sw" onclick="dashTlTgl()" title="대시보드에서 누르면 연대기로 바꿔 봅니다">타임라인</span>
         <span style="margin-left:8px;display:inline-flex;gap:5px;vertical-align:middle">
           <button id="tlModeDaily" class="lunar-toggle on" onclick="tlDailyClick()">Daily</button>
           <button id="tlModeCn" class="lunar-toggle" onclick="tlCnClick()">의회일정</button>
@@ -4639,7 +4653,7 @@ window.addEventListener('error',function(ev){
   }catch(_){}
 });
 /* ---------- storage ---------- */
-const HMD_BUILD='2026-11-23 · r242';   /* 이 파일이 몇 번째 판인지 확인용 */
+const HMD_BUILD='2026-11-24 · r243';   /* 이 파일이 몇 번째 판인지 확인용 */
 const KEY='dailypage_v7';
 const SUPA_URL='https://qjedpvzqpheggfyupkof.supabase.co';
 const SUPA_KEY='sb_publishable_XzarJNgIdymB3HShYoPvnA_qe_ige_l';
@@ -4930,6 +4944,7 @@ function ensureFields(){
     if(!Array.isArray(db.visits))db.visits=[];
     if(!Array.isArray(db.cnj))db.cnj=[];
     if(!db.wordRev||typeof db.wordRev!=='object')db.wordRev={};
+    if(!db.hwadu||typeof db.hwadu!=='object')db.hwadu={};
     if(!db.council||typeof db.council!=='object')db.council={sessions:[],active:null};
     if(!Array.isArray(db.council.sessions))db.council.sessions=[];
     db.council.sessions=db.council.sessions.filter(function(s){return s&&typeof s==='object';});
@@ -7189,8 +7204,53 @@ function applyTopState(){
   var ib=document.getElementById('inboxCard');if(ib)ib.style.display=(topActive==='inbox')?'':'none';
   var ibB=document.getElementById('inboxToggleBtn');if(ibB)ibB.classList.toggle('on',topActive==='inbox');
   renderCal();
+  try{dashTlApply();}catch(e){}
   if(((isCal&&calSub.tl)||isHome)&&typeof renderTimeline==='function')renderTimeline();
+  try{hwPaint();}catch(e){}
 }
+/* ===== 대시보드 맨 위: «타임라인» ↔ «연대기» 바꿔 보기 (제목을 누르면) ===== */
+var dashTlMode=(function(){try{return localStorage.getItem('hmd_dashTl')==='chrono'?'chrono':'tl';}catch(e){return 'tl';}})(),__chHostPh=null;
+function dashTlTgl(){
+  if(topActive!=='home')return;
+  dashTlMode=dashTlMode==='chrono'?'tl':'chrono';
+  try{localStorage.setItem('hmd_dashTl',dashTlMode);}catch(e){}
+  dashTlApply();
+  if(dashTlMode==='tl'){try{renderTimeline();}catch(e){}}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function dashTlApply(){
+  var host=document.getElementById('hmChronoHost'),slot=document.getElementById('homeTlSlot'),tlc=document.getElementById('timelineCard'),tt=document.getElementById('chTitleTx');
+  if(!host||!slot||!tlc)return;
+  var on=(topActive==='home'&&dashTlMode==='chrono');
+  if(on){
+    if(host.parentNode!==slot){if(!__chHostPh){__chHostPh=document.createComment('chHost');host.parentNode.insertBefore(__chHostPh,host);}slot.appendChild(host);host.classList.add('top');}
+    tlc.style.display='none';
+    try{chDashShow();}catch(e){}
+  }else{
+    if(__chHostPh&&host.parentNode===slot){__chHostPh.parentNode.insertBefore(host,__chHostPh);host.classList.remove('top');try{chState.ppy=null;setTimeout(renderChrono,30);}catch(e){}}
+    if(topActive==='home')tlc.style.display='';
+  }
+  if(tt)tt.textContent=on?'연대기':'시간 그래프';
+}
+/* ===== Hello, My Day! 옆: 그날의 화두 (날마다 하나 · 가리기) ===== */
+var hwHide=(function(){try{return localStorage.getItem('hmd_hwHide')==='1';}catch(e){return false;}})(),__hwT=null;
+function hwArr(){if(!db.hwadu||typeof db.hwadu!=='object')db.hwadu={};return db.hwadu;}
+function hwPaint(force){
+  var box=document.getElementById('hwBox');if(!box)return;
+  var inp=document.getElementById('hwIn');if(!force&&inp&&document.activeElement===inp)return;
+  var d=today(),v=hwArr()[d]||'';
+  if(hwHide){box.innerHTML='<button type="button" class="hw-chip" onclick="hwTgl()" title="오늘의 화두 보기">💬 화두'+(v?' ·':'')+'</button>';return;}
+  var prev='';if(!v){var ks=Object.keys(hwArr()).filter(function(k){return k<d&&hwArr()[k];}).sort();if(ks.length)prev=hwArr()[ks[ks.length-1]];}
+  box.innerHTML='<span class="hw-lb">오늘의 화두</span>'
+    +'<input id="hwIn" class="hw-in" maxlength="120" value="'+escA(v)+'" placeholder="'+escA(prev?'지난 화두: '+prev:'오늘 붙들고 갈 한 문장')+'" oninput="hwType(this.value)" onblur="hwSave(this.value)" onkeydown="if(event.key===\'Enter\'||event.key===\'Escape\'){event.preventDefault();this.blur();}">'
+    +'<button type="button" class="hw-hide" onclick="hwTgl()" title="가리기">가리기</button>';
+  hwSize();
+}
+function hwSize(){var i=document.getElementById('hwIn');if(!i)return;var t=i.value||i.placeholder||'';var w=0;for(var k=0;k<t.length;k++)w+=t.charCodeAt(k)>255?17:9;i.style.width=Math.max(180,Math.min(620,w+28))+'px';}
+function hwType(v){hwSize();clearTimeout(__hwT);__hwT=setTimeout(function(){hwSave(v,true);},700);}
+function hwSave(v,quiet){clearTimeout(__hwT);v=String(v||'').trim();var d=today(),A=hwArr();if((A[d]||'')===v)return;if(v)A[d]=v;else delete A[d];save();if(!quiet)hwPaint(true);}
+function hwTgl(){var i=document.getElementById('hwIn');if(i)hwSave(i.value,true);hwHide=!hwHide;try{localStorage.setItem('hmd_hwHide',hwHide?'1':'0');}catch(e){}hwPaint(true);
+  if(!hwHide){var n=document.getElementById('hwIn');if(n&&!n.value)n.focus();}}
 function toggleTop(name){
   /* 다른 메뉴(IDEA 등)에서 누르면: 그 페이지 아래에 붙이지 않고, 해당 섹션만 있는 화면으로 전환 */
   if(curView()!=='dashboard'){
